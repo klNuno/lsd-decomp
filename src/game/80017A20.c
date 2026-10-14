@@ -11,6 +11,8 @@ extern s32 D_8006B58C[];
 s32 D_8008A820;
 s32 D_8008A830;
 s32 D_8008A834;
+extern void func_800181AC(s32);
+void func_80018208(void *arg0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017A20);
 
@@ -66,9 +68,13 @@ INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018040);
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800180BC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800180FC);
+void func_800180FC(s32 arg0) {
+    func_800181AC(arg0 + 8);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001811C);
+void func_8001811C(void *arg0) {
+    func_80018208((u8 *)arg0 + 8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001813C);
 
