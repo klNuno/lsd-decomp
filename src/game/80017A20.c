@@ -22,6 +22,10 @@ typedef struct Unk_80018358_Vtbl {
 typedef struct Unk_80018358 {
     Unk_80018358_Vtbl *vtbl;
 } Unk_80018358;
+typedef struct Unk_800183A0 {
+    struct Unk_800183A0 *unk0;
+    s32 unk4;
+} Unk_800183A0;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);
 
@@ -116,7 +120,17 @@ s32 *func_80018390(void) {
     return D_8006B58C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800183A0);
+void func_800183A0(s32 *arg0, Unk_800183A0 **arg1) {
+    Unk_800183A0 *temp_v0;
+
+    temp_v0 = *arg1;
+    if (temp_v0 != NULL) {
+        *arg0 = temp_v0->unk4;
+        *arg1 = (*arg1)->unk0;
+        return;
+    }
+    *arg0 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800183DC);
 
@@ -184,4 +198,3 @@ void func_8001A54C(s32 arg0, s32 arg1) {
         D_8008A834 = arg1;
     }
 }
-

@@ -12,6 +12,8 @@ void func_8004F4C8(s32, s32);
 extern s32 DisableEvent();
 extern s32 TestEvent();
 void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *arg4);
+extern s32 CloseEvent();
+void func_8004F3BC(s32 arg0);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -104,7 +106,11 @@ INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E5D4);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E5E4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E678);
+s32 func_8004E678(s32 arg0) {
+    func_8004F3BC(arg0);
+    func_8004F40C(arg0, CloseEvent, 1);
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E6B8);
 

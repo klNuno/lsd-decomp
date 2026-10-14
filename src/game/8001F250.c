@@ -25,6 +25,22 @@ struct Unk_8001F314 {
 };
 extern u8 D_8008B21C[];
 void func_8001F3B0(void *arg0, u8 *arg1);
+struct Unk_800204D0_Q {
+    u8 pad_00[0x6];
+    u16 unk6;
+};
+struct Unk_800204D0_P {
+    u8 pad_00[0x10];
+    struct Unk_800204D0_Q *unk10;
+};
+struct Unk_800204D0 {
+    u8 pad_00[0x10];
+    struct Unk_800204D0_P *unk10;
+};
+struct Unk_800204D0_Arg1 {
+    s32 unk0;
+    s32 unk4;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F250);
 
@@ -68,6 +84,10 @@ INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F8B8);
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_80020050);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_800204D0);
+void func_800204D0(struct Unk_800204D0 *arg0, struct Unk_800204D0_Arg1 *arg1) {
+    struct Unk_800204D0_Q *q = arg0->unk10->unk10;
+    q->unk6 += arg1->unk0 / 16;
+    q->unk6 += arg1->unk4 * 64;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_80020510);

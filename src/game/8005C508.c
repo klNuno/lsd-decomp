@@ -96,6 +96,15 @@ typedef struct Unk_80065204_Vtbl {
 typedef struct Unk_80065204 {
     Unk_80065204_Vtbl *vtbl;
 } Unk_80065204;
+typedef struct Unk_8005C9A4 {
+    u8 pad[0x2];
+    s8 unk2;
+} Unk_8005C9A4;
+extern s8 D_80089EA6[];
+typedef struct Unk_8005D95C { u8 pad[0x98]; s32 unk98; } Unk_8005D95C;
+void func_8005BF68(s32 arg0);
+extern s8 D_80089EAB[];
+typedef struct Unk_8005D994 { u8 pad[0x98]; s32 unk98; } Unk_8005D994;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -107,7 +116,15 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C5E8);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C650);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C6D8);
+void func_8005C6D8(s32 arg0) {
+    s32 var_v1;
+
+    var_v1 = 0;
+    if ((arg0 == 0xB) || (arg0 == 3)) {
+        var_v1 = 1;
+    }
+    func_8005BF68(var_v1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C714);
 
@@ -119,7 +136,18 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C8AC);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C930);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C9A4);
+s32 func_8005C9A4(s32 arg0, Unk_8005C9A4 *arg1) {
+    s32 var_v0;
+    s8 temp_v1;
+
+    temp_v1 = arg1->unk2;
+    var_v0 = 1;
+    if (temp_v1 != 0) {
+        arg0 = (arg0 % 2) + 1;
+        var_v0 = temp_v1 != arg0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C9DC);
 
@@ -167,9 +195,19 @@ Unk_80089EA4 *func_8005D944(Unk_8005D944 *arg0) {
     return &D_80089EA4[arg0->unk98];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D95C);
+s32 func_8005D95C(Unk_8005D95C *arg0) {
+    return D_80089EA6[arg0->unk98 * 16] * 1000;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D994);
+s32 func_8005D994(Unk_8005D994 *arg0) {
+    s8 temp_v0;
+
+    temp_v0 = D_80089EAB[arg0->unk98 * 16];
+    if (temp_v0 < 0) {
+        return ~temp_v0;
+    }
+    return temp_v0 - 1;
+}
 
 s32 func_8005D9D0(Unk_8005D9D0 *arg0) {
     return D_80089EAC[arg0->unk98 * 16] - 1;

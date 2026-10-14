@@ -9,6 +9,13 @@ s32 *func_80048DF8(void);
 extern void srand(u32 seed);
 extern s32 rand(void);
 void *func_80048D48(s32 *arg0);
+s32 func_80017CFC(s32);
+typedef struct Unk_80048C98 {
+    u8 pad_00[0x2E];
+    s16 unk2E;
+    u8 pad_30[4];
+    s32 unk34;
+} Unk_80048C98;
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048894);
 
@@ -26,7 +33,15 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048B78);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048BC0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048C98);
+void func_80048C98(Unk_80048C98 *arg0) {
+    s32 temp_a0;
+
+    temp_a0 = arg0->unk34;
+    arg0->unk2E = 0;
+    if (temp_a0 != 0) {
+        arg0->unk34 = func_80017CFC(temp_a0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048CD8);
 
