@@ -158,6 +158,34 @@ INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F9D8);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004FB04);
 
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011440);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011454);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011464);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011474);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001149C);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_800114DC);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_800114E8);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_800114F8);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001150C);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011518);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011524);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011530);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011550);
+
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004FBE4);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004FE24);

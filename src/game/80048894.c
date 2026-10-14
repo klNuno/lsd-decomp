@@ -127,3 +127,7 @@ s16 func_800493C8(s32 arg0) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800493E4);
+
+INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_80011384);
+
+INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_800113DC);

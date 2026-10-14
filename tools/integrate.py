@@ -78,7 +78,7 @@ def normalize(unit):
         if not buf and line.startswith("#include"):
             includes.append(line)
             continue
-        if not buf and line.startswith("INCLUDE_ASM"):
+        if not buf and line.startswith(("INCLUDE_ASM", "INCLUDE_RODATA")):
             bodies.append(line)
             continue
         buf.append(line)

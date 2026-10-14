@@ -60,9 +60,11 @@ $(OBJS): Makefile
 $(ELF): $(OBJS) linker/lsd.ld
 	$(LD) $(LDFLAGS) -o $@
 
-$(BUILD)/%.c.o: %.c
+# A C unit includes asm/ files (INCLUDE_ASM, INCLUDE_RODATA) that make cannot see: depending on
+# linker/lsd.ld rebuilds every unit after make split. sjis.py inlines those files in Shift-JIS.
+$(BUILD)/%.c.o: %.c linker/lsd.ld
 	@mkdir -p $(@D)
-	$(CPP) $(CPPFLAGS) $< | $(CC1) $(CFLAGS) | $(MASPSX) $(MASPSXFLAGS) | $(AS) $(ASFLAGS) -o $@
+	$(CPP) $(CPPFLAGS) $< | $(CC1) $(CFLAGS) | $(MASPSX) $(MASPSXFLAGS) | $(PYTHON) -I tools/sjis.py - | $(AS) $(ASFLAGS) -o $@
 
 # splat writes the game's Shift-JIS strings as UTF-8: encode them back before assembling.
 $(BUILD)/asm/%.s.o: asm/%.s

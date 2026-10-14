@@ -21,3 +21,5 @@ void func_80025E94(void) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025E9C);
+
+INCLUDE_RODATA("asm/nonmatchings/game/80025B34", D_80010764);

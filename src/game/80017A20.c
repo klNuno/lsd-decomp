@@ -182,3 +182,5 @@ void func_8001A54C(s32 arg0, s32 arg1) {
         D_8008A834 = arg1;
     }
 }
+
+INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);

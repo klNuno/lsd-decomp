@@ -71,6 +71,10 @@ void func_80049EA4(void) {
 void func_80049EAC(void) {
 }
 
+INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113EC);
+
+INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113F8);
+
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049EB4);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004A060);

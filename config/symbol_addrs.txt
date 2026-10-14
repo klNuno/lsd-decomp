@@ -1,1 +1,43 @@
 // Our own names, with evidence in docs/discoveries.md. Sony and lsddecomp names live in their own files.
+
+// Game .rodata: every symbol except jump tables stays out of rodata migration, so it is written
+// with INCLUDE_RODATA at its source position (strings at parse time, jtbls with their function).
+// Extra starts split labels where the owner changes (.agents/research/rodata-split.md).
+D_8001028C = 0x8001028C; // force_not_migration:True
+D_80010764 = 0x80010764; // force_not_migration:True
+D_800107A4 = 0x800107A4; // force_not_migration:True
+D_800107B4 = 0x800107B4; // force_not_migration:True
+D_800107C8 = 0x800107C8; // force_not_migration:True
+D_800107D8 = 0x800107D8; // force_not_migration:True
+D_800107F4 = 0x800107F4; // force_not_migration:True
+D_80010FEC = 0x80010FEC; // force_not_migration:True
+D_80011018 = 0x80011018; // force_not_migration:True
+D_80011030 = 0x80011030; // force_not_migration:True
+D_80011054 = 0x80011054; // force_not_migration:True
+D_80011384 = 0x80011384; // force_not_migration:True // object start of game/80048894 inside psyq label D_8001136C
+D_800113DC = 0x800113DC; // force_not_migration:True
+D_800113EC = 0x800113EC; // force_not_migration:True
+D_800113F8 = 0x800113F8; // force_not_migration:True
+D_80011434 = 0x80011434; // force_not_migration:True
+D_80011440 = 0x80011440; // force_not_migration:True // string reached from data
+D_80011454 = 0x80011454; // force_not_migration:True // string reached from data
+D_80011464 = 0x80011464; // force_not_migration:True // string reached from data
+D_80011474 = 0x80011474; // force_not_migration:True // string reached from data
+D_8001149C = 0x8001149C; // force_not_migration:True // string reached from data
+D_800114DC = 0x800114DC; // force_not_migration:True
+D_800114E8 = 0x800114E8; // force_not_migration:True
+D_800114F8 = 0x800114F8; // force_not_migration:True
+D_8001150C = 0x8001150C; // force_not_migration:True // string reached from data
+D_80011518 = 0x80011518; // force_not_migration:True // string reached from data
+D_80011524 = 0x80011524; // force_not_migration:True // string reached from data
+D_80011530 = 0x80011530; // force_not_migration:True
+D_80011550 = 0x80011550; // force_not_migration:True // string reached from data
+D_800115D0 = 0x800115D0; // force_not_migration:True
+D_80011610 = 0x80011610; // force_not_migration:True
+D_8001161C = 0x8001161C; // force_not_migration:True
+D_800116A4 = 0x800116A4; // force_not_migration:True
+D_800116E4 = 0x800116E4; // force_not_migration:True
+D_8001176C = 0x8001176C; // force_not_migration:True
+D_80011778 = 0x80011778; // force_not_migration:True
+D_8001186C = 0x8001186C; // force_not_migration:True
+D_8001187C = 0x8001187C; // force_not_migration:True

@@ -58,7 +58,7 @@ def build_base(cfile, work, overrides):
     obj = os.path.join(work, "base.o")
     cfile = os.path.abspath(cfile)
     pipe = (f"{v['CPP']} {v['CPPFLAGS']} {cfile} | {v['CC1']} {v['CFLAGS']} | "
-            f"{v['MASPSX']} {v['MASPSXFLAGS']} | {v['AS']} {v['ASFLAGS']} -o {obj}")
+            f"{v['MASPSX']} {v['MASPSXFLAGS']} | {PY} -I tools/sjis.py - | {v['AS']} {v['ASFLAGS']} -o {obj}")
     r = run(["bash", "-o", "pipefail", "-c", pipe])
     if r.returncode:
         print(f"COMPILE ERROR\n{r.stderr.strip()}")

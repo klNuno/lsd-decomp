@@ -29,7 +29,9 @@ def main():
     total_b = sum(sizes.values())
     done_b = sum(sizes[f] for f in done)
     sony = sum(1 for l in open(f"{ROOT}/config/symbol_addrs.psyq.txt") if "type:func" in l)
-    ours = sum(1 for l in open(f"{ROOT}/config/symbol_addrs.txt") if "=" in l and not l.lstrip().startswith("//"))
+    # Lines that only give a default name (D_8001xxxx with force_not_migration) are not names.
+    ours = sum(1 for l in open(f"{ROOT}/config/symbol_addrs.txt") if "=" in l and not l.lstrip().startswith("//")
+               and not re.match(r"\s*(D|func|jtbl)_[0-9A-F]{8}\s*=", l))
     r = {"game_functions": len(sizes), "done_functions": len(done), "game_bytes": total_b, "done_bytes": done_b,
          "done_percent_bytes": round(100 * done_b / total_b, 2) if total_b else 0, "named_symbols": ours,
          "sony_functions": sony}
