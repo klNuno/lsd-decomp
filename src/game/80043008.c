@@ -81,6 +81,17 @@ struct Unk_80045DE0 {
     struct Unk_80045DE0_Vtbl *unk0;
 };
 struct Unk_80045DE0 *D_8008A940;
+struct Unk_800449B8_Vtbl {
+    u8 pad_00[0x80];
+    void (*unk80)(void *self, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5);
+};
+struct Unk_800449B8_Obj {
+    struct Unk_800449B8_Vtbl *unk0;
+};
+struct Unk_800449B8 {
+    u8 pad_00[0x30];
+    struct Unk_800449B8_Obj *unk30;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043008);
 
@@ -210,7 +221,9 @@ s32 func_8004497C(struct Unk_8004497C *arg0) {
     return temp_a0->unk0->unk78(temp_a0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800449B8);
+void func_800449B8(struct Unk_800449B8 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    arg0->unk30->unk0->unk80(arg0->unk30, arg1, arg2, arg3, arg4, arg5);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800449FC);
 

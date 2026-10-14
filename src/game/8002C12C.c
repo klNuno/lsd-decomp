@@ -17,6 +17,7 @@ void func_80031F3C(s32 arg0);
 typedef struct { u8 pad[0x56]; s16 unk56; } Unk_8002CB9C;
 void SsSetMute(s16 arg0);
 typedef struct { u8 pad[0xC]; void (*unkC)(s32); } Unk_8002C200;
+typedef struct Unk_8002CB58 { u8 pad[0x56]; s16 unk56; } Unk_8002CB58;
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C12C);
 
@@ -109,7 +110,12 @@ s32 func_8002CB18(s32 arg0, s32 arg1) {
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CB58);
+void func_8002CB58(Unk_8002CB58 *arg0) {
+    if (arg0->unk56 == 0) {
+        SsSetMute(1);
+        arg0->unk56 = 1;
+    }
+}
 
 void func_8002CB9C(Unk_8002CB9C *arg0) {
     if (arg0->unk56 != 0) {

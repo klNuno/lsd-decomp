@@ -82,6 +82,10 @@ typedef struct Unk_8005B5B8 {
     s8 unk0;
     s8 unk1;
 } Unk_8005B5B8;
+extern u8 D_80088748[];
+extern s32 D_80088710[];
+extern s32 D_80088664[];
+s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *arg5, s32 arg6);
 
 INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
 
@@ -453,7 +457,9 @@ s16 func_8005BB14(s32 arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BB30);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BCB4);
+void func_8005BCB4(void *arg0, void *arg1, s32 arg2) {
+    func_8005C150(arg0, arg1, arg2, D_80088748, D_80088710, D_80088664, 1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BCF8);
 

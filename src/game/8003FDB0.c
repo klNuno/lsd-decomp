@@ -42,6 +42,18 @@ typedef struct Unk_80040490 {
     u8 pad8E[0x90 - 0x8E];
     Unk_800407F8Pair unk90;
 } Unk_80040490;
+typedef struct Unk_80040EDC_obj Unk_80040EDC_obj;
+typedef struct Unk_80040EDC_vt {
+    u8 pad[0xC4];
+    void (*unkC4)(Unk_80040EDC_obj *, u8, Unk_80040EDC_obj **);
+} Unk_80040EDC_vt;
+struct Unk_80040EDC_obj {
+    Unk_80040EDC_vt *unk0;
+};
+typedef struct Unk_80040EDC {
+    u8 pad[0xB4];
+    Unk_80040EDC_obj **unkB4;
+} Unk_80040EDC;
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FDB0);
 
@@ -149,7 +161,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040D74);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040E14);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040EDC);
+void func_80040EDC(Unk_80040EDC *arg0, s32 arg1, s32 arg2) {
+    Unk_80040EDC_obj **temp_a2 = &arg0->unkB4[arg2];
+    Unk_80040EDC_obj *temp_a0 = *temp_a2;
+
+    temp_a0->unk0->unkC4(temp_a0, arg1, temp_a2);
+}
 
 void func_80040F20(void) {
 }

@@ -60,6 +60,10 @@ typedef struct Unk_8004D108 {
     Unk_8004D108_Vtbl *unk0;
 } Unk_8004D108;
 extern s32 D_800869CC;
+typedef struct Unk_8004C3F0_B { u8 pad_00[0x30]; s16 u30; } Unk_8004C3F0_B;
+typedef struct Unk_8004C3F0_A { u8 pad_00[0x4]; Unk_8004C3F0_B *u4; } Unk_8004C3F0_A;
+typedef struct Unk_8004C3F0 { u8 pad_00[0x1BC]; Unk_8004C3F0_A *u1BC; } Unk_8004C3F0;
+void func_8004C368(Unk_8004C3F0 *arg0, u8 *arg1, s16 arg2);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -254,7 +258,10 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C1C0);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C368);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C3F0);
+Unk_8004C3F0_A *func_8004C3F0(Unk_8004C3F0 *arg0, u8 *arg1) {
+    func_8004C368(arg0, arg1, arg0->u1BC->u4->u30);
+    return arg0->u1BC;
+}
 
 Slot *func_8004C434(Owner *arg0, s32 arg1) {
     s32 i;
