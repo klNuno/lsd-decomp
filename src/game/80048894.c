@@ -109,7 +109,12 @@ s32 func_800491CC(s32 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800491FC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049240);
+u8 *func_80049240(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 8;
+    }
+    return (u8 *)func_80048D48(NULL) + 0x3E20;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049270);
 
