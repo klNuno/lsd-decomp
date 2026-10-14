@@ -23,6 +23,12 @@ typedef struct Unk_80040824 {
     u16 unk60;
     u16 unk62;
 } Unk_80040824;
+typedef struct Unk_800403F8 {
+    u8 pad0[0x78];
+    s32 unk78;
+} Unk_800403F8;
+extern u8 D_8006EA90[][3];
+extern u8 D_8006EAA8[3];
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FDB0);
 
@@ -42,7 +48,14 @@ INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040154);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_800402F0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_800403F8);
+u8 *func_800403F8(Unk_800403F8 *arg0) {
+    s32 index = arg0->unk78;
+
+    if (index == 0xF) {
+        return D_8006EAA8;
+    }
+    return D_8006EA90[index];
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8004042C);
 

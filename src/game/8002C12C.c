@@ -6,6 +6,7 @@ extern s16 D_8008EA22[]; /* really a field of a bss aggregate, see hard-cases.md
 typedef struct { u8 pad[0x60]; s32 unk60; } Unk_8002CBF4;
 s32 D_8008A8B0;
 s32 D_8008A8B4;
+u8 func_800300D0(s16 arg0, s16 arg1, s16 arg2, u16 arg3);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C12C);
 
@@ -165,7 +166,9 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_800300D0);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_800302DC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_800303C8);
+void func_800303C8(s16 arg0, s16 arg1, u16 arg2) {
+    func_800300D0(0x21, arg0, arg1, arg2);
+}
 
 void func_800303FC(void) {
 }
