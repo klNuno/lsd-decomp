@@ -1,0 +1,1 @@
+// Our own names, with evidence in docs/discoveries.md. Sony and lsddecomp names live in their own files.

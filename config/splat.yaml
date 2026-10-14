@@ -1,0 +1,61 @@
+# splat config for SLPS_015.56 (retail, sha1 below). Section bounds checked on our exe:
+# text 0x800118dc..0x80066828 (last jr ra), gp set at 0x80011a1c to 0x8008a808 (= start of .sdata),
+# startup clears bss 0x8008ac20..0x80090c68.
+name: LSD Dream Emulator (SLPS-01556)
+sha1: 76322eeade5ebb22dca57fdeac7d68c30f06308d
+options:
+  basename: lsd
+  platform: psx
+  compiler: GCC
+  base_path: ..
+  target_path: extract/SLPS_015.56
+  asm_path: asm
+  asset_path: assets
+  src_path: src
+  build_path: build
+  ld_script_path: linker/lsd.ld
+  symbol_addrs_path:
+    - config/symbol_addrs.txt
+  undefined_funcs_auto_path: linker/undefined_funcs_auto.txt
+  undefined_syms_auto_path: linker/undefined_syms_auto.txt
+
+  gp_value: 0x8008A808
+  find_file_boundaries: True
+  migrate_rodata_to_functions: False
+  use_legacy_include_asm: False
+  include_asm_macro_style: maspsx_hack
+  o_as_suffix: False
+
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+
+  section_order: [".rodata", ".text", ".data", ".sdata", ".sbss", ".bss"]
+  subalign: 4
+  ld_bss_is_noload: True
+  ld_align_section_vram_end: False
+  ld_align_segment_vram_end: False
+
+  string_encoding: SHIFT-JIS
+  data_string_encoding: SHIFT-JIS
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+
+segments:
+  - name: header
+    type: header
+    start: 0x0
+
+  - name: main
+    type: code
+    start: 0x800
+    vram: 0x80010000
+    bss_size: 0x6048
+    subsegments:
+      - [0x800, rodata, main]
+      - [0x20DC, c, main]
+      - [0x57028, data, main]
+      - [0x7B008, sdata, main]
+      - { type: bss, vram: 0x8008AC20, name: main }
+  - [0x7B420]
