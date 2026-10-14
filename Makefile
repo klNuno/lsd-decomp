@@ -16,9 +16,11 @@ TOOLS   := tools/bin
 PYTHON  := .venv/bin/python
 SPLAT   := config/splat.yaml
 
-# Compiler pair, fixed by the calibration batch (see .agents/ARCHITECTURE.md).
+# Game code settings, found by matching 28 game functions (.agents/research/calibration.md).
+# Small globals (8 bytes or less) are declared in C without extern: cc1 emits .comm, maspsx
+# addresses them through gp, and --use-comm-section lets the linker merge them with the asm data.
 GCC_VER   ?= 2.6.3-psx
-ASPSX_VER ?= 2.34
+ASPSX_VER ?= 2.21
 CPP       := tools/gcc/$(GCC_VER)/cpp
 CC1       := tools/gcc/$(GCC_VER)/cc1
 MASPSX    := $(PYTHON) tools/src/maspsx/maspsx.py
@@ -29,8 +31,8 @@ OBJCOPY   := $(CROSS)objcopy
 
 CPPFLAGS    := -Iinclude -undef -lang-c -nostdinc -Dmips -D__mips__ -D__mips -D__GNUC__=2 -D__OPTIMIZE__ \
                -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C
-CFLAGS      := -quiet -O2 -G0 -funsigned-char -w $(CFLAGS_EXTRA)
-MASPSXFLAGS := --aspsx-version=$(ASPSX_VER) --expand-div $(MASPSX_EXTRA)
+CFLAGS      := -quiet -O2 -G8 -funsigned-char -w $(CFLAGS_EXTRA)
+MASPSXFLAGS := --aspsx-version=$(ASPSX_VER) --expand-div -G8 --use-comm-section $(MASPSX_EXTRA)
 ASFLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 LDFLAGS     := -nostdlib --no-check-sections -T linker/lsd.ld -T linker/undefined_syms_auto.txt \
                -T linker/undefined_funcs_auto.txt -Map $(BUILD)/lsd.map

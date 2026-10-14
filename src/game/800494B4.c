@@ -2,7 +2,14 @@
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494BC);
+extern s32 D_800861D4[];
+
+s32 *func_800494BC(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 14;
+    }
+    return D_800861D4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494D8);
 
@@ -110,7 +117,13 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B31C);
 void func_8004B324(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B32C);
+typedef struct { u8 pad[0x74]; s32 u74; s16 u78; s16 u7A; } S;
+
+void func_8004B32C(S *arg0, s32 arg1) {
+    arg0->u74 = arg1;
+    arg0->u7A = arg1 >> 11;
+    arg0->u78 = arg1 >> 12;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B344);
 
@@ -150,11 +163,36 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C368);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C3F0);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C434);
+typedef struct { u8 pad[0x32]; s16 id; } Obj;
+typedef struct { s32 unk0; Obj *obj; u8 pad[0x14]; } Slot;
+typedef struct { u8 pad[0xEC]; Slot slots[7]; } Owner;
+
+Slot *func_8004C434(Owner *arg0, s32 arg1) {
+    s32 i;
+    Slot *s;
+    for (i = 0; i < 7; i++) {
+        s = &arg0->slots[i];
+        if (s->obj->id == arg1) {
+            return s;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C470);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C588);
+s32 func_8004C588(Owner *arg0, s32 arg1) {
+    s32 found = 0;
+    s32 i;
+    Slot *s;
+    for (i = 0; i < 7; i++) {
+        s = &arg0->slots[i];
+        if (s->obj->id == arg1) {
+            found = i;
+            break;
+        }
+    }
+    return found;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C5D0);
 
@@ -236,7 +274,19 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D518);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D578);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D678);
+typedef struct { u8 pad[0xC]; s32 uC; u8 pad2[0x2F4 - 0x10]; s32 u2F4; } A;
+typedef struct { u8 pad[0xBC]; A *uBC; } P;
+typedef struct { s32 u0; s32 u4; } C;
+typedef struct { u8 pad[0x18]; C *u18; } Q;
+
+void func_8004D678(P *arg0, Q *arg1) {
+    A *a = arg0->uBC;
+    s32 r = 1;
+    if (a->uC > 9999999) {
+        r = a->u2F4 == 0;
+    }
+    arg1->u18->u4 = r;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D6AC);
 
@@ -328,7 +378,12 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004EF6C);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004F32C);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004F394);
+extern s32 EnableEvent();
+extern void func_8004F40C(s32, s32 (*)(), s32);
+
+void func_8004F394(s32 arg0) {
+    func_8004F40C(arg0, EnableEvent, 1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004F3BC);
 
