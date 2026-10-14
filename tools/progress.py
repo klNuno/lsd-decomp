@@ -2,7 +2,7 @@
 """Progress of the decomp: game functions written in C, bytes, names.
 
   tools/progress.py [--json]
-Game code is everything under asm/nonmatchings/game/; Sony library units (asm/psyq/) are
+Game code is everything under asm/{non,}matchings/game/; Sony library units (asm/psyq/) are
 counted apart and never decompiled. A function counts as done when no INCLUDE_ASM in src/
 names it and `make check` passes (run it first).
 """
@@ -17,7 +17,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def main():
     sizes = {}
-    for path in glob.glob(f"{ROOT}/asm/nonmatchings/game/**/*.s", recursive=True):
+    # splat writes matched functions to asm/matchings/ (disassemble_all), the rest to asm/nonmatchings/.
+    for path in glob.glob(f"{ROOT}/asm/*matchings/game/**/*.s", recursive=True):
         m = re.search(r"nonmatching\s+(\w+),\s*(0x[0-9A-Fa-f]+)", open(path, encoding="utf-8").read())
         if m:
             sizes[m.group(1)] = int(m.group(2), 16)

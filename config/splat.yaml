@@ -25,6 +25,7 @@ options:
   gp_value: 0x8008A808
   find_file_boundaries: True
   migrate_rodata_to_functions: False
+  disassemble_all: True
   use_legacy_include_asm: False
   include_asm_macro_style: maspsx_hack
   o_as_suffix: False
@@ -73,9 +74,7 @@ segments:
       - [0x166AC, asm, psyq/80025EAC]  # LIBAPI,LIBETC
       - [0x1677C, c, game/80025F7C]
       - [0x17930, asm, psyq/80027130]  # LIBC2
-      - [0x179D8, c, game/800271D8]
-      - [0x18540, asm, psyq/80027D40]  # LIBSND
-      - [0x18570, c, game/80027D70]
+      - [0x179D8, c, game/800271D8]  # one TU to 0x80028B78: its strings precede its jtbls in .rodata; 0x80027D40 is game code (tools/psyq/match.py FALSE_HITS)
       - [0x19378, asm, psyq/80028B78]  # LIBC2,LIBCD
       - [0x1C92C, c, game/8002C12C]
       - [0x20FF0, asm, psyq/800307F0]  # LIBSND
@@ -120,8 +119,13 @@ segments:
       - [0x39094, c, game/80048894]
       - [0x39C80, asm, psyq/80049480]  # LIBC2
       - [0x39CB4, c, game/800494B4]
+      - [0x3DD78, c, game/8004D578]  # rodata object B starts here (ETC\ETCSE); the A|B text boundary lies in (0x80049EB4, 0x8004D578]
       - [0x410E8, asm, psyq/800508E8]  # LIBAPI,LIBC2,LIBCARD
       - [0x413A8, c, game/80050BA8]
+      - [0x42724, c, game/80051F24]  # rodata object D; C|D boundary in (0x800513D0, 0x80051F24]
+      - [0x487C8, c, game/80057FC8]  # rodata object D2 (ETC\ETCSE); D|D2 boundary in (0x80053984, 0x80057FC8]
+      - [0x48878, c, game/80058078]  # rodata object E: exact, its jtbls sit at 0 mod 8 only from here
+      - [0x4CD08, c, game/8005C508]  # rodata object F; E|F boundary in (0x8005B03C, 0x8005C508]
       - [0x57028, data, main]
       - [0x7B008, sdata, main]
       - { type: bss, vram: 0x8008AC20, name: main }

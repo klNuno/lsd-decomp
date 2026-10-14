@@ -301,7 +301,6 @@ PAD_dr = 0x80025F4C; // type:func
 StopPAD = 0x80025F5C; // type:func
 PAD_init = 0x80025F6C; // type:func
 strcat = 0x80027130; // type:func size:0xA8
-func_80027D40 = 0x80027D40; // type:func size:0x30
 strcpy = 0x80028B78; // type:func size:0x44
 strstr = 0x80028BBC; // type:func size:0x78
 CdStatus = 0x80028C34; // type:func size:0x10
