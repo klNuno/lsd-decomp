@@ -27,7 +27,11 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 
 | Term | Meaning | Source |
 | --- | --- | --- |
-| Dream | One run of the game from waking to waking, a day | game manual |
-| Link | Touching an object or person that sends you to another place | game manual |
-| Flashback | A replay of an earlier dream | game manual |
-| Grey Man | The figure whose touch erases dream progress | community knowledge |
+| Day | One dream, from falling asleep to waking; the counter wraps after day 365 | community knowledge (lsddecomp) |
+| Zone | One of the dream areas (Happy Town, Violence District, Moonlight Tower and others) | community knowledge |
+| Link | Touching something that moves you to another place: dynamic (random main zone) or static (per-zone table) | community knowledge (lsddecomp, compu-lsd) |
+| Graph | The mood chart shown after each day, two axes | community knowledge |
+| Flashback | A replay of an earlier day, unlocked by a score | community knowledge (lsddecomp) |
+| Grey Man | The figure who erases flashbacks when met | community knowledge (compu-lsd, fandom) |
+
+Every row above is a working term from `docs/community-knowledge.md`, not a verified fact; the code decides.
