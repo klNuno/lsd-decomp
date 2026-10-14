@@ -1,0 +1,24 @@
+# Game data is never tracked: everyone supplies a dump of their own disc.
+/disks/*
+!/disks/README.md
+/extract/
+/asm/
+/assets/
+/build/
+/expected/
+*.bin
+*.cue
+*.iso
+*.img
+*.STR
+*.str
+
+# Toolchain, installed by tools/setup.sh
+/tools/dl/
+/tools/bin/
+/tools/gcc/
+/tools/src/
+/tools/mipsmatch/
+/.venv/
+__pycache__/
+*.pyc
