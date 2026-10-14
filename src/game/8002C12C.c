@@ -16,12 +16,15 @@ void func_80031890(s16 arg0);
 void func_80031F3C(s32 arg0);
 typedef struct { u8 pad[0x56]; s16 unk56; } Unk_8002CB9C;
 void SsSetMute(s16 arg0);
+typedef struct { u8 pad[0xC]; void (*unkC)(s32); } Unk_8002C200;
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C12C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C18C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C200);
+void func_8002C200(s32 arg0) {
+    ((Unk_8002C200 *)func_80026CAC())->unkC(arg0);
+}
 
 void func_8002C238(Unk_8002C238 *arg0) {
     arg0->unk30 = 1;

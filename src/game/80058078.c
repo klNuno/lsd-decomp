@@ -61,6 +61,27 @@ typedef struct Unk_8005A1B0 {
     s32 unk12C;
     s32 unk130;
 } Unk_8005A1B0;
+typedef struct Unk_80059328 {
+    u8 pad_00[0x134];
+    s32 unk134;
+} Unk_80059328;
+typedef struct Unk_8005A304 {
+    u8 pad_00[0x17C];
+    s32 unk17C;
+    s32 unk180;
+} Unk_8005A304;
+typedef struct Unk_8005B4E0_Vtbl {
+    u8 pad_00[0x1FC];
+    void (*unk1FC)(void *, s16 *);
+} Unk_8005B4E0_Vtbl;
+typedef struct Unk_8005B4E0 {
+    Unk_8005B4E0_Vtbl *unk0;
+} Unk_8005B4E0;
+void func_8005B518(s16 *arg0);
+typedef struct Unk_8005B5B8 {
+    s8 unk0;
+    s8 unk1;
+} Unk_8005B5B8;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
 
@@ -119,7 +140,19 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059310);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005931C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059328);
+s32 func_80059328(Unk_80059328 *arg0, s32 arg1) {
+    s32 old;
+
+    if (arg1 >= 0) {
+        arg1 *= 15;
+    }
+    old = arg0->unk134;
+    arg0->unk134 = arg1;
+    if (old >= 0) {
+        old = (u32)old / 15;
+    }
+    return old;
+}
 
 u32 func_80059360(Unk_80059360 *arg0) {
     return arg0->unk24 / 15;
@@ -270,7 +303,13 @@ s32 func_8005A2E4(Unk_8005A2E4 *arg0, s32 *arg1) {
     return arg0->unk180 + 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A304);
+s32 func_8005A304(Unk_8005A304 *arg0) {
+    if (++arg0->unk180 >= 365) {
+        arg0->unk180 = 0;
+        arg0->unk17C++;
+    }
+    return arg0->unk180;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A33C);
 
@@ -333,7 +372,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B3F0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B420);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B4E0);
+void func_8005B4E0(Unk_8005B4E0 *arg0) {
+    s16 sp10;
+
+    arg0->unk0->unk1FC(arg0, &sp10);
+    func_8005B518(&sp10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B518);
 
@@ -344,7 +388,15 @@ void func_8005B5A4(s32 arg0, Unk_8005B5A4 *arg1) {
     arg1->unkC = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B5B8);
+void func_8005B5B8(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
+    s32 temp_v1;
+
+    temp_v1 = arg1->unk4;
+    arg1->unk0 = *(u16 *)arg2;
+    arg1->unk4 = arg2->unk0 + temp_v1;
+    arg1->unk8 = arg2->unk1 + arg1->unk8;
+    arg1->unkC = arg1->unkC + 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B5F0);
 

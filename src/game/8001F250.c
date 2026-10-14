@@ -41,6 +41,22 @@ struct Unk_800204D0_Arg1 {
     s32 unk0;
     s32 unk4;
 };
+struct Unk_80020510_Sub {
+    u8 pad_00[0x6];
+    s16 unk6;
+};
+struct Unk_80020510_Mid {
+    u8 pad_00[0x10];
+    struct Unk_80020510_Sub *unk10;
+};
+struct Unk_80020510 {
+    u8 pad_00[0x10];
+    struct Unk_80020510_Mid *unk10;
+};
+struct Unk_80020510_Arg {
+    s16 unk0;
+    s16 unk2;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F250);
 
@@ -90,4 +106,9 @@ void func_800204D0(struct Unk_800204D0 *arg0, struct Unk_800204D0_Arg1 *arg1) {
     q->unk6 += arg1->unk4 * 64;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_80020510);
+void func_80020510(struct Unk_80020510 *arg0, struct Unk_80020510_Arg *arg1) {
+    struct Unk_80020510_Sub *sub = arg0->unk10->unk10;
+
+    sub->unk6 = arg1->unk0 / 16;
+    sub->unk6 += arg1->unk2 * 64;
+}

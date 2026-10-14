@@ -16,6 +16,7 @@ typedef struct Unk_80048C98 {
     u8 pad_30[4];
     s32 unk34;
 } Unk_80048C98;
+u8 *func_8004903C(s32 arg0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048894);
 
@@ -100,7 +101,9 @@ u8 *func_8004903C(s32 arg0) {
     return func_80048E2C(arg0) + 0xFC;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049060);
+u8 *func_80049060(s32 arg0, s32 arg1) {
+    return func_8004903C(arg0) + arg1 * 0x1C;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049098);
 

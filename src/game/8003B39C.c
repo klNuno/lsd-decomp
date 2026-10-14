@@ -5,12 +5,19 @@ typedef struct Unk_8003B5F0 {
     u8 pad_00[0x10];
     u32 *unk10;
 } Unk_8003B5F0;
+typedef struct Unk_8003B470 {
+    u8 pad_00[0xC];
+    void (*unkC)(s32);
+} Unk_8003B470;
+void *func_80026CAC(void);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B39C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B3FC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B470);
+void func_8003B470(s32 arg0) {
+    ((Unk_8003B470 *)func_80026CAC())->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B4A8);
 

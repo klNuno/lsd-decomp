@@ -14,6 +14,8 @@ extern s32 TestEvent();
 void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *arg4);
 extern s32 CloseEvent();
 void func_8004F3BC(s32 arg0);
+typedef struct Unk_8004E40C { s32 unk0, unk4, unk8; void (*unkC)(s32); } Unk_8004E40C;
+extern Unk_8004E40C *func_80018390(void);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -94,7 +96,9 @@ void func_8004E3F4(Unk_8004E3F4 *arg0) {
     arg0->u7C = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E40C);
+void func_8004E40C(s32 arg0) {
+    func_80018390()->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E444);
 
