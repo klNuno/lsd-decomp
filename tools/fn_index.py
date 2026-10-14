@@ -2,7 +2,9 @@
 """Inventory of the functions still in asm: size, calls, gp, rodata and jump-table use.
 
   tools/fn_index.py [--json build/fn_index.json] [--leaf] [--max-size 0x40] [--no-gp] [--no-rodata]
-Prints one line per function: name, size, calls, flags (L leaf, G gp_rel, R rodata/jtbl, S strings).
+Prints one line per function: name, size, calls, flags (L leaf, G gp_rel, U lwl/lwr, T GTE, and for
+rodata or jump-table use: r when its unit has its own .rodata in config/splat.yaml, so the function
+can be matched with its literals; R when the unit has none yet).
 """
 import argparse
 import glob
@@ -14,13 +16,25 @@ RODATA = (0x80010000, 0x800118DC)  # main .rodata, before the first function
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def rodata_units():
+    """Units with their own rodata subsegment (`- [0x..., .rodata, game/X]` in config/splat.yaml)."""
+    text = open(os.path.join(ROOT, "config/splat.yaml"), encoding="utf-8").read()
+    return set(re.findall(r"^\s*- \[0x[0-9A-Fa-f]+,\s*\.?rodata,\s*([\w/]+)\]", text, re.M))
+
+
+RODATA_UNITS = rodata_units()
+
+
 def scan(path):
     body = open(path, encoding="utf-8").read()
     m = re.search(r"nonmatching\s+(\w+),\s*(0x[0-9A-Fa-f]+)", body)
     name, size = (m.group(1), int(m.group(2), 16)) if m else (os.path.basename(path)[:-2], 0)
     calls = sorted(set(re.findall(r"\bjal\s+(\w+)", body)))
+    unit = "/".join(os.path.relpath(path, ROOT).split("/")[2:4])
     return {
         "name": name,
+        "unit": unit,
+        "rodata_ready": unit in RODATA_UNITS,
         "file": os.path.relpath(path, ROOT),
         "size": size,
         "calls": calls,
@@ -41,7 +55,8 @@ def main():
     p.add_argument("--no-rodata", action="store_true")
     p.add_argument("--max-size", type=lambda s: int(s, 0), default=None)
     a = p.parse_args()
-    fns = [scan(f) for f in sorted(glob.glob(f"{ROOT}/asm/nonmatchings/**/*.s", recursive=True))]
+    # asm/nonmatchings/ also holds the INCLUDE_RODATA files (D_*.s): functions only.
+    fns = [scan(f) for f in sorted(glob.glob(f"{ROOT}/asm/nonmatchings/**/func_*.s", recursive=True))]
     if a.json:
         json.dump(fns, open(a.json, "w"), indent=1)
     for f in fns:
@@ -49,7 +64,9 @@ def main():
             continue
         if a.max_size is not None and f["size"] > a.max_size:
             continue
-        flags = "".join(c for c, k in (("L", "leaf"), ("G", "gp"), ("R", "rodata"), ("U", "unaligned"), ("T", "gte")) if f[k])
+        flags = "".join(c for c, k in (("L", "leaf"), ("G", "gp"), ("U", "unaligned"), ("T", "gte")) if f[k])
+        if f["rodata"]:
+            flags += "r" if f["rodata_ready"] else "R"
         print(f"{f['name']} 0x{f['size']:x} {flags} {','.join(f['calls'][:4])}")
 
 
