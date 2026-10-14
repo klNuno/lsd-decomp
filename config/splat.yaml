@@ -1,6 +1,8 @@
 # splat config for SLPS_015.56 (retail, sha1 below). Section bounds checked on our exe:
 # text 0x800118dc..0x80066828 (last jr ra), gp set at 0x80011a1c to 0x8008a808 (= start of .sdata),
 # startup clears bss 0x8008ac20..0x80090c68.
+# Text units: psyq/<addr> are Sony library blocks found by tools/psyq/match.py (asm, never decompiled);
+# game/<addr> are the code between them, to be split into real translation units as evidence comes.
 name: LSD Dream Emulator (SLPS-01556)
 sha1: 76322eeade5ebb22dca57fdeac7d68c30f06308d
 options:
@@ -16,6 +18,7 @@ options:
   ld_script_path: linker/lsd.ld
   symbol_addrs_path:
     - config/symbol_addrs.txt
+    - config/symbol_addrs.psyq.txt
   undefined_funcs_auto_path: linker/undefined_funcs_auto.txt
   undefined_syms_auto_path: linker/undefined_syms_auto.txt
 
@@ -54,7 +57,71 @@ segments:
     bss_size: 0x6048
     subsegments:
       - [0x800, rodata, main]
-      - [0x20DC, c, main]
+      - [0x20DC, c, game/800118DC]
+      - [0x2194, asm, psyq/80011994]  # 2MBYTE,LIBAPI,MALLOC
+      - [0x2864, c, game/80012064]
+      - [0x2F68, asm, psyq/80012768]  # LIBAPI,LIBC2,LIBGS,LIBGTE
+      - [0x8220, c, game/80017A20]
+      - [0xAD64, asm, psyq/8001A564]  # LIBGTE
+      - [0xD294, c, game/8001CA94]
+      - [0xF770, asm, psyq/8001EF70]  # LIBGS,LIBGTE
+      - [0xFA50, c, game/8001F250]
+      - [0x10D48, asm, psyq/80020548]  # LIBGS,LIBGTE
+      - [0x10EE0, c, game/800206E0]
+      - [0x11474, asm, psyq/80020C74]  # LIBAPI,LIBC2,LIBETC,LIBGPU,LIBGS,LIBGTE
+      - [0x16334, c, game/80025B34]
+      - [0x166AC, asm, psyq/80025EAC]  # LIBAPI,LIBETC
+      - [0x1677C, c, game/80025F7C]
+      - [0x17930, asm, psyq/80027130]  # LIBC2
+      - [0x179D8, c, game/800271D8]
+      - [0x18540, asm, psyq/80027D40]  # LIBSND
+      - [0x18570, c, game/80027D70]
+      - [0x19378, asm, psyq/80028B78]  # LIBC2,LIBCD
+      - [0x1C92C, c, game/8002C12C]
+      - [0x20FF0, asm, psyq/800307F0]  # LIBSND
+      - [0x21180, c, game/80030980]
+      - [0x221B4, asm, psyq/800319B4]  # LIBSND
+      - [0x22244, c, game/80031A44]
+      - [0x22948, asm, psyq/80032148]  # LIBSND
+      - [0x22A1C, c, game/8003221C]
+      - [0x22BA8, asm, psyq/800323A8]  # LIBSND
+      - [0x22D88, c, game/80032588]
+      - [0x23318, asm, psyq/80032B18]  # LIBAPI,LIBSND
+      - [0x24490, c, game/80033C90]
+      - [0x247B8, asm, psyq/80033FB8]  # LIBSND
+      - [0x2490C, c, game/8003410C]
+      - [0x2673C, asm, psyq/80035F3C]  # LIBSND
+      - [0x26D28, c, game/80036528]
+      - [0x270E8, asm, psyq/800368E8]  # LIBSND
+      - [0x272A8, c, game/80036AA8]
+      - [0x272C8, asm, psyq/80036AC8]  # LIBAPI,LIBSPU
+      - [0x29554, c, game/80038D54]
+      - [0x29574, asm, psyq/80038D74]  # LIBAPI,LIBSPU
+      - [0x2A0E0, c, game/800398E0]
+      - [0x2A878, asm, psyq/8003A078]  # LIBSND
+      - [0x2AE70, c, game/8003A670]
+      - [0x2B268, asm, psyq/8003AA68]  # LIBSND
+      - [0x2B78C, c, game/8003AF8C]
+      - [0x2BA1C, asm, psyq/8003B21C]  # LIBCD,LIBGS
+      - [0x2BB9C, c, game/8003B39C]
+      - [0x2BF70, asm, psyq/8003B770]  # LIBGS
+      - [0x2C054, c, game/8003B854]
+      - [0x2FAAC, asm, psyq/8003F2AC]  # LIBGS,LIBGTE
+      - [0x305B0, c, game/8003FDB0]
+      - [0x3197C, asm, psyq/8004117C]  # LIBC,LIBC2
+      - [0x322B4, c, game/80041AB4]
+      - [0x330F4, asm, psyq/800428F4]  # LIBGS
+      - [0x3311C, c, game/8004291C]
+      - [0x3328C, asm, psyq/80042A8C]  # LIBGS
+      - [0x33808, c, game/80043008]
+      - [0x36654, asm, psyq/80045E54]  # LIBAPI,LIBC,LIBC2,LIBPRESS
+      - [0x3770C, c, game/80046F0C]
+      - [0x38110, asm, psyq/80047910]  # LIBCD
+      - [0x39094, c, game/80048894]
+      - [0x39C80, asm, psyq/80049480]  # LIBC2
+      - [0x39CB4, c, game/800494B4]
+      - [0x410E8, asm, psyq/800508E8]  # LIBAPI,LIBC2,LIBCARD
+      - [0x413A8, c, game/80050BA8]
       - [0x57028, data, main]
       - [0x7B008, sdata, main]
       - { type: bss, vram: 0x8008AC20, name: main }
