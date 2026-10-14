@@ -51,6 +51,6 @@ Starting point, from the planning notes of 2026-10-14. "Code" means read in code
 
 ## Earlier projects
 
-- FirecatFG/lsddecomp (2024): 119 named symbols, 27 `DreamSys` functions in readable C, zone tables, a timer note. Rough split, unproven compiler, no licence: its addresses and findings are a credited reference, its code is not reused.
+- FirecatFG/lsddecomp (2024, 5 commits): 119 named symbols, 25 `DreamSys` functions in C (22 with bodies, 6 more commented out), a per-location dream time table at `0x80087f14` and a timer note (timer `0x80091554`, duration `0x80091664`). Its build: bundled GCC 2.6.3 `cc1` with `-O2 -G0 -funsigned-char`, maspsx `--aspsx-version=2.34 --expand-div --dont-force-G0 -G8`. Rough split, unproven compiler, no licence: its addresses and findings are a credited reference, its code is not reused.
 - Figglewatts/LSD Revamped: faithful graph and graph-to-dream mapping; dream length, Grey Man, texture choice and links are invented or approximate. Not a source of truth, and its repo holds original game files: take nothing from it.
 - Not found: GameShark codes, a public Ghidra project, leaked symbols.
