@@ -29,8 +29,8 @@ OBJCOPY   := $(CROSS)objcopy
 
 CPPFLAGS    := -Iinclude -undef -lang-c -nostdinc -Dmips -D__mips__ -D__mips -D__GNUC__=2 -D__OPTIMIZE__ \
                -Dpsx -D__psx__ -D__psx -D_PSYQ -D__EXTENSIONS__ -D_MIPSEL -D_LANGUAGE_C -DLANGUAGE_C
-CFLAGS      := -quiet -O2 -G0 -funsigned-char -w
-MASPSXFLAGS := --aspsx-version=$(ASPSX_VER) --expand-div
+CFLAGS      := -quiet -O2 -G0 -funsigned-char -w $(CFLAGS_EXTRA)
+MASPSXFLAGS := --aspsx-version=$(ASPSX_VER) --expand-div $(MASPSX_EXTRA)
 ASFLAGS     := -Iinclude -march=r3000 -mtune=r3000 -no-pad-sections -O1 -G0
 LDFLAGS     := -nostdlib --no-check-sections -T linker/lsd.ld -T linker/undefined_syms_auto.txt \
                -T linker/undefined_funcs_auto.txt -Map $(BUILD)/lsd.map
@@ -58,7 +58,7 @@ $(OBJS): Makefile
 $(ELF): $(OBJS) linker/lsd.ld
 	$(LD) $(LDFLAGS) -o $@
 
-$(BUILD)/src/%.c.o: src/%.c
+$(BUILD)/%.c.o: %.c
 	@mkdir -p $(@D)
 	$(CPP) $(CPPFLAGS) $< | $(CC1) $(CFLAGS) | $(MASPSX) $(MASPSXFLAGS) | $(AS) $(ASFLAGS) -o $@
 
@@ -83,6 +83,10 @@ check-disk: extract
 
 clean:
 	rm -rf $(BUILD)
+
+# Used by tools/fmatch.py so that one function is built exactly like the game.
+print-%:
+	@echo '$($*)'
 
 distclean: clean
 	rm -rf $(EXTRACT) asm linker
