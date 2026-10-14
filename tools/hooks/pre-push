@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Refuses a push unless the tree builds the retail executable byte for byte.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+if [ ! -f extract/SLPS_015.56 ]; then echo "pre-push: no extract/, skipping make check (run make check-disk)"; exit 0; fi
+[ -f linker/lsd.ld ] || make -s split >/dev/null
+make -s check
