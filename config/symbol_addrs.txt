@@ -41,3 +41,9 @@ D_8001176C = 0x8001176C; // force_not_migration:True
 D_80011778 = 0x80011778; // force_not_migration:True
 D_8001186C = 0x8001186C; // force_not_migration:True
 D_8001187C = 0x8001187C; // force_not_migration:True
+
+// One game bss record of 0x20 bytes, not 26 scalars (.agents/research/hard-cases.md section 4):
+// func_80030E90 and func_8003149C fill it byte by byte; func_8002D6A4 computes &EA28 - 2; gcc
+// keeps a store into it after a table load, as for an aggregate. Its neighbours are Sony's:
+// 0x8008EA0A is LIBGPU's (psyq/80020C74), 0x8008EA2C LIBSND's (psyq/80032148 and three more).
+D_8008EA0C = 0x8008EA0C; // size:0x20

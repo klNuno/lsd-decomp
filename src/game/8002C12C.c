@@ -2,7 +2,9 @@
 
 typedef struct { u8 pad[0x74]; s16 u74; s16 u76; u8 pad2[0xAC - 0x78]; } Unk_800305F4;
 extern Unk_800305F4 *D_800902E8[];
-extern s16 D_8008EA22[]; /* really a field of a bss aggregate, see hard-cases.md */
+/* One bss record of 0x20 bytes (config/symbol_addrs.txt): bytes up to 0x15, then s16 fields. */
+typedef struct { u8 u0[0x16]; s16 u16; s16 u18; s16 u1A; s16 u1C; s16 u1E; } Unk_8008EA0C;
+extern Unk_8008EA0C D_8008EA0C;
 typedef struct { u8 pad[0x60]; s32 unk60; } Unk_8002CBF4;
 s32 D_8008A8B0;
 s32 D_8008A8B4;
@@ -175,19 +177,26 @@ void func_800303FC(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_80030404);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_80030584);
+s32 func_80030584(s32 arg0, s16 *arg1, s16 *arg2) {
+    Unk_800305F4 *t = D_800902E8[arg0 & 0xFF];
+    s16 *p = &D_8008EA0C.u16;
+    *p = arg0;
+    *arg1 = t[(arg0 & 0xFF00) >> 8].u74;
+    *arg2 = t[(arg0 & 0xFF00) >> 8].u76;
+    return *p;
+}
 
 s32 func_800305F4(s32 arg0) {
     s32 lo = arg0 & 0xFF;
     s32 hi = (arg0 & 0xFF00) >> 8;
     Unk_800305F4 *p = &D_800902E8[lo][hi];
-    D_8008EA22[0] = lo;
+    D_8008EA0C.u16 = lo;
     return p->u74;
 }
 
 s32 func_80030648(s32 arg0) {
     Unk_800305F4 *t = D_800902E8[arg0 & 0xFF];
-    D_8008EA22[0] = arg0;
+    D_8008EA0C.u16 = arg0;
     return t[(arg0 & 0xFF00) >> 8].u76;
 }
 
