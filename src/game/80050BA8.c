@@ -103,6 +103,11 @@ typedef struct Unk_800541D4 {
     s32 u84;
 } Unk_800541D4;
 extern void func_80056640(void);
+typedef struct { s8 pad[6]; s8 u6; } K;
+typedef struct { K *u0; s32 u4; s32 u8; s32 uC; s32 u10; } A;
+typedef struct { s32 u0; s32 u4; s32 u8; } B;
+extern s32 D_80087474[];
+typedef struct { s32 u0; s32 u4; u8 pad[0x14]; s32 u1C; s32 u20; u8 pad2[0xC]; s32 u30; s32 u34; } S;
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050BA8);
 
@@ -364,7 +369,13 @@ INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_800557DC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_8005582C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80055874);
+s32 func_80055874(A *arg0, B *arg1) { s32 dx,dz,d; if (arg1 != NULL) {
+    dx = arg0->u4 - arg1->u0;
+    if (dx < 0) dx = ~dx + 1;
+    dz = arg0->uC - arg1->u8;
+    d = dx + (dz < 0 ? ~dz + 1 : dz);
+    arg0->u10 = d;
+    if (d < D_80087474[-arg0->u0->u6]) return 1; } return 0; }
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_800558F0);
 
@@ -713,7 +724,18 @@ INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_8005A1B0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_8005A1EC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_8005A1F4);
+void func_8005A1F4(s32 arg0, S *arg1) {
+    s32 r;
+    if (arg1->u0 == 1) {
+        r = arg1->u4 % 20; if (r == 0) {
+            arg1->u1C = 9;
+            arg1->u20 = -1;
+        } else {
+            arg1->u30 = 9;
+            arg1->u34 = -1;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_8005A258);
 

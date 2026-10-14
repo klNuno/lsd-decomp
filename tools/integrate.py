@@ -44,8 +44,9 @@ def top_level_items(decls):
         if not line.strip() or line.strip().startswith("//"):
             continue
         buf.append(line.rstrip())
-        depth += line.count("{") - line.count("}")
-        if depth == 0 and line.rstrip().endswith((";", "*/")) or line.lstrip().startswith("#"):
+        code = code_of(line)
+        depth += code.count("{") - code.count("}")
+        if depth == 0 and (code.endswith(";") or not code.strip()) or line.lstrip().startswith("#"):
             items.append("\n".join(buf))
             buf = []
     if buf:
@@ -53,8 +54,13 @@ def top_level_items(decls):
     return items
 
 
+def code_of(line):
+    """The line without /* */ and // comments, for deciding where an item ends."""
+    return re.sub(r"//.*", "", re.sub(r"/\*.*?\*/", "", line)).rstrip()
+
+
 def is_function_start(item):
-    head = item.split("{", 1)[0]
+    head = code_of(item.split("{", 1)[0].splitlines()[-1]) if "{" in item else item
     return "(" in head and ";" not in head and "{" in item and not head.lstrip().startswith(("typedef", "struct", "union", "enum", "extern"))
 
 
@@ -72,8 +78,9 @@ def normalize(unit):
             bodies.append(line)
             continue
         buf.append(line)
-        depth += line.count("{") - line.count("}")
-        if depth == 0 and (line.rstrip().endswith((";", "}")) or line.lstrip().startswith("//")):
+        code = code_of(line)
+        depth += code.count("{") - code.count("}")
+        if depth == 0 and (code.endswith((";", "}")) or not code.strip()):
             item = "\n".join(buf)
             buf = []
             if is_function_start(item) and not item.rstrip().endswith(";"):
