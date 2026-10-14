@@ -1,18 +1,26 @@
 #include "common.h"
 
+extern void free(void *);
+typedef struct Block { u32 hdr; struct Block *next; struct Block *prev; } Block;
+typedef struct Heap { Block *base; u32 size; Block *head; Block *tail; s32 ready; } Heap;
+Heap *D_8008A818;
+typedef struct VTable { s32 unk0, unk4, unk8; void (*fnC)(); } VTable;
+typedef struct { VTable *vt; } Object;
+extern void func_80017CFC(Object *);
+extern s32 D_8006B58C[];
+s32 D_8008A820;
+s32 D_8008A830;
+s32 D_8008A834;
+
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017A20);
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017A9C);
-
-extern void free(void *);
+void func_80017A9C(Heap *arg0) {
+    D_8008A818 = arg0;
+}
 
 void func_80017AA8(void *arg0) {
     free(arg0);
 }
-
-typedef struct Block { u32 hdr; struct Block *next; struct Block *prev; } Block;
-typedef struct Heap { Block *base; u32 size; Block *head; Block *tail; s32 ready; } Heap;
-Heap *D_8008A818;
 
 void func_80017AC8(Heap *arg0) {
     Heap *h = D_8008A818;
@@ -39,10 +47,6 @@ INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017CFC);
 
 void func_80017EA8(void) {
 }
-
-typedef struct VTable { s32 unk0, unk4, unk8; void (*fnC)(); } VTable;
-typedef struct { VTable *vt; } Object;
-extern void func_80017CFC(Object *);
 
 s32 func_80017EB0(Object *arg0) {
     arg0->vt->fnC();
@@ -83,8 +87,6 @@ void func_80018350(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018358);
 
-extern s32 D_8006B58C[];
-
 s32 *func_80018390(void) {
     return D_8006B58C;
 }
@@ -92,8 +94,6 @@ s32 *func_80018390(void) {
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800183A0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800183DC);
-
-s32 D_8008A820;
 
 void func_8001844C(s32 arg0) {
     D_8008A820 = arg0;
@@ -152,9 +152,6 @@ INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001A380);
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001A3EC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001A4C0);
-
-s32 D_8008A830;
-s32 D_8008A834;
 
 void func_8001A54C(s32 arg0, s32 arg1) {
     D_8008A830 = arg0;

@@ -5,7 +5,8 @@
 
 FILE.c holds `#include "common.h"`, then top-level declarations (externs, prototypes,
 typedefs, structs), then the definition of FUNC. The declarations missing from the unit
-are inserted above the function, which replaces `INCLUDE_ASM(..., FUNC);`. Then `make check`
+go to the declaration block at the top of the unit, and the function replaces
+`INCLUDE_ASM(..., FUNC);`. `tools/integrate.py --normalize` only rewrites every unit that way. Then `make check`
 runs; on any failure the unit is restored and the exit code is 1. One integration at a time.
 """
 import glob
@@ -52,7 +53,56 @@ def top_level_items(decls):
     return items
 
 
+def is_function_start(item):
+    head = item.split("{", 1)[0]
+    return "(" in head and ";" not in head and "{" in item and not head.lstrip().startswith(("typedef", "struct", "union", "enum", "extern"))
+
+
+def normalize(unit):
+    """Rewrite a unit as: includes, every top-level declaration, then functions and
+    INCLUDE_ASM lines in their original order. A declaration never sits below a user."""
+    includes, decls, bodies, buf, depth = [], [], [], [], 0
+    for line in unit.splitlines():
+        if not buf and not line.strip():
+            continue
+        if not buf and line.startswith("#include"):
+            includes.append(line)
+            continue
+        if not buf and line.startswith("INCLUDE_ASM"):
+            bodies.append(line)
+            continue
+        buf.append(line)
+        depth += line.count("{") - line.count("}")
+        if depth == 0 and (line.rstrip().endswith((";", "}")) or line.lstrip().startswith("//")):
+            item = "\n".join(buf)
+            buf = []
+            if is_function_start(item) and not item.rstrip().endswith(";"):
+                bodies.append(item)
+            else:
+                decls.append(item)
+    if buf:
+        bodies.append("\n".join(buf))
+    seen, uniq = set(), []
+    for d in decls:
+        key = re.sub(r"\s+", " ", d).strip()
+        if key not in seen:
+            seen.add(key)
+            uniq.append(d)
+    out = "\n".join(includes) + "\n\n"
+    if uniq:
+        out += "\n".join(uniq) + "\n\n"
+    return out + "\n\n".join(bodies) + "\n"
+
+
 def main():
+    if sys.argv[1:2] == ["--normalize"]:
+        for path in sorted(glob.glob(f"{ROOT}/src/**/*.c", recursive=True)):
+            text = open(path, encoding="utf-8").read()
+            new = normalize(text)
+            if new != text:
+                open(path, "w", encoding="utf-8").write(new)
+                print("normalized", os.path.relpath(path, ROOT))
+        return
     if len(sys.argv) < 3:
         sys.exit(__doc__)
     func, cfile = sys.argv[1], sys.argv[2]
@@ -62,7 +112,7 @@ def main():
     have = norm(unit)
     new = [d for d in top_level_items(decls) if norm(d) not in have]
     block = ("\n".join(new) + "\n\n" if new else "") + body + "\n"
-    patched = unit[:m.start()] + block + unit[m.end():]
+    patched = normalize(unit[:m.start()] + block + unit[m.end():])
     with open(path, "w", encoding="utf-8") as f:
         f.write(patched)
     if "--no-check" in sys.argv:
