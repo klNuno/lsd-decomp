@@ -10,6 +10,9 @@ struct Unk_80026CE8 {
     s32 unk4;
     s32 unk8;
 };
+s32 D_8008A84C;
+void func_800280D0(void);
+void func_800280E0(void);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80025F7C);
 
@@ -78,9 +81,17 @@ INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026CFC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026D88);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026E0C);
+void func_80026E0C(void) {
+    if (D_8008A84C == 0x13) {
+        func_800280D0();
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026E38);
+void func_80026E38(void) {
+    if (D_8008A84C == 0x13) {
+        func_800280E0();
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026E64);
 

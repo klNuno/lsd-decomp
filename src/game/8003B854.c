@@ -47,6 +47,10 @@ struct Unk_8003C794 {
     s32 unk40;
 };
 extern void SetGeomScreen(s32);
+struct Unk_8003F25C {
+    u8 pad_00[0xC];
+    struct Unk_8003F25C *unkC;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003B854);
 
@@ -322,7 +326,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F244);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F24C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F25C);
+struct Unk_8003F25C *func_8003F25C(struct Unk_8003F25C *arg0) {
+    while (arg0->unkC != NULL) {
+        arg0 = arg0->unkC;
+    }
+    return arg0;
+}
 
 void func_8003F28C(s32 arg0) {
     SetGeomScreen(arg0);

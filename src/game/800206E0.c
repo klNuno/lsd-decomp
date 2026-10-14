@@ -12,6 +12,13 @@ typedef struct Unk_80020B4C {
 } Unk_80020B4C;
 void GsSwapDispBuff(void);
 extern int GsGetActiveBuff(void);
+typedef struct Unk_80020970 {
+    /* 0x00 */ u16 unk0;
+    /* 0x02 */ u16 unk2;
+    /* 0x04 */ u16 unk4;
+    /* 0x06 */ u16 unk6;
+    /* 0x08 */ u16 unk8;
+} Unk_80020970;
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800206E0);
 
@@ -39,7 +46,12 @@ void func_800208D8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800208F8);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020970);
+void func_80020970(Unk_80020970 *arg0, Unk_80020970 *arg1) {
+    arg0->unk0 = arg1->unk0;
+    arg0->unk2 = arg1->unk2;
+    arg0->unk4 = arg1->unk4;
+    arg0->unk6 = arg1->unk8;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800209A0);
 

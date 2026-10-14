@@ -35,6 +35,10 @@ struct Unk_8004464C {
     u8 pad_00[0x54];
     Unk_8004464C_Color unk54;
 };
+struct Unk_80044B58 {
+    u8 pad_00[0x78];
+    void (*unk78)(void);
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043008);
 
@@ -158,7 +162,9 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044A7C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044B04);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044B58);
+void func_80044B58(struct Unk_80044B58 **arg0) {
+    (*arg0)->unk78();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044B88);
 

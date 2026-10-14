@@ -6,6 +6,9 @@ s32 D_8008A964;
 s32 D_8008A968;
 u8 *func_80048E2C(s32 arg0);
 s32 *func_80048DF8(void);
+extern void srand(u32 seed);
+extern s32 rand(void);
+void *func_80048D48(s32 *arg0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048894);
 
@@ -31,7 +34,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048CE0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048CF0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048CFC);
+void func_80048CFC(s32 arg0) {
+    if (arg0 != 0) {
+        srand(arg0);
+    }
+    rand();
+}
 
 void func_80048D28(s32 arg0, s32 arg1) {
     if (arg0 >= 0) {
@@ -83,11 +91,21 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049098);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800490F4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049110);
+s32 func_80049110(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 0;
+    }
+    return (s32)func_80048D48(NULL) + 0x3D40;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_8004913C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800491CC);
+s32 func_800491CC(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 7;
+    }
+    return (s32)func_80048D48(NULL) + 0x3E04;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800491FC);
 
