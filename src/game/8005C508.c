@@ -97,6 +97,10 @@ typedef struct Unk_80065204 {
     Unk_80065204_Vtbl *vtbl;
 } Unk_80065204;
 
+INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
+
+INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001187C);
+
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C508);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C5E8);
@@ -120,10 +124,6 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C9A4);
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C9DC);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CAB4);
-
-INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
-
-INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001187C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CBC8);
 

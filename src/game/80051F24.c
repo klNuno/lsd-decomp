@@ -25,6 +25,10 @@ s32 D_8008AC88;
 extern u8 D_8008E0C8[];
 void func_8002CC84(void *, void *);
 
+INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
+
+INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116E4);
+
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80051F24);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800520A0);
@@ -36,10 +40,6 @@ INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_8005217C);
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800521D4);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_8005227C);
-
-INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
-
-INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116E4);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800522DC);
 

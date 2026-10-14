@@ -14,6 +14,7 @@ sufficient: only `make check` on the whole executable decides.
 import argparse
 import glob
 import json
+import re
 import os
 import subprocess
 import sys
@@ -40,14 +41,30 @@ def find_asm(func):
     return os.path.relpath(hits[0], ROOT)
 
 
+def rodata_includes(asm):
+    """The INCLUDE_RODATA files (asm/nonmatchings/**/D_x.s) that the function references, so the
+    target object holds the strings and constants and objdiff can compare their bytes."""
+    text = open(os.path.join(ROOT, asm), encoding="utf-8").read()
+    out = []
+    for name in sorted(set(re.findall(r"%(?:hi|lo)\((D_[0-9A-F]{8})\)", text))):
+        hits = glob.glob(f"{ROOT}/asm/nonmatchings/**/{name}.s", recursive=True)
+        if hits:
+            out.append(os.path.relpath(hits[0], ROOT))
+    return out
+
+
 def build_target(func, work, overrides):
     src = os.path.join(work, "target.s")
+    asm_path = find_asm(func)
     with open(src, "w", encoding="utf-8") as f:
-        f.write('.include "include/macro.inc"\n.section .text\n')
-        f.write(f'.include "{find_asm(func)}"\n')
+        f.write('.include "include/macro.inc"\n')
+        for r in rodata_includes(asm_path):
+            f.write(f'.include "{r}"\n')
+        f.write('.section .text\n')
+        f.write(f'.include "{asm_path}"\n')
     obj = os.path.join(work, "target.o")
     asm = make_var("AS", overrides) + " " + make_var("ASFLAGS", overrides)
-    r = run(["bash", "-o", "pipefail", "-c", f"{PY} -I tools/sjis.py {src} | {asm} -o {obj}"])
+    r = run(["bash", "-o", "pipefail", "-c", f"{PY} -I tools/sjis.py {src} | {PY} -I tools/sjis.py - | {asm} -o {obj}"])
     if r.returncode:
         sys.exit(f"target asm failed:\n{r.stderr}")
     return obj
@@ -64,6 +81,29 @@ def build_base(cfile, work, overrides):
         print(f"COMPILE ERROR\n{r.stderr.strip()}")
         sys.exit(2)
     return obj
+
+
+def section_bytes(obj, work, overrides, name):
+    out = os.path.join(work, os.path.basename(obj) + ".rodata.bin")
+    r = run([make_var("OBJCOPY", overrides), "-O", "binary", "--only-section=.rodata", obj, out])
+    if r.returncode:
+        sys.exit(f"objcopy failed: {r.stderr}")
+    return open(out, "rb").read()
+
+
+def rodata_diff(t, b, work, overrides):
+    """None when both objects carry the same .rodata bytes: the strings and constants the function
+    references (INCLUDE_RODATA files of the target) and its jump tables (whose words hold .text
+    offsets, so they agree only if the code layout does). Else a short description."""
+    tb, bb = section_bytes(t, work, overrides, "target"), section_bytes(b, work, overrides, "base")
+    # splat files end with .align 2, cc1 leaves the padding to whatever follows: pad both to 4.
+    tb, bb = (x + bytes(-len(x) % 4) for x in (tb, bb))
+    if tb == bb:
+        return None
+    if len(tb) != len(bb):
+        return f"target {len(tb)} bytes, yours {len(bb)} bytes"
+    i = next(i for i in range(len(tb)) if tb[i] != bb[i])
+    return f"first difference at .rodata+0x{i:X}: target {tb[i:i + 8].hex()} yours {bb[i:i + 8].hex()}"
 
 
 def text(row):
@@ -86,7 +126,10 @@ def cmd_diff(a):
     t = build_target(a.func, work, overrides)
     b = build_base(a.cfile, work, overrides)
     out = os.path.join(work, "diff.json")
-    r = run([f"{ROOT}/tools/bin/objdiff-cli", "diff", "-1", t, "-2", b, a.func, "--format", "json", "-o", out])
+    # data_value lets D_8001176C in the target and .rodata+off in yours pair up; it does not check
+    # the bytes (tested), so rodata_diff() below compares the .rodata sections themselves.
+    r = run([f"{ROOT}/tools/bin/objdiff-cli", "diff", "-1", t, "-2", b, a.func, "--format", "json", "-o", out,
+             "-c", "functionRelocDiffs=data_value"])
     if r.returncode:
         sys.exit(f"objdiff failed: {r.stderr}")
     d = json.load(open(out))
@@ -98,6 +141,10 @@ def cmd_diff(a):
     pct = left.get("match_percent", 0.0)
     lrows, rrows = left.get("instructions", []), right.get("instructions", [])
     if pct >= 100.0 and len(lrows) == len(rrows):
+        bad = rodata_diff(t, b, work, overrides)
+        if bad:
+            print(f"{a.func} code 100%, RODATA MISMATCH: {bad}")
+            return 1
         print(f"MATCH {a.func} 100%")
         return 0
     print(f"{a.func} {pct:.2f}%  (target {left.get('size')} bytes, yours {right.get('size')} bytes)")

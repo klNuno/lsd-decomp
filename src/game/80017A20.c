@@ -23,6 +23,8 @@ typedef struct Unk_80018358 {
     Unk_80018358_Vtbl *vtbl;
 } Unk_80018358;
 
+INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);
+
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017A20);
 
 void func_80017A9C(Heap *arg0) {
@@ -183,4 +185,3 @@ void func_8001A54C(s32 arg0, s32 arg1) {
     }
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);

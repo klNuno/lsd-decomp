@@ -45,6 +45,10 @@ s16 *func_800495B8(s32 arg0, s8 *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049608);
 
+INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113EC);
+
+INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113F8);
+
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049684);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049830);
@@ -70,10 +74,6 @@ void func_80049EA4(void) {
 
 void func_80049EAC(void) {
 }
-
-INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113EC);
-
-INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113F8);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049EB4);
 

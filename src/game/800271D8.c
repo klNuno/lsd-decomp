@@ -45,10 +45,6 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800276D0);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027800);
 
-INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107D8);
-
-INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107F4);
-
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027A24);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027C80);
@@ -83,6 +79,8 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027FD8);
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027FE4);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027FF0);
+
+INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107D8);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027FFC);
 
@@ -143,6 +141,8 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800288E0);
 
 void func_80028918(void) {
 }
+
+INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107F4);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028920);
 

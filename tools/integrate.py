@@ -28,6 +28,15 @@ def find_unit(func):
     sys.exit(f"{func}: no INCLUDE_ASM line in src/ (already integrated?)")
 
 
+def rodata_syms(func):
+    """D_ symbols that FUNC's original asm references and that have an INCLUDE_RODATA file."""
+    hits = glob.glob(f"{ROOT}/asm/nonmatchings/**/{func}.s", recursive=True)
+    if not hits:
+        return []
+    names = set(re.findall(r"%(?:hi|lo)\((D_[0-9A-F]{8})\)", open(hits[0], encoding="utf-8").read()))
+    return sorted(n for n in names if glob.glob(f"{ROOT}/asm/nonmatchings/**/{n}.s", recursive=True))
+
+
 def split_candidate(func, text):
     """(declarations, definition) of FILE.c, without the common.h include."""
     text = re.sub(r'^\s*#include\s+"common\.h"\s*\n', "", text, flags=re.M)
@@ -123,7 +132,14 @@ def main():
     have = norm(unit)
     new = [d for d in top_level_items(decls) if norm(d) not in have]
     block = ("\n".join(new) + "\n\n" if new else "") + body + "\n"
-    patched = normalize(unit[:m.start()] + block + unit[m.end():])
+    patched = unit[:m.start()] + block + unit[m.end():]
+    # The function's own strings and constants now come from its C literals, emitted at its
+    # position: drop the INCLUDE_RODATA lines of every D_ symbol its asm references and the
+    # candidate does not name (an `extern` use keeps the line).
+    for sym in rodata_syms(func):
+        if not re.search(r"\b" + sym + r"\b", decls + body):
+            patched = re.sub(r'^INCLUDE_RODATA\("[^"]+",\s*' + sym + r'\);\n\n?', "", patched, flags=re.M)
+    patched = normalize(patched)
     with open(path, "w", encoding="utf-8") as f:
         f.write(patched)
     if "--no-check" in sys.argv:

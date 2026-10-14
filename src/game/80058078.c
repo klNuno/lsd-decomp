@@ -55,6 +55,8 @@ typedef struct Unk_8005A134 {
 } Unk_8005A134;
 void func_8002CC84(void *, void *);
 
+INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
+
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058078);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800580E0);
@@ -86,8 +88,6 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058968);
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058A94);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058B08);
-
-INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058C58);
 

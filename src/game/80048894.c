@@ -89,7 +89,14 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049060);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049098);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800490F4);
+INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_80011384);
+
+char *func_800490F4(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 0x31;
+    }
+    return "ETC\\ASMK.STR";
+}
 
 s32 func_80049110(s32 *arg0) {
     if (arg0 != NULL) {
@@ -127,7 +134,3 @@ s16 func_800493C8(s32 arg0) {
 }
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800493E4);
-
-INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_80011384);
-
-INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_800113DC);
