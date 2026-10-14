@@ -43,6 +43,15 @@ typedef struct {
     u16 u7C;
     u16 u7E;
 } Unk_80041E58;
+typedef struct Unk_8004229C_Rgb {
+    s8 r;
+    s8 g;
+    s8 b;
+} Unk_8004229C_Rgb;
+struct Unk_8004229C {
+    u8 pad_00[0x78];
+    Unk_8004229C_Rgb unk78;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80041AB4);
 
@@ -128,7 +137,9 @@ void func_80042268(u8 *arg0, s32 arg1) {
 void func_80042294(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_8004229C);
+void func_8004229C(struct Unk_8004229C *arg0, Unk_8004229C_Rgb *arg1) {
+    arg0->unk78 = *arg1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_800422BC);
 
