@@ -1,5 +1,14 @@
 #include "common.h"
 
+struct Unk_80043B58 {
+    u8 pad_00[0x2C];
+    s32 *unk2C;
+};
+struct Unk_80043B3C {
+    u8 pad_00[0x10];
+    s32 unk10;
+};
+
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043008);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043068);
@@ -30,9 +39,14 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800439EC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043B18);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043B3C);
+s32 func_80043B3C(struct Unk_80043B3C *arg0, s32 arg1) {
+    s32 t = arg1 * 0x1C + 0xC;
+    return t + arg0->unk10;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043B58);
+s32 func_80043B58(struct Unk_80043B58 *arg0, s32 arg1) {
+    return arg0->unk2C[arg1];
+}
 
 void func_80043B70(void) {
 }

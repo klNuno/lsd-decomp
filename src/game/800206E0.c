@@ -1,5 +1,18 @@
 #include "common.h"
 
+typedef struct Unk_8002089C {
+    u8 pad[0x10];
+    s32 unk10;
+} Unk_8002089C;
+typedef struct Unk_80020B4C {
+    /* 0x00 */ u8 pad_00[0x10];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0xC];
+    /* 0x20 */ s32 unk20;
+} Unk_80020B4C;
+void GsSwapDispBuff(void);
+extern int GsGetActiveBuff(void);
+
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800206E0);
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020730);
@@ -10,11 +23,19 @@ INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800207DC);
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_8002085C);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_8002089C);
+void func_8002089C(Unk_8002089C *arg0) {
+    if (arg0->unk10 != 0) {
+        arg0->unk10 = 0;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800208B8);
+void func_800208B8(void) {
+    GsSwapDispBuff();
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800208D8);
+void func_800208D8(void) {
+    GsGetActiveBuff();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800208F8);
 
@@ -30,7 +51,11 @@ INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020A74);
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020AF4);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020B4C);
+void func_80020B4C(Unk_80020B4C *arg0, s32 arg1) {
+    if (arg0->unk10 == 0) {
+        arg0->unk20 = arg1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020B68);
 

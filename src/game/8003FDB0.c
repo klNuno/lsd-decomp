@@ -1,5 +1,10 @@
 #include "common.h"
 
+typedef struct Unk_800408A8 {
+    u8 pad[0x68];
+    s32 unk68;
+} Unk_800408A8;
+
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FDB0);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FE2C);
@@ -54,7 +59,9 @@ INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040854);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_800408A0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_800408A8);
+void func_800408A8(Unk_800408A8 *arg0, s32 arg1) {
+    arg0->unk68 = (1 << arg1) - 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_800408BC);
 

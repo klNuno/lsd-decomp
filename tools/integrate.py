@@ -60,8 +60,12 @@ def code_of(line):
 
 
 def is_function_start(item):
-    head = code_of(item.split("{", 1)[0].splitlines()[-1]) if "{" in item else item
-    return "(" in head and ";" not in head and "{" in item and not head.lstrip().startswith(("typedef", "struct", "union", "enum", "extern"))
+    """A function definition: the code before its first '{' ends with ')'.
+    A struct, union or enum body has no parenthesis right before its brace."""
+    if "{" not in item:
+        return False
+    head = " ".join(code_of(l) for l in item.split("{", 1)[0].splitlines()).strip()
+    return head.endswith(")") and not head.startswith(("typedef", "extern"))
 
 
 def normalize(unit):

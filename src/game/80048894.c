@@ -1,5 +1,8 @@
 #include "common.h"
 
+extern u8 D_80081A04[];
+extern s16 D_80086170[];
+
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048894);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800488E4);
@@ -28,7 +31,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048CFC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048D28);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048D48);
+void *func_80048D48(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = 0x230;
+    }
+    return D_80081A04;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048D64);
 
@@ -72,6 +80,8 @@ INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800492D0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049334);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800493C8);
+s16 func_800493C8(s32 arg0) {
+    return D_80086170[arg0];
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800493E4);

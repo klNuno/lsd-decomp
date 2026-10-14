@@ -3,6 +3,9 @@
 typedef struct { u8 pad[0x74]; s16 u74; s16 u76; u8 pad2[0xAC - 0x78]; } Unk_800305F4;
 extern Unk_800305F4 *D_800902E8[];
 extern s16 D_8008EA22[]; /* really a field of a bss aggregate, see hard-cases.md */
+typedef struct { u8 pad[0x60]; s32 unk60; } Unk_8002CBF4;
+s32 D_8008A8B0;
+s32 D_8008A8B4;
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C12C);
 
@@ -56,7 +59,12 @@ void func_8002C430(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C438);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C448);
+s32 func_8002C448(s32 *arg0) {
+    if (arg0 != NULL) {
+        *arg0 = D_8008A8B4;
+    }
+    return D_8008A8B0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C468);
 
@@ -91,7 +99,9 @@ void func_8002CBE4(void) {
 void func_8002CBEC(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CBF4);
+void func_8002CBF4(Unk_8002CBF4 *arg0, s32 arg1) {
+    arg0->unk60 = arg1 * 12 - 24;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CC0C);
 
