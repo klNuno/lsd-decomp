@@ -67,7 +67,7 @@ $(BUILD)/asm/%.s.o: asm/%.s
 	@mkdir -p $(@D)
 	$(PYTHON) -I tools/sjis.py $< | $(AS) $(ASFLAGS) -o $@
 
-split linker/lsd.ld: $(SPLAT) $(wildcard config/symbol_addrs*.txt) | $(EXTRACT)/$(EXE)
+split linker/lsd.ld: $(SPLAT) config/symbol_addrs.txt config/symbol_addrs.psyq.txt | $(EXTRACT)/$(EXE)
 	rm -rf asm linker
 	$(PYTHON) -m splat split $(SPLAT)
 
