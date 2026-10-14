@@ -6,12 +6,12 @@ The goal is to understand how the game works: the dream graph, links, special da
 
 ## Status
 
-Phase 0 done: pinned toolchain and disc extraction. Nothing is split or decompiled yet.
+Phase 0 done: pinned toolchain, disc extraction and a headless emulator. Nothing is split or decompiled yet.
 
 ## Requirements
 
 - Linux x86-64 with `make`, `git`, `curl`, Python 3 with `venv`, `binutils-mipsel-linux-gnu` and stable Rust (for `mipsmatch`).
-- Your own dump of the game disc. No game file is provided here.
+- Your own dump of the game disc, and of a Japanese PS1 BIOS for in-game checks. No game or BIOS file is provided here.
 
 ## Setup
 
@@ -21,6 +21,8 @@ tools/setup.sh                  # pinned toolchain into tools/ and .venv/
 ln -s /path/to/your.bin disks/SLPS-01556.bin
 printf 'FILE "SLPS-01556.bin" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n' > disks/SLPS-01556.cue
 make check-disk                 # extracts the disc, checks SLPS_015.56
+ln -s /path/to/your/bios.bin disks/bios.bin
+LSD_EMU_SHOTS=3600 LSD_EMU_FRAMES=3600 tools/emu/run.sh   # boots headless in PCSX-Redux, captures the title screen
 ```
 
 `make check-disk` must print `extract/SLPS_015.56: OK`. Only the executable has to match: fan translation patches leave it untouched.

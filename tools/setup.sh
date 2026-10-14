@@ -33,6 +33,13 @@ MKPSXISO_ZIP="mkpsxiso-${MKPSXISO_TAG#v}-Linux.zip"
 for v in $OLD_GCC_VERSIONS; do gh_asset decompals/old-gcc "$OLD_GCC_TAG" "gcc-$v.tar.gz"; done
 gh_asset Lameguy64/mkpsxiso "$MKPSXISO_TAG" "$MKPSXISO_ZIP"
 gh_asset encounter/objdiff "$OBJDIFF_TAG" objdiff-cli-linux-x86_64
+# PCSX-Redux only ships rolling dev builds; an old one can vanish from distrib.app.
+PCSX_ZIP="PCSX-Redux-$PCSX_REDUX_REV-linux-x86_64.zip"
+if [ ! -f "$T/dl/$PCSX_ZIP" ]; then
+  curl -fsSL --retry 3 -o "$T/dl/$PCSX_ZIP.part" "https://distrib.app$PCSX_REDUX_ASSET" \
+    || { rm -f "$T/dl/$PCSX_ZIP.part"; echo "$PCSX_ZIP is gone from distrib.app: put a saved copy in $T/dl/"; exit 1; }
+  mv "$T/dl/$PCSX_ZIP.part" "$T/dl/$PCSX_ZIP"
+fi
 if [ $LOCK = 1 ]; then sha256sum "$T"/dl/* > "$T/toolchain.sha256"; fi
 sha256sum -c --quiet "$T/toolchain.sha256"
 
@@ -46,6 +53,16 @@ if [ ! -x "$T/bin/dumpsxiso" ]; then
   install -m 755 "$mk/dumpsxiso" "$mk/mkpsxiso" "$T/bin/"
 fi
 install -m 755 "$T/dl/objdiff-cli-linux-x86_64" "$T/bin/objdiff-cli"
+if [ ! -x "$T/src/pcsx-redux/AppRun" ]; then
+  # No FUSE in containers: unpack the AppImage instead of mounting it.
+  tmp=$(mktemp -d)
+  python3 -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$T/dl/$PCSX_ZIP" "$tmp"
+  chmod +x "$tmp"/*.AppImage
+  (cd "$tmp" && ./*.AppImage --appimage-extract >/dev/null)
+  rm -rf "$T/src/pcsx-redux"
+  mv "$tmp/squashfs-root" "$T/src/pcsx-redux"
+  rm -rf "$tmp"
+fi
 
 # Source tools, pinned by commit
 git_pin https://github.com/mkst/maspsx "$MASPSX_REV" maspsx
@@ -72,5 +89,6 @@ mipsel-linux-gnu-as --version | head -1
 for v in $OLD_GCC_VERSIONS; do printf '%s: ' "$v"; echo 'int f(void){return 0;}' | "$T/gcc/$v/cc1" -quiet -version -o /dev/null 2>&1 | head -1; done
 "$T/bin/objdiff-cli" --version
 "$T/bin/mipsmatch" --version 2>/dev/null || echo "mipsmatch $MIPSMATCH_REV"
+printf 'pcsx-redux: '; "$T/src/pcsx-redux/AppRun" -cli -version | grep -m1 '"version"'
 .venv/bin/python -c 'import importlib.metadata as m; print("splat64", m.version("splat64"), "spimdisasm", m.version("spimdisasm"))'
 echo "setup ok"
