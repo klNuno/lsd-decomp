@@ -4,6 +4,7 @@ typedef struct Unk_800408A8 {
     u8 pad[0x68];
     s32 unk68;
 } Unk_800408A8;
+void func_80040790(void *arg0, u8 *arg1, u8 *arg2, s32 arg3);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FDB0);
 
@@ -47,7 +48,9 @@ INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040714);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040740);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8004076C);
+void func_8004076C(u8 *arg0, s32 arg1, u8 *arg2) {
+    func_80040790(arg0, arg0 + 0x64, arg2, arg1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040790);
 

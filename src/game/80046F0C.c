@@ -1,5 +1,10 @@
 #include "common.h"
 
+void StFreeRing(void *ring);
+void StUnSetRing(void);
+extern void StClearRing(void);
+extern s32 CdSync(s32, u8 *);
+
 INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80046F0C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80046F88);
@@ -40,13 +45,21 @@ INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800477B0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047810);
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047870);
+void func_80047870(s32 arg0, void *arg1) {
+    StFreeRing(arg1);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047890);
+void func_80047890(void) {
+    StUnSetRing();
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800478B0);
+void func_800478B0(void) {
+    StClearRing();
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800478D0);
+void func_800478D0(u8 *arg0, s32 arg1) {
+    CdSync(arg1, arg0 + 0x24);
+}
 
 void func_800478F8(void) {
 }

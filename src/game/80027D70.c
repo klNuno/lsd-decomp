@@ -11,6 +11,8 @@ s32 D_8008A870;
 s32 D_8008A874;
 s32 D_8008A878;
 s32 *D_8008A894;
+s32 D_8008A898;
+s32 D_8008A8A0;
 
 INCLUDE_ASM("asm/nonmatchings/game/80027D70", func_80027D70);
 
@@ -79,7 +81,14 @@ void func_80028844(s32 arg0, s32 arg1) {
     *D_8008A894 = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80027D70", func_80028864);
+void func_80028864(void) {
+    D_8008A874 = 0;
+    D_8008A878 = 0;
+    D_8008A898 = 0;
+    D_8008A870 = 1;
+    D_8008A8A0 = 0;
+    D_8008A864 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80027D70", func_80028888);
 

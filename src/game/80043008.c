@@ -8,6 +8,33 @@ struct Unk_80043B3C {
     u8 pad_00[0x10];
     s32 unk10;
 };
+struct Unk_80043538_Entry {
+    u16 unk0;
+    s16 unk2;
+    u8 pad_04[0xC];
+};
+struct Unk_80043538 {
+    u8 pad_00[0x40];
+    struct Unk_80043538_Entry unk40[1];
+};
+struct Unk_80043B18 {
+    u8 pad_00[0x10];
+    u32 *unk10;
+};
+extern void GsMapModelingData(u32 *p);
+struct Unk_80045E18 {
+    u8 pad_00[0x4C];
+    s32 unk4C;
+};
+typedef struct Unk_8004464C_Color {
+    s8 unk0;
+    s8 unk1;
+    s8 unk2;
+} Unk_8004464C_Color;
+struct Unk_8004464C {
+    u8 pad_00[0x54];
+    Unk_8004464C_Color unk54;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043008);
 
@@ -19,7 +46,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043200);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800434DC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043538);
+void func_80043538(struct Unk_80043538 *arg0, s32 arg1, u16 arg2) {
+    struct Unk_80043538_Entry *entry = &arg0->unk40[arg1];
+
+    entry->unk0 = arg2;
+    entry->unk2 = 1 << entry->unk0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004355C);
 
@@ -37,7 +69,9 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043954);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800439EC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043B18);
+void func_80043B18(struct Unk_80043B18 *arg0) {
+    GsMapModelingData(arg0->unk10 + 1);
+}
 
 s32 func_80043B3C(struct Unk_80043B3C *arg0, s32 arg1) {
     s32 t = arg1 * 0x1C + 0xC;
@@ -89,7 +123,11 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044380);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004441C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004464C);
+void func_8004464C(struct Unk_8004464C *arg0, s32 arg1, Unk_8004464C_Color *arg2) {
+    if (arg1 != 0) {
+        arg0->unk54 = *arg2;
+    }
+}
 
 void func_80044674(void) {
 }
@@ -207,7 +245,10 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045CFC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045DE0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045E18);
+void func_80045E18(struct Unk_80045E18 *arg0) {
+    while (arg0->unk4C == 0) {
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045E3C);
 

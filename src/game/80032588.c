@@ -2,18 +2,26 @@
 
 extern s32 D_8006DCA0;
 extern void SsSeqCalledTbyT(void);
+void func_80032708(s32 arg0);
+extern void SpuQuit(void);
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032588);
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032708);
 
-INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032998);
+void func_80032998(void) {
+    func_80032708(1);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80032588", func_800329B8);
+void func_800329B8(void) {
+    func_80032708(0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_800329D8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032A7C);
+void func_80032A7C(void) {
+    SpuQuit();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032A9C);
 

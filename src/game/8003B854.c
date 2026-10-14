@@ -34,6 +34,19 @@ typedef struct Unk_8003EA48 {
     u8 pad4C[0x70 - 0x4C];
     s32 unk70;
 } Unk_8003EA48;
+struct Unk_8003BA38 {
+    u8 pad_00[0xC4];
+    s32 unkC4;
+    s32 unkC8;
+    s32 unkCC;
+    s32 unkD0;
+    s32 unkD4;
+};
+struct Unk_8003C794 {
+    u8 pad_00[0x40];
+    s32 unk40;
+};
+extern void SetGeomScreen(s32);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003B854);
 
@@ -41,7 +54,13 @@ INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003B8E4);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003B9DC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003BA38);
+void func_8003BA38(struct Unk_8003BA38 *arg0) {
+    arg0->unkC8 = -1;
+    arg0->unkC4 = 0;
+    arg0->unkCC = 1;
+    arg0->unkD0 = 0;
+    arg0->unkD4 = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003BA58);
 
@@ -104,7 +123,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003C51C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003C63C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003C794);
+void func_8003C794(struct Unk_8003C794 *arg0, s32 arg1) {
+    arg0->unk40 = arg1;
+    if (arg1 >= 0) {
+        arg0->unk40 = arg1 * 20;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003C7B4);
 
@@ -300,4 +324,6 @@ INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F24C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F25C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003F28C);
+void func_8003F28C(s32 arg0) {
+    SetGeomScreen(arg0);
+}
