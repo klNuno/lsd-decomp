@@ -16,7 +16,7 @@ typedef struct Unk_8004E3F4 {
 } Unk_8004E3F4;
 extern s32 EnableEvent();
 extern void func_8004F40C(s32, s32 (*)(), s32);
-void func_8004F4C8(s32, s32);
+s32 func_8004F4C8(s32 *arg0, s32 arg1);
 extern s32 DisableEvent();
 extern s32 TestEvent();
 void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *arg4);
@@ -546,7 +546,17 @@ void func_8004F4A4(s32 arg0) {
     func_8004F4C8(arg0 + 0x14, 4);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F4C8);
+s32 func_8004F4C8(s32 *arg0, s32 arg1) {
+    s32 i;
+
+    for (;;) {
+        for (i = 0; i < arg1; i++) {
+            if (TestEvent(arg0[i]) != 0) {
+                return D_80086E78[i];
+            }
+        }
+    }
+}
 
 void func_8004F55C(Unk_8004F55C *arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6) {
     arg0->unk30 = arg1;

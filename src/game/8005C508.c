@@ -458,7 +458,7 @@ typedef struct Unk_800662BC_Vtbl {
 typedef struct Unk_800662BC {
     Unk_800662BC_Vtbl *vt;
 } Unk_800662BC;
-extern s32 func_8005CFDC(s32, void *, s32);
+s32 func_8005CFDC(s32 arg0, s32 arg1, s32 arg2);
 extern void func_8005C6D8(s32);
 s32 D_8008ABFC;
 s32 D_8008AC04;
@@ -551,6 +551,13 @@ typedef struct Unk_800628D4 {
     u8 pad3[0xFC - 0x98];
     s32 unkFC;
 } Unk_800628D4;
+typedef struct Unk_8005CFDC_Vtbl {
+    u8 pad_00[0x8];
+    s32 (*unk8)(s32, s32, s32, s32);
+} Unk_8005CFDC_Vtbl;
+Unk_8005CFDC_Vtbl *func_8005E150(void);
+s32 func_80017B34(s32);
+void func_80017CFC(s32);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -701,7 +708,19 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CDF8);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CF34);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CFDC);
+s32 func_8005CFDC(s32 arg0, s32 arg1, s32 arg2) {
+    s32 temp_s0;
+
+    temp_s0 = func_80017B34(0x108);
+    if (temp_s0 == 0) {
+        return 0;
+    }
+    if (func_8005E150()->unk8(temp_s0, arg0, arg1, arg2) != 0) {
+        return temp_s0;
+    }
+    func_80017CFC(temp_s0);
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D068);
 
