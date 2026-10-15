@@ -79,6 +79,8 @@ typedef struct Unk_8002CC84 {
 extern u8 D_8008E9D0;
 s32 func_8002CF18(s32 arg0);
 void func_8002DDBC(u8 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
+/* copied from src/game/8002C12C.c */
+extern u16 D_8006DAD8[];
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -290,7 +292,32 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002D8E0);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002DDBC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002DF7C);
+s32 func_8002DF7C(void) {
+    u32 col;
+    s16 n;
+    s16 q;
+    s16 row;
+    s16 oct;
+    s32 idx;
+    u16 val;
+
+    n = D_8008EA0C.unk0[2] + 0x3C - D_8008EA0C.unk0[0x10];
+    q = n / 12;
+    row = n % 12;
+    col = D_8008EA0C.unk0[0x11] >> 3;
+    if (col >= 16) {
+        col = 0xF;
+    }
+    idx = col + row * 16;
+    val = D_8006DAD8[idx];
+    oct = q - 5;
+    if (oct > 0) {
+        val <<= oct;
+    } else if (oct < 0) {
+        val >>= -oct;
+    }
+    return val;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002E038);
 

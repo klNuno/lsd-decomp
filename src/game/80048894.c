@@ -84,6 +84,27 @@ typedef struct Unk_800488E4 {
     s32 unk34;
     s32 unk38;
 } Unk_800488E4;
+typedef struct Unk_800489B4_Vtbl {
+    u8 pad_00[0x80];
+    void (*unk80)(void);
+} Unk_800489B4_Vtbl;
+typedef struct Unk_800489B4_GVtbl {
+    u8 pad_00[0x64];
+    void (*unk64)(void *);
+} Unk_800489B4_GVtbl;
+typedef struct Unk_800489B4 {
+    Unk_800489B4_Vtbl *unk0;
+    u8 pad_04[0x20];
+    s32 unk24;
+    u8 pad_28[2];
+    u16 unk2A;
+    s16 unk2C;
+    s16 unk2E;
+    u8 pad_30[8];
+    s32 unk38;
+} Unk_800489B4;
+void func_80048CFC(s32 arg0);
+u8 *func_80048F60(s32 arg0);
 
 s32 func_80048894(void) {
     s32 temp_v0;
@@ -116,7 +137,28 @@ void func_80048960(Unk_80048960 *arg0) {
     func_80026CAC()->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800489B4);
+void func_800489B4(Unk_800489B4 *arg0) {
+    u16 temp_v1;
+
+    temp_v1 = arg0->unk2A;
+    if (temp_v1 == 9) {
+        if (arg0->unk24 & 0x80) {
+            s32 temp_v1_2 = arg0->unk38;
+
+            arg0->unk2A = 0;
+            arg0->unk2C = 1;
+            if (temp_v1_2 != 0) {
+                arg0->unk0->unk80();
+            }
+        }
+    } else if (temp_v1 == 0xA) {
+        if (arg0->unk24 & 0x80) {
+            arg0->unk2E = 1;
+            arg0->unk2A = 0;
+        }
+    }
+    ((Unk_800489B4_GVtbl *)func_80026CAC())->unk64(arg0);
+}
 
 void func_80048A68(Unk_80048A68 *arg0) {
     func_80026CAC()->unk74(arg0);
@@ -198,7 +240,28 @@ u8 *func_80048F60(s32 arg0) {
     return func_80048E2C(arg0) + 0x70;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048F84);
+u8 *func_80048F84(s32 arg0) {
+    u32 var_s0;
+    u8 *temp_a0;
+    s32 var_v0;
+
+    var_s0 = ((u32 (*)(s32))func_80048CFC)(0) % 5;
+    if (arg0 == 9) {
+        if (var_s0 == 2) {
+            var_s0 = 3;
+        }
+        if (D_8008A968 == 3) {
+            D_8008A968 = 4;
+        }
+    }
+    temp_a0 = func_80048F60(arg0);
+    if (D_8008A968 != 0) {
+        var_v0 = (D_8008A968 - 1) * 7;
+    } else {
+        var_v0 = var_s0 * 7;
+    }
+    return temp_a0 + (var_v0 * 4);
+}
 
 u8 *func_8004903C(s32 arg0) {
     return func_80048E2C(arg0) + 0xFC;
