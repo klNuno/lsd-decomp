@@ -2,8 +2,8 @@
 
 extern void func_800183DC(void *, s32);
 typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x70 - 0x28]; s32 u70; s32 u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
-u8 *D_8008ACB4;
-s32 *D_8008ACB8;
+u8 *g_navFlags;
+s32 *g_dynamicLinkCount;
 extern s32 D_8008ABF0[];
 s32 D_8008ACC4;
 s32 D_8008ACBC;
@@ -31,7 +31,7 @@ typedef struct Unk_8005A168 {
     s32 unkAC;
     s32 unkB0;
 } Unk_8005A168;
-extern s16 D_80087F14[];
+extern s16 g_stageTimeLimits[];
 typedef struct Unk_8005A184 {
     u8 pad[0xAC];
     s32 unkAC;
@@ -107,7 +107,7 @@ typedef struct Unk_8005B3A4 {
     u8 unk144[0x164 - 0x144];
     s32 unk164;
 } Unk_8005B3A4;
-s16 *func_800495B8(s32 arg0, s8 *arg1);
+s16 *Stage_GetChunkMood(s32 arg0, s8 *arg1);
 extern u8 D_80088B5C;
 extern s32 D_80088B24;
 extern s32 D_80088A80;
@@ -128,8 +128,8 @@ typedef struct Unk_800597C0_Vtbl {
 typedef struct Unk_800597C0 {
     Unk_800597C0_Vtbl *unk0;
 } Unk_800597C0;
-s32 func_8005BB30(void *, s32, s32);
-s32 func_8005A928();
+s32 Spawn_PickRandom(void *arg0, s32 arg1, s32 arg2);
+s32 DreamSys_ExecuteLink();
 typedef struct Unk_8005A580 {
     u8 pad_00[0x24];
     s32 unk24;
@@ -264,7 +264,7 @@ typedef struct Unk_8005AF64_Vtbl {
 typedef struct Unk_8005AF64 {
     Unk_8005AF64_Vtbl *unk0;
 } Unk_8005AF64;
-s32 func_8005BA7C(void);
+s32 Nav_CalcScore(void);
 typedef struct Unk_8005B6E0 {
     u8 pad[0x184];
     s32 unk184;
@@ -316,7 +316,7 @@ typedef struct Unk_8005BE28 {
     u16 u4;
 } Unk_8005BE28;
 s32 D_8008ABE0;
-extern void func_8005BA50(u8 *arg0, s32 *arg1);
+extern void Nav_InitFlags(u8 *arg0, s32 *arg1);
 extern void *memset(void *arg0, s32 arg1, s32 arg2);
 typedef struct Unk_8005A258 {
     u8 pad_00[0x178];
@@ -339,7 +339,7 @@ typedef struct Unk_8005A258 {
     s32 unk680;
     u8 unk684[0x1F4];
 } Unk_8005A258;
-s32 func_8005C28C(void *arg0, s32 *arg1, void *arg2, s32 arg3);
+s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3);
 typedef struct Unk_8005A508_Vtbl {
     u8 pad_00[0x104];
     s32 (*unk104)(void *, s32);
@@ -400,7 +400,7 @@ typedef struct Unk_8005966C {
     s32 unk80;
     s32 unk84;
 } Unk_8005966C;
-s32 func_8005B66C(s32, s32, s32);
+s32 Mood_CalcAxis(s32, s32, s32);
 void func_80017CFC(s32);
 typedef struct Unk_80058308_ObjVt {
     u8 pad_00[4];
@@ -531,7 +531,7 @@ typedef struct Unk_8005A368 {
     u8 pad_880[0x88C - 0x880];
     s32 unk88C;
 } Unk_8005A368;
-s32 func_8005C438(void *arg0, s32 arg1);
+s32 Day_FindSpecial(void *arg0, s32 arg1);
 typedef struct Unk_8005B420_Vtbl {
     u8 pad_00[0x20C];
     void (*unk20C)(void *, void *, s16 *);
@@ -594,7 +594,7 @@ typedef struct Unk_80058694 {
 } Unk_80058694;
 extern s32 D_8008ABBC;
 extern s32 rand(void);
-extern s16 D_80088CCC[42];
+extern s16 g_specialDays[42];
 extern s32 D_8008ABF4;
 typedef struct Unk_8005C438 {
     s16 unk0;
@@ -1034,7 +1034,7 @@ typedef struct Unk_800591B4 {
 extern s32 D_80087E68[];
 extern s32 D_80087E74[];
 extern s16 D_80087E84[];
-void func_80059A1C(void *);
+void func_80059A1C(void *arg0);
 typedef struct Unk_800598E8_Vtbl {
     u8 pad0[0x44];
     void (*unk44)(void *, s32, void *);
@@ -1287,6 +1287,9 @@ typedef struct Unk_8005A82C {
     u8 pad_168[0x16C - 0x168];
     u8 unk16C[1];
 } Unk_8005A82C;
+extern Unk_8005C150_Y *D_800885B8[];
+extern u8 D_800885F0[];
+s32 rand();
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1589,7 +1592,7 @@ void func_80058C58(Unk_80058C58 *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058D94);
+INCLUDE_ASM("asm/nonmatchings/game/80058078", DreamSys_TickTimer);
 
 void func_80058E8C(Unk_80058E8C *arg0, s32 **arg1, s32 arg2) {
     func_80057C84()->unk9C(arg0, arg1, arg2);
@@ -1605,7 +1608,7 @@ void func_80058F18(Unk_80058F18 *arg0, s32 **arg1, s32 arg2) {
     }
 }
 
-void func_80058FAC(Unk_80058FAC *arg0, s32 **arg1, s32 arg2) {
+void DreamSys_OnWallTouch(Unk_80058FAC *arg0, s32 **arg1, s32 arg2) {
     Unk_80058FAC_Obj *temp_a0;
     Unk_80058FAC_Src *src;
 
@@ -1625,7 +1628,7 @@ void func_80058FAC(Unk_80058FAC *arg0, s32 **arg1, s32 arg2) {
 void func_800590E0(void) {
 }
 
-s32 func_800590E8(Unk_800590E8 *arg0, s32 *arg1, s32 arg2) {
+s32 DreamSys_SetFlashbackMode(Unk_800590E8 *arg0, s32 *arg1, s32 arg2) {
     s32 temp_s1;
 
     temp_s1 = arg0->unk68;
@@ -1690,7 +1693,7 @@ s32 func_8005931C(Unk_80059394 *arg0) {
     return arg0->u74;
 }
 
-s32 func_80059328(Unk_80059328 *arg0, s32 arg1) {
+s32 DreamSys_SwapTimeLimit(Unk_80059328 *arg0, s32 arg1) {
     s32 old;
 
     if (arg1 >= 0) {
@@ -1704,7 +1707,7 @@ s32 func_80059328(Unk_80059328 *arg0, s32 arg1) {
     return old;
 }
 
-u32 func_80059360(Unk_80059360 *arg0) {
+u32 DreamSys_GetElapsedSeconds(Unk_80059360 *arg0) {
     return arg0->unk24 / 15;
 }
 
@@ -1909,7 +1912,23 @@ void func_800598E8(Unk_800598E8 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059A1C);
+void func_80059A1C(void *arg0) {
+    Unk_800598E8 *p;
+    s32 temp_v1;
+    s32 var_v0;
+
+    p = arg0;
+    temp_v1 = p->unkA0;
+    p->unkA8 = 0;
+    if (temp_v1 != 0) {
+        if (temp_v1 & 1) {
+            var_v0 = temp_v1 + 1;
+        } else {
+            var_v0 = temp_v1 - 1;
+        }
+        p->unkA0 = var_v0;
+    }
+}
 
 void func_80059A48(void) {
 }
@@ -2138,7 +2157,7 @@ void func_8005A1F4(s32 arg0, S *arg1) {
     }
 }
 
-void func_8005A258(Unk_8005A258 *arg0) {
+void DreamSys_InitNewGame(Unk_8005A258 *arg0) {
     arg0->unk178 = D_8008ABE0;
     arg0->unk17C = 0;
     arg0->unk180 = 0;
@@ -2151,7 +2170,7 @@ void func_8005A258(Unk_8005A258 *arg0) {
     arg0->unk678 = 1;
     arg0->unk67C = 0;
     arg0->unk680 = 0;
-    func_8005BA50(arg0->unk5E0, arg0->unk600);
+    Nav_InitFlags(arg0->unk5E0, arg0->unk600);
     memset(arg0->unk684, 0, 0x1F4);
 }
 
@@ -2163,14 +2182,14 @@ void func_8005A2D0(Unk_8005A2D0 *arg0, s32 *arg1) {
     *arg1 = temp_v1;
 }
 
-s32 func_8005A2E4(Unk_8005A2E4 *arg0, s32 *arg1) {
+s32 DreamSys_GetDayNumber(Unk_8005A2E4 *arg0, s32 *arg1) {
     if (arg1 != NULL) {
         *arg1 = arg0->unk17C;
     }
     return arg0->unk180 + 1;
 }
 
-s32 func_8005A304(Unk_8005A304 *arg0) {
+s32 DreamSys_AdvanceDay(Unk_8005A304 *arg0) {
     if (++arg0->unk180 >= 365) {
         arg0->unk180 = 0;
         arg0->unk17C++;
@@ -2186,14 +2205,14 @@ s32 func_8005A344(Unk_8005A41C *arg0) {
     return arg0->unk878;
 }
 
-s32 func_8005A350(s32 arg0, s32 *arg1) {
+s32 DreamSys_GetSaveBlock(s32 arg0, s32 *arg1) {
     if (arg1 != NULL) {
         *arg1 = 0x700;
     }
     return arg0 + 0x178;
 }
 
-s32 func_8005A368(Unk_8005A368 *arg0) {
+s32 DreamSys_StartDay(Unk_8005A368 *arg0) {
     s32 temp;
 
     arg0->unk87C = 0;
@@ -2203,7 +2222,7 @@ s32 func_8005A368(Unk_8005A368 *arg0) {
         arg0->unk0->unk1CC(arg0, 1);
         return arg0->unk164;
     }
-    temp = func_8005C438(arg0->unk168, arg0->unk180 + 1);
+    temp = Day_FindSpecial(arg0->unk168, arg0->unk180 + 1);
     arg0->unk0->unk1F0(arg0, temp);
     if (temp == 0) {
         arg0->unk0->unk1C0(arg0);
@@ -2212,7 +2231,7 @@ s32 func_8005A368(Unk_8005A368 *arg0) {
     return -1;
 }
 
-s32 func_8005A41C(Unk_8005A41C *arg0, s32 arg1) {
+s32 DreamSys_EndDay(Unk_8005A41C *arg0, s32 arg1) {
     arg0->unk180 = arg0->unk88C;
     if (arg0->unk68 == 0 && arg1 == 0) {
         arg0->unk0->unk210(arg0);
@@ -2225,33 +2244,33 @@ s32 func_8005A41C(Unk_8005A41C *arg0, s32 arg1) {
     return arg0->unk68;
 }
 
-Unk_8005A4E8_Ret func_8005A4E8(Unk_8005A4E8 *arg0) {
+Unk_8005A4E8_Ret DreamSys_GetCinematic(Unk_8005A4E8 *arg0) {
     return arg0->c;
 }
 
-void func_8005A508(Unk_8005A508 *arg0) {
+void DreamSys_ChooseStart(Unk_8005A508 *arg0) {
     s32 sp10;
     s32 sp14;
 
     arg0->unk0->unk1EC(arg0, &sp10, 1);
-    arg0->unk164 = func_8005C28C(arg0->unk16C, &sp14, &sp10, arg0->unk180);
+    arg0->unk164 = Spawn_PickFromMood(arg0->unk16C, &sp14, &sp10, arg0->unk180);
     sp14 = arg0->unk0->unk104(arg0, sp14);
     arg0->unk44 = 0xB;
 }
 
-void func_8005A580(Unk_8005A580 *arg0) {
+void DreamSys_LinkDynamic(Unk_8005A580 *arg0) {
     if (arg0->unk44 == 0) {
-        func_8005A928(arg0, func_8005BB30(arg0->unk16C, arg0->unk164, arg0->unk24), 0xC, 1);
+        DreamSys_ExecuteLink(arg0, Spawn_PickRandom(arg0->unk16C, arg0->unk164, arg0->unk24), 0xC, 1);
     }
 }
 
-s32 func_8005A5D8(Unk_8005A580 *arg0, void *arg1) {
+s32 DreamSys_LinkStatic(Unk_8005A580 *arg0, void *arg1) {
     s32 temp_v0;
 
     if (arg0->unk44 == 0) {
         temp_v0 = func_8005BCB4(arg0->unk16C, arg1, arg0->unk164);
         if (temp_v0 >= 0) {
-            func_8005A928(arg0, temp_v0, 0xD, 1);
+            DreamSys_ExecuteLink(arg0, temp_v0, 0xD, 1);
             return 1;
         }
         return 0;
@@ -2259,7 +2278,7 @@ s32 func_8005A5D8(Unk_8005A580 *arg0, void *arg1) {
     return 0;
 }
 
-s32 func_8005A63C(Unk_80058968 *arg0, s32 arg1) {
+s32 DreamSys_LoadNextFlashback(Unk_80058968 *arg0, s32 arg1) {
     Unk_80058968_Elem *elem;
     s32 idx;
 
@@ -2296,7 +2315,7 @@ s32 func_8005A700(Unk_8005A700 *arg0, s16 *arg1) {
     if (arg0->unkA8 == 0) {
         return 0;
     }
-    func_8005A928(arg0, temp, 0xF, 0);
+    DreamSys_ExecuteLink(arg0, temp, 0xF, 0);
     return 1;
 }
 
@@ -2309,7 +2328,7 @@ s32 func_8005A7A0(Unk_8005A7A0 *arg0, s32 arg1) {
             arg0->unk880 = func_8005BF48();
             arg0->unk884 = 0;
             arg0->unk888 = 0;
-            func_8005A928(arg0, temp_s1, 0x10, 0);
+            DreamSys_ExecuteLink(arg0, temp_s1, 0x10, 0);
             return 1;
         }
     }
@@ -2324,7 +2343,7 @@ s32 func_8005A82C(Unk_8005A82C *arg0, void *arg1) {
     temp_v0 = func_8005BF74(&arg0->unk16C, arg1, arg0->unk164);
     if (temp_v0 >= 0) {
         temp_s1 = func_8005BFC4();
-        if (func_8005A928(arg0, temp_v0, 0x11, 0) != 0) {
+        if (DreamSys_ExecuteLink(arg0, temp_v0, 0x11, 0) != 0) {
             arg0->unk44 = 0;
             arg0->unk4C->vt->unkE8(arg0->unk4C, sp10, &arg0->unk16C);
             arg0->unk0->unkB8(arg0, sp10);
@@ -2337,7 +2356,7 @@ s32 func_8005A82C(Unk_8005A82C *arg0, void *arg1) {
     return 0;
 }
 
-s32 func_8005A928(Unk_8005A928 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 DreamSys_ExecuteLink(Unk_8005A928 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     arg0->unk44 = arg2;
     arg0->vt->unk30(arg0, arg2);
     if (arg0->unk44 == 0) {
@@ -2523,7 +2542,7 @@ void func_8005AFDC(Unk_8005AFDC_A *arg0, Unk_8005AFDC_B *arg1, s32 arg2) {
     }
 }
 
-void func_8005B03C(Unk_8005B03C *arg0, Unk_8005B03C_ObjVtbl **arg1, s32 arg2) {
+void DreamSys_OnEntityEvent(Unk_8005B03C *arg0, Unk_8005B03C_ObjVtbl **arg1, s32 arg2) {
     s32 temp_s1;
 
     if (arg0->unk44 == 0) {
@@ -2565,7 +2584,7 @@ void func_8005B03C(Unk_8005B03C *arg0, Unk_8005B03C_ObjVtbl **arg1, s32 arg2) {
     }
 }
 
-void func_8005B1F4(Unk_8005B1F4 *arg0, Unk_8005B5B8 *arg1, s32 arg2) {
+void DreamSys_GetPreviousPoint(Unk_8005B1F4 *arg0, Unk_8005B5B8 *arg1, s32 arg2) {
     s32 sum1 = 0;
     s32 sum0 = 0;
     s32 count;
@@ -2596,7 +2615,7 @@ void func_8005B1F4(Unk_8005B1F4 *arg0, Unk_8005B5B8 *arg1, s32 arg2) {
     arg1->unk1 = sum1;
 }
 
-void func_8005B2F4(Unk_80058078 *arg0, s32 arg1) {
+void DreamSys_ResetMoodAccumulators(Unk_80058078 *arg0, s32 arg1) {
     u8 *temp_s2 = arg0->unk144;
     u8 *temp_s3 = arg0->unk154;
 
@@ -2608,13 +2627,15 @@ void func_8005B2F4(Unk_80058078 *arg0, s32 arg1) {
     }
 }
 
-void func_8005B3A4(Unk_8005B3A4 *arg0, s8 *arg1) {
-    arg0->unk0->unk208(arg0, arg0->unk144, func_800495B8(arg0->unk164, arg1));
+void DreamSys_LogChunkMood(Unk_8005B3A4 *arg0, s8 *arg1) {
+    arg0->unk0->unk208(arg0, arg0->unk144, Stage_GetChunkMood(arg0->unk164, arg1));
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B3F0);
+void func_8005B3F0(Unk_80058078 *arg0, s32 arg1) {
+    arg0->vt->unk208(arg0, arg0->unk154, arg1);
+}
 
-void func_8005B420(Unk_8005B420 *arg0, Unk_8005B5B8 *arg1) {
+void DreamSys_ComputeDayPoint(Unk_8005B420 *arg0, Unk_8005B5B8 *arg1) {
     s16 sp10;
     s16 sp12;
 
@@ -2666,7 +2687,7 @@ void func_8005B5A4(s32 arg0, Unk_8005B5A4 *arg1) {
     arg1->unkC = 0;
 }
 
-void func_8005B5B8(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
+void Mood_Log(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
     s32 temp_v1;
 
     temp_v1 = arg1->unk4;
@@ -2676,16 +2697,16 @@ void func_8005B5B8(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
     arg1->unkC = arg1->unkC + 1;
 }
 
-void func_8005B5F0(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
+void Mood_Resolve(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
     if (arg1->unkC != 0) {
-        arg2->unk0 = func_8005B66C(((Unk_8005B5B8 *)arg1)->unk0, arg1->unk4, arg1->unkC);
-        arg2->unk1 = func_8005B66C(((Unk_8005B5B8 *)arg1)->unk1, arg1->unk8, arg1->unkC);
+        arg2->unk0 = Mood_CalcAxis(((Unk_8005B5B8 *)arg1)->unk0, arg1->unk4, arg1->unkC);
+        arg2->unk1 = Mood_CalcAxis(((Unk_8005B5B8 *)arg1)->unk1, arg1->unk8, arg1->unkC);
         return;
     }
     *(u16 *)arg2 = *(u16 *)arg1;
 }
 
-s32 func_8005B66C(s32 arg0, s32 arg1, s32 arg2) {
+s32 Mood_CalcAxis(s32 arg0, s32 arg1, s32 arg2) {
     s32 r = arg1 / arg2 + arg0 / 3;
     if (r > 9) {
         r = -9;
@@ -2695,10 +2716,10 @@ s32 func_8005B66C(s32 arg0, s32 arg1, s32 arg2) {
     return r;
 }
 
-void func_8005B6E0(Unk_8005B6E0 *arg0) {
+void DreamSys_CalcUnlockScore(Unk_8005B6E0 *arg0) {
     s32 temp;
 
-    arg0->unk188 = func_8005BA7C();
+    arg0->unk188 = Nav_CalcScore();
     temp = arg0->unk18C;
     if (temp < 0) {
         arg0->unk18C = 0;
@@ -2708,7 +2729,7 @@ void func_8005B6E0(Unk_8005B6E0 *arg0) {
     arg0->unk184 = arg0->unk188 + arg0->unk18C;
 }
 
-void func_8005B74C(Unk_8005B74C *arg0, s32 arg1, Unk_8005B74C_A *arg2, Unk_8005B74C_B *arg3, s32 arg4, s32 arg5, s32 arg6) {
+void DreamSys_AddFlashback(Unk_8005B74C *arg0, s32 arg1, Unk_8005B74C_A *arg2, Unk_8005B74C_B *arg3, s32 arg4, s32 arg5, s32 arg6) {
     Unk_8005B74C_Ent *ent;
     s32 n;
 
@@ -2728,7 +2749,7 @@ void func_8005B74C(Unk_8005B74C *arg0, s32 arg1, Unk_8005B74C_A *arg2, Unk_8005B
     ent->unk20 = arg6;
 }
 
-void func_8005B81C(Unk_8005B81C *arg0, s32 arg1, s32 arg2) {
+void DreamSys_MaybeSaveFlashback(Unk_8005B81C *arg0, s32 arg1, s32 arg2) {
     s32 sp20[4];
     s32 temp_s0;
     Unk_8005B81C_Obj *temp_a0;
@@ -2743,7 +2764,7 @@ void func_8005B81C(Unk_8005B81C *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-void func_8005B8FC(Unk_8005A258 *arg0) {
+void DreamSys_ClearFlashbacks(Unk_8005A258 *arg0) {
     arg0->unk46C = 0;
 }
 
@@ -2777,40 +2798,64 @@ Unk_8005BA40_Vt *func_8005BA40(void) {
     return (Unk_8005BA40_Vt *)D_80087BDC;
 }
 
-void func_8005BA50(u8 *arg0, s32 *arg1) {
+void Nav_InitFlags(u8 *arg0, s32 *arg1) {
     s32 i;
     for (i = 29; i >= 0; i--) {
         arg0[i] = 0;
     }
-    D_8008ACB4 = arg0;
+    g_navFlags = arg0;
     *arg1 = 0;
-    D_8008ACB8 = arg1;
+    g_dynamicLinkCount = arg1;
 }
 
-s32 func_8005BA7C(void) {
+s32 Nav_CalcScore(void) {
     s32 i;
     s32 sum = 0;
 
     for (i = 0; i < 30; i++) {
-        if (((s8 *)D_8008ACB4)[i] != 0) {
+        if (((s8 *)g_navFlags)[i] != 0) {
             sum += 1000000;
         }
     }
     if (sum > 29999999) {
         sum = 50000000;
     }
-    sum -= *D_8008ACB8 * 11024;
+    sum -= *g_dynamicLinkCount * 11024;
     if (sum < 0) {
         sum = 0;
     }
     return sum;
 }
 
-s16 func_8005BB14(s32 arg0) {
-    return D_80087F14[arg0];
+s16 Stage_GetTimeLimit(s32 arg0) {
+    return g_stageTimeLimits[arg0];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BB30);
+s32 Spawn_PickRandom(void *arg0, s32 arg1, s32 arg2) {
+    s32 var_s1;
+    s32 n;
+    Unk_8005C150 *out;
+    Unk_8005C150_Y *rec;
+
+    n = 6;
+    if (arg1 >= 0) {
+        var_s1 = rand() % n;
+        if (var_s1 == arg1) {
+            var_s1 += 1;
+            if (var_s1 >= 6) {
+                var_s1 = 0;
+            }
+        }
+    } else {
+        var_s1 = -arg1;
+    }
+    rec = (Unk_8005C150_Y *)((s32)D_800885B8[var_s1] + (rand() % D_800885F0[var_s1]) * 6);
+    out = arg0;
+    out->a = rec->c;
+    out->b = D_80087F30[rec->idx];
+    *g_dynamicLinkCount += 1;
+    return var_s1;
+}
 
 s32 func_8005BCB4(void *arg0, void *arg1, s32 arg2) {
     return func_8005C150(arg0, arg1, arg2, D_80088748, D_80088710, D_80088664, 1);
@@ -2868,7 +2913,7 @@ s32 func_8005BE90(void *arg0, s32 arg1, Unk_8005BE90 *arg2, s32 arg3) {
     if (arg3 & 1) {
         arg1 = -12;
     }
-    ret = func_8005BB30(arg0, arg1, arg3);
+    ret = Spawn_PickRandom(arg0, arg1, arg3);
     D_8008ACC4 = ret;
     return ret;
 }
@@ -2950,7 +2995,7 @@ s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *ar
                 o->a = y->c;
                 o->b = D_80087F30[y->idx];
                 if (arg6 != 0) {
-                    D_8008ACB4[y->flag] = 1;
+                    g_navFlags[y->flag] = 1;
                 }
                 return D_8008ACC4;
             }
@@ -2959,14 +3004,14 @@ s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *ar
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005C28C);
+INCLUDE_ASM("asm/nonmatchings/game/80058078", Spawn_PickFromMood);
 
-s32 func_8005C438(void *arg0, s32 arg1) {
+s32 Day_FindSpecial(void *arg0, s32 arg1) {
     Unk_8005C438 *o = arg0;
     s32 i;
 
-    for (i = 0; i < sizeof(D_80088CCC) / sizeof(D_80088CCC[0]); i++) {
-        if (arg1 == D_80088CCC[i]) {
+    for (i = 0; i < sizeof(g_specialDays) / sizeof(g_specialDays[0]); i++) {
+        if (arg1 == g_specialDays[i]) {
             o->unk2 = rand() % 6;
             o->unk0 = i % 12;
             return (s32) &D_8008ABF4;

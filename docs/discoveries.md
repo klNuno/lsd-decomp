@@ -68,9 +68,9 @@ Status: 🎮 checked in the game.
 
 <details><summary>Technical details</summary>
 
-Day counter: +0x180 counts from 0; `func_8005A304` increments it and at 365 sets it to 0 and increments the year at +0x17C. Code that needs the day number calls `func_8005A2E4` (vtable 0x1A0), which returns day+1 and the year. `func_8005A368` saves the day at +0x88C when a dream starts and `func_8005A41C` restores it before advancing.
+Day counter: +0x180 counts from 0; `DreamSys_AdvanceDay` @0x8005A304 increments it and at 365 sets it to 0 and increments the year at +0x17C. Code that needs the day number calls `DreamSys_GetDayNumber` @0x8005A2E4 (vtable 0x1A0), which returns day+1 and the year. `DreamSys_StartDay` @0x8005A368 saves the day at +0x88C when a dream starts and `DreamSys_EndDay` @0x8005A41C restores it before advancing.
 
-- Proof: `func_8005A304` @0x8005A304 (matched C), `func_8005A2E4` @0x8005A2E4, `func_8005A368` @0x8005A368, `func_8005A41C` @0x8005A41C.
+- Proof: `DreamSys_AdvanceDay` @0x8005A304 (matched C), `DreamSys_GetDayNumber` @0x8005A2E4, `DreamSys_StartDay` @0x8005A368, `DreamSys_EndDay` @0x8005A41C.
 - In game: yes. Poked day 364 (and +0x88C) during a dream and forced the timer; after that dream ended the RAM read year 1, day 0.
 - Question: [8](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
@@ -86,9 +86,9 @@ Status: 🎮 checked in the game.
 
 <details><summary>Technical details</summary>
 
-First dream of a new year: the start point comes from the wrong bytes. `func_8005B1F4` (vtable 0x1EC, mode 1) reads yesterday's graph point at +0x190 + (day-1)*2; on day 0 with year >= 1 it reads +0x18E, the upper half of the instance score at +0x18C, instead of day 364's point. Only year 0 day 0 is special-cased to (0,0).
+First dream of a new year: the start point comes from the wrong bytes. `DreamSys_GetPreviousPoint` @0x8005B1F4 (vtable 0x1EC, mode 1) reads yesterday's graph point at +0x190 + (day-1)*2; on day 0 with year >= 1 it reads +0x18E, the upper half of the instance score at +0x18C, instead of day 364's point. Only year 0 day 0 is special-cased to (0,0).
 
-- Proof: `func_8005B1F4` @0x8005B1F4 (asm: `lb 0x190(day*2-2)`), caller `func_8005A508` @0x8005A508.
+- Proof: `DreamSys_GetPreviousPoint` @0x8005B1F4 (asm: `lb 0x190(day*2-2)`), caller `DreamSys_ChooseStart` @0x8005A508.
 - In game: yes. Set the instance score to 0x01FD0000 (bytes 0x18E, 0x18F = -3, 1) and wrapped the year; the next dream started on stage 2 with time limit 7200 and its first logged chunk mood (-3, 1), as predicted from the table; day 364's point (0,0) would have given stage 0.
 - Questions: [8](mysteries.md#days-textures-randomness), [2](mysteries.md#graph-and-dream-start). Found 2026-10-15.
 
@@ -106,9 +106,9 @@ Status: 🎮 partly checked in the game (the "third of the last one" part was no
 
 <details><summary>Technical details</summary>
 
-Graph point of a day: `func_8005B5B8` (vtable 0x208) keeps two accumulators, chunks at +0x144 and entities at +0x154, each {last point, sum x, sum y, count}. `func_8005B66C` makes each axis `sum / count + last / 3` (C division, truncated), and a result above 9 becomes -9 and below -9 becomes 9 (a flip to the edge, not a modulo). `func_8005B420` averages the chunk and entity results per axis, using the chunk result twice when no entity was logged (+0x160 = 0). `func_8005A41C` stores it in the graph at +0x190 + day*2, only on a normal end (argument 0) outside flashback mode, then advances the day. The graph screen `func_80058404` draws the last 100 days at 10 units per step.
+Graph point of a day: `Mood_Log` @0x8005B5B8 (vtable 0x208) keeps two accumulators, chunks at +0x144 and entities at +0x154, each {last point, sum x, sum y, count}. `Mood_CalcAxis` @0x8005B66C makes each axis `sum / count + last / 3` (C division, truncated), and a result above 9 becomes -9 and below -9 becomes 9 (a flip to the edge, not a modulo). `DreamSys_ComputeDayPoint` @0x8005B420 averages the chunk and entity results per axis, using the chunk result twice when no entity was logged (+0x160 = 0). `DreamSys_EndDay` @0x8005A41C stores it in the graph at +0x190 + day*2, only on a normal end (argument 0) outside flashback mode, then advances the day. The graph screen `func_80058404` draws the last 100 days at 10 units per step.
 
-- Proof: `func_8005B5B8` @0x8005B5B8, `func_8005B66C` @0x8005B66C (both matched C), `func_8005B5F0` @0x8005B5F0, `func_8005B420` @0x8005B420, `func_8005A41C` @0x8005A41C, `func_80058404` @0x80058404.
+- Proof: `Mood_Log` @0x8005B5B8, `Mood_CalcAxis` @0x8005B66C (both matched C), `Mood_Resolve` @0x8005B5F0, `DreamSys_ComputeDayPoint` @0x8005B420, `DreamSys_EndDay` @0x8005A41C, `func_80058404` @0x80058404.
 - In game: partly. The forced end wrote day 364's point from a chunk-only accumulator ((0,0), count 1); the new dream's chunk accumulator held (-3,1). The `last / 3` term was not exercised.
 - Question: [1](mysteries.md#graph-and-dream-start). Found 2026-10-15.
 
@@ -126,9 +126,9 @@ Status: 🎮 partly checked in the game (the fallback to place 1 was not trigger
 
 <details><summary>Technical details</summary>
 
-Start chunk choice: `func_8004950C` scans stages 0 to 13 and their chunks row by row and returns the first chunk whose s16 mood equals yesterday's point. `func_8005C28C` then takes the stage's spawn point that names that chunk (else chunk % count). With no match it returns -1, and `func_8005BB30` turns -1 into stage 1 (`negu`), with a random spawn among its 3: always stage 1, not a random zone. 51 of the 361 points have no chunk: 49 in the four corners, all with abs(x) >= 6 and abs(y) >= 6 (13 in the top-left corner, 12 in each other one; the corners are cut along a rough diagonal, not as full 4 x 4 squares, see the chart), plus (0,3) and (5,7). (0,0) lands on stage 0, chunk (0,3). That fallback also increments the dynamic-link counter.
+Start chunk choice: `Stage_FindChunkByMood` @0x8004950C scans stages 0 to 13 and their chunks row by row and returns the first chunk whose s16 mood equals yesterday's point. `Spawn_PickFromMood` @0x8005C28C then takes the stage's spawn point that names that chunk (else chunk % count). With no match it returns -1, and `Spawn_PickRandom` @0x8005BB30 turns -1 into stage 1 (`negu`), with a random spawn among its 3: always stage 1, not a random zone. 51 of the 361 points have no chunk: 49 in the four corners, all with abs(x) >= 6 and abs(y) >= 6 (13 in the top-left corner, 12 in each other one; the corners are cut along a rough diagonal, not as full 4 x 4 squares, see the chart), plus (0,3) and (5,7). (0,0) lands on stage 0, chunk (0,3). That fallback also increments the dynamic-link counter.
 
-- Proof: `func_8004950C` @0x8004950C, `func_8005C28C` @0x8005C28C, `func_8005BB30` @0x8005BB30, tables 0x80086590, 0x800861D4, 0x800885B8, 0x800885F0; coverage computed by `work/hunt/moodmap.py`. The same script shows stage 3 is the first match for 180 of the 310 covered points.
+- Proof: `Stage_FindChunkByMood` @0x8004950C, `Spawn_PickFromMood` @0x8005C28C, `Spawn_PickRandom` @0x8005BB30, tables 0x80086590, 0x800861D4, 0x800885B8, 0x800885F0; coverage computed by `work/hunt/moodmap.py`. The same script shows stage 3 is the first match for 180 of the 310 covered points.
 - In game: partly. Day 1 (point (0,0)) and the poked point (-3,1) both landed on the predicted stage; the stage-1 fallback was not triggered.
 - Chart: `work/findings/charts.py`, which checks its list of 51 points against the executable (`--check`).
 - Question: [2](mysteries.md#graph-and-dream-start). Found 2026-10-15.
@@ -147,9 +147,9 @@ Status: 🎮 checked in the game (the limit, not the real-time speed of the cloc
 
 <details><summary>Technical details</summary>
 
-Dream length is fixed when the dream starts, from the starting stage: `func_8005C28C` reads the s16 seconds table `D_80087F14` (stages 0 to 13: 240, 180, 480, 420, 120, 600, 60, 300, 240, 300, 240, 180, 120, 480) and `func_80059328` (vtable 0x104) stores seconds x 15 at +0x134. `func_80058D94` (vtable 0x98) adds 1 to the timer at +0x24 on each message 2 and ends the dream once the count before the increment reaches the limit; `func_80059360` converts ticks back with /15. Links do not touch the limit; `func_8005A928` zeroes the timer on a link only in flashback mode (+0x68 set).
+Dream length is fixed when the dream starts, from the starting stage: `Spawn_PickFromMood` @0x8005C28C reads the s16 seconds table `g_stageTimeLimits` @0x80087F14 (stages 0 to 13: 240, 180, 480, 420, 120, 600, 60, 300, 240, 300, 240, 180, 120, 480) and `DreamSys_SwapTimeLimit` @0x80059328 (vtable 0x104) stores seconds x 15 at +0x134. `DreamSys_TickTimer` @0x80058D94 (vtable 0x98) adds 1 to the timer at +0x24 on each message 2 and ends the dream once the count before the increment reaches the limit; `DreamSys_GetElapsedSeconds` @0x80059360 converts ticks back with /15. Links do not touch the limit; `DreamSys_ExecuteLink` @0x8005A928 zeroes the timer on a link only in flashback mode (+0x68 set).
 
-- Proof: `func_8005A508` @0x8005A508, `func_8005C28C` @0x8005C28C, `func_80059328` @0x80059328 (matched C), `func_80058D94` @0x80058D94, `func_80059360` @0x80059360, `func_8005A928` @0x8005A928, table 0x80087F14.
+- Proof: `DreamSys_ChooseStart` @0x8005A508, `Spawn_PickFromMood` @0x8005C28C, `DreamSys_SwapTimeLimit` @0x80059328 (matched C), `DreamSys_TickTimer` @0x80058D94, `DreamSys_GetElapsedSeconds` @0x80059360, `DreamSys_ExecuteLink` @0x8005A928, table 0x80087F14.
 - In game: yes. Day 1 started on stage 0 with limit 3600 (240 x 15) and the year-1 dream on stage 2 with 7200 (480 x 15). In the emulator the timer gained 50 to 76 ticks per 600 vsyncs, so a tick is a game frame, not 1/15 s of real time; hardware rate not measured.
 - Question: [11](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
@@ -167,11 +167,11 @@ Status: 📖 read in the code only (the content a special day shows is checked, 
 
 <details><summary>Technical details</summary>
 
-Special days: `func_8005A368` calls `func_8005C438(+0x168, day number)`, which searches the 42 s16 days of `D_80088CCC`. On a match it writes {index % 12, rand() % 6} at +0x168, the dream gets mood (0,0) from `D_8008ABF4` and no spawn is chosen. Day 126 is listed twice (indexes 5 and 30), so index 30 is unreachable.
+Special days: `DreamSys_StartDay` @0x8005A368 calls `Day_FindSpecial @0x8005C438(+0x168, day number)`, which searches the 42 s16 days of `g_specialDays` @0x80088CCC. On a match it writes {index % 12, rand() % 6} at +0x168, the dream gets mood (0,0) from `D_8008ABF4` and no spawn is chosen. Day 126 is listed twice (indexes 5 and 30), so index 30 is unreachable.
 
 Table order: indexes 0 to 12 are 2, 15, 43, 81, 120, 126, 202, 259, 267, 284, 308, 328, 358; indexes 13 to 30 are 7 to 126 in steps of 7; indexes 31 to 41 are 134 to 204 in steps of 7 (133 is not listed). Read from the executable by `work/findings/charts.py --check`.
 
-- Proof: `func_8005C438` @0x8005C438, `func_8005A368` @0x8005A368, `func_8005B2F4` @0x8005B2F4, table 0x80088CCC.
+- Proof: `Day_FindSpecial` @0x8005C438, `DreamSys_StartDay` @0x8005A368, `DreamSys_ResetMoodAccumulators` @0x8005B2F4, table 0x80088CCC.
 - In game: no.
 - Question: [7](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
@@ -190,10 +190,10 @@ Status: 🎮 checked in the game (both the video and the picture branch).
 
 <details><summary>Technical details</summary>
 
-Special-day content: `func_8002677C` reads {category, variant} through `func_8005A4E8` (vtable 0x1BC, the 4 bytes at +0x168) and `func_80049334` resolves them. For a category >= 0 the path is the table at 0x800858CC (`D_80081A04` + 0x3EC8, `func_800492D0`), 0xA8 bytes per category = 6 paths of 0x1C bytes: variants 0 and 1 are `FILM\SPDAYnnA.STR` and `B.STR`, played by `func_8003B854` with video id category x 2 + 14 + variant (s16 table `D_80086170`); variants 2 to 5 get id -1 and show `IMG1\` or `IMG2\SPDAYnnC` to `F.TIM` through `func_8003BE94`. With `rand() % 6` a special day is a video 1 time in 3 and a still picture 2 times in 3. The 42 days are 13 fixed ones (2, 15, 43, 81, 120, 126, 202, 259, 267, 284, 308, 328, 358, indexes 0 to 12) then a weekly run (indexes 13 to 41): every 7th day from 7 to 126, then from 134 to 204; `index % 12` names the category, so categories share days. The video branch also needs the scene's `+0x20->+0x8` flag (unknown); the 72 files exist on the disc.
+Special-day content: `Scene_PlayCinematic` @0x8002677C reads {category, variant} through `DreamSys_GetCinematic` @0x8005A4E8 (vtable 0x1BC, the 4 bytes at +0x168) and `Cine_GetPath` @0x80049334 resolves them. For a category >= 0 the path is the table at 0x800858CC (`D_80081A04` + 0x3EC8, `Cine_GetSpecialDayPaths` @0x800492D0), 0xA8 bytes per category = 6 paths of 0x1C bytes: variants 0 and 1 are `FILM\SPDAYnnA.STR` and `B.STR`, played by `func_8003B854` with video id category x 2 + 14 + variant (s16 table `g_videoTable` @0x80086170); variants 2 to 5 get id -1 and show `IMG1\` or `IMG2\SPDAYnnC` to `F.TIM` through `func_8003BE94`. With `rand() % 6` a special day is a video 1 time in 3 and a still picture 2 times in 3. The 42 days are 13 fixed ones (2, 15, 43, 81, 120, 126, 202, 259, 267, 284, 308, 328, 358, indexes 0 to 12) then a weekly run (indexes 13 to 41): every 7th day from 7 to 126, then from 134 to 204; `index % 12` names the category, so categories share days. The video branch also needs the scene's `+0x20->+0x8` flag (unknown); the 72 files exist on the disc.
 
-- Proof: `func_8002677C` @0x8002677C, `func_80049334` @0x80049334 (matched C), `func_800492D0` @0x800492D0 (matched C), `func_8005A4E8` @0x8005A4E8, `func_8005C438` @0x8005C438, tables 0x800858CC, 0x80086170, 0x80088CCC.
-- In game: yes. PCSX-Redux interpreter with Lua breakpoints (`work/hunt2/bp.lua`): poked day 6 at `func_8005A368`, `func_8005C438` got day number 7, `func_80049334` got category 1 variant 1 and an STR video with a timecode played (capture at vsync 3600); with the rand state forced to 1 at the same call, variant 2 came out and a still diary picture showed (vsync 3200).
+- Proof: `Scene_PlayCinematic` @0x8002677C, `Cine_GetPath` @0x80049334 (matched C), `Cine_GetSpecialDayPaths` @0x800492D0 (matched C), `DreamSys_GetCinematic` @0x8005A4E8, `Day_FindSpecial` @0x8005C438, tables 0x800858CC, 0x80086170, 0x80088CCC.
+- In game: yes. PCSX-Redux interpreter with Lua breakpoints (`work/hunt2/bp.lua`): poked day 6 at `DreamSys_StartDay` @0x8005A368, `Day_FindSpecial` got day number 7, `Cine_GetPath` got category 1 variant 1 and an STR video with a timecode played (capture at vsync 3600); with the rand state forced to 1 at the same call, variant 2 came out and a still diary picture showed (vsync 3200).
 - Question: [7](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
 </details>
@@ -208,9 +208,9 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Flashback list: count at +0x46C, entries of 0x24 bytes from +0x470 (10 at most, ending at +0x5D8). `func_8005B81C` (vtable 0x218) saves one with probability 1/3 (`rand() % 3 == 0`) when the player object at +0x4C exists; it runs when the day timer expires (`func_80058D94`) and on entity message 9 (`func_8005B03C`). `func_8005B74C` (0x214) appends {stage, position, rotation, length 0x10, day} while fewer than 10 are kept, else overwrites entry `timer % 9`: once full, the 10th entry is never replaced. Flashback mode is +0x68, set by `func_800590E8` (vtable 0xF0) from the menu (`func_8004D9D4` case 1). Playback: `func_8005A63C` (0x1CC) loads entry +0x87C (stage, position, its day into +0x180), `func_80058968` gives it 0x10 + 4 = 20 seconds and moves to the next; in that mode the day end stores no graph point.
+Flashback list: count at +0x46C, entries of 0x24 bytes from +0x470 (10 at most, ending at +0x5D8). `DreamSys_MaybeSaveFlashback` @0x8005B81C (vtable 0x218) saves one with probability 1/3 (`rand() % 3 == 0`) when the player object at +0x4C exists; it runs when the day timer expires (`DreamSys_TickTimer` @0x80058D94) and on entity message 9 (`DreamSys_OnEntityEvent` @0x8005B03C). `DreamSys_AddFlashback` @0x8005B74C (0x214) appends {stage, position, rotation, length 0x10, day} while fewer than 10 are kept, else overwrites entry `timer % 9`: once full, the 10th entry is never replaced. Flashback mode is +0x68, set by `DreamSys_SetFlashbackMode` @0x800590E8 (vtable 0xF0) from the menu (`func_8004D9D4` case 1). Playback: `DreamSys_LoadNextFlashback` @0x8005A63C (0x1CC) loads entry +0x87C (stage, position, its day into +0x180), `func_80058968` gives it 0x10 + 4 = 20 seconds and moves to the next; in that mode the day end stores no graph point.
 
-- Proof: `func_8005B81C` @0x8005B81C, `func_8005B74C` @0x8005B74C, `func_8005A63C` @0x8005A63C, `func_80058968` @0x80058968, `func_800590E8` @0x800590E8 (matched C), `func_8004D9D4` @0x8004D9D4.
+- Proof: `DreamSys_MaybeSaveFlashback` @0x8005B81C, `DreamSys_AddFlashback` @0x8005B74C, `DreamSys_LoadNextFlashback` @0x8005A63C, `func_80058968` @0x80058968, `DreamSys_SetFlashbackMode` @0x800590E8 (matched C), `func_8004D9D4` @0x8004D9D4.
 - In game: no.
 - Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
@@ -229,9 +229,9 @@ Status: 🎮 checked in the game, with the values written in: a score of 10,000,
 
 <details><summary>Technical details</summary>
 
-Flashback unlock: the menu item is enabled by `func_8004D678` only when the save block's +0xC (DreamSys +0x184, unlock score) is above 9,999,999 and +0x2F4 (+0x46C, flashbacks kept) is not 0. `func_8005B6E0` (vtable 0x210, run by `func_8005A41C` on a normal day end) sets +0x184 = +0x188 + +0x18C. +0x188 comes from `func_8005BA7C`: 1,000,000 per non-zero byte among the 30 navigation flags (+0x5E0 via `D_8008ACB4`), 50,000,000 once all 30 are set, minus 11,024 per dynamic link (+0x600), floored at 0. +0x18C, the instance score, is clamped to 0..50,000,000 and grows on entity message 9 by the entity's vtable 0x150 value (`func_8005B03C`). So 10 navigation challenges with no dynamic link unlock it; each dynamic link costs 11,024. What sets a navigation flag is not traced.
+Flashback unlock: the menu item is enabled by `Menu_UpdateFlashbackItem` @0x8004D678 only when the save block's +0xC (DreamSys +0x184, unlock score) is above 9,999,999 and +0x2F4 (+0x46C, flashbacks kept) is not 0. `DreamSys_CalcUnlockScore` @0x8005B6E0 (vtable 0x210, run by `DreamSys_EndDay` @0x8005A41C on a normal day end) sets +0x184 = +0x188 + +0x18C. +0x188 comes from `Nav_CalcScore` @0x8005BA7C: 1,000,000 per non-zero byte among the 30 navigation flags (+0x5E0 via `g_navFlags` @0x8008ACB4), 50,000,000 once all 30 are set, minus 11,024 per dynamic link (+0x600), floored at 0. +0x18C, the instance score, is clamped to 0..50,000,000 and grows on entity message 9 by the entity's vtable 0x150 value (`DreamSys_OnEntityEvent` @0x8005B03C). So 10 navigation challenges with no dynamic link unlock it; each dynamic link costs 11,024. What sets a navigation flag is not traced.
 
-- Proof: `func_8004D678` @0x8004D678, `func_8005B6E0` @0x8005B6E0, `func_8005BA7C` @0x8005BA7C (all matched C), `func_8005B03C` @0x8005B03C, `func_8005A41C` @0x8005A41C.
+- Proof: `Menu_UpdateFlashbackItem` @0x8004D678, `DreamSys_CalcUnlockScore` @0x8005B6E0, `Nav_CalcScore` @0x8005BA7C (all matched C), `DreamSys_OnEntityEvent` @0x8005B03C, `DreamSys_EndDay` @0x8005A41C.
 - In game: yes, forced. On a fresh day 1 +0x184 and +0x46C read 0 and the item is absent. Writing +0x184 = 10,000,000, +0x46C = 1 and zeroing entry +0x470 at vsync 2100 made the menu show FLASHBACK between START and SAVE (capture at 2460; with a flashback kept, the title skips the graph and opens the menu). Script `work/shots/drive.lua`, log `work/shots/manifest.md`.
 - Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
@@ -245,9 +245,9 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Erasing flashbacks: `func_8005B8FC` (vtable 0x21C) sets +0x46C to 0 and has one caller, `func_80064618`, an entity behaviour handler (16-byte record {handler, parameters} at 0x8008A4D0). When its +0xF4 is set and `func_8005D108(0, 0, 10, 0)` passes (likely a contact or range test), it sets state 7 on the object at +0x100, calls its own vtable 0x160, then clears the list. Which entity uses that record is not traced, so the link to `SYMSPY.MOM` (the Grey Man) is still a guess. No code that negates stored graph points was found, so the "graph flip" is not explained.
+Erasing flashbacks: `DreamSys_ClearFlashbacks` @0x8005B8FC (vtable 0x21C) sets +0x46C to 0 and has one caller, `Behavior_EraseFlashbacks` @0x80064618, an entity behaviour handler (16-byte record {handler, parameters} at 0x8008A4D0). When its +0xF4 is set and `func_8005D108(0, 0, 10, 0)` passes (likely a contact or range test), it sets state 7 on the object at +0x100, calls its own vtable 0x160, then clears the list. Which entity uses that record is not traced, so the link to `SYMSPY.MOM` (the Grey Man) is still a guess. No code that negates stored graph points was found, so the "graph flip" is not explained.
 
-- Proof: `func_8005B8FC` @0x8005B8FC, `func_80064618` @0x80064618 (matched C), record 0x8008A4D0.
+- Proof: `DreamSys_ClearFlashbacks` @0x8005B8FC, `Behavior_EraseFlashbacks` @0x80064618 (matched C), record 0x8008A4D0.
 - In game: no.
 - Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
@@ -265,10 +265,10 @@ Status: 🎮 checked in the game, with the die forced.
 
 <details><summary>Technical details</summary>
 
-Grey Man spawn: per entity spawn slot, `func_80054120` calls `func_8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `func_8005C9A4` lets a slot's entity appear when its flag is 0, or 1 on even day numbers, or 2 on odd ones. When the flag blocks it, the stage index (`D_8008ABF8`) is not 0, `rand() % 12 == 0` and the day number is even, `func_8005CF34` spawns the model loaded from `ETC\SYMSPY.MOM` (`D_80088D28`, loaded by `func_8005C508`). The forced spawn in the emulator shows the Grey Man (hat, long coat), so `SYMSPY.MOM` is his model. Erasing flashbacks is not traced yet (see [What erases the flashbacks](#what-erases-the-flashbacks) for what was found since).
+Grey Man spawn: per entity spawn slot, `func_80054120` calls `Sym_SpawnOrSpy @0x8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `Sym_CheckDayParity` @0x8005C9A4 lets a slot's entity appear when its flag is 0, or 1 on even day numbers, or 2 on odd ones. When the flag blocks it, the stage index (`g_currentStage` @0x8008ABF8) is not 0, `rand() % 12 == 0` and the day number is even, `Sym_SpawnSpy` @0x8005CF34 spawns the model loaded from `ETC\SYMSPY.MOM` (`g_spyModel` @0x80088D28, loaded by `Sym_LoadModels` @0x8005C508). The forced spawn in the emulator shows the Grey Man (hat, long coat), so `SYMSPY.MOM` is his model. Erasing flashbacks is not traced yet (see [What erases the flashbacks](#what-erases-the-flashbacks) for what was found since).
 
-- Proof: `func_8005C7D4` @0x8005C7D4 (asm: `andi s1,1` and the 0x2AAAAAAB divide by 12), `func_8005C9A4` @0x8005C9A4, `func_8005C8AC` @0x8005C8AC, `func_8005C508` @0x8005C508, `func_80054120` @0x80054120.
-- In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `func_8005C7D4` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). Whether that contact erased the flashback list was not measured. Log `work/shots/manifest.md`.
+- Proof: `Sym_SpawnOrSpy` @0x8005C7D4 (asm: `andi s1,1` and the 0x2AAAAAAB divide by 12), `Sym_CheckDayParity` @0x8005C9A4, `func_8005C8AC` @0x8005C8AC, `Sym_LoadModels` @0x8005C508, `func_80054120` @0x80054120.
+- In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `Sym_SpawnOrSpy` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). Whether that contact erased the flashback list was not measured. Log `work/shots/manifest.md`.
 - Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
@@ -290,10 +290,10 @@ Status: 🎮 checked in the game, with the draw forced: the same room wears set 
 
 <details><summary>Technical details</summary>
 
-Texture set: when a stage loads, `func_80052F10` calls `func_80048EA0(stage, day number)`, which picks set `rand() % (((day - 1) % 40) / 10 + 1)` among the stage's `TEXA` to `TEXD.TIX` paths (path table of 0x1C-byte entries from 0x80081A04, `func_80048E2C`). Days 1 to 10 of each 40-day cycle always load A, 11 to 20 A or B, 21 to 30 A to C, 31 to 40 A to D, each at random.
+Texture set: when a stage loads, `func_80052F10` calls `Stage_PickTexturePath @0x80048EA0(stage, day number)`, which picks set `rand() % (((day - 1) % 40) / 10 + 1)` among the stage's `TEXA` to `TEXD.TIX` paths (path table of 0x1C-byte entries from 0x80081A04, `Stage_GetPathBase` @0x80048E2C). Days 1 to 10 of each 40-day cycle always load A, 11 to 20 A or B, 21 to 30 A to C, 31 to 40 A to D, each at random.
 
-- Proof: `func_80048EA0` @0x80048EA0, `func_80048E2C` @0x80048E2C, `func_80052F10` @0x80052F10, rand wrapper `func_80048CFC` @0x80048CFC.
-- In game: yes, forced. PCSX-Redux interpreter, same room and spot at the dream start: +0x180 = 4 (day 5) loads set A; +0x180 = 32 (day 33) with the rand state forced to 3 at `func_80048EA0` (rand % 4 = 3) loads set D, the photo collage. Day 33 rather than 35 because 35 is a special day. Log `work/shots/manifest.md`.
+- Proof: `Stage_PickTexturePath` @0x80048EA0, `Stage_GetPathBase` @0x80048E2C, `func_80052F10` @0x80052F10, rand wrapper `Rand_SeedAndNext` @0x80048CFC.
+- In game: yes, forced. PCSX-Redux interpreter, same room and spot at the dream start: +0x180 = 4 (day 5) loads set A; +0x180 = 32 (day 33) with the rand state forced to 3 at `Stage_PickTexturePath` (rand % 4 = 3) loads set D, the photo collage. Day 33 rather than 35 because 35 is a special day. Log `work/shots/manifest.md`.
 - Question: [9](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
 </details>
@@ -310,9 +310,9 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Links: a wall touch (`func_80058FAC`, message 4, no transition running) tries the static tables first (`func_8005A5D8` → `func_8005BCB4` → `func_8005C150` with 0x80088748, 0x80088710, 0x80088664) and links dynamically only if +0x124 is set (`func_8005A1B0`, vtable 0x18C). A dynamic link (`func_8005A580` → `func_8005BB30`) draws `rand() % 6` and moves a draw equal to the current stage to the next one (wrapping at 6), so from a main stage 0 to 5 the next stage is twice as likely (2/6) as each of the other four (1/6). It increments the counter at +0x600.
+Links: a wall touch (`DreamSys_OnWallTouch` @0x80058FAC, message 4, no transition running) tries the static tables first (`DreamSys_LinkStatic` @0x8005A5D8 → `func_8005BCB4` → `func_8005C150` with 0x80088748, 0x80088710, 0x80088664) and links dynamically only if +0x124 is set (`func_8005A1B0`, vtable 0x18C). A dynamic link (`DreamSys_LinkDynamic` @0x8005A580 → `Spawn_PickRandom` @0x8005BB30) draws `rand() % 6` and moves a draw equal to the current stage to the next one (wrapping at 6), so from a main stage 0 to 5 the next stage is twice as likely (2/6) as each of the other four (1/6). It increments the counter at +0x600.
 
-- Proof: `func_80058FAC` @0x80058FAC, `func_8005A5D8` @0x8005A5D8, `func_8005A580` @0x8005A580, `func_8005BB30` @0x8005BB30, `func_8005A1B0` @0x8005A1B0.
+- Proof: `DreamSys_OnWallTouch` @0x80058FAC, `DreamSys_LinkStatic` @0x8005A5D8, `DreamSys_LinkDynamic` @0x8005A580, `Spawn_PickRandom` @0x8005BB30, `func_8005A1B0` @0x8005A1B0.
 - In game: no.
 - Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
@@ -326,9 +326,9 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Entity events reach DreamSys through `func_8005B03C`, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `func_8005BB30` with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `func_80049334` (`func_80049270`); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos; the conditions that make an entity send them (train, astronaut, lions) are in the entity behaviour records, not traced.
+Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos; the conditions that make an entity send them (train, astronaut, lions) are in the entity behaviour records, not traced.
 
-- Proof: `func_8005B03C` @0x8005B03C, `func_80049270` @0x80049270 (matched C), `func_8005A928` @0x8005A928.
+- Proof: `DreamSys_OnEntityEvent` @0x8005B03C, `Cine_GetEventPath` @0x80049270 (matched C), `DreamSys_ExecuteLink` @0x8005A928.
 - In game: no.
 - Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
@@ -344,10 +344,10 @@ Status: 🎮 checked in the game (the block and its "J01" mark were found in mem
 
 <details><summary>Technical details</summary>
 
-One `DreamSys` object at `0x80091530` (vtable `0x80087BDC`). Its persistent block runs from +0x178 to +0x878 (0x700 bytes, returned with that size by `func_8005A350`, vtable slot 0x1B0) and starts with the magic `"J01"` written by `func_8005A258`. Layout read so far: +0x17C year, +0x180 day (0-based), +0x184 unlock score, +0x188 navigation score, +0x18C instance score, +0x190 graph (365 pairs of s8), +0x5E0 30 navigation flags, +0x600 dynamic-link count, +0x684 500 bytes cleared at new game. Likely the memory card payload; not yet traced to the card code. (Since traced: the memory card finding below saves exactly this block. The flashback list at +0x46C to +0x5D8 also sits inside it.)
+One `DreamSys` object at `0x80091530` (vtable `0x80087BDC`). Its persistent block runs from +0x178 to +0x878 (0x700 bytes, returned with that size by `DreamSys_GetSaveBlock` @0x8005A350, vtable slot 0x1B0) and starts with the magic `"J01"` written by `DreamSys_InitNewGame` @0x8005A258. Layout read so far: +0x17C year, +0x180 day (0-based), +0x184 unlock score, +0x188 navigation score, +0x18C instance score, +0x190 graph (365 pairs of s8), +0x5E0 30 navigation flags, +0x600 dynamic-link count, +0x684 500 bytes cleared at new game. Likely the memory card payload; not yet traced to the card code. (Since traced: the memory card finding below saves exactly this block. The flashback list at +0x46C to +0x5D8 also sits inside it.)
 
-- Proof: `func_8005A258` @0x8005A258, `func_8005A350` @0x8005A350, `func_8005BA50` @0x8005BA50 (stores the +0x5E0 and +0x600 addresses in `D_8008ACB4`, `D_8008ACB8`), graph reader `func_80058404` @0x80058404.
-- In game: yes. Headless PCSX-Redux Lua probe (`work/hunt/dreamsys.lua`) at the title and in the first dream: vtable found once at 0x80091530, `"J01"` at +0x178, `D_8008ACB4` = 0x80091B10 (+0x5E0), `D_8008ACB8` = 0x80091B30 (+0x600).
+- Proof: `DreamSys_InitNewGame` @0x8005A258, `DreamSys_GetSaveBlock` @0x8005A350, `Nav_InitFlags` @0x8005BA50 (stores the +0x5E0 and +0x600 addresses in `g_navFlags` @0x8008ACB4, `g_dynamicLinkCount` @0x8008ACB8), graph reader `func_80058404` @0x80058404.
+- In game: yes. Headless PCSX-Redux Lua probe (`work/hunt/dreamsys.lua`) at the title and in the first dream: vtable found once at 0x80091530, `"J01"` at +0x178, `g_navFlags` = 0x80091B10 (+0x5E0), `g_dynamicLinkCount` = 0x80091B30 (+0x600).
 - Question: [15](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
 </details>
@@ -362,9 +362,9 @@ Status: 🎮 partly checked: a save made in the emulator on day 42 carries the t
 
 <details><summary>Technical details</summary>
 
-Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and its size 0x700 at +0xBC and +0xC0 of the save menu object and calls `func_8004D6AC(day number)`, which writes the day as 3 characters (`func_8004109C`) into the save title `D_8008AA18` (0x8001149C) at +0x12. `func_8004E0E4` saves through the card object's slot 0x78 with file name `D_8008AA10` = `BISLPS-01556xxx`, that title, 0xD, 3, the block and its size; `func_8004E1C4` loads through slot 0x74. When DreamSys +0x878 is set (`func_8005A344`; `func_8005A41C` sets it with `func_8005A258` on an end of type 2) the file name's first byte is zeroed before the save and `func_8004DB18` appends `D_8008AA14` to the title. The card driver itself is not read.
+Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and its size 0x700 at +0xBC and +0xC0 of the save menu object and calls `SaveMenu_SetTitleDay @0x8004D6AC(day number)`, which writes the day as 3 characters (`func_8004109C`) into the save title `g_cardTitle` @0x8008AA18 (0x8001149C) at +0x12. `SaveMenu_Save` @0x8004E0E4 saves through the card object's slot 0x78 with file name `g_cardFileName` @0x8008AA10 = `BISLPS-01556xxx`, that title, 0xD, 3, the block and its size; `SaveMenu_Load` @0x8004E1C4 loads through slot 0x74. When DreamSys +0x878 is set (`func_8005A344`; `DreamSys_EndDay` @0x8005A41C sets it with `DreamSys_InitNewGame` @0x8005A258 on an end of type 2) the file name's first byte is zeroed before the save and `func_8004DB18` appends `D_8008AA14` to the title. The card driver itself is not read.
 
-- Proof: `func_8004D578` @0x8004D578, `func_8004D6AC` @0x8004D6AC, `func_8004E0E4` @0x8004E0E4, `func_8004E1C4` @0x8004E1C4, `func_8004DB18` @0x8004DB18, strings 0x80011464, 0x8001149C.
+- Proof: `func_8004D578` @0x8004D578, `SaveMenu_SetTitleDay` @0x8004D6AC, `SaveMenu_Save` @0x8004E0E4, `SaveMenu_Load` @0x8004E1C4, `func_8004DB18` @0x8004DB18, strings 0x80011464, 0x8001149C.
 - In game: partly. With +0x180 = 41 (day 42), SAVE then an empty comment wrote card file `BISLPS-01556-01` with the title "ＬＳＤ　ａ　Ｄａｙ０４２" to the emulator's memory card (`~/.config/pcsx-redux/memcard1.mcd`); the screen shows only "Saving. Please wait.". The card driver and the type-2 ending were not exercised.
 - Question: [15](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
@@ -380,10 +380,10 @@ Status: 🎮 partly checked in the game (in the emulator only, not on a console)
 
 <details><summary>Technical details</summary>
 
-Random numbers: `rand` @0x80049480 is the PSY-Q LCG, state `D_8008AC68` (0 in the executable) times 0x41C64E6D plus 0x3039, returning bits 16 to 30. `srand` has one caller, `func_80048CFC(seed)`, which reseeds only when seed is not 0 and then draws. The only non-zero seed comes from `func_800260A4` (slot 0x40 of the scene class that `func_80025FDC` builds with `ETC\DREAME5.TMD` and a new DreamSys): scratchpad word 0x1F800000 % 365. That scratchpad is a render work buffer (`func_80012064` hands it to `func_80018464`), so the seed is leftover render data, at most 728 seeds (-364 to 364, signed modulo) plus "no reseed".
+Random numbers: `rand` @0x80049480 is the PSY-Q LCG, state `g_randState` @0x8008AC68 (0 in the executable) times 0x41C64E6D plus 0x3039, returning bits 16 to 30. `srand` has one caller, `Rand_SeedAndNext @0x80048CFC(seed)`, which reseeds only when seed is not 0 and then draws. The only non-zero seed comes from `Scene_SeedRandom` @0x800260A4 (slot 0x40 of the scene class that `func_80025FDC` builds with `ETC\DREAME5.TMD` and a new DreamSys): scratchpad word 0x1F800000 % 365. That scratchpad is a render work buffer (`func_80012064` hands it to `func_80018464`), so the seed is leftover render data, at most 728 seeds (-364 to 364, signed modulo) plus "no reseed".
 
-- Proof: `rand` @0x80049480, `srand` @0x800494A8, `func_80048CFC` @0x80048CFC (matched C), `func_800260A4` @0x800260A4 (matched C), `func_80025FDC` @0x80025FDC, `func_80012064` @0x80012064.
-- In game: partly. Breakpoints showed `func_800260A4` run once, at vsync 1318 before the title input, with scratchpad word 0, so `srand` was never called; the rand state at the first special-day check was 0xA70427DF. Real hardware's scratchpad at that moment was not measured.
+- Proof: `rand` @0x80049480, `srand` @0x800494A8, `Rand_SeedAndNext` @0x80048CFC (matched C), `Scene_SeedRandom` @0x800260A4 (matched C), `func_80025FDC` @0x80025FDC, `func_80012064` @0x80012064.
+- In game: partly. Breakpoints showed `Scene_SeedRandom` run once, at vsync 1318 before the title input, with scratchpad word 0, so `srand` was never called; the rand state at the first special-day check was 0xA70427DF. Real hardware's scratchpad at that moment was not measured.
 - Question: [10](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
 </details>
@@ -398,9 +398,9 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-`ETC\SYMDOG.MOM` is never loaded: `func_8005C508` loads `ETC\SYMSPY.MOM`, writes the dog's path into its load descriptor and leaves its loop after one pass (`beqz s1` after `s1++`). No other code references the dog path `D_8001187C`.
+`ETC\SYMDOG.MOM` is never loaded: `Sym_LoadModels` @0x8005C508 loads `ETC\SYMSPY.MOM`, writes the dog's path into its load descriptor and leaves its loop after one pass (`beqz s1` after `s1++`). No other code references the dog path `D_8001187C`.
 
-- Proof: `func_8005C508` @0x8005C508, `D_8001187C`.
+- Proof: `Sym_LoadModels` @0x8005C508, `D_8001187C`.
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 

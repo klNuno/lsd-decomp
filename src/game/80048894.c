@@ -1,10 +1,10 @@
 #include "common.h"
 
 extern u8 D_80081A04[];
-extern s16 D_80086170[];
+extern s16 g_videoTable[];
 s32 D_8008A964;
 s32 D_8008A968;
-u8 *func_80048E2C(s32 arg0);
+u8 *Stage_GetPathBase(s32 arg0);
 s32 *func_80048DF8(void);
 extern void srand(u32 seed);
 extern s32 rand(void);
@@ -61,8 +61,8 @@ typedef struct Unk_80048960_Vtbl {
 struct Unk_80048960 {
     Unk_80048960_Vtbl *vt;
 };
-u8 *func_80049270(s32 *arg0, s32 arg1);
-s32 func_800492D0(s32 *arg0, s32 arg1);
+u8 *Cine_GetEventPath(s32 *arg0, s32 arg1);
+s32 Cine_GetSpecialDayPaths(s32 *arg0, s32 arg1);
 typedef struct Unk_80049334 {
     s16 unk0;
     s16 unk2;
@@ -103,7 +103,7 @@ typedef struct Unk_800489B4 {
     u8 pad_30[8];
     s32 unk38;
 } Unk_800489B4;
-s32 func_80048CFC();
+s32 Rand_SeedAndNext();
 u8 *func_80048F60(s32 arg0);
 u8 *func_80048E80(s32 arg0);
 typedef struct Unk_80048AAC_Vtbl {
@@ -281,7 +281,7 @@ void *func_80048CF0(void) {
     return D_8008A960;
 }
 
-s32 func_80048CFC(seed)
+s32 Rand_SeedAndNext(seed)
     s32 seed;
 {
     if (seed != 0) {
@@ -315,7 +315,7 @@ s32 func_80048D74(s32 arg0) {
     u8 *p;
     s32 ofs;
 
-    r = (u32)func_80048CFC(0, arg0) % 7;
+    r = (u32)Rand_SeedAndNext(0, arg0) % 7;
     p = func_80048D64();
     if (D_8008A964 != 0) {
         ofs = (D_8008A964 - 1) * 4;
@@ -333,25 +333,25 @@ s32 func_80048E08(void) {
     return *func_80048DF8();
 }
 
-u8 *func_80048E2C(s32 arg0) {
+u8 *Stage_GetPathBase(s32 arg0) {
     return (u8 *)func_80048D48(NULL) + D_800819E8[arg0] * 0x1C;
 }
 
 u8 *func_80048E80(s32 arg0) {
-    return func_80048E2C(arg0);
+    return Stage_GetPathBase(arg0);
 }
 
-u8 *func_80048EA0(s32 arg0, s32 arg1, s32 arg2) {
+u8 *Stage_PickTexturePath(s32 arg0, s32 arg1, s32 arg2) {
     s32 row;
     s32 r;
 
     row = ((arg2 - 1) % 40) / 10 + 1;
-    r = func_80048CFC(0, arg1) % row;
+    r = Rand_SeedAndNext(0, arg1) % row;
     return func_80048E80(arg0) + r * 0x1C;
 }
 
 u8 *func_80048F60(s32 arg0) {
-    return func_80048E2C(arg0) + 0x70;
+    return Stage_GetPathBase(arg0) + 0x70;
 }
 
 u8 *func_80048F84(s32 arg0) {
@@ -359,7 +359,7 @@ u8 *func_80048F84(s32 arg0) {
     u8 *temp_a0;
     s32 var_v0;
 
-    var_s0 = (u32)func_80048CFC(0) % 5;
+    var_s0 = (u32)Rand_SeedAndNext(0) % 5;
     if (arg0 == 9) {
         if (var_s0 == 2) {
             var_s0 = 3;
@@ -378,7 +378,7 @@ u8 *func_80048F84(s32 arg0) {
 }
 
 u8 *func_8004903C(s32 arg0) {
-    return func_80048E2C(arg0) + 0xFC;
+    return Stage_GetPathBase(arg0) + 0xFC;
 }
 
 u8 *func_80049060(s32 arg0, s32 arg1) {
@@ -410,7 +410,7 @@ s32 func_8004913C(s32 *arg0) {
     s32 r;
     s32 ret;
 
-    r = (u32)func_80048CFC(0) % 7;
+    r = (u32)Rand_SeedAndNext(0) % 7;
     ret = func_80049110(&sp10);
     if (arg0 != NULL) {
         *arg0 = r + sp10;
@@ -443,7 +443,7 @@ u8 *func_80049240(s32 *arg0) {
     return (u8 *)func_80048D48(NULL) + 0x3E20;
 }
 
-u8 *func_80049270(s32 *arg0, s32 arg1) {
+u8 *Cine_GetEventPath(s32 *arg0, s32 arg1) {
     s32 sp10;
     u8 *temp_v1;
 
@@ -454,7 +454,7 @@ u8 *func_80049270(s32 *arg0, s32 arg1) {
     return temp_v1 + arg1 * 0x1C;
 }
 
-s32 func_800492D0(s32 *arg0, s32 arg1) {
+s32 Cine_GetSpecialDayPaths(s32 *arg0, s32 arg1) {
     s32 temp_v1;
 
     temp_v1 = (s32)func_80048D48(NULL) + 0x3EC8;
@@ -464,13 +464,13 @@ s32 func_800492D0(s32 *arg0, s32 arg1) {
     return temp_v1 + (arg1 * 0xA8);
 }
 
-s32 func_80049334(s32 *arg0, Unk_80049334 arg1) {
+s32 Cine_GetPath(s32 *arg0, Unk_80049334 arg1) {
     s32 sp10;
     s32 temp_v0;
     s32 var_v1;
 
     if (arg1.unk0 >= 0) {
-        temp_v0 = func_800492D0(&sp10, arg1.unk0);
+        temp_v0 = Cine_GetSpecialDayPaths(&sp10, arg1.unk0);
         if (arg0 != NULL) {
             if ((u16)arg1.unk2 < 2U) {
                 var_v1 = arg1.unk2 + sp10;
@@ -481,11 +481,11 @@ s32 func_80049334(s32 *arg0, Unk_80049334 arg1) {
         }
         return temp_v0 + (arg1.unk2 * 0x1C);
     }
-    return (s32)func_80049270(arg0, arg1.unk2);
+    return (s32)Cine_GetEventPath(arg0, arg1.unk2);
 }
 
 s16 func_800493C8(s32 arg0) {
-    return D_80086170[arg0];
+    return g_videoTable[arg0];
 }
 
 s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2) {
@@ -493,12 +493,12 @@ s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2) {
     s32 ret;
     s32 i;
 
-    ret = func_800492D0(&start, arg1);
+    ret = Cine_GetSpecialDayPaths(&start, arg1);
     *arg0 = 0;
     arg2 *= 2;
     arg2 += start;
     for (i = start; i < arg2; i++) {
-        *arg0 += 10 + D_80086170[i];
+        *arg0 += 10 + g_videoTable[i];
     }
     *arg0 -= 10;
     return ret;

@@ -1035,6 +1035,64 @@ s32 func_8004B930(Unk_8004B418 *arg0, s32 arg1, s32 arg2);
 s32 func_8004BA40(Unk_8004BA40_Obj *arg0, Unk_8004BA40_Out *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 extern Unk_8004BA40_Out D_80086838[];
 typedef struct Unk_8004B700 { u8 unk0; u8 unk1; } Unk_8004B700;
+typedef struct Unk_8004A294 Unk_8004A294;
+typedef struct Unk_8004A294_Vtbl {
+    u8 pad_00[0x6C];
+    void (*unk6C)(Unk_8004A294 *, s32);
+} Unk_8004A294_Vtbl;
+struct Unk_8004A294 {
+    Unk_8004A294_Vtbl *vt;
+};
+struct Unk_80026CE8 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+};
+void func_8004A070(s32 arg0);
+s32 func_8004A4C8(s32 arg0, s32 arg1);
+s32 func_8004D254(void);
+s32 func_80048E08(s32 arg0);
+void Sym_LoadModels(void);
+s32 func_8003B39C(s32 arg0);
+s32 func_80043840(s32 arg0);
+s32 func_80048D74(s32 arg0);
+void *func_800398E0(s32 arg0, s32 arg1, s32 arg2);
+void func_80026F34(s32 arg0, s32 arg1, s32 arg2);
+void *func_80042400(void);
+typedef struct Unk_80049684_Vt {
+    u8 pad_00[0x10];
+    void (*unk10)(void *, void *);
+    u8 pad_14[0x40 - 0x14];
+    void (*unk40)(void *);
+} Unk_80049684_Vt;
+typedef struct Unk_80049684_Obj {
+    u8 pad_00[0x5C];
+    void (*unk5C)(void *);
+    u8 pad_60[0x78 - 0x60];
+    void (*unk78)(void *);
+    u8 pad_7C[0x10C - 0x7C];
+    void (*unk10C)(void *, void *);
+    u8 pad_110[0x114 - 0x110];
+    void (*unk114)(void *, void *);
+} Unk_80049684_Obj;
+typedef struct Unk_80049684_Sub {
+    u8 pad_00[0x8];
+    void *unk8;
+    void *unkC;
+    void *unk10;
+} Unk_80049684_Sub;
+typedef struct Unk_80049684 {
+    Unk_80049684_Vt *unk0;
+    u8 pad_04[0xC - 0x4];
+    Unk_80049684_Sub *unkC;
+    u8 pad_10[0x34 - 0x10];
+    void *unk34;
+    s32 unk38;
+    u8 pad_3C[0x40 - 0x3C];
+    void *unk40;
+    void **unk44;
+    void *unk48;
+} Unk_80049684;
 
 s32 func_800494B4(void) {
     return 0xE;
@@ -1051,7 +1109,7 @@ Unk_800861D4 *func_800494D8(s32 arg0) {
     return &func_800494BC(NULL)[arg0];
 }
 
-u32 func_8004950C(Unk_8004950C *arg0, s16 *arg1) {
+u32 Stage_FindChunkByMood(Unk_8004950C *arg0, s16 *arg1) {
     u32 i;
     s32 a2;
     s32 a3;
@@ -1077,7 +1135,7 @@ u32 func_8004950C(Unk_8004950C *arg0, s16 *arg1) {
     return -1;
 }
 
-s16 *func_800495B8(s32 arg0, s8 *arg1) {
+s16 *Stage_GetChunkMood(s32 arg0, s8 *arg1) {
     return D_80086590[arg0] + arg1[1] * D_800861D4[arg0].unk_0 + arg1[0];
 }
 
@@ -1092,11 +1150,37 @@ s32 func_80049608(s32 arg0, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113EC);
+void func_80049684(Unk_80049684 *arg0, Unk_80049684_Sub *arg1, Unk_80049684_Obj **arg2, s32 arg3) {
+    struct Unk_80026CE8 sp10;
+    s32 temp_s0;
+    Unk_80049684_Obj **temp_v0;
+    Unk_80049684_Obj **temp_a0;
 
-INCLUDE_RODATA("asm/nonmatchings/game/800494B4", D_800113F8);
-
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049684);
+    temp_s0 = func_80048E08(0);
+    func_8004A4B8()->unk8(arg0, temp_s0, 0);
+    arg0->unk0 = (Unk_80049684_Vt *)func_8004A060();
+    Sym_LoadModels();
+    temp_v0 = (Unk_80049684_Obj **)func_8003B39C((s32)"ETC\\ETC.TIM");
+    arg0->unk44 = temp_v0;
+    (*temp_v0)->unk78(temp_v0);
+    temp_a0 = arg0->unk44;
+    (*temp_a0)->unk5C(temp_a0);
+    sp10.unk0 = 0;
+    sp10.unk4 = (s32)"ETC\\DREAMER.TMD";
+    arg0->unk48 = (void *)func_80043840((s32)&sp10);
+    arg0->unk40 = func_800398E0(func_80048D74(0), 0, 1);
+    func_8004A070(1);
+    func_80026F34(arg3 == 0, 1, 1);
+    arg0->unkC = arg1;
+    arg1->unk10 = (void *)func_8004D254();
+    arg1->unk8 = func_80042400();
+    arg1->unkC = (void *)func_8004A4C8(0, 1);
+    arg0->unk38 = (s32)arg2;
+    arg0->unk0->unk10(arg0, arg2);
+    (*arg2)->unk10C(arg2, arg0->unk34);
+    (*arg2)->unk114(arg2, arg0->unk44);
+    arg0->unk0->unk40(arg0);
+}
 
 void func_80049830(Unk_80049830 *arg0) {
     Unk_80049830_Sub *temp_s0;
@@ -1337,7 +1421,9 @@ void func_8004A228(Unk_8004A228 *arg0) {
     func_8003E5C8()->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004A294);
+void func_8004A294(Unk_8004A294 *arg0) {
+    arg0->vt->unk6C(arg0, -1);
+}
 
 s32 func_8004A2C4(Unk_8004A2C4 *arg0, s32 arg1, s32 arg2) {
     arg0->u28 = 0;

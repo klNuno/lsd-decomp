@@ -71,10 +71,10 @@ segments:
       - [0xFD8,  .rodata, game/800271D8]  # strings of func_80027FFC, func_80028920, then jtbls of func_80027A24
       - [0x1040, rodata, psyq/80028B78]   # LIBCD
       - [0x14D8, .rodata, game/80032588]
-      - [0x14F0, .rodata, game/8003410C]
+      - [0x14F0, rodata, psyq/8003410C]   # LIBSND SEQREAD jtbls (moved to psyq 2026-10-15, sony-suspects.md)
       - [0x1764, rodata, psyq/80036AC8]   # LIBSPU
       - [0x17EC, .rodata, game/800398E0]
-      - [0x1818, .rodata, game/8003A670]  # LIBSND SEQ messages: maybe unmatched LIBSND, not game
+      - [0x1818, rodata, psyq/8003A670]   # LIBSND SEQINIT messages
       - [0x1878, rodata, psyq/8003B21C]
       - [0x1890, .rodata, game/8003B854]
       - [0x1908, rodata, psyq/8003F2AC]
@@ -109,28 +109,29 @@ segments:
       - [0x179D8, c, game/800271D8]  # one TU to 0x80028B78: its strings precede its jtbls in .rodata; 0x80027D40 is game code (tools/psyq/match.py FALSE_HITS)
       - [0x19378, asm, psyq/80028B78]  # LIBC2,LIBCD
       - [0x1C92C, c, game/8002C12C]
+      - [0x1D718, asm, psyq/8002CF18]  # LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match, sony-suspects.md
       - [0x20FF0, asm, psyq/800307F0]  # LIBSND
-      - [0x21180, c, game/80030980]
+      - [0x21180, asm, psyq/80030980]  # LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match, sony-suspects.md
       - [0x221B4, asm, psyq/800319B4]  # LIBSND
-      - [0x22244, c, game/80031A44]
+      - [0x22244, asm, psyq/80031A44]  # LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match
       - [0x22948, asm, psyq/80032148]  # LIBSND
       - [0x22A1C, c, game/8003221C]
       - [0x22BA8, asm, psyq/800323A8]  # LIBSND
       - [0x22D88, c, game/80032588]
       - [0x23318, asm, psyq/80032B18]  # LIBAPI,LIBSND
-      - [0x24490, c, game/80033C90]
+      - [0x24490, asm, psyq/80033C90]  # LIBSND DECRE, near match
       - [0x247B8, asm, psyq/80033FB8]  # LIBSND
-      - [0x2490C, c, game/8003410C]
+      - [0x2490C, asm, psyq/8003410C]  # LIBSND PLAY, SEQREAD, near match
       - [0x2673C, asm, psyq/80035F3C]  # LIBSND
-      - [0x26D28, c, game/80036528]
+      - [0x26D28, asm, psyq/80036528]  # LIBSND CRES, near match
       - [0x270E8, asm, psyq/800368E8]  # LIBSND
-      - [0x272A8, c, game/80036AA8]
+      - [0x272A8, asm, psyq/80036AA8]  # LIBSPU SpuInitHot, near match
       - [0x272C8, asm, psyq/80036AC8]  # LIBAPI,LIBSPU
-      - [0x29554, c, game/80038D54]
+      - [0x29554, asm, psyq/80038D54]  # LIBSPU SpuInit, near match
       - [0x29574, asm, psyq/80038D74]  # LIBAPI,LIBSPU
       - [0x2A0E0, c, game/800398E0]
       - [0x2A878, asm, psyq/8003A078]  # LIBSND
-      - [0x2AE70, c, game/8003A670]
+      - [0x2AE70, asm, psyq/8003A670]  # LIBSND SEQINIT, near match
       - [0x2B268, asm, psyq/8003AA68]  # LIBSND
       - [0x2B78C, c, game/8003AF8C]
       - [0x2BA1C, asm, psyq/8003B21C]  # LIBCD,LIBGS
@@ -160,5 +161,11 @@ segments:
       - [0x4CD08, c, game/8005C508]  # rodata object F; E|F boundary in (0x8005B03C, 0x8005C508]
       - [0x57028, data, main]
       - [0x7B008, sdata, main]
+      # 8-byte pairs copied whole: maspsx (ASPSX 2.21) reaches sym+4 through gp only for .sdata the C file
+      # defines itself, so the unit owns these bytes (work/config-window.md).
+      - [0x7B0FC, .sdata, game/8003B854]  # D_8008A8FC { 0x100, 0xF0 }, func_8003E968
+      - [0x7B104, sdata, main_8008A904]
+      - [0x7B368, .sdata, game/80051F24]  # D_8008AB68 { -100, -60 }, D_8008AB70 { 0x140, 0x90 }, func_800549A8, func_80054850
+      - [0x7B378, sdata, main_8008AB78]
       - { type: bss, vram: 0x8008AC20, name: main }
   - [0x7B420]

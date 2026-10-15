@@ -2,9 +2,9 @@
 
 void func_8003221C(s32 arg0);
 extern void ResetCallback(void);
-extern void func_80038D54(void);
-extern void func_80036AA8(void);
-extern void func_8002EDD4(s32);
+extern void SpuInit(void);
+extern void SpuInitHot(void);
+extern void SpuVmInit(s32);
 extern s32 GetVideoMode(void);
 extern u16 D_8006DC5C[];
 extern u16 D_8006DC6C[];
@@ -28,9 +28,9 @@ void func_8003221C(s32 arg0) {
 
     ResetCallback();
     if (arg0 == 0) {
-        func_80038D54();
+        SpuInit();
     } else {
-        func_80036AA8();
+        SpuInitHot();
     }
     p = (u16 *)0x1F801C00;
     i = 0;
@@ -54,7 +54,7 @@ void func_8003221C(s32 arg0) {
         *p = tmp;
         p++;
     }
-    func_8002EDD4(0x18);
+    SpuVmInit(0x18);
     for (j = 0; j < 0x20; j++) {
         for (i = 0xF; i >= 0; i--) {
             D_80090368[j][i] = 0;

@@ -73,6 +73,95 @@ FALSE_HITS = {
 }
 
 
+# Sony functions no exact signature finds: the game links a LIBSND build that
+# is not in the database (it matches 3.3 and 3.5 OBJs by pieces), and the two
+# SPU stubs are 8 words that match everywhere. Evidence per function (fuzzy
+# label-aligned match against every LIBSND/LIBSPU OBJ, callers, callees,
+# strings): .agents/research/sony-suspects.md and work/sony/. Each address must
+# start a function and must not be named by the scan; main() stops otherwise.
+NEAR_MATCHES = {
+    # LIBSND VMANAGER.OBJ (3.3), unit psyq/8002CF18: the 31 functions follow the OBJ's 31 named
+    # labels one to one (range cover 89 % vs 3.3, work/sony/fuzzy-8002C12C.txt)
+    0x8002CF18: "SpuVmAlloc",
+    0x8002D1B4: "SpuVmKeyOnNow",
+    0x8002D6A4: "SpuVmDoAllocate",
+    0x8002D8E0: "vmNoiseOn",
+    0x8002DDBC: "vmNoiseOn2",
+    0x8002DF7C: "note2pitch",
+    0x8002E038: "note2pitch2",
+    0x8002E138: "SePitchBend",
+    0x8002E2F8: "SsUtVibrateOn",
+    0x8002E300: "SsUtVibrateOff",
+    0x8002E308: "SeAutoVol",
+    0x8002E4D8: "SetAutoVol",
+    0x8002E874: "SeAutoPan",
+    0x8002EA44: "SetAutoPan",
+    0x8002EDD4: "SpuVmInit",
+    0x8002F20C: "SpuVmNoiseOnWithAdsr",
+    0x8002F2A4: "SpuVmNoiseOff",
+    0x8002F368: "SpuVmNoiseOn",
+    0x8002F3E8: "SpuVmPBVoice",
+    0x8002F610: "SpuVmPitchBend",
+    0x8002F700: "SpuVmFlush",
+    0x8002FAC4: "SpuVmKeyOn",
+    0x800300D0: "SpuVmKeyOff",
+    0x800302DC: "SpuVmSeKeyOn",
+    0x800303C8: "SpuVmSeKeyOff",
+    0x800303FC: "KeyOnCheck",
+    0x80030404: "SpuVmSetSeqVol",
+    0x80030584: "SpuVmGetSeqVol",
+    0x800305F4: "SpuVmGetSeqLVol",
+    0x80030648: "SpuVmGetSeqRVol",
+    0x8003069C: "SpuVmSeqKeyOff",
+    # LIBSND VMANAGER.OBJ (3.5 closest), unit psyq/80030980
+    0x80030980: "SpuVmSetVol",
+    0x80030E90: "SsUtKeyOn",
+    0x80031280: "SsUtKeyOff",
+    0x8003149C: "SsUtKeyOnV",
+    0x80031890: "SsUtKeyOffV",
+    # LIBSND VMANAGER.OBJ (3.3), unit psyq/80031A44
+    0x80031A44: "SsUtChangePitch",
+    0x80031BA4: "SsUtChangeADSR",
+    0x80031C98: "SsUtGetDetVVol",
+    0x80031CF0: "SsUtSetDetVVol",
+    0x80031D6C: "SsUtGetVVol",
+    0x80031DF8: "SsUtSetVVol",
+    0x80031E94: "SsUtAutoVol",
+    0x80031EE8: "SsUtAutoPan",
+    0x80031F3C: "SsUtAllKeyOff",
+    # LIBSND DECRE.OBJ, version not in the database, unit psyq/80033C90
+    0x80033C90: "_SsSndDecrescendo",
+    # LIBSND PLAY.OBJ + SEQREAD.OBJ (3.3), unit psyq/8003410C
+    0x8003410C: "Snd_play",
+    0x80034138: "SeqPlay",
+    0x8003424C: "GetSeqData",
+    0x800344FC: "NoteOn",
+    0x80034614: "SetProgramChange",
+    0x80034690: "SetControlChange",
+    0x800349B0: "ContModulation",
+    0x80034AEC: "ContPortaTime",
+    0x80034C28: "ContPortamento",
+    0x80034D90: "ContResetAll",
+    0x80034E5C: "ContNrpn1",
+    0x80034F90: "ContNrpn2",
+    0x800350D8: "ContRpn1",
+    0x80035154: "ContRpn2",
+    0x800351D0: "ContDataEntry",
+    0x800357B0: "Snd_setVabAttr",
+    0x80035A7C: "SetPitchBend",
+    0x80035B2C: "GetMetaEvent",
+    0x80035E80: "ReadDeltaValue",
+    # LIBSND CRES.OBJ, version not in the database, unit psyq/80036528
+    0x80036528: "_SsSndCrescendo",
+    # LIBSPU S_IH.OBJ and S_I.OBJ: jal _SpuInit with a0 = 1 and a0 = 0
+    0x80036AA8: "SpuInitHot",
+    0x80038D54: "SpuInit",
+    # LIBSND SEQINIT.OBJ (3.3 = 3.5, 253 of 254 words), unit psyq/8003A670
+    0x8003A670: "_SsInitSoundSeq",
+    0x8003A99C: "SsSeqOpen",
+}
+
+
 def version_key(v):
     # "260" -> 2.6, "3610" -> 3.6.1.0; sort as tuples of digits.
     return tuple(int(c) for c in v)
@@ -364,6 +453,16 @@ def main():
                 targets.add((p & 0xF0000000) | ((w & 0x03FFFFFF) << 2))
         if addr_of.get(callee) not in targets:
             sys.exit("NAME_FIXES %s at %08x does not call %s" % (name, where, callee))
+
+    taken = {v[0] for v in syms.values()}
+    word_at = lambda a: int.from_bytes(data[a - LOAD + HEADER:a - LOAD + HEADER + 4], "little")
+    for a, name in sorted(NEAR_MATCHES.items()):
+        if a in syms or name in taken:
+            sys.exit("NEAR_MATCHES %s at %08x clashes with the scan (%s)" % (name, a, syms.get(a, [name])[0]))
+        if not ends_function(word_at(a - 8), word_at(a - 4)):
+            sys.exit("NEAR_MATCHES %s at %08x does not start a function" % (name, a))
+        syms[a] = [name, None, "LIBSND/LIBSPU", "near match", "func"]
+        notes.append("near match %s at %08x (.agents/research/sony-suspects.md)" % (name, a))
 
     addrs = sorted(syms)
     if len({syms[a][0] for a in addrs}) != len(addrs):

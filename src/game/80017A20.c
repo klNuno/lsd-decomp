@@ -309,6 +309,11 @@ typedef struct Unk_8001A064 {
 } Unk_8001A064;
 extern void *RCpolyGT4(void *, void *);
 extern void func_8001844C(s32 arg0);
+void func_80018288(Unk_80018288 **arg0);
+typedef struct Unk_8001813C {
+    u8 pad[8];
+    Unk_80018288 *unk8;
+} Unk_8001813C;
 
 Heap *func_80017A20(u32 size) {
     Heap *heap;
@@ -498,7 +503,10 @@ void func_8001811C(void *arg0) {
     func_80018208((u8 *)arg0 + 8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001813C);
+void func_8001813C(Unk_8001813C *arg0) {
+    func_80018288(&arg0->unk8);
+    arg0->unk8 = NULL;
+}
 
 void func_8001816C(Unk_8001816C *arg0, s32 *arg1, s32 *arg2) {
     if (*arg1 == 0) {

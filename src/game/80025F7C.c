@@ -32,7 +32,7 @@ typedef struct Unk_80026AB4_Vtbl {
 typedef struct Unk_80026AB4 {
     Unk_80026AB4_Vtbl *vtbl;
 } Unk_80026AB4;
-void func_80048CFC(s32, s32);
+void Rand_SeedAndNext(s32, s32);
 typedef struct Unk_80026A50_Vtbl {
     u8 pad_00[0x8];
     void (*unk8)(void *);
@@ -227,7 +227,7 @@ typedef struct Unk_80026348_80026698 {
     Unk_80026698_Obj *unk28;
 } Unk_80026348_80026698;
 s32 func_80049608(s32, s32, s32);
-void func_8002677C(Unk_80026348_80026698 *arg0);
+void Scene_PlayCinematic(Unk_80026348_80026698 *arg0);
 typedef struct Unk_8002658C_Vtbl {
     u8 pad_00[0x4];
     void (*unk4)(void *);
@@ -275,7 +275,7 @@ typedef struct Unk_8002677C_Vtbl {
 typedef struct Unk_8002677C_Obj {
     Unk_8002677C_Vtbl *vt;
 } Unk_8002677C_Obj;
-s32 func_80049334(s32 *arg0, s32 arg1);
+s32 Cine_GetPath(s32 *arg0, s32 arg1);
 extern Unk_80025F7C D_8006D3C8[];
 extern s32 D_8006D430[];
 s8 *D_8008A854;
@@ -307,8 +307,8 @@ void func_80025FDC(Unk_80025FDC *arg0, Unk_80025FDC_Arg1 *arg1) {
     ((Unk_80025FDC_Obj *)arg0->unk0)->unk40(arg0);
 }
 
-void func_800260A4(void) {
-    func_80048CFC(*(s32 *)0x1F800000 % 365, 0);
+void Scene_SeedRandom(void) {
+    Rand_SeedAndNext(*(s32 *)0x1F800000 % 365, 0);
 }
 
 void func_80026108(Unk_80026108 *arg0, s32 arg1, s32 arg2) {
@@ -423,7 +423,7 @@ s32 func_80026698(Unk_80026348_80026698 *arg0) {
     temp_v0->vt->unk4(temp_v0);
     switch (temp_s0) {
     case 2:
-        func_8002677C(arg0);
+        Scene_PlayCinematic(arg0);
         break;
     case 3:
         arg0->unk24 = 1;
@@ -438,7 +438,7 @@ s32 func_80026698(Unk_80026348_80026698 *arg0) {
     return result;
 }
 
-void func_8002677C(Unk_80026348_80026698 *arg0) {
+void Scene_PlayCinematic(Unk_80026348_80026698 *arg0) {
     u16 sp18[2];
     s32 sp20[2];
     s32 sp24[2];
@@ -448,7 +448,7 @@ void func_8002677C(Unk_80026348_80026698 *arg0) {
 
     temp_a1 = (Unk_8002677C_Obj *)arg0->unk28;
     temp_a1->vt->unk1BC(sp18, temp_a1);
-    temp_s2 = func_80049334(&sp20[0], sp18[0] | (sp18[1] << 16));
+    temp_s2 = Cine_GetPath(&sp20[0], sp18[0] | (sp18[1] << 16));
     func_80026F34(0, 0, 0);
     if (sp20[0] != -1) {
         if (arg0->unk20->unk8 == 0) {

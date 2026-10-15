@@ -8,6 +8,8 @@ typedef struct Unk_8003EA0C_Pair {
     s32 unk0;
     s32 unk4;
 } Unk_8003EA0C_Pair;
+/* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: read whole by func_8003E968 */
+extern Unk_8003EA0C_Pair D_8008A8FC;
 struct Unk_8003EA0C {
     u8 pad_00[0x34];
     Unk_8003EA0C_Pair unk34;
@@ -1411,6 +1413,34 @@ typedef struct Unk_8003D194 {
     Unk_8003D194_Obj **unk54;
     s32 unk58;
 } Unk_8003D194;
+typedef struct Unk_8003E968_Rgb {
+    s8 r;
+    s8 g;
+    s8 b;
+} Unk_8003E968_Rgb;
+typedef struct Unk_8003E968 {
+    u8 pad_00[0x34];
+    Unk_8003EA0C_Pair unk34;
+    s32 unk3C;
+    s32 unk40;
+    s32 unk44;
+    s32 unk48;
+    s32 unk4C;
+    s32 unk50;
+    s32 unk54;
+    Unk_8003E968_Rgb unk58;
+    Unk_8003E968_Rgb unk5B;
+    u8 pad_5E[2];
+    s32 unk60;
+    u8 pad_64[0x70 - 0x64];
+    s32 unk70;
+    u8 pad_74[0x90 - 0x74];
+    s32 unk90;
+    u8 pad_94[0xB4 - 0x94];
+    s32 unkB4;
+    s32 unkB8;
+} Unk_8003E968;
+extern Unk_8003E968_Rgb D_8008A8F8;
 
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -2620,7 +2650,23 @@ void func_8003E8B8(Unk_8003E8B8 *arg0, s32 **arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E968);
+void func_8003E968(Unk_8003E968 *arg0) {
+    arg0->unk90 = 0;
+    arg0->unk70 = 0;
+    arg0->unk34 = D_8008A8FC;
+    arg0->unk3C = 0xD;
+    arg0->unk44 = 0x7D0;
+    arg0->unk48 = 0x40;
+    arg0->unk40 = 0x100;
+    arg0->unk4C = 0xA;
+    arg0->unk50 = 0x10000;
+    arg0->unk54 = 0;
+    arg0->unk60 = 0x4E20;
+    arg0->unk5B = D_8008A8F8;
+    arg0->unk58 = D_8008A8F8;
+    arg0->unkB4 = 0;
+    arg0->unkB8 = 1;
+}
 
 void func_8003EA0C(struct Unk_8003EA0C *arg0, Unk_8003EA0C_Pair *arg1) {
     arg0->unk34 = *arg1;
@@ -2857,3 +2903,5 @@ struct Unk_8003F25C *func_8003F25C(struct Unk_8003F25C *arg0) {
 void func_8003F28C(s32 arg0) {
     SetGeomScreen(arg0);
 }
+
+Unk_8003EA0C_Pair D_8008A8FC = { 0x100, 0xF0 };

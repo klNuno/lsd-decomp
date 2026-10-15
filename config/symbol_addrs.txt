@@ -11,13 +11,10 @@ D_800107C8 = 0x800107C8; // force_not_migration:True
 D_800107D8 = 0x800107D8; // force_not_migration:True
 D_800107F4 = 0x800107F4; // force_not_migration:True
 D_80010FEC = 0x80010FEC; // force_not_migration:True
-D_80011018 = 0x80011018; // force_not_migration:True
-D_80011030 = 0x80011030; // force_not_migration:True
-D_80011054 = 0x80011054; // force_not_migration:True
 D_80011384 = 0x80011384; // force_not_migration:True // object start of game/80048894 inside psyq label D_8001136C
 D_800113DC = 0x800113DC; // force_not_migration:True
 D_800113EC = 0x800113EC; // force_not_migration:True
-D_800113F8 = 0x800113F8; // force_not_migration:True
+D_800113F8 = 0x800113F8; // force_not_migration:True size:0x10 // the 4 zero bytes after it are the .align 3 pad of jtbl_8001140C
 D_80011434 = 0x80011434; // force_not_migration:True
 D_80011440 = 0x80011440; // force_not_migration:True // string reached from data
 D_80011454 = 0x80011454; // force_not_migration:True // string reached from data
@@ -42,8 +39,85 @@ D_80011778 = 0x80011778; // force_not_migration:True
 D_8001186C = 0x8001186C; // force_not_migration:True
 D_8001187C = 0x8001187C; // force_not_migration:True
 
-// One game bss record of 0x20 bytes, not 26 scalars (.agents/research/hard-cases.md section 4):
-// func_80030E90 and func_8003149C fill it byte by byte; func_8002D6A4 computes &EA28 - 2; gcc
-// keeps a store into it after a table load, as for an aggregate. Its neighbours are Sony's:
-// 0x8008EA0A is LIBGPU's (psyq/80020C74), 0x8008EA2C LIBSND's (psyq/80032148 and three more).
+// One bss record of 0x20 bytes, not 26 scalars (.agents/research/hard-cases.md section 4):
+// SsUtKeyOn and SsUtKeyOnV fill it byte by byte, SpuVmDoAllocate computes &EA28 - 2. All three
+// turned out to be LIBSND VMANAGER (2026-10-15), so this is a LIBSND variable, not game data.
+// Its neighbours: 0x8008EA0A is LIBGPU's (psyq/80020C74), 0x8008EA2C LIBSND's.
 D_8008EA0C = 0x8008EA0C; // size:0x20
+
+// Records that splat cut into fake labels from lwl/lwr and field offsets (work/config-window.md).
+D_80087F30 = 0x80087F30; // size:0xE0 // 6-byte colour+s16 records, D_80087F33/34 were the lwl/lh halves
+D_80088D3C = 0x80088D3C; // size:0x1DC // same 6-byte records, D_80088D3F/40 were the lwl/lh halves
+D_8008E0A4 = 0x8008E0A4; // size:0x20 // one record filled by func_80055258/func_80055410, passed whole to func_80056320
+// Jump table without the zero word after it: that word is the .align 3 pad of jtbl_80011594.
+jtbl_8001157C = 0x8001157C; // size:0x14
+// 8-byte sdata pairs copied whole as structs, defined with their initializer in their C unit (splat.yaml .sdata).
+D_8008A8FC = 0x8008A8FC; // size:0x8
+D_8008AB68 = 0x8008AB68; // size:0x8
+D_8008AB70 = 0x8008AB70; // size:0x8
+
+// Names with evidence (2026-10-15, .agents/research/names-proposed.md); the comment names the discoveries.md row.
+DreamSys_InitNewGame = 0x8005A258; // type:func size:0x78 // docs/discoveries.md#everything-the-game-remembers-fits-in-one-block
+DreamSys_GetDayNumber = 0x8005A2E4; // type:func size:0x20 // docs/discoveries.md#the-day-counter-and-the-hidden-year
+DreamSys_AdvanceDay = 0x8005A304; // type:func size:0x38 // docs/discoveries.md#the-day-counter-and-the-hidden-year
+DreamSys_GetSaveBlock = 0x8005A350; // type:func size:0x18 // docs/discoveries.md#everything-the-game-remembers-fits-in-one-block
+DreamSys_StartDay = 0x8005A368; // type:func size:0xB4 // docs/discoveries.md#the-day-counter-and-the-hidden-year
+DreamSys_EndDay = 0x8005A41C; // type:func size:0xCC // docs/discoveries.md#the-day-counter-and-the-hidden-year
+DreamSys_ChooseStart = 0x8005A508; // type:func size:0x78 // docs/discoveries.md#the-first-dream-of-a-new-year-starts-from-the-wrong-data
+DreamSys_LinkDynamic = 0x8005A580; // type:func size:0x58 // docs/discoveries.md#where-a-random-link-sends-you
+DreamSys_LinkStatic = 0x8005A5D8; // type:func size:0x64 // docs/discoveries.md#where-a-random-link-sends-you
+DreamSys_ExecuteLink = 0x8005A928; // type:func size:0xA4 // docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+DreamSys_TickTimer = 0x80058D94; // type:func size:0xF8 // docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+DreamSys_OnWallTouch = 0x80058FAC; // type:func size:0x134 // docs/discoveries.md#where-a-random-link-sends-you
+DreamSys_SwapTimeLimit = 0x80059328; // type:func size:0x38 // docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+DreamSys_GetElapsedSeconds = 0x80059360; // type:func size:0x1C // docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+DreamSys_GetPreviousPoint = 0x8005B1F4; // type:func size:0x100 // docs/discoveries.md#the-first-dream-of-a-new-year-starts-from-the-wrong-data
+DreamSys_ResetMoodAccumulators = 0x8005B2F4; // type:func size:0xB0 // docs/discoveries.md#the-42-special-days
+DreamSys_LogChunkMood = 0x8005B3A4; // type:func size:0x4C // matched C, docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+DreamSys_ComputeDayPoint = 0x8005B420; // type:func size:0xC0 // docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+Mood_Log = 0x8005B5B8; // type:func size:0x38 // docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+Mood_Resolve = 0x8005B5F0; // type:func size:0x7C // docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+Mood_CalcAxis = 0x8005B66C; // type:func size:0x74 // docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+Stage_FindChunkByMood = 0x8004950C; // type:func size:0xAC // docs/discoveries.md#how-the-graph-picks-where-tomorrow-starts
+Stage_GetChunkMood = 0x800495B8; // type:func size:0x50 // matched C, docs/discoveries.md#how-a-day-becomes-a-point-on-the-graph
+Spawn_PickRandom = 0x8005BB30; // type:func size:0x184 // docs/discoveries.md#how-the-graph-picks-where-tomorrow-starts
+Spawn_PickFromMood = 0x8005C28C; // type:func size:0x1AC // docs/discoveries.md#how-the-graph-picks-where-tomorrow-starts
+Stage_GetTimeLimit = 0x8005BB14; // type:func size:0x1C // matched C, docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+Day_FindSpecial = 0x8005C438; // type:func size:0xD0 // docs/discoveries.md#the-42-special-days
+Stage_PickTexturePath = 0x80048EA0; // type:func size:0xC0 // docs/discoveries.md#the-40-day-texture-cycle
+Stage_GetPathBase = 0x80048E2C; // type:func size:0x54 // docs/discoveries.md#the-40-day-texture-cycle
+Sym_LoadModels = 0x8005C508; // type:func size:0xE0 // docs/discoveries.md#when-the-grey-man-can-appear
+Sym_SpawnOrSpy = 0x8005C7D4; // type:func size:0xD8 // docs/discoveries.md#when-the-grey-man-can-appear
+Sym_CheckDayParity = 0x8005C9A4; // type:func size:0x38 // docs/discoveries.md#when-the-grey-man-can-appear
+Sym_SpawnSpy = 0x8005CF34; // type:func size:0xA8 // docs/discoveries.md#when-the-grey-man-can-appear
+g_stageTimeLimits = 0x80087F14; // docs/discoveries.md#the-start-place-sets-the-length-of-the-dream
+g_specialDays = 0x80088CCC; // docs/discoveries.md#the-42-special-days
+g_spyModel = 0x80088D28; // docs/discoveries.md#when-the-grey-man-can-appear
+g_currentStage = 0x8008ABF8; // docs/discoveries.md#when-the-grey-man-can-appear
+g_dynamicLinkCount = 0x8008ACB8; // docs/discoveries.md#everything-the-game-remembers-fits-in-one-block
+g_navFlags = 0x8008ACB4; // docs/discoveries.md#what-unlocks-flashback-in-the-menu
+DreamSys_CalcUnlockScore = 0x8005B6E0; // type:func size:0x6C // docs/discoveries.md#what-unlocks-flashback-in-the-menu
+Nav_CalcScore = 0x8005BA7C; // type:func size:0x98 // docs/discoveries.md#what-unlocks-flashback-in-the-menu
+Nav_InitFlags = 0x8005BA50; // type:func size:0x2C // docs/discoveries.md#everything-the-game-remembers-fits-in-one-block
+DreamSys_AddFlashback = 0x8005B74C; // type:func size:0xD0 // docs/discoveries.md#how-flashback-memories-are-kept
+DreamSys_MaybeSaveFlashback = 0x8005B81C; // type:func size:0xE0 // docs/discoveries.md#how-flashback-memories-are-kept
+DreamSys_ClearFlashbacks = 0x8005B8FC; // type:func size:0x8 // docs/discoveries.md#what-erases-the-flashbacks
+DreamSys_LoadNextFlashback = 0x8005A63C; // type:func size:0xC4 // docs/discoveries.md#how-flashback-memories-are-kept
+DreamSys_SetFlashbackMode = 0x800590E8; // type:func size:0x60 // docs/discoveries.md#how-flashback-memories-are-kept
+DreamSys_OnEntityEvent = 0x8005B03C; // type:func size:0x1B8 // docs/discoveries.md#signals-from-characters-and-objects
+DreamSys_GetCinematic = 0x8005A4E8; // type:func size:0x20 // docs/discoveries.md#what-a-special-day-shows
+Cine_GetPath = 0x80049334; // type:func size:0x94 // docs/discoveries.md#what-a-special-day-shows
+Cine_GetSpecialDayPaths = 0x800492D0; // type:func size:0x64 // docs/discoveries.md#what-a-special-day-shows
+Cine_GetEventPath = 0x80049270; // type:func size:0x60 // docs/discoveries.md#signals-from-characters-and-objects
+Scene_PlayCinematic = 0x8002677C; // type:func size:0x184 // docs/discoveries.md#what-a-special-day-shows
+Menu_UpdateFlashbackItem = 0x8004D678; // type:func size:0x34 // docs/discoveries.md#what-unlocks-flashback-in-the-menu
+SaveMenu_SetTitleDay = 0x8004D6AC; // type:func size:0x58 // docs/discoveries.md#how-the-memory-card-save-works
+SaveMenu_Save = 0x8004E0E4; // type:func size:0xE0 // docs/discoveries.md#how-the-memory-card-save-works
+SaveMenu_Load = 0x8004E1C4; // type:func size:0x6C // docs/discoveries.md#how-the-memory-card-save-works
+Scene_SeedRandom = 0x800260A4; // type:func size:0x64 // docs/discoveries.md#the-dice-of-the-game
+Rand_SeedAndNext = 0x80048CFC; // type:func size:0x2C // docs/discoveries.md#the-dice-of-the-game
+Behavior_EraseFlashbacks = 0x80064618; // type:func size:0xC0 // docs/discoveries.md#what-erases-the-flashbacks
+g_randState = 0x8008AC68; // docs/discoveries.md#the-dice-of-the-game
+g_cardFileName = 0x8008AA10; // docs/discoveries.md#how-the-memory-card-save-works
+g_cardTitle = 0x8008AA18; // docs/discoveries.md#how-the-memory-card-save-works
+g_videoTable = 0x80086170; // docs/discoveries.md#what-a-special-day-shows

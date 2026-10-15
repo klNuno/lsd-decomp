@@ -68,19 +68,40 @@ def code_of(line):
     return re.sub(r"//.*", "", re.sub(r"/\*.*?\*/", "", line)).rstrip()
 
 
+KR_HEAD = re.compile(r"^[A-Za-z_][\w \t*]*\b\w+\s*\([\w\s,]*\)\s*$")
+
+
+def is_kr_head(line):
+    """The first line of a K&R definition, `s32 f(a, b)`: a function head with bare parameter
+    names, no ';' and no '{'. Its parameter declarations and body follow on the next lines."""
+    code = code_of(line).strip()
+    return bool(KR_HEAD.match(code)) and not code.startswith(("typedef", "extern", "return", "else", "if", "while", "for", "switch"))
+
+
 def is_function_start(item):
-    """A function definition: the code before its first '{' ends with ')'.
-    A struct, union or enum body has no parenthesis right before its brace."""
+    """A function definition: the code before its first '{' ends with ')', or the item opens
+    with a K&R head. A struct, union or enum body has no parenthesis right before its brace."""
     if "{" not in item:
         return False
+    if is_kr_head(item.splitlines()[0]):
+        return True
     head = " ".join(code_of(l) for l in item.split("{", 1)[0].splitlines()).strip()
     return head.endswith(")") and not head.startswith(("typedef", "extern"))
 
 
+def is_initialized_data(item):
+    """A top-level definition with an initializer (`T D_x = { ... };`): a unit that owns .sdata
+    (config/splat.yaml) defines it after every INCLUDE_RODATA, because maspsx stays in its .sdata
+    state until a .text line and fails on the `.section .rodata` that would follow."""
+    code = " ".join(code_of(l) for l in item.splitlines()).strip()
+    return bool(re.match(r"^(?!typedef\b|extern\b)[\w\s*]+\b[A-Za-z_]\w*(\[[^\]]*\])*\s*=", code))
+
+
 def normalize(unit):
     """Rewrite a unit as: includes, every top-level declaration, then functions and
-    INCLUDE_ASM lines in their original order. A declaration never sits below a user."""
-    includes, decls, bodies, buf, depth = [], [], [], [], 0
+    INCLUDE_ASM lines in their original order, then initialized data definitions.
+    A declaration never sits below a user (initialized data has an extern at the top)."""
+    includes, decls, bodies, tail, buf, depth = [], [], [], [], [], 0
     for line in unit.splitlines():
         if not buf and not line.strip():
             continue
@@ -93,11 +114,14 @@ def normalize(unit):
         buf.append(line)
         code = code_of(line)
         depth += code.count("{") - code.count("}")
-        if depth == 0 and (code.endswith((";", "}")) or not code.strip()):
+        kr_open = is_kr_head(buf[0]) and "{" not in "".join(code_of(l) for l in buf)
+        if depth == 0 and not kr_open and (code.endswith((";", "}")) or not code.strip()):
             item = "\n".join(buf)
             buf = []
             if is_function_start(item) and not item.rstrip().endswith(";"):
                 bodies.append(item)
+            elif is_initialized_data(item):
+                tail.append(item)
             else:
                 decls.append(item)
     if buf:
@@ -111,7 +135,10 @@ def normalize(unit):
     out = "\n".join(includes) + "\n\n"
     if uniq:
         out += "\n".join(uniq) + "\n\n"
-    return out + "\n\n".join(bodies) + "\n"
+    out += "\n\n".join(bodies) + "\n"
+    if tail:
+        out += "\n" + "\n".join(tail) + "\n"
+    return out
 
 
 def type_name(item):

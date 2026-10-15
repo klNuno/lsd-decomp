@@ -149,7 +149,7 @@ typedef struct Unk_80039F64 {
     u16 unk1E;
     s32 unk20;
 } Unk_80039F64;
-extern s16 func_8003A99C(s32, s16);
+extern s16 SsSeqOpen(s32, s16);
 extern s32 printf(const char *fmt, ...);
 typedef struct Unk_80039C04C {
     u8 pad_00[0x54];
@@ -251,7 +251,7 @@ s32 func_80039C04(Unk_80039C04 *arg0) {
     if (temp_v1->unk2C == 0) {
         return 0;
     }
-    temp_v0 = func_8003A99C(temp_v1->unk10, temp_a1->unk54);
+    temp_v0 = SsSeqOpen(temp_v1->unk10, temp_a1->unk54);
     arg0->unk14 = temp_v0;
     if (temp_v0 == -1) {
         printf("Seq Open error in WBgmHandleMonitorEvent");
