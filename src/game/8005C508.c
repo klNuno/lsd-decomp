@@ -2324,6 +2324,71 @@ typedef struct Unk_80060D80_Vtbl {
     u8 pad_D0[0x148 - 0xD0];
     s32 (*unk148)(void *);
 } Unk_80060D80_Vtbl;
+s32 func_80065D64(Unk_80065D64 *arg0, u8 arg1);
+typedef struct Unk_80066340_Vec3 {
+    s32 v[3];
+} Unk_80066340_Vec3;
+typedef struct Unk_80066340_Param {
+    s32 scale[4];
+    s16 rot[4];
+    Unk_80066340_Vec3 trans;
+} Unk_80066340_Param;
+typedef struct Unk_80066340_Coord {
+    s32 flg;
+    u8 pad_04[0x14];
+    Unk_80066340_Vec3 t;
+    u8 pad_24[0x20];
+    Unk_80066340_Param *param;
+} Unk_80066340_Coord;
+typedef struct Unk_80066340_Obj Unk_80066340_Obj;
+typedef struct Unk_80066340_ObjVt {
+    u8 pad_00[0x4C];
+    void (*unk4C)(Unk_80066340_Obj *, void *, s32);
+} Unk_80066340_ObjVt;
+struct Unk_80066340_Obj {
+    Unk_80066340_ObjVt *vt;
+    u8 pad_04[0xC];
+    s32 unk10;
+    Unk_80066340_Coord *unk14;
+    u8 pad_18[0x8];
+    s32 unk20;
+};
+typedef struct Unk_80066340_Tbl Unk_80066340_Tbl;
+typedef struct Unk_80066340_TblVt {
+    u8 pad_00[0x80];
+    s32 (*unk80)(Unk_80066340_Tbl *, s32);
+} Unk_80066340_TblVt;
+struct Unk_80066340_Tbl {
+    Unk_80066340_TblVt *vt;
+};
+typedef struct Unk_80066340_Src Unk_80066340_Src;
+typedef struct Unk_80066340_SrcVt {
+    u8 pad_00[0x84];
+    s32 *(*unk84)(Unk_80066340_Src *, s32, u8 *, u8 *, u8 *, u8 *);
+} Unk_80066340_SrcVt;
+struct Unk_80066340_Src {
+    Unk_80066340_SrcVt *vt;
+    u8 pad_04[0x28];
+    Unk_80066340_Tbl *unk2C;
+};
+typedef struct Unk_80066340 {
+    u8 pad_00[0x5C];
+    Unk_80066340_Src *unk5C;
+    u8 pad_60[0x10];
+    Unk_80066340_Obj **unk70;
+} Unk_80066340;
+extern s16 D_80089EA2[];
+typedef struct Unk_800602AC_Vt {
+    u8 pad[0x48];
+    void (*unk48)(void *, s32, void *);
+} Unk_800602AC_Vt;
+typedef struct Unk_800602AC {
+    Unk_800602AC_Vt *unk0;
+    u8 pad4[0x44 - 0x4];
+    s32 unk44;
+    u8 pad48[0xFC - 0x48];
+    s32 unkFC;
+} Unk_800602AC;
 
 void func_8005C508(void) {
     struct Unk_80026CE8 sp10;
@@ -2919,7 +2984,7 @@ s32 func_8005DD18(Unk_8005DD18 *arg0) {
 
     if (arg0->unkF0 != 0) {
         temp_s1 = &D_80089EA4[arg0->unk98];
-        ((void (*)(void *, s32))func_8005DF9C)(arg0, 0);
+        func_8005DF9C(arg0, 0);
         mode = temp_s1->unk4;
         flag = 0;
         if (mode != 0 && mode != 3) {
@@ -2992,7 +3057,7 @@ s32 func_8005DEE0(Unk_8005DEE0 *arg0) {
     return arg0->unkF8;
 }
 
-void func_8005DF9C(Unk_8005DF9C *arg0) {
+void func_8005DF9C(Unk_8005DF9C *arg0, s32 arg1) {
     s8 temp_v0;
 
     if (D_80089EAB[arg0->unk98 * 16] < 0) {
@@ -3570,7 +3635,19 @@ void func_80060148(Unk_80060148 *arg0, Unk_8005E7A8 *arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_800602AC);
+void func_800602AC(Unk_800602AC *arg0, Unk_80063CAC *arg1) {
+    if (arg0->unkFC == 0) {
+        arg0->unk44 = rand() % 5 + 0xA;
+    }
+    if (arg0->unk44 < 0xE || arg0->unkFC < 0x140) {
+        func_80064FBC((Unk_80064FBC *)arg0, arg1, 0xBB8, 0x1F4, -0x100);
+        return;
+    }
+    if (arg0->unk44 == 0xE && !(arg0->unkFC & 3)) {
+        D_80089EA2[0] = rand() % 32 + 1;
+        arg0->unk0->unk48(arg0, 1, &D_80089EA2[-5]);
+    }
+}
 
 void func_800603C4(Unk_800603C4 *arg0, Unk_80063CAC *arg1) {
     s32 v;
@@ -4673,8 +4750,8 @@ void func_80064B80(Unk_80064B80 *arg0) {
     }
 }
 
-void func_80064CA4(Unk_80064CA4 *arg0) {
-    ((void (*)(void *))func_80062570)(arg0);
+void func_80064CA4(Unk_80064CA4 *arg0, Unk_80063CAC *arg1) {
+    func_80062570((Unk_80062570 *)arg0, arg1);
     arg0->unk0->unk48(arg0, 1, &D_80089E38);
 }
 
@@ -4759,8 +4836,8 @@ void func_80064FBC(Unk_80064FBC *arg0, Unk_80063CAC *arg1, s32 arg2, s32 arg3, s
     }
 }
 
-void func_800650D4(void) {
-    ((void (*)())func_80060D80)();
+void func_800650D4(Unk_80060CF0 *arg0, Unk_80063CAC *arg1) {
+    func_80060D80(arg0, arg1);
 }
 
 void func_800650F4(Unk_func_800650F4_Obj **arg0) {
@@ -5176,7 +5253,103 @@ void *func_800662BC(Unk_800662BC *arg0, u8 *arg1, void *arg2) {
     return arg1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80066340);
+s32 func_80066340(Unk_80066340 *arg0, s32 arg1) {
+    u8 idx;
+    u8 cmd;
+    u8 flags;
+    u8 size;
+    s32 *data;
+    s32 n;
+    Unk_80066340_Obj *obj;
+    Unk_80066340_Coord *coord;
+    Unk_80066340_Param *param;
+    s16 *s;
+    s16 *r;
+    s32 *v;
+    s32 i;
+
+    data = arg0->unk5C->vt->unk84(arg0->unk5C, arg1, &idx, &cmd, &flags, &size);
+    n = func_80065D64((Unk_80065D64 *)arg0, idx);
+    if (n >= 0) {
+        obj = arg0->unk70[n];
+        coord = obj->unk14;
+        coord->flg = 0;
+        param = coord->param;
+        switch (cmd) {
+        case 0:
+            obj->unk10 = (obj->unk10 & data[0]) | data[1];
+            break;
+        case 1:
+            if (flags & 1) {
+                if (flags & 2) {
+                    r = param->rot;
+                    for (i = 0; i < 3; i++, r++) {
+                        *r += data[i] / 360;
+                        *r %= 4096;
+                    }
+                    data += 3;
+                }
+                if (flags & 4) {
+                    v = param->scale;
+                    s = (s16 *)data;
+                    for (i = 0; i < 3; i++) {
+                        *v = s[i] * *v / 4096;
+                        v++;
+                    }
+                    data += 2;
+                }
+                if (flags & 8) {
+                    v = param->trans.v;
+                    for (i = 0; i < 3; i++) {
+                        *v += data[i];
+                        v++;
+                    }
+                    obj->unk14->t = param->trans;
+                }
+            } else {
+                if (flags & 2) {
+                    r = param->rot;
+                    for (i = 0; i < 3; i++) {
+                        *r = data[i] / 360;
+                        r++;
+                    }
+                    data += 3;
+                }
+                if (flags & 4) {
+                    v = param->scale;
+                    s = (s16 *)data;
+                    for (i = 0; i < 3; i++) {
+                        *v = s[i];
+                        v++;
+                    }
+                    data += 2;
+                }
+                if (flags & 8) {
+                    v = param->trans.v;
+                    for (i = 0; i < 3; i++) {
+                        *v = data[i];
+                        v++;
+                    }
+                    obj->unk14->t = param->trans;
+                }
+            }
+            break;
+        case 2:
+            if (*(u16 *)data != 0 && obj->unk20 == 0) {
+                func_8001E770(obj, arg0->unk5C->unk2C->vt->unk80(arg0->unk5C->unk2C, *(u16 *)data - 1));
+            }
+            break;
+        case 3:
+            if (data[0] == 0 || data[0] == 0xFFFF) {
+                obj->vt->unk4C(obj, arg0, 0);
+            } else {
+                obj->vt->unk4C(obj, arg0->unk70[func_80065D64((Unk_80065D64 *)arg0, data[0])], 0);
+            }
+            break;
+        }
+    }
+    return arg1 + size * 4;
+}
 
 void func_80066748(Unk_80066748 *arg0, Unk_80066748 *arg1) {
     if (arg1 != NULL) {

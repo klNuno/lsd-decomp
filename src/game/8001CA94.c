@@ -363,6 +363,17 @@ typedef struct Unk_8001D714_Loc {
     s32 unk4;
     u8 pad_08[0x30];
 } Unk_8001D714_Loc;
+typedef struct Unk_8001816C {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+} Unk_8001816C;
+void func_8001816C(Unk_8001816C *arg1, s32 *arg2, s32 *arg3);
+typedef struct Unk_8001E4A4 {
+    u8 unk0;
+    u8 pad_01[0xF];
+    void (*unk10)(s32 **, s32);
+} Unk_8001E4A4;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -814,7 +825,31 @@ void func_8001E2E8(s16 *out, s16 *bounds, s16 *a, s16 *b)
 void func_8001E49C(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001E4A4);
+void func_8001E4A4(s32 arg0, Unk_8001816C *arg1) {
+    Unk_8001E4A4 *obj;
+    s32 **p;
+    s32 more;
+
+    p = NULL;
+    do {
+        for (;;) {
+            func_8001816C(arg1, (s32 *)&p, &more);
+            if (p != NULL && (**p & 0xF) == 4) {
+                break;
+            }
+            if (more == 0) {
+                p = NULL;
+                break;
+            }
+        }
+        if (p != NULL) {
+            obj = (Unk_8001E4A4 *)*p;
+            if (obj->unk0 == 0x34) {
+                obj->unk10(p, arg0);
+            }
+        }
+    } while (more != 0);
+}
 
 Unk_8001CA94_vt *func_8001E57C(void) {
     return (Unk_8001CA94_vt *)D_8006B5CC;

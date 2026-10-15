@@ -108,6 +108,81 @@ struct Unk_8001F51C_tmp {
 };
 extern u8 D_8006BEA0[];
 s32 D_8008AC4C;
+typedef struct Unk_80020050_Prim {
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+    u16 unk4;
+    u16 unk6;
+    u16 unk8;
+    u16 unkA;
+    u16 unkC;
+    u16 unkE;
+    u16 unk10;
+    u16 unk12;
+    u16 unk14;
+    u16 unk16;
+    u16 unk18;
+    u16 unk1A;
+    u16 unk1C;
+    u16 unk1E;
+    u16 unk20;
+    u16 unk22;
+    u16 unk24;
+    u16 unk26;
+    u16 unk28;
+    u16 unk2A;
+} Unk_80020050_Prim;
+typedef struct Unk_80020050_Vec {
+    s16 x;
+    s16 y;
+    s16 z;
+} Unk_80020050_Vec;
+typedef struct Unk_80020050_Vert {
+    Unk_80020050_Vec v;
+    s16 pad;
+} Unk_80020050_Vert;
+typedef struct Unk_80020050_Model {
+    Unk_80020050_Vert *unk0;
+    u8 pad_04[0xC];
+    Unk_80020050_Prim *unk10;
+    u32 unk14;
+} Unk_80020050_Model;
+typedef struct Unk_80020050 {
+    u8 pad_00[0x10];
+    Unk_80020050_Model *unk10;
+} Unk_80020050;
+typedef struct {
+    u16 x;
+    u16 y;
+    u16 z;
+} Unk_8001F66C_V;
+typedef struct {
+    Unk_8001F66C_V v[8];
+} Unk_8001F66C_Rec;
+struct Unk_8001F66C {
+    s32 count;
+    Unk_8001F66C_Rec recs[1];
+};
+typedef struct Unk_8001F3B0_Vec {
+    s16 x, y, z;
+} Unk_8001F3B0_Vec;
+typedef struct Unk_8001F3B0_Box {
+    Unk_8001F3B0_Vec min;
+    Unk_8001F3B0_Vec max;
+} Unk_8001F3B0_Box;
+typedef struct Unk_8001F3B0_Vert {
+    s16 x, y, z, pad;
+} Unk_8001F3B0_Vert;
+typedef struct Unk_8001F3B0_Mesh {
+    Unk_8001F3B0_Vert *verts;
+    s32 count;
+} Unk_8001F3B0_Mesh;
+typedef struct Unk_8001F3B0 {
+    u8 pad_00[0x10];
+    Unk_8001F3B0_Mesh *unk10;
+} Unk_8001F3B0;
 
 void *func_8001F250(s32 arg0) {
     void *temp;
@@ -159,7 +234,51 @@ s32 func_8001F3A4(s32 arg0) {
     return D_8008AC4C;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F3B0);
+void func_8001F3B0(void *arg0, u8 *arg1) {
+    Unk_8001F3B0_Box *box;
+    Unk_8001F3B0_Vert *v;
+    s16 *miny;
+    s16 *minz;
+    s16 *maxx;
+    s16 *maxy;
+    s16 *maxz;
+    s32 n;
+    s32 i;
+
+    box = (Unk_8001F3B0_Box *)arg1;
+    miny = &box->min.y;
+    minz = &box->min.z;
+    maxx = &box->max.x;
+    maxy = &box->max.y;
+    maxz = &box->max.z;
+    v = ((Unk_8001F3B0 *)arg0)->unk10->verts;
+    n = ((Unk_8001F3B0 *)arg0)->unk10->count - 1;
+    box->min.x = v->x;
+    box->min.y = v->y;
+    box->min.z = v->z;
+    box->max = box->min;
+    for (i = 0; i < n; i++) {
+        v++;
+        if (v->x < box->min.x) {
+            box->min.x = v->x;
+        }
+        if (v->y < *miny) {
+            *miny = v->y;
+        }
+        if (v->z < *minz) {
+            *minz = v->z;
+        }
+        if (*maxx < v->x) {
+            *maxx = v->x;
+        }
+        if (*maxy < v->y) {
+            *maxy = v->y;
+        }
+        if (*maxz < v->z) {
+            *maxz = v->z;
+        }
+    }
+}
 
 void func_8001F4E4(void *arg0) {
     func_8001F3B0(arg0, D_8008B21C);
@@ -201,11 +320,246 @@ void func_8001F51C(void *arg0, struct Unk_8001F51C *arg1) {
     arg1->unk0 = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F66C);
+void func_8001F66C(struct Unk_8001F66C *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk_8001F66C_Rec t;
+    Unk_8001F66C_Rec *rec;
+    s32 i;
+
+    for (i = 0; i < arg0->count; i++) {
+        rec = &arg0->recs[i];
+        if (arg1 != 0) {
+            t = *rec;
+            rec->v[3] = t.v[0];
+            rec->v[2] = t.v[1];
+            rec->v[6] = t.v[2];
+            rec->v[7] = t.v[3];
+            rec->v[0] = t.v[4];
+            rec->v[1] = t.v[5];
+            rec->v[5] = t.v[6];
+            rec->v[4] = t.v[7];
+            if (arg2 == 0) {
+                s32 j;
+
+                for (j = 0; j < 4; j++) {
+                    rec->v[j].x += arg3;
+                }
+            } else {
+                Unk_8001F66C_V *p = rec->v;
+                s32 j;
+
+                for (j = 0; j < 4; j++) {
+                    p[j + 4].x += arg3;
+                }
+            }
+        } else {
+            if (arg2 == 0) {
+                s32 j;
+
+                for (j = 0; j < 4; j++) {
+                    rec->v[j].z += arg3;
+                }
+            } else {
+                Unk_8001F66C_V *p = rec->v;
+                s32 j;
+
+                for (j = 0; j < 4; j++) {
+                    p[j + 4].z += arg3;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F8B8);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_80020050);
+void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk_80020050_Vec *out, u32 *index) {
+    s32 idx[4];
+    s32 size;
+    s32 i;
+    Unk_80020050_Model *model;
+    Unk_80020050_Vert *verts;
+    Unk_80020050_Vert *v;
+
+    model = arg0->unk10;
+    if (model->unk14 == 0 || *index >= model->unk14) {
+        return NULL;
+    }
+    if (*index == 0) {
+        prim = model->unk10;
+    }
+    *count = 4;
+    switch (prim->unk3) {
+    case 0x20:
+    case 0x22:
+        if (prim->unk2 & 4) {
+            idx[0] = prim->unk12;
+            idx[1] = prim->unk14;
+            idx[2] = prim->unk16;
+            size = 0x18;
+        } else {
+            idx[0] = prim->unkA;
+            idx[1] = prim->unkC;
+            idx[2] = prim->unkE;
+            size = 0x10;
+        }
+        *count = 3;
+        break;
+    case 0x21:
+    case 0x23:
+        idx[0] = prim->unk8;
+        idx[1] = prim->unkA;
+        idx[2] = prim->unkC;
+        size = 0x10;
+        *count = 3;
+        break;
+    case 0x24:
+    case 0x26:
+        idx[0] = prim->unk12;
+        idx[1] = prim->unk14;
+        idx[2] = prim->unk16;
+        size = 0x18;
+        *count = 3;
+        break;
+    case 0x25:
+    case 0x27:
+        idx[0] = prim->unk14;
+        idx[1] = prim->unk16;
+        idx[2] = prim->unk18;
+        size = 0x1C;
+        *count = 3;
+        break;
+    case 0x28:
+    case 0x2A:
+        if (prim->unk2 & 4) {
+            idx[0] = prim->unk16;
+            idx[1] = prim->unk18;
+            idx[2] = prim->unk1A;
+            idx[3] = prim->unk1C;
+            size = 0x20;
+        } else {
+            idx[0] = prim->unkA;
+            idx[1] = prim->unkC;
+            idx[2] = prim->unkE;
+            idx[3] = prim->unk10;
+            size = 0x14;
+        }
+        break;
+    case 0x29:
+    case 0x2B:
+        idx[0] = prim->unk8;
+        idx[1] = prim->unkA;
+        idx[2] = prim->unkC;
+        idx[3] = prim->unkE;
+        size = 0x10;
+        break;
+    case 0x2C:
+    case 0x2E:
+        idx[0] = prim->unk16;
+        idx[1] = prim->unk18;
+        idx[2] = prim->unk1A;
+        idx[3] = prim->unk1C;
+        size = 0x20;
+        break;
+    case 0x2D:
+    case 0x2F:
+        idx[0] = prim->unk18;
+        idx[1] = prim->unk1A;
+        idx[2] = prim->unk1C;
+        idx[3] = prim->unk1E;
+        size = 0x20;
+        break;
+    case 0x30:
+    case 0x32:
+        if (prim->unk2 & 4) {
+            idx[0] = prim->unk12;
+            idx[1] = prim->unk16;
+            idx[2] = prim->unk1A;
+            size = 0x1C;
+        } else {
+            idx[0] = prim->unkA;
+            idx[1] = prim->unkE;
+            idx[2] = prim->unk12;
+            size = 0x14;
+        }
+        *count = 3;
+        break;
+    case 0x31:
+    case 0x33:
+        idx[0] = prim->unk10;
+        idx[1] = prim->unk12;
+        idx[2] = prim->unk14;
+        size = 0x18;
+        *count = 3;
+        break;
+    case 0x34:
+    case 0x36:
+        idx[0] = prim->unk12;
+        idx[1] = prim->unk16;
+        idx[2] = prim->unk1A;
+        size = 0x1C;
+        *count = 3;
+        break;
+    case 0x35:
+    case 0x37:
+        idx[0] = prim->unk1C;
+        idx[1] = prim->unk1E;
+        idx[2] = prim->unk20;
+        size = 0x24;
+        *count = 3;
+        break;
+    case 0x38:
+    case 0x3A:
+        if (prim->unk2 & 4) {
+            idx[0] = prim->unk16;
+            idx[1] = prim->unk1A;
+            idx[2] = prim->unk1E;
+            idx[3] = prim->unk22;
+            size = 0x24;
+        } else {
+            idx[0] = prim->unkA;
+            idx[1] = prim->unkE;
+            idx[2] = prim->unk12;
+            idx[3] = prim->unk16;
+            size = 0x18;
+        }
+        break;
+    case 0x39:
+    case 0x3B:
+        idx[0] = prim->unk14;
+        idx[1] = prim->unk16;
+        idx[2] = prim->unk18;
+        idx[3] = prim->unk1A;
+        size = 0x1C;
+        break;
+    case 0x3C:
+    case 0x3E:
+        idx[0] = prim->unk16;
+        idx[1] = prim->unk1A;
+        idx[2] = prim->unk1E;
+        idx[3] = prim->unk22;
+        size = 0x24;
+        break;
+    case 0x3D:
+    case 0x3F:
+        idx[0] = prim->unk24;
+        idx[1] = prim->unk26;
+        idx[2] = prim->unk28;
+        idx[3] = prim->unk2A;
+        size = 0x2C;
+        break;
+    default:
+        *count = 0;
+        break;
+    }
+    verts = arg0->unk10->unk0;
+    for (i = 0; i < *count; i++) {
+        v = &verts[idx[i]];
+        *out = v->v;
+        out++;
+    }
+    (*index)++;
+    return (u8 *)prim + size;
+}
 
 void func_800204D0(struct Unk_800204D0 *arg0, struct Unk_800204D0_Arg1 *arg1) {
     struct Unk_800204D0_Q *q = arg0->unk10->unk10;

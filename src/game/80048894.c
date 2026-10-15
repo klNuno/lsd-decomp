@@ -103,7 +103,7 @@ typedef struct Unk_800489B4 {
     u8 pad_30[8];
     s32 unk38;
 } Unk_800489B4;
-void func_80048CFC(s32 arg0);
+s32 func_80048CFC();
 u8 *func_80048F60(s32 arg0);
 u8 *func_80048E80(s32 arg0);
 typedef struct Unk_80048AAC_Vtbl {
@@ -281,11 +281,13 @@ void *func_80048CF0(void) {
     return D_8008A960;
 }
 
-void func_80048CFC(s32 arg0) {
-    if (arg0 != 0) {
-        srand(arg0);
+s32 func_80048CFC(seed)
+    s32 seed;
+{
+    if (seed != 0) {
+        srand(seed);
     }
-    rand();
+    return rand();
 }
 
 void func_80048D28(s32 arg0, s32 arg1) {
@@ -313,7 +315,7 @@ s32 func_80048D74(s32 arg0) {
     u8 *p;
     s32 ofs;
 
-    r = (u32)((s32 (*)(s32, s32))func_80048CFC)(0, arg0) % 7;
+    r = (u32)func_80048CFC(0, arg0) % 7;
     p = func_80048D64();
     if (D_8008A964 != 0) {
         ofs = (D_8008A964 - 1) * 4;
@@ -344,7 +346,7 @@ u8 *func_80048EA0(s32 arg0, s32 arg1, s32 arg2) {
     s32 r;
 
     row = ((arg2 - 1) % 40) / 10 + 1;
-    r = ((s32 (*)(s32, s32))func_80048CFC)(0, arg1) % row;
+    r = func_80048CFC(0, arg1) % row;
     return func_80048E80(arg0) + r * 0x1C;
 }
 
@@ -357,7 +359,7 @@ u8 *func_80048F84(s32 arg0) {
     u8 *temp_a0;
     s32 var_v0;
 
-    var_s0 = ((u32 (*)(s32))func_80048CFC)(0) % 5;
+    var_s0 = (u32)func_80048CFC(0) % 5;
     if (arg0 == 9) {
         if (var_s0 == 2) {
             var_s0 = 3;
@@ -408,7 +410,7 @@ s32 func_8004913C(s32 *arg0) {
     s32 r;
     s32 ret;
 
-    r = (u32)((s32 (*)(s32))func_80048CFC)(0) % 7;
+    r = (u32)func_80048CFC(0) % 7;
     ret = func_80049110(&sp10);
     if (arg0 != NULL) {
         *arg0 = r + sp10;

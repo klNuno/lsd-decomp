@@ -1,7 +1,9 @@
 #include "common.h"
 
 typedef struct Unk_80025C84_Vtbl {
-    u8 pad[0x50];
+    u8 pad[0x30];
+    void (*unk30)(void *, s32);
+    u8 pad34[0x50 - 0x34];
     void (*unk50)(void *, s32);
 } Unk_80025C84_Vtbl;
 typedef struct Unk_80025C84 {
@@ -94,7 +96,44 @@ void func_80025CC4(Unk_80025C84 *arg0) {
     arg0->unk18 = changed & cur;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025D10);
+void func_80025D10(Unk_80025C84 *arg0) {
+    void (*fn)(void *, s32);
+    s32 buf[16];
+    s32 *dst;
+    s32 i;
+    s32 flag;
+    s32 v;
+    s32 bits10;
+    s32 bits14;
+    s32 bits18;
+
+    bits10 = arg0->unk10;
+    bits14 = arg0->unk14;
+    bits18 = arg0->unk18;
+    if (bits10 != 0 || bits14 != 0 || bits18 != 0) {
+        dst = buf;
+        for (i = 0; i < 16; i++) {
+            v = D_8008B388[i];
+            flag = -1;
+            if (bits14 & v) {
+                flag = 0x22;
+            } else if (bits18 & v) {
+                flag = 0x12;
+            } else if (bits10 & v) {
+                flag = 2;
+            }
+            if (flag >= 0) {
+                *dst++ = flag + i;
+            }
+        }
+        dst--;
+        fn = arg0->unk0->unk30;
+        while (dst >= buf) {
+            fn(arg0, *dst);
+            dst--;
+        }
+    }
+}
 
 void func_80025E14(void) {
 }

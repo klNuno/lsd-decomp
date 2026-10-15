@@ -100,6 +100,7 @@ struct Unk_80045DE0 {
     s32 unk5C;
     struct Unk_800458B8_Sub *unk60;
     s32 unk64;
+    void *unk68;
 };
 struct Unk_80045DE0 *D_8008A940;
 struct Unk_800449B8_Vtbl {
@@ -285,7 +286,7 @@ struct Unk_800435D0 {
     u8 pad_00[0x40];
     struct Unk_800435D0_Entry unk40[1];
 };
-extern void func_80043648(void *arg0, s32 arg1);
+void func_80043648(void *arg0, s32 arg1);
 struct Unk_80043BE8_Svc {
     u8 pad_00[0x8];
     void (*unk8)(void *arg0);
@@ -352,7 +353,8 @@ typedef void (*Unk_800458B8_Fn48)(void *self);
 typedef void (*Unk_800458B8_Fn58)(void *self);
 typedef void (*Unk_800458B8_Fn7C)(void *self, void (*cb)(void), void *ctx);
 struct Unk_800458B8_SubVtbl {
-    u8 pad_00[0x48];
+    u8 pad_00[0x44];
+    s32 (*unk44)(void *self, void *arg1, s32 arg2);
     Unk_800458B8_Fn48 unk48;
     u8 pad_4C[0x4];
     void (*unk50)(void *self, s32 arg1, s32 arg2);
@@ -502,6 +504,8 @@ struct Unk_80045BC8 {
 typedef struct Unk_80045BC8_Vtbl {
     u8 pad_00[0x58];
     void (*unk58)(void *self, void *arg1, s32 arg2);
+    u8 pad_5C[0x78 - 0x5C];
+    void (*unk78)(void *self, void *arg1, void *arg2);
 } Unk_80045BC8_Vtbl;
 typedef struct Unk_80045BC8_Obj {
     Unk_80045BC8_Vtbl *unk0;
@@ -684,11 +688,7 @@ extern struct Unk_80044A0C_Obj D_8006F40C;
 extern struct Unk_80044CD4_Vtbl D_8006F498;
 extern struct Unk_80044F30 D_8006F514;
 extern struct Unk_800451B8_Obj D_8006F590;
-struct Unk_800458AC {
-    u8 pad_00[0x50];
-    s32 unk50;
-};
-void func_800458AC(struct Unk_800458AC *arg0);
+void func_800458AC(struct Unk_80045DE0 *arg0);
 struct Unk_80045E3C {
     u8 pad_00[0x68];
     s32 unk68;
@@ -696,6 +696,58 @@ struct Unk_80045E3C {
 struct Unk_80045438_Obj;
 extern u8 D_8006F614[];
 void func_8004593C(struct Unk_8004593C *arg0);
+typedef struct Unk_80043648_Rect {
+    u16 unk0;
+    u16 unk2;
+    s16 unk4;
+    u16 unk6;
+} Unk_80043648_Rect;
+typedef struct Unk_80043648 {
+    /* 0x00 */ u16 unk0;
+    /* 0x02 */ u16 unk2;
+    /* 0x04 */ u8 pad_04[0x6];
+    /* 0x0A */ u16 unkA;
+    /* 0x0C */ u8 unkC;
+    /* 0x0D */ u8 unkD;
+    /* 0x0E */ u8 unkE;
+} Unk_80043648;
+typedef struct Unk_80043648_Frame {
+    Unk_80043648_Rect rect10;
+    Unk_80043648_Rect rect18;
+    u16 pix20[0x100];
+    u16 pix220[0x100];
+    u16 pad420[4];
+} Unk_80043648_Frame;
+s16 D_8008A92C;
+void StoreImage(Unk_80043648_Rect *rect, u32 *arg1);
+s32 LoadImage(Unk_80043648_Rect *rect, u32 *p);
+typedef struct Unk_8004441C {
+    u8 pad0[0x60];
+    s16 unk60;
+    s16 unk62;
+} Unk_8004441C;
+extern void DecDCTvlc(s32 p, s32 q);
+struct Unk_80045AD8_Vtbl {
+    u8 pad_00[0x54];
+    void (*unk54)(void *self);
+    u8 pad_58[0x14];
+    s32 (*unk6C)(void *self, s32 *a, s32 *b, s32 c);
+    void (*unk70)(void *self, s32 arg1);
+};
+struct Unk_80045AD8_Obj {
+    struct Unk_80045AD8_Vtbl *unk0;
+};
+struct Unk_80045AD8 {
+    u8 pad_00[0x14];
+    s32 unk14[2];
+    u8 pad_1C[0x20];
+    s32 unk3C;
+    u8 pad_40[0x8];
+    s32 unk48;
+    u8 pad_4C[0x14];
+    struct Unk_80045AD8_Obj *unk60;
+};
+extern u8 D_8008A944[];
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -763,7 +815,70 @@ void func_800435D0(struct Unk_800435D0 *arg0, s32 arg1, Unk_8004464C_Color *arg2
     func_80026E38();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043648);
+void func_80043648(void *arg0, s32 arg1) {
+    Unk_80043648 *obj = arg0;
+    Unk_80043648_Frame f;
+    s32 i;
+    s32 k;
+    s32 s6;
+    s32 t0;
+    s32 t2;
+    s32 t3;
+    s32 t4;
+    s32 r;
+    s32 g;
+    s32 b;
+    u32 a2;
+    u16 v1;
+    u8 c5;
+    u8 c4;
+    u8 c3;
+
+    f.rect18.unk0 = 0;
+    f.rect18.unk4 = 0x100;
+    f.rect18.unk6 = 1;
+    f.rect18.unk2 = (arg1 << D_8008A92C) + 0x1E0;
+    StoreImage(&f.rect18, (u32 *) f.pix220);
+    DrawSync(0);
+    f.rect10.unk6 = 1;
+    i = 0;
+    f.rect10.unk0 = 0;
+    f.rect10.unk2 = 0;
+    f.rect10.unk4 = 0x100;
+    c5 = obj->unkC;
+    c4 = obj->unkD;
+    c3 = obj->unkE;
+    obj->unkA = obj->unk2;
+    s6 = 0xC - obj->unk0;
+    if (obj->unk2 - 1 > 0) {
+        do {
+            t0 = (i + 1) << s6;
+            t4 = c5 * t0;
+            t3 = c4 * t0;
+            t2 = c3 * t0;
+            t0 = 0x1000 - t0;
+            for (k = 0; k < f.rect18.unk4; k++) {
+                a2 = f.pix220[k];
+                if (a2 == 0) {
+                    f.pix20[k] = f.pix220[k];
+                } else {
+                    v1 = f.pix220[k];
+                    r = (v1 & 0x1F) << 3;
+                    g = (a2 >> 2) & 0xF8;
+                    b = (a2 >> 7) & 0xF8;
+                    r = (r * t0 + t4) >> 15;
+                    g = (g * t0 + t3) >> 15;
+                    b = (b * t0 + t2) >> 15;
+                    f.pix20[k] = (v1 & 0x8000) | r | (g << 5) | (b << 10);
+                }
+            }
+            f.rect10.unk2 = f.rect18.unk2 + i + f.rect18.unk6;
+            DrawSync(0);
+            LoadImage(&f.rect10, (u32 *) f.pix20);
+            i++;
+        } while (i < obj->unk2 - 1);
+    }
+}
 
 struct Unk_80043008_Obj *func_80043830(void) {
     return &D_8006F0B8;
@@ -1050,7 +1165,57 @@ void func_80044380(struct Unk_80044380_Obj *arg0, s32 arg1, struct Unk_80044380_
     arg0->unk64 = temp_a0_2 + arg0->unk64;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004441C);
+void func_8004441C(Unk_8004441C *arg0, s32 arg1, s16 *arg2) {
+    s16 t1;
+    s16 t2;
+    s32 t3 = 0;
+    s32 t4 = 0;
+    s16 v;
+
+    if (arg2[0] < 0 || arg2[1] < 0) {
+        t3 = 1;
+    }
+    if (arg2[2] < 0 || arg2[3] < 0) {
+        t4 = 1;
+    }
+    if (arg2[1] != 0) {
+        s32 q = arg2[0] / arg2[1];
+        s32 r = arg2[0] % arg2[1];
+        t1 = (q << 12) + ((r << 12) / arg2[1]);
+    }
+    if (arg2[3] != 0) {
+        s32 q = arg2[2] / arg2[3];
+        s32 r = arg2[2] % arg2[3];
+        t2 = (q << 12) + ((r << 12) / arg2[3]);
+    }
+    if (arg1 != 0) {
+        if (arg2[1] == 0) {
+            arg0->unk60 = 0x1000;
+        } else {
+            v = t1 >= 0x7531 ? 0x7530 : t1;
+            arg0->unk60 = v;
+        }
+        if (arg2[3] == 0) {
+            arg0->unk62 = 0x1000;
+        } else {
+            v = t2 >= 0x7531 ? 0x7530 : t2;
+            arg0->unk62 = v;
+        }
+        return;
+    }
+    v = arg0->unk60;
+    if (v + t1 >= 0x7531) {
+        arg0->unk60 = t3 ? 1 : 0x7530;
+    } else {
+        arg0->unk60 = t1 + v;
+    }
+    v = arg0->unk62;
+    if (v + t2 >= 0x7531) {
+        arg0->unk62 = t4 ? 1 : 0x7530;
+    } else {
+        arg0->unk62 = t2 + v;
+    }
+}
 
 void func_8004464C(struct Unk_8004464C *arg0, s32 arg1, Unk_8004464C_Color *arg2) {
     if (arg1 != 0) {
@@ -1090,14 +1255,13 @@ struct Unk_800446FC *func_800446FC(struct Unk_800446FC *arg0, struct Unk_80043EE
         temp_v0 = arg0->unk0;
         arg0->unk10 = temp_v1;
         arg0->unk14 = 0;
-        if (temp_v0->unk64(arg0) != 0) {
-            goto ret_null;
+        if (temp_v0->unk64(arg0) == 0) {
+            return arg0;
         }
+    } else {
+        arg0->unk0->unk6C(arg0, arg1->unk4);
         return arg0;
     }
-    arg0->unk0->unk6C(arg0, arg1->unk4);
-    return arg0;
-ret_null:
     return NULL;
 }
 
@@ -1284,34 +1448,24 @@ void func_80044E10(struct Unk_80044E10 *arg0) {
 }
 
 void func_80044E64(struct Unk_80044E64 *arg0) {
-    s16 *temp_v0;
-    s16 *var_a0;
-    s32 var_v1;
-    s32 temp_lo;
-    u16 temp_v1;
-    s32 mul;
-    s32 sp_buf[2];
+    s16 *buf;
+    s16 *p;
+    s32 i;
+    s32 n;
 
     arg0->unk34 = (s32)arg0->unk3C->unk2C;
     if (arg0->unk40 != 0) {
         arg0->unk2E = 0x14;
-        temp_v1 = *(volatile u16 *)&arg0->unk2E;
-        mul = 0xF;
-        temp_lo = temp_v1 * mul;
         arg0->unk2C = 0x10;
         arg0->unk2D = 0x10;
         arg0->unk30 = 0xF;
-        temp_v0 = (s16 *)func_80017B34(temp_lo * 2);
-        arg0->unk38 = temp_v0;
-        if (temp_v0 != NULL) {
-            var_a0 = temp_v0;
-            var_v1 = 0;
-            if (temp_lo != 0) {
-                do {
-                    *var_a0 = var_v1;
-                    var_v1 += 1;
-                    var_a0 += 1;
-                } while (var_v1 < temp_lo);
+        n = arg0->unk2E * arg0->unk30;
+        buf = (s16 *)func_80017B34(n * 2);
+        arg0->unk38 = buf;
+        if (buf != NULL) {
+            p = buf;
+            for (i = 0; i < n; i++) {
+                *p++ = i;
             }
             return;
         }
@@ -1589,9 +1743,35 @@ void func_8004575C(struct Unk_8004575C *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800457C0);
+s32 func_800457C0(struct Unk_80045DE0 *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    struct Unk_800458B8_Sub *sub;
+    Unk_80045BC8_Obj *obj;
 
-void func_800458AC(struct Unk_800458AC *arg0) {
+    if (D_8008A940 == NULL) {
+        if (arg0->unk68 != NULL) {
+            func_800458AC(arg0);
+        }
+        sub = arg0->unk60;
+        arg0->unk5C = arg2;
+        if (sub->unk0->unk44(sub, arg1, 100) == 0) {
+            D_8008A940 = arg0;
+            arg0->unk40 = 0;
+            arg0->unk3C = 0;
+            arg0->unk4C = 1;
+            arg0->unk48 = 0;
+            arg0->unk44 = 0;
+            arg0->unk54 = arg3;
+            arg0->unk58 = arg4;
+            obj = func_80020C5C();
+            obj->unk0->unk78(obj, D_8008A944, (u8 *)arg0 + 0x20);
+            return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+void func_800458AC(struct Unk_80045DE0 *arg0) {
     arg0->unk50 = 1;
 }
 
@@ -1661,7 +1841,30 @@ void func_80045AC8(void) {
 void func_80045AD0(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045AD8);
+s32 func_80045AD8(struct Unk_80045AD8 *arg0) {
+    s32 sp10;
+    s32 sp14;
+    s32 temp;
+    s32 idx;
+
+    if (arg0->unk48 == 0) {
+        temp = arg0->unk60->unk0->unk6C(arg0->unk60, &sp10, &sp14, 0x800000);
+        if (temp != 0) {
+            if (sp14 != 0) {
+                idx = arg0->unk3C ^ 1;
+                arg0->unk3C = idx;
+                DecDCTvlc(sp10, arg0->unk14[idx]);
+            }
+            arg0->unk60->unk0->unk70(arg0->unk60, sp10);
+            if (temp < 0) {
+                arg0->unk48 = 1;
+                arg0->unk60->unk0->unk54(arg0->unk60);
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
 
 void func_80045BC0(void) {
 }

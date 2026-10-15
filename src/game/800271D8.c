@@ -89,11 +89,36 @@ typedef struct Unk_800282AC {
 } Unk_800282AC;
 void func_800281B0(void);
 Unk_800282AC *func_8002832C(void);
+typedef struct Unk_80027A24 Unk_80027A24;
+typedef struct {
+    u8 pad[0x44];
+    void (*unk44)(Unk_80027A24 *, s32, s32, s32);
+    void (*unk48)(Unk_80027A24 *);
+    void (*unk4C)(Unk_80027A24 *, s32, s32);
+    u8 pad2[0x54 - 0x50];
+    void (*unk54)(Unk_80027A24 *, s32, s32);
+    void (*unk58)(Unk_80027A24 *, s32);
+    u8 pad3[0x64 - 0x5C];
+    void (*unk64)(Unk_80027A24 *);
+    u8 pad4[0x70 - 0x68];
+    void (*unk70)(Unk_80027A24 *);
+} Unk_80027A24_Vt;
+struct Unk_80027A24 {
+    Unk_80027A24_Vt *vt;
+    u8 pad[0x1E];
+    u16 unk22;
+    s32 unk24;
+    u16 unk28;
+};
 typedef struct Unk_800283C4 Unk_800283C4;
 struct Unk_800283C4 {
     void *unk0;
     s32 unk4;
-    u8 pad[0x14];
+    s32 unk8;
+    Unk_80027A24 *unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
     Unk_800283C4 *unk1C;
     Unk_800283C4 *unk20;
 };
@@ -404,7 +429,71 @@ s32 func_800276D0(Unk_80027480 *arg0, s32 arg1, u32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027800);
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027A24);
+void func_80027A24(void) {
+    s32 kind;
+    Unk_800283C4 *req;
+    Unk_80027A24 *obj;
+
+    func_800280D0();
+    req = (Unk_800283C4 *)D_8008A894;
+    if (req != NULL) {
+        obj = req->unkC;
+        kind = req->unk8;
+        if (req->unk0 == NULL) {
+            obj->unk28 = 1;
+            switch (kind) {
+            case 2:
+                obj->vt->unk44(obj, func_80028540(req->unk10), req->unk14, req->unk18);
+                break;
+            case 3:
+                obj->vt->unk48(obj);
+                break;
+            case 4:
+                obj->vt->unk4C(obj, req->unk14, req->unk18);
+                break;
+            case 5:
+                obj->vt->unk54(obj, req->unk14, req->unk18);
+                break;
+            case 7:
+                obj->vt->unk58(obj, func_80028540(req->unk10));
+                break;
+            }
+            obj->unk28 = 0;
+        } else if (D_8008A870 != 0) {
+            if (req->unk4 != 0) {
+                obj->unk24 |= 1;
+            }
+            obj->unk24 |= 2;
+            obj->unk22--;
+            if (obj->unk22 == 0) {
+                obj->unk24 |= 4;
+            }
+            switch (kind) {
+            case 2:
+                obj->unk24 |= 0x10;
+                break;
+            case 3:
+                obj->unk24 |= 0x20;
+                break;
+            case 4:
+                obj->unk24 |= 0x40;
+                break;
+            case 5:
+                obj->unk24 |= 0x80;
+                break;
+            case 7:
+                obj->unk24 |= 0x200;
+                break;
+            }
+            obj->vt->unk64(obj);
+            func_800283C4(req);
+            if (D_8008A894 == NULL) {
+                obj->vt->unk70(obj);
+            }
+        }
+    }
+    func_800280E0();
+}
 
 void func_80027C80(Unk_800282AC *arg0, char *arg1) {
     Unk_800283C4 *uninit;

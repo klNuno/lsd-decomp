@@ -220,11 +220,11 @@ Flashback list: count at +0x46C, entries of 0x24 bytes from +0x470 (10 at most, 
 
 Flashback appears in the menu once two things are true: at least one memory is kept, and your score is above 9,999,999. The score is recomputed at the end of each normal day from two parts. The first: 1,000,000 for each of 30 hidden "navigation" goals you completed (all 30 give 50,000,000), minus 11,024 for every random link you took. The second: points from touching characters and objects, up to 50,000,000. So 10 navigation goals with no random link are enough on their own. What completes a navigation goal is not traced yet.
 
-Status: 📖 read in the code only (on day 1 both values were still 0).
+Status: 🎮 checked in the game, with the values written in: a score of 10,000,000 and one kept memory made FLASHBACK appear between START and SAVE.
 
 <p>
 <img src="img/game/flashback-locked.png" alt="Menu with the Flashback item still locked" width="49%">
-<img src="img/game/flashback-unlocked.png" alt="Menu with the Flashback item available" width="49%">
+<img src="img/game/flashback-unlocked.png" alt="Menu with FLASHBACK between START and SAVE, after the score and one memory were written in" width="49%">
 </p>
 
 <details><summary>Technical details</summary>
@@ -232,7 +232,7 @@ Status: 📖 read in the code only (on day 1 both values were still 0).
 Flashback unlock: the menu item is enabled by `func_8004D678` only when the save block's +0xC (DreamSys +0x184, unlock score) is above 9,999,999 and +0x2F4 (+0x46C, flashbacks kept) is not 0. `func_8005B6E0` (vtable 0x210, run by `func_8005A41C` on a normal day end) sets +0x184 = +0x188 + +0x18C. +0x188 comes from `func_8005BA7C`: 1,000,000 per non-zero byte among the 30 navigation flags (+0x5E0 via `D_8008ACB4`), 50,000,000 once all 30 are set, minus 11,024 per dynamic link (+0x600), floored at 0. +0x18C, the instance score, is clamped to 0..50,000,000 and grows on entity message 9 by the entity's vtable 0x150 value (`func_8005B03C`). So 10 navigation challenges with no dynamic link unlock it; each dynamic link costs 11,024. What sets a navigation flag is not traced.
 
 - Proof: `func_8004D678` @0x8004D678, `func_8005B6E0` @0x8005B6E0, `func_8005BA7C` @0x8005BA7C (all matched C), `func_8005B03C` @0x8005B03C, `func_8005A41C` @0x8005A41C.
-- In game: no. On day 1 +0x184 and +0x46C read 0 at `func_8005A368`, the threshold was not reached.
+- In game: yes, forced. On a fresh day 1 +0x184 and +0x46C read 0 and the item is absent. Writing +0x184 = 10,000,000, +0x46C = 1 and zeroing entry +0x470 at vsync 2100 made the menu show FLASHBACK between START and SAVE (capture at 2460; with a flashback kept, the title skips the graph and opens the menu). Script `work/shots/drive.lua`, log `work/shots/manifest.md`.
 - Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
@@ -257,18 +257,18 @@ Erasing flashbacks: `func_8005B8FC` (vtable 0x21C) sets +0x46C to 0 and has one 
 
 ### When the Grey Man can appear
 
-Each spot where a character can stand has a day rule: always, even days only, or odd days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. That this model is the Grey Man rests on its file name, `SYMSPY.MOM`.
+Each spot where a character can stand has a day rule: always, even days only, or odd days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white.
 
-Status: 📖 read in the code only.
+Status: 🎮 checked in the game, with the die forced.
 
-<img src="img/game/grey-man.png" alt="The Grey Man standing in a dream" width="60%">
+<img src="img/game/grey-man.png" alt="The Grey Man, in a hat and long coat, walking toward the camera under the torii of the canal place on day 4" width="60%">
 
 <details><summary>Technical details</summary>
 
-Grey Man spawn: per entity spawn slot, `func_80054120` calls `func_8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `func_8005C9A4` lets a slot's entity appear when its flag is 0, or 1 on even day numbers, or 2 on odd ones. When the flag blocks it, the stage index (`D_8008ABF8`) is not 0, `rand() % 12 == 0` and the day number is even, `func_8005CF34` spawns the model loaded from `ETC\SYMSPY.MOM` (`D_80088D28`, loaded by `func_8005C508`). That this model is the Grey Man rests on the file name. Erasing flashbacks is not traced yet (see [What erases the flashbacks](#what-erases-the-flashbacks) for what was found since).
+Grey Man spawn: per entity spawn slot, `func_80054120` calls `func_8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `func_8005C9A4` lets a slot's entity appear when its flag is 0, or 1 on even day numbers, or 2 on odd ones. When the flag blocks it, the stage index (`D_8008ABF8`) is not 0, `rand() % 12 == 0` and the day number is even, `func_8005CF34` spawns the model loaded from `ETC\SYMSPY.MOM` (`D_80088D28`, loaded by `func_8005C508`). The forced spawn in the emulator shows the Grey Man (hat, long coat), so `SYMSPY.MOM` is his model. Erasing flashbacks is not traced yet (see [What erases the flashbacks](#what-erases-the-flashbacks) for what was found since).
 
 - Proof: `func_8005C7D4` @0x8005C7D4 (asm: `andi s1,1` and the 0x2AAAAAAB divide by 12), `func_8005C9A4` @0x8005C9A4, `func_8005C8AC` @0x8005C8AC, `func_8005C508` @0x8005C508, `func_80054120` @0x80054120.
-- In game: no.
+- In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `func_8005C7D4` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). Whether that contact erased the flashback list was not measured. Log `work/shots/manifest.md`.
 - Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
@@ -279,13 +279,13 @@ Grey Man spawn: per entity spawn slot, `func_80054120` calls `func_8005C7D4(enti
 
 Every place has up to four texture sets, A to D. When a place loads, the game looks at where the day falls in a 40-day cycle. Days 1 to 10 always load set A. Days 11 to 20 load A or B, 21 to 30 one of A to C, 31 to 40 one of A to D, each equally likely. Then the cycle starts again at day 41. Since the day number returns to 1 after day 365, days 361 to 365 count as days 1 to 5 and always load set A.
 
-Status: 📖 read in the code only.
+Status: 🎮 checked in the game, with the draw forced: the same room wears set A on day 5 and set D on day 33.
 
 ![Step chart: days 1 to 10 of the cycle allow only set A, 11 to 20 A or B, 21 to 30 A to C, 31 to 40 A to D](img/chart-texture-cycle.svg)
 
 <p>
-<img src="img/game/textures-day-05.png" alt="A place on day 5, early in the cycle: always texture set A" width="49%">
-<img src="img/game/textures-day-35.png" alt="A place on day 35, late in the cycle: any of the sets A to D" width="49%">
+<img src="img/game/textures-day-05.png" alt="The first room on day 5, early in the cycle: always texture set A" width="49%">
+<img src="img/game/textures-day-33.png" alt="The same room on day 33 with set D drawn: photo collage textures" width="49%">
 </p>
 
 <details><summary>Technical details</summary>
@@ -293,7 +293,7 @@ Status: 📖 read in the code only.
 Texture set: when a stage loads, `func_80052F10` calls `func_80048EA0(stage, day number)`, which picks set `rand() % (((day - 1) % 40) / 10 + 1)` among the stage's `TEXA` to `TEXD.TIX` paths (path table of 0x1C-byte entries from 0x80081A04, `func_80048E2C`). Days 1 to 10 of each 40-day cycle always load A, 11 to 20 A or B, 21 to 30 A to C, 31 to 40 A to D, each at random.
 
 - Proof: `func_80048EA0` @0x80048EA0, `func_80048E2C` @0x80048E2C, `func_80052F10` @0x80052F10, rand wrapper `func_80048CFC` @0x80048CFC.
-- In game: no.
+- In game: yes, forced. PCSX-Redux interpreter, same room and spot at the dream start: +0x180 = 4 (day 5) loads set A; +0x180 = 32 (day 33) with the rand state forced to 3 at `func_80048EA0` (rand % 4 = 3) loads set D, the photo collage. Day 33 rather than 35 because 35 is a special day. Log `work/shots/manifest.md`.
 - Question: [9](mysteries.md#days-textures-randomness). Found 2026-10-15.
 
 </details>
@@ -356,16 +356,16 @@ One `DreamSys` object at `0x80091530` (vtable `0x80087BDC`). Its persistent bloc
 
 Saving writes the whole memory block to the card under the file name `BISLPS-01556xxx`. The save title shows your day number in 3 digits. After one particular kind of dream ending, the game erases the first character of the file name before saving and adds extra text to the title; which ending that is, and what the text says, is not read yet. The card driver itself has not been read.
 
-Status: 📖 read in the code only.
+Status: 🎮 partly checked: a save made in the emulator on day 42 carries the title "LSD a Day042"; the save screen itself does not show the day.
 
-<img src="img/game/save-screen.png" alt="The memory card save screen with the day number in the save title" width="60%">
+<img src="img/game/save-screen.png" alt="The save screen: Saving. Please wait." width="60%">
 
 <details><summary>Technical details</summary>
 
 Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and its size 0x700 at +0xBC and +0xC0 of the save menu object and calls `func_8004D6AC(day number)`, which writes the day as 3 characters (`func_8004109C`) into the save title `D_8008AA18` (0x8001149C) at +0x12. `func_8004E0E4` saves through the card object's slot 0x78 with file name `D_8008AA10` = `BISLPS-01556xxx`, that title, 0xD, 3, the block and its size; `func_8004E1C4` loads through slot 0x74. When DreamSys +0x878 is set (`func_8005A344`; `func_8005A41C` sets it with `func_8005A258` on an end of type 2) the file name's first byte is zeroed before the save and `func_8004DB18` appends `D_8008AA14` to the title. The card driver itself is not read.
 
 - Proof: `func_8004D578` @0x8004D578, `func_8004D6AC` @0x8004D6AC, `func_8004E0E4` @0x8004E0E4, `func_8004E1C4` @0x8004E1C4, `func_8004DB18` @0x8004DB18, strings 0x80011464, 0x8001149C.
-- In game: no.
+- In game: partly. With +0x180 = 41 (day 42), SAVE then an empty comment wrote card file `BISLPS-01556-01` with the title "ＬＳＤ　ａ　Ｄａｙ０４２" to the emulator's memory card (`~/.config/pcsx-redux/memcard1.mcd`); the screen shows only "Saving. Please wait.". The card driver and the type-2 ending were not exercised.
 - Question: [15](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
 </details>
