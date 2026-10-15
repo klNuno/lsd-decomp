@@ -1368,12 +1368,30 @@ typedef struct Unk_8005FA94 {
     u8 pad2[0xF4 - 0x2C];
     s32 unkF4;
 } Unk_8005FA94;
+struct Unk_80026CE8 {
+    s32 unk0;
+    char *unk4;
+    s32 unk8;
+};
+struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, char *arg2, s32 arg3);
+extern s8 D_80089A7C[];
 
-INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
+void func_8005C508(void) {
+    struct Unk_80026CE8 sp10;
+    u32 i;
+    s32 j;
 
-INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001187C);
-
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C508);
+    for (i = 0; i < 14; i++) {
+        for (j = 0; j < D_80089A7C[i]; j++) {
+            ((u8 *)D_80089A44[i])[j * 8] = 0;
+        }
+    }
+    func_80026CE8(&sp10, 0, "ETC\\SYMSPY.MOM", 1);
+    for (i = 0; i < 1; i++) {
+        D_80088D28[i].obj = (Unk_8005C5E8_Obj *)func_8004468C((Unk_80065C5C *)&sp10);
+        sp10.unk4 = "ETC\\SYMDOG.MOM";
+    }
+}
 
 void func_8005C5E8(void) {
     Unk_8005C5E8 *var_s0;
