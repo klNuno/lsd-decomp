@@ -108,6 +108,13 @@ extern u8 D_8008D9A3[];
 extern Unk_8002F2A4 *D_8006DAD4;
 void SpuVmVSetUp(s16 arg0, s16 arg1);
 s16 func_8002F3E8(s16 arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4);
+typedef struct Unk_8002E038 {
+    u8 pad_00[0x4];
+    u8 unk4;
+    u8 unk5;
+    u8 pad_06[0x1A];
+} Unk_8002E038;
+extern Unk_8002E038 *D_8008E978;
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -362,7 +369,37 @@ s32 func_8002DF7C(void) {
     return val;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002E038);
+u16 func_8002E038(s32 arg0, u16 arg1) {
+    Unk_8002E038 *entry;
+    s16 col;
+    u8 carry;
+    s16 n;
+    s16 q;
+    s16 row;
+    s16 oct;
+    s32 idx;
+    u16 val;
+
+    entry = D_8008E978 + (D_8008EA0C.unk0[0xC] + (D_8008EA0C.unk0[7] << 4));
+    col = (arg1 + entry->unk5) / 8;
+    carry = 0;
+    if (col >= 16) {
+        carry = 1;
+        col -= 16;
+    }
+    n = arg0 + 0x3C - entry->unk4 + carry;
+    q = n / 12;
+    row = n % 12;
+    idx = row * 16 + col;
+    oct = q - 5;
+    val = D_8006DAD8[idx];
+    if (oct > 0) {
+        val <<= oct;
+    } else if (oct < 0) {
+        val >>= -oct;
+    }
+    return val;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002E138);
 
