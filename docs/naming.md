@@ -27,11 +27,17 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 
 | Term | Meaning | Source |
 | --- | --- | --- |
-| Day | One dream, from falling asleep to waking; the counter wraps after day 365 | community knowledge (lsddecomp) |
+| Day | One dream, from falling asleep to waking; the counter at +0x180 wraps from 364 to 0 and increments the year | code: `func_8005A304`, checked in RAM 2026-10-15 |
 | Zone | One of the dream areas (Happy Town, Violence District, Moonlight Tower and others) | community knowledge |
 | Link | Touching something that moves you to another place: dynamic (random main zone) or static (per-zone table) | community knowledge (lsddecomp, compu-lsd) |
 | Graph | The mood chart shown after each day, two axes | community knowledge |
 | Flashback | A replay of an earlier day, unlocked by a score | community knowledge (lsddecomp) |
 | Grey Man | The figure who erases flashbacks when met | community knowledge (compu-lsd, fandom) |
+| DreamSys | The game-state object at `0x80091530` (vtable `0x80087BDC`): day, year, scores, graph, timer, current stage | code: discoveries 2026-10-15, checked in RAM |
+| Day number | Day + 1 as returned by `func_8005A2E4`; parity and special-day checks use it, the stored day at +0x180 starts at 0 | code: discoveries 2026-10-15 |
+| Stage | One of the 14 `STGxx` folders, indexed 0 to 13 in every per-stage table (time limits, chunk moods, spawn points, paths) | code: discoveries 2026-10-15 |
+| Spawn | A stage's arrival point: {chunk, tile, adjustment index}, 6 bytes, tables at 0x800885B8 | code: discoveries 2026-10-15 |
+| Mood | A graph point, two s8 axes in -9..9; a chunk's mood is one s16 in its stage table | code: discoveries 2026-10-15 |
+| Sym | Entities loaded from `ETC\SYM*.MOM`; only `SYMSPY.MOM` is loaded | code: discoveries 2026-10-15 |
 
-Every row above is a working term from `docs/community-knowledge.md`, not a verified fact; the code decides.
+Rows sourced to community knowledge are working terms, not verified facts; rows sourced to code cite their discoveries entry.
