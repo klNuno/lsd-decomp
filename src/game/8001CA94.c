@@ -7,9 +7,12 @@ struct Unk_8001D600 {
 void func_8001F51C(s32);
 s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3);
 typedef struct Unk_8001CD20 {
-    u8 pad_00[0x18];
+    u8 pad_00[0x10];
+    void (*unk10)(s32, s32 **);
+    void (*unk14)(s32, s32 **);
     void (*unk18)(s32);
 } Unk_8001CD20;
+void func_8001E770();
 void func_8001E7B0(s32 arg0);
 Unk_8001CD20 *func_80018390(void);
 extern void GsLinkObject4(u32 *src, void *dst, s32 id);
@@ -133,9 +136,19 @@ INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CAF4);
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CBA4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CC48);
+void func_8001CC48(s32 arg0, s32 **arg1) {
+    func_80018390()->unk10(arg0, arg1);
+    if ((**arg1 & 0xF) == 9) {
+        func_8001E770(arg0, arg1);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CCB4);
+void func_8001CCB4(s32 arg0, s32 **arg1) {
+    if ((**arg1 & 0xF) == 9) {
+        func_8001E7B0(arg0);
+    }
+    func_80018390()->unk14(arg0, arg1);
+}
 
 void func_8001CD20(s32 arg0) {
     func_8001E7B0(arg0);
