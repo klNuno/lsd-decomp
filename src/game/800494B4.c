@@ -714,6 +714,45 @@ typedef struct {
     s16 c;
     s16 d;
 } Unk_8004CE24_Entry;
+void func_80049E20(Unk_80049E20 *arg0, s32 arg1);
+typedef struct Unk_80049CA8_Mgr {
+    u8 pad_00[0x54];
+    void (*unk54)(void *, s32 **, s32);
+} Unk_80049CA8_Mgr;
+typedef struct Unk_80049CA8_Ctl_Vtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+    u8 pad_08[0x48 - 0x8];
+    void (*unk48)(void *);
+} Unk_80049CA8_Ctl_Vtbl;
+typedef struct Unk_80049CA8_Ctl {
+    Unk_80049CA8_Ctl_Vtbl *unk0;
+} Unk_80049CA8_Ctl;
+typedef struct Unk_80049CA8_Sub_Vtbl {
+    u8 pad_00[0x1B4];
+    s32 (*unk1B4)(void *);
+    void (*unk1B8)(void *, s32);
+    u8 pad_1BC[0x1E0 - 0x1BC];
+    s32 (*unk1E0)(void *);
+} Unk_80049CA8_Sub_Vtbl;
+typedef struct Unk_80049CA8_Sub {
+    Unk_80049CA8_Sub_Vtbl *unk0;
+} Unk_80049CA8_Sub;
+typedef struct Unk_80049CA8 Unk_80049CA8;
+typedef struct Unk_80049CA8_Vtbl {
+    u8 pad_00[0x60];
+    void (*unk60)(void *, s32);
+} Unk_80049CA8_Vtbl;
+struct Unk_80049CA8 {
+    Unk_80049CA8_Vtbl *unk0;
+    u8 pad_04[0x28 - 0x4];
+    s32 unk28;
+    u8 pad_2C[0x38 - 0x2C];
+    Unk_80049CA8_Sub *unk38;
+    s32 unk3C;
+    u8 pad_40[0x4C - 0x40];
+    Unk_80049CA8_Ctl *unk4C;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -848,7 +887,38 @@ void func_80049C50(Unk_80049C50 *arg0) {
     temp_s0->unk0->unk74(temp_s0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049CA8);
+void func_80049CA8(Unk_80049CA8 *arg0, s32 **arg1, s32 arg2) {
+    s32 temp;
+
+    ((Unk_80049CA8_Mgr *)func_8004A4B8())->unk54(arg0, arg1, arg2);
+    if (arg2 != 2) {
+        return;
+    }
+    if (arg0->unk3C == arg2) {
+        return;
+    }
+    switch (arg0->unk3C) {
+    case 2:
+        return;
+    case 1:
+        temp = arg0->unk38->unk0->unk1B4(arg0->unk38);
+        if (temp < 0) {
+            arg0->unk38->unk0->unk1B8(arg0->unk38, 0);
+            arg0->unk28 = arg2;
+            arg0->unk0->unk60(arg0, 3);
+            return;
+        }
+        break;
+    case 3:
+        arg0->unk4C->unk0->unk48(arg0->unk4C);
+        arg0->unk4C->unk0->unk4(arg0->unk4C);
+        temp = arg0->unk38->unk0->unk1E0(arg0->unk38);
+        break;
+    default:
+        return;
+    }
+    func_80049E20((Unk_80049E20 *)arg0, temp);
+}
 
 void func_80049E20(Unk_80049E20 *arg0, s32 arg1) {
     void *temp;
