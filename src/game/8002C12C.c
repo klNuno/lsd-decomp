@@ -81,6 +81,31 @@ s32 func_8002CF18(s32 arg0);
 void func_8002DDBC(u8 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
 /* copied from src/game/8002C12C.c */
 extern u16 D_8006DAD8[];
+typedef struct Unk_8002C638 {
+    u8 pad_00[0x4C];
+    s32 unk4C;
+    s32 unk50;
+    s16 unk54;
+    u8 pad_56[0x6];
+    s32 unk5C;
+} Unk_8002C638;
+s32 D_8008A8B8;
+s32 D_8008A8BC;
+s32 D_8008A8C0;
+s32 D_8008A8C4;
+void SsVabClose(s16 arg0);
+s32 func_8003A05C(void);
+void func_800329D8(void);
+void func_80032A7C(void);
+void func_80017CFC(s32 arg0);
+typedef struct Unk_8002F2A4 {
+    u8 pad_00[0x194];
+    s16 unk194;
+    s16 unk196;
+} Unk_8002F2A4;
+extern u8 D_8008D98C[];
+extern u8 D_8008D9A3[];
+extern Unk_8002F2A4 *D_8006DAD4;
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -180,7 +205,23 @@ void *func_8002C480(s32 arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C4E0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C638);
+void func_8002C638(Unk_8002C638 *arg0) {
+    SsVabClose(arg0->unk54);
+    if (--D_8008A8C4 < 0) {
+        D_8008A8C4 = 0;
+    }
+    if (D_8008A8C4 == 0 && func_8003A05C() == 0) {
+        D_8008A8B8 = 0;
+        D_8008A8C0 = 0;
+        D_8008A8BC = 0;
+        func_800329D8();
+        func_80032A7C();
+    }
+    func_80017CFC(arg0->unk4C);
+    func_80017CFC(arg0->unk50);
+    func_80017CFC(arg0->unk5C);
+    ((Unk_8002C200 *)func_80026CAC())->unkC((s32)arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C6FC);
 
@@ -350,7 +391,27 @@ void func_8002F20C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F2A4);
+void func_8002F2A4(void) {
+    s16 i;
+    s32 temp;
+    Unk_8002F2A4 *p;
+
+    i = 0;
+    if (D_8008E9D0 != 0) {
+        do {
+            temp = i * 0x34;
+            if (D_8008D9A3[temp] == 2) {
+                temp = (u8)i * 0x34;
+                D_8008D9A3[temp] = 0;
+                p = D_8006DAD4;
+                *(s16 *)(D_8008D98C + temp) = 0;
+                p->unk194 = 0;
+                p->unk196 = 0;
+            }
+            i++;
+        } while (i < D_8008E9D0);
+    }
+}
 
 void func_8002F368(s32 arg0, s32 arg1) {
     s32 temp;

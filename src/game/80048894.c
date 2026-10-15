@@ -105,6 +105,7 @@ typedef struct Unk_800489B4 {
 } Unk_800489B4;
 void func_80048CFC(s32 arg0);
 u8 *func_80048F60(s32 arg0);
+u8 *func_80048E80(s32 arg0);
 
 s32 func_80048894(void) {
     s32 temp_v0;
@@ -234,7 +235,14 @@ u8 *func_80048E80(s32 arg0) {
     return func_80048E2C(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048EA0);
+u8 *func_80048EA0(s32 arg0, s32 arg1, s32 arg2) {
+    s32 row;
+    s32 r;
+
+    row = ((arg2 - 1) % 40) / 10 + 1;
+    r = ((s32 (*)(s32, s32))func_80048CFC)(0, arg1) % row;
+    return func_80048E80(arg0) + r * 0x1C;
+}
 
 u8 *func_80048F60(s32 arg0) {
     return func_80048E2C(arg0) + 0x70;

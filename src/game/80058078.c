@@ -506,6 +506,17 @@ typedef struct Unk_8005A368 {
     s32 unk88C;
 } Unk_8005A368;
 s32 func_8005C438(void *, s32);
+typedef struct Unk_8005B420_Vtbl {
+    u8 pad_00[0x20C];
+    void (*unk20C)(void *, void *, s16 *);
+} Unk_8005B420_Vtbl;
+typedef struct Unk_8005B420 {
+    Unk_8005B420_Vtbl *unk0;
+    u8 pad_04[0x144 - 0x04];
+    u8 unk144[0x154 - 0x144];
+    u8 unk154[0x160 - 0x154];
+    s32 unk160;
+} Unk_8005B420;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1087,7 +1098,18 @@ void func_8005B3A4(Unk_8005B3A4 *arg0, s8 *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B3F0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B420);
+void func_8005B420(Unk_8005B420 *arg0, Unk_8005B5B8 *arg1) {
+    s16 sp10;
+    s16 sp12;
+
+    arg0->unk0->unk20C(arg0, arg0->unk144, &sp10);
+    arg0->unk0->unk20C(arg0, arg0->unk154, &sp12);
+    if (arg0->unk160 == 0) {
+        sp12 = sp10;
+    }
+    arg1->unk0 = ((s8)sp10 + (s8)sp12) / 2;
+    arg1->unk1 = (((s8 *)&sp10)[1] + ((s8 *)&sp12)[1]) / 2;
+}
 
 void func_8005B4E0(Unk_8005B4E0 *arg0) {
     s16 sp10;

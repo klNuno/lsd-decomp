@@ -439,6 +439,31 @@ typedef struct Unk_80049958_Vtbl {
 typedef struct Unk_80049958 {
     Unk_80049958_Vtbl *unk0;
 } Unk_80049958;
+void *func_80048D48(s32 *arg0);
+s32 func_80027024(s32 arg0, s32 arg1);
+s32 D_8008A978;
+s32 D_8008A97C;
+typedef struct Unk_8004CC74_Vtbl {
+    u8 pad_00[0x10C];
+    void (*unk10C)(void *, void *, s32);
+} Unk_8004CC74_Vtbl;
+typedef struct Unk_8004CC74_Sp10 {
+    s16 unk_0;
+    s16 unk_2;
+    u8 pad_04[0x28 - 0x4];
+    s32 unk_28;
+} Unk_8004CC74_Sp10;
+typedef struct Unk_8004CC74 {
+    Unk_8004CC74_Vtbl *unk0;
+    u8 pad_04[0x68 - 0x4];
+    Unk_800861D4 *unk68;
+    u8 pad_6C[0x88 - 0x6C];
+    s32 unk88;
+    u8 pad_8C[0x1DC - 0x8C];
+    void *unk1DC;
+} Unk_8004CC74;
+s32 func_8004CD38(void *arg0, void *arg1);
+s32 func_8004CDA4(void *arg0, s32 arg1, s32 arg2, s32 arg3);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -568,7 +593,29 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049EB4);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004A060);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004A070);
+void func_8004A070(s32 arg0) {
+    s32 sp10;
+    s32 temp_s1;
+
+    temp_s1 = (s32)func_80048D48(&sp10);
+    switch (++D_8008A978) {
+    case 1:
+        if (arg0 != 0) {
+            D_8008A978++;
+        } else {
+            D_8008A97C = sp10 /= 2;
+        }
+        break;
+    case 2:
+        sp10 -= D_8008A97C;
+        break;
+    default:
+        sp10 = 0;
+        break;
+    }
+    do {
+    } while (func_80027024(temp_s1, sp10) == 0);
+}
 
 s32 func_8004A130(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -899,7 +946,23 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C93C);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CAF0);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CC74);
+void func_8004CC74(void *arg0) {
+    Unk_8004CC74 *self = arg0;
+    Unk_8004CC74_Sp10 sp10;
+    s32 s1;
+
+    self->unk0->unk10C(self, &sp10, 0);
+    self->unk88 = 0;
+    self->unk88 = func_8004CDA4(self, s1, 0, sp10.unk_28);
+    if (func_8004CD38(self->unk1DC, &sp10.unk_2) != 0) {
+        if (sp10.unk_28 + 1 < self->unk68->unk_2) {
+            self->unk88 = func_8004CDA4(self, s1, self->unk88, sp10.unk_28 + 1);
+        }
+    }
+    if (sp10.unk_28 - 1 >= 0) {
+        self->unk88 = func_8004CDA4(self, s1, self->unk88, sp10.unk_28 - 1);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CD38);
 
