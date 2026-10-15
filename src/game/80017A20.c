@@ -1,4 +1,5 @@
 #include "common.h"
+#include "gte.h"
 
 extern void free(void *);
 typedef struct Block { u32 hdr; struct Block *next; struct Block *prev; } Block;
@@ -314,6 +315,108 @@ typedef struct Unk_8001813C {
     u8 pad[8];
     Unk_80018288 *unk8;
 } Unk_8001813C;
+typedef struct Unk_800195EC {
+    s32 *unk0;
+    s32 unk4;
+    s32 unk8;
+    u8 *unkC;
+    s32 unk10;
+    u8 unk14;
+    u8 pad_15[0x20 - 0x15];
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    u8 pad_2C[0x30 - 0x2C];
+    s32 *unk30;
+    u8 pad_34[0x5C - 0x34];
+    s32 unk5C;
+    s32 unk60;
+    s32 unk64;
+    s32 unk68;
+    s32 unk6C;
+    u8 pad_70[0x78 - 0x70];
+    s32 unk78;
+    u8 pad_7C[0x88 - 0x7C];
+    u8 *unk88[3];
+    u8 *unk94[4];
+    u8 *unkA4[4];
+} Unk_800195EC;
+s32 func_800195EC(u8 *arg0, Unk_800195EC *arg1);
+void func_8001A268(Unk_8001A268 *arg0, s32 arg1);
+/* src/game/80017A20.c: 41 of 92 declarations, in unit order (types first) */
+void func_8001934C(Unk_8001934C *arg0, Unk_8001934C_Dst *arg1);
+s32 func_800193C0(u8 *arg0, Unk_800195EC *arg1, u16 arg2, u16 arg3, u16 arg4, void (*arg5)(u8 *));
+s32 func_800194A4(u8 *arg0, Unk_800195EC *arg1, u16 arg2, u16 arg3, u16 arg4, u16 arg5, void (*arg6)(u8 *, s32));
+void func_800196D4(void *arg0);
+void func_800196E8(void *arg0);
+void func_800196FC(void *arg0);
+void func_80019710(void *arg0);
+void func_80019724(u8 *arg0, s32 arg1);
+void func_8001974C(u8 *arg0, s32 arg1);
+void func_80019774(u8 *arg0, s32 arg1);
+void func_8001979C(u8 *arg0, s32 arg1);
+void *func_800197C4(u8 *arg0, Unk_800197C4 *arg1);
+void *func_8001989C(Unk_8001989C *arg0, Unk_800199EC *arg1);
+void *func_800199EC(Unk_800199EC_Poly *arg0, Unk_800199EC *arg1);
+void *func_80019B24(u32 *arg0, Unk_80019B24 *arg1);
+void *func_80019C04(Unk_80019C04_Poly *arg0, Unk_80019C04 *arg1);
+void *func_80019D84(Unk_80019D84 *arg0, Unk_800199EC *arg1);
+void *func_80019EE4(Unk_80019EE4 *arg0, Unk_800199EC *arg1);
+void *func_8001A064(Unk_8001A064 *arg0, Unk_800199EC *arg1);
+void func_8001A224(u8 **arg0, u8 *arg1, s32 arg2);
+typedef struct Unk_80018464_Rgb {
+    s8 r, g, b;
+} Unk_80018464_Rgb;
+typedef struct Unk_80018464_Mat {
+    s16 m[3][3];
+    s32 t[3];
+} Unk_80018464_Mat;
+typedef struct Unk_80018464_Obj {
+    u8 pad_00[0x24];
+    Unk_80018464_Mat m;
+    u8 pad_44[4];
+    struct Unk_80018464_Obj *unk48;
+} Unk_80018464_Obj;
+typedef struct Unk_80018464_Model {
+    u8 *unk0;
+    s32 unk4;
+    u8 *unk8;
+    s32 unkC;
+    u8 *unk10;
+    s32 unk14;
+} Unk_80018464_Model;
+typedef struct Unk_80018464 {
+    u32 unk0;
+    Unk_80018464_Obj *unk4;
+    Unk_80018464_Model *unk8;
+} Unk_80018464;
+typedef struct Unk_80018464_Ctx {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    u8 *unkC;
+    u8 *unk10;
+    u8 unk14;
+    u8 unk15;
+    u8 pad_16[2];
+    u32 unk18;
+    s32 unk1C;
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2C;
+    s32 *unk30;
+    Unk_80018464_Rgb unk34;
+    Unk_80018464_Mat unk38;
+    u8 pad_58[0x88 - 0x58];
+    u8 *unk88[3];
+    u8 *unk94[4];
+} Unk_80018464_Ctx;
+extern s32 D_8008E250;
+extern s32 D_8008E24C;
+extern s32 D_800902E0;
+extern u8 *D_8008E794;
+extern Unk_80018464_Rgb D_8008A82C;
 
 Heap *func_80017A20(u32 size) {
     Heap *heap;
@@ -613,7 +716,306 @@ s32 func_80018458(void) {
     return D_8008A820;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018464);
+void func_80018464(Unk_80018464 *arg0, Unk_80018464 *arg1, s32 arg2, Unk_80018464_Ctx *arg3_) {
+    Unk_80018464_Ctx *ctx;
+    u8 *prim;
+    u8 *p;
+    s32 total;
+    s32 n;
+
+    if ((s32)arg0->unk0 < 0) {
+        return;
+    }
+    ctx = arg3_;
+    ctx->unk0 = (s32)arg1->unk4;
+    ctx->unk4 = arg2;
+    func_8001A224(ctx->unk88, D_8008ACD0, 3);
+    func_8001A224(ctx->unk94, D_8008AEE8, 4);
+    total = arg0->unk8->unk14;
+    p = arg0->unk8->unk10;
+    ctx->unkC = arg0->unk8->unk0;
+    ctx->unk10 = arg0->unk8->unk8;
+    if (arg0->unk4->unk48 != NULL) {
+        gte_ReadRotMatrix(&ctx->unk38);
+        gte_MulMatrix0(&arg0->unk4->unk48->m, &arg0->unk4->m, &arg0->unk4->m);
+        gte_SetRotMatrix(&ctx->unk38);
+    }
+    D_80090C18 = (arg0->unk0 >> 9) & 7;
+    D_8008E248 = (arg0->unk0 >> 6) & 1;
+    D_8008E250 = (arg0->unk0 >> 5) & 1;
+    D_8008E24C = (arg0->unk0 >> 3) & 3;
+    ctx->unk8 = 10;
+    ctx->unk34 = D_8008A82C;
+    if ((D_8008E250 != 0 && D_800902E0 != 0) || D_8008E24C != 0) {
+        ctx->unk2C = 9;
+    } else {
+        ctx->unk2C = 16;
+    }
+    while (total != 0) {
+        prim = D_8008E794;
+        ctx->unk18 = *(u16 *)(p + 2) & 0xFD07;
+        n = *(u16 *)p;
+        ctx->unk1C = (*(u32 *)p >> 25) & 1;
+        total -= n;
+        switch (ctx->unk18) {
+        case 0x2000:
+            prim[3] = 4;
+            prim[7] = 0x20;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0xA), *(u16 *)(p + 0xC), *(u16 *)(p + 0xE), func_800196D4) == 0) {
+                    gte_ldv0(ctx->unk10 + *(u16 *)(p + 8) * 8);
+                    gte_ldrgb(p + 4);
+                    gte_ncds();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_800197C4(prim, (void *)ctx);
+                }
+                p += 0x10;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2004:
+            prim[3] = 6;
+            prim[7] = 0x30;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0x12), *(u16 *)(p + 0x14), *(u16 *)(p + 0x16), func_800196E8) == 0) {
+                    gte_ldv0(ctx->unk10 + *(u16 *)(p + 0x10) * 8);
+                    gte_ldrgb(p + 4);
+                    gte_ncds();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    gte_ldrgb(p + 8);
+                    gte_ncds();
+                    gte_strgb(prim + 0xC);
+                    gte_ldrgb(p + 0xC);
+                    gte_ncds();
+                    gte_strgb(prim + 0x14);
+                    prim = func_8001989C((void *)prim, (void *)ctx);
+                }
+                p += 0x18;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2101:
+            prim[3] = 4;
+            prim[7] = 0x20;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 8), *(u16 *)(p + 0xA), *(u16 *)(p + 0xC), func_800196D4) == 0) {
+                    gte_ldrgb(p + 4);
+                    gte_dpcs();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_800197C4(prim, (void *)ctx);
+                }
+                p += 0x10;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2400:
+            prim[3] = 7;
+            prim[7] = 0x24;
+            func_8001934C((void *)prim, (void *)ctx);
+            gte_ldrgb(&ctx->unk34);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0x12), *(u16 *)(p + 0x14), *(u16 *)(p + 0x16), func_800196FC) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x14) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x1C) = *(s32 *)(p + 0xC);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldv0(ctx->unk10 + *(u16 *)(p + 0x10) * 8);
+                    gte_ncds();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_800199EC((void *)prim, (void *)ctx);
+                }
+                p += 0x18;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2501:
+            prim[3] = 7;
+            prim[7] = 0x24;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0x14), *(u16 *)(p + 0x16), *(u16 *)(p + 0x18), func_800196FC) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x14) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x1C) = *(s32 *)(p + 0xC);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldrgb(p + 0x10);
+                    gte_dpcs();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_800199EC((void *)prim, (void *)ctx);
+                }
+                p += 0x1C;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2800:
+            prim[3] = 5;
+            prim[7] = 0x28;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 0xA), *(u16 *)(p + 0xC), *(u16 *)(p + 0xE), *(u16 *)(p + 0x10), func_80019724) == 0) {
+                    gte_ldv0(ctx->unk10 + *(u16 *)(p + 8) * 8);
+                    gte_ldrgb(p + 4);
+                    gte_ncds();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_80019B24((void *)prim, (void *)ctx);
+                }
+                p += 0x14;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2901:
+            prim[3] = 5;
+            prim[7] = 0x28;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 8), *(u16 *)(p + 0xA), *(u16 *)(p + 0xC), *(u16 *)(p + 0xE), func_80019724) == 0) {
+                    gte_ldrgb(p + 4);
+                    gte_dpcs();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_80019B24((void *)prim, (void *)ctx);
+                }
+                p += 0x10;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2C00:
+            prim[3] = 9;
+            prim[7] = 0x2C;
+            func_8001934C((void *)prim, (void *)ctx);
+            gte_ldrgb(&ctx->unk34);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 0x16), *(u16 *)(p + 0x18), *(u16 *)(p + 0x1A), *(u16 *)(p + 0x1C), func_80019774) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x14) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x1C) = *(s32 *)(p + 0xC);
+                    *(s32 *)(prim + 0x24) = *(s32 *)(p + 0x10);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldv0(ctx->unk10 + *(u16 *)(p + 0x14) * 8);
+                    gte_ncds();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_80019D84((void *)prim, (void *)ctx);
+                }
+                p += 0x20;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x2D01:
+            prim[3] = 9;
+            prim[7] = 0x2C;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 0x18), *(u16 *)(p + 0x1A), *(u16 *)(p + 0x1C), *(u16 *)(p + 0x1E), func_80019774) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x14) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x1C) = *(s32 *)(p + 0xC);
+                    *(s32 *)(prim + 0x24) = *(s32 *)(p + 0x10);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldrgb(p + 0x14);
+                    gte_dpcs();
+                    gte_strgb(prim + 4);
+                    prim[7] = ctx->unk15;
+                    prim = func_80019D84((void *)prim, (void *)ctx);
+                }
+                p += 0x20;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x3101:
+            prim[3] = 6;
+            prim[7] = 0x30;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0x10), *(u16 *)(p + 0x12), *(u16 *)(p + 0x14), func_800196E8) == 0) {
+                    gte_ldrgb3c(p + 4);
+                    gte_dpct();
+                    gte_strgb3_g3(prim);
+                    prim[7] = ctx->unk15;
+                    prim = func_8001989C((void *)prim, (void *)ctx);
+                }
+                p += 0x18;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x3501:
+            prim[3] = 9;
+            prim[7] = 0x34;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800193C0(prim, (void *)ctx, *(u16 *)(p + 0x1C), *(u16 *)(p + 0x1E), *(u16 *)(p + 0x20), func_80019710) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x18) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x24) = *(s32 *)(p + 0xC);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldrgb3(p + 0x10, p + 0x14, p + 0x18);
+                    gte_dpct();
+                    gte_strgb3(prim + 4, prim + 0x10, prim + 0x1C);
+                    prim[7] = ctx->unk15;
+                    prim = func_80019EE4((void *)prim, (void *)ctx);
+                }
+                p += 0x24;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x3901:
+            prim[3] = 8;
+            prim[7] = 0x38;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 0x14), *(u16 *)(p + 0x16), *(u16 *)(p + 0x18), *(u16 *)(p + 0x1A), func_8001974C) == 0) {
+                    gte_ldrgb3c(p + 4);
+                    gte_dpct();
+                    gte_strgb3_g3(prim);
+                    prim[7] = ctx->unk15;
+                    gte_ldrgb(p + 0x10);
+                    gte_dpcs();
+                    gte_strgb(prim + 0x1C);
+                    prim = func_80019C04((void *)prim, (void *)ctx);
+                }
+                p += 0x1C;
+                n--;
+            } while (n != 0);
+            break;
+        case 0x3D01:
+            prim[3] = 12;
+            prim[7] = 0x3C;
+            func_8001934C((void *)prim, (void *)ctx);
+            do {
+                if (func_800194A4(prim, (void *)ctx, *(u16 *)(p + 0x24), *(u16 *)(p + 0x26), *(u16 *)(p + 0x28), *(u16 *)(p + 0x2A), func_8001979C) == 0) {
+                    *(s32 *)(prim + 0xC) = *(s32 *)(p + 4);
+                    *(s32 *)(prim + 0x18) = *(s32 *)(p + 8);
+                    *(s32 *)(prim + 0x24) = *(s32 *)(p + 0xC);
+                    *(s32 *)(prim + 0x30) = *(s32 *)(p + 0x10);
+                    *(u16 *)(prim + 0xE) += (ctx->unk24 >> ctx->unk2C) << 6;
+                    gte_ldrgb3(p + 0x14, p + 0x18, p + 0x1C);
+                    gte_dpct();
+                    gte_strgb3(prim + 4, prim + 0x10, prim + 0x1C);
+                    prim[7] = ctx->unk15;
+                    gte_ldrgb(p + 0x20);
+                    gte_dpcs();
+                    gte_strgb(prim + 0x28);
+                    prim = func_8001A064((void *)prim, (void *)ctx);
+                }
+                p += 0x2C;
+                n--;
+            } while (n != 0);
+            break;
+        default:
+            return;
+        }
+        D_8008E794 = prim;
+    }
+}
 
 void func_8001934C(Unk_8001934C *arg0, Unk_8001934C_Dst *arg1) {
     if (arg1->unk1C != 0) {
@@ -630,27 +1032,115 @@ void func_8001934C(Unk_8001934C *arg0, Unk_8001934C_Dst *arg1) {
     arg1->unk15 = arg0->unk7;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800193C0);
+s32 func_800193C0(u8 *arg0, Unk_800195EC *arg1, u16 arg2, u16 arg3, u16 arg4, void (*arg5)(u8 *)) {
+    u8 **v = arg1->unkA4;
+    v[0] = arg1->unkC + arg2 * 8;
+    v[1] = arg1->unkC + arg3 * 8;
+    v[2] = arg1->unkC + arg4 * 8;
+    gte_ldv3(v[0], v[1], v[2]);
+    if (func_800195EC(arg0, arg1) == 0) {
+        gte_stsz3(arg1->unk88[0] + 0x14, arg1->unk88[1] + 0x14, arg1->unk88[2] + 0x14);
+        arg5(arg0);
+        func_8001A268((Unk_8001A268 *)arg1, 3);
+        return 0;
+    }
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800194A4);
+s32 func_800194A4(u8 *arg0, Unk_800195EC *arg1, u16 arg2, u16 arg3, u16 arg4, u16 arg5, void (*arg6)(u8 *, s32)) {
+    u8 **v = arg1->unkA4;
+    v[0] = arg1->unkC + arg2 * 8;
+    v[1] = arg1->unkC + arg3 * 8;
+    v[2] = arg1->unkC + arg4 * 8;
+    v[3] = arg1->unkC + arg5 * 8;
+    gte_ldv3(v[0], v[1], v[2]);
+    if (func_800195EC(arg0, arg1) == 0) {
+        arg6(arg0, 1);
+        gte_ldv0(v[3]);
+        gte_rtps();
+        gte_stsz4(arg1->unk94[0] + 0x14, arg1->unk94[1] + 0x14, arg1->unk94[2] + 0x14, arg1->unk94[3] + 0x14);
+        arg6(arg0, 0);
+        gte_stsxy(&arg1->unk6C);
+        func_8001A268((Unk_8001A268 *)arg1, 4);
+        return 0;
+    }
+    return 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800195EC);
+s32 func_800195EC(u8 *arg0, Unk_800195EC *arg1) {
+    arg1->unk78 = 0;
+    gte_rtpt();
+    arg0[3] = arg1->unk14;
+    gte_stflg_4(&arg1->unk5C);
+    if (arg1->unk5C != 0) {
+        if (arg1->unk5C != 0x40000) {
+            return 1;
+        }
+        arg1->unk78 = 1;
+    }
+    gte_nclip();
+    gte_stopz(&arg1->unk28);
+    if (arg1->unk28 <= 0) {
+        return 1;
+    }
+    gte_stdp(&arg1->unk24);
+    if (arg1->unk24 >= 0x1000) {
+        return 1;
+    }
+    gte_avsz3();
+    gte_stotz(&arg1->unk20);
+    gte_stsxy3(&arg1->unk60, &arg1->unk64, &arg1->unk68);
+    arg1->unk30 = &arg1->unk0[arg1->unk20 >> arg1->unk4];
+    return 0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800196D4);
+void func_800196D4(void *arg0) {
+    gte_stsxy3_f3(arg0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800196E8);
+void func_800196E8(void *arg0) {
+    gte_stsxy3_g3(arg0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800196FC);
+void func_800196FC(void *arg0) {
+    gte_stsxy3_ft3(arg0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019710);
+void func_80019710(void *arg0) {
+    gte_stsxy3_gt3(arg0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019724);
+void func_80019724(u8 *arg0, s32 arg1) {
+    if (arg1 != 0) {
+        gte_stsxy3_f4(arg0);
+    } else {
+        gte_stsxy(arg0 + 0x14);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001974C);
+void func_8001974C(u8 *arg0, s32 arg1) {
+    if (arg1 != 0) {
+        gte_stsxy3_g4(arg0);
+    } else {
+        gte_stsxy(arg0 + 0x20);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019774);
+void func_80019774(u8 *arg0, s32 arg1) {
+    if (arg1 != 0) {
+        gte_stsxy3_ft4(arg0);
+    } else {
+        gte_stsxy(arg0 + 0x20);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_8001979C);
+void func_8001979C(u8 *arg0, s32 arg1) {
+    if (arg1 != 0) {
+        gte_stsxy3_gt4(arg0);
+    } else {
+        gte_stsxy(arg0 + 0x2C);
+    }
+}
 
 void *func_800197C4(u8 *arg0, Unk_800197C4 *arg1) {
     if (arg1->unk78 != 0) {
