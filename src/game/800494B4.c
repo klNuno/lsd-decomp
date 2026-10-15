@@ -687,6 +687,33 @@ struct Unk_8004C470 {
 typedef struct Unk_8004C470_Range { u8 pad_00[0x18]; s32 unk18; u8 pad_1C[0x20 - 0x1C]; s32 unk20; } Unk_8004C470_Range;
 typedef struct Unk_8004C470_Pair { u8 pad_00[0x14]; Unk_8004C470_Range *unk14; } Unk_8004C470_Pair;
 typedef struct Unk_8004C470_Obj { u8 pad_00[0xC]; Unk_8004C470_Pair *unkC; } Unk_8004C470_Obj;
+typedef struct Unk_8004CE24_Node Unk_8004CE24_Node;
+struct Unk_8004CE24_Node {
+    u8 pad_00[0x10];
+    s32 unk10;
+    u8 pad_14[0x24];
+    Unk_8004CE24_Node *unk38;
+};
+typedef struct {
+    s32 unk0;
+    Unk_8004C5D0_Obj *obj;
+    u8 pad_08[0x8];
+    Unk_8004CE24_Node **base;
+    u8 pad_14[0x8];
+} Unk_8004CE24_Slot;
+typedef struct Unk_8004CE24 {
+    u8 pad_00[0x88];
+    s32 unk88;
+    u8 pad_8C[0xEC - 0x8C];
+    Unk_8004CE24_Slot slots[7];
+} Unk_8004CE24;
+typedef struct {
+    s32 slot;
+    s16 a;
+    s16 b;
+    s16 c;
+    s16 d;
+} Unk_8004CE24_Entry;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -1463,7 +1490,53 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CD38);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CDA4);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CE24);
+void func_8004CE24(void *arg0, s32 arg1) {
+    Unk_8004CE24 *self = arg0;
+    Unk_8004CE24_Entry *ent;
+    s16 *var_a3;
+    Unk_8004CE24_Slot *slot;
+    s32 i;
+    s32 row;
+    s32 col;
+    Unk_8004CE24_Node **p;
+    Unk_8004CE24_Node *e;
+    Unk_8004CE24_Node *node;
+    s32 flags;
+
+    ent = (Unk_8004CE24_Entry *)((u8 *)self + 0x8C);
+    for (i = 0; i < self->unk88; i++) {
+        slot = &self->slots[ent->slot];
+        var_a3 = &ent->d;
+        if (slot->obj->u2C != 0) {
+            p = slot->base + var_a3[-3] + var_a3[-2] * 20;
+            for (row = 0; row < var_a3[0]; row++) {
+                for (col = 0; col < var_a3[-1]; col++) {
+                    if (arg1 != 0) {
+                        e = *p;
+                        flags = e->unk10 & 0x7FFFFFFF;
+                    } else {
+                        e = *p;
+                        flags = e->unk10 | 0x80000000;
+                    }
+                    e->unk10 = flags;
+                    node = (*p)->unk38;
+                    while (node != NULL) {
+                        if (arg1 != 0) {
+                            flags = node->unk10 & 0x7FFFFFFF;
+                        } else {
+                            flags = node->unk10 | 0x80000000;
+                        }
+                        node->unk10 = flags;
+                        node = node->unk38;
+                    }
+                    p++;
+                }
+                p += 20 - var_a3[-1];
+            }
+        }
+        ent++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CFA8);
 

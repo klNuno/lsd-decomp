@@ -146,9 +146,28 @@ typedef struct Unk_800199EC {
     Unk_800199EC_Tri *unk88;
     Unk_800199EC_Tri *unk8C;
     Unk_800199EC_Tri *unk90;
-    u8 pad_94[0xA4 - 0x94];
+    Unk_800199EC_Tri *unk94;
+    Unk_800199EC_Tri *unk98;
+    Unk_800199EC_Tri *unk9C;
+    Unk_800199EC_Tri *unkA0;
     s32 unkA4;
 } Unk_800199EC;
+extern void *RCpolyFT4(void *, void *);
+typedef struct Unk_80019D84 {
+    u32 unk0;
+    s32 unk4;
+    s32 unk8;
+    u16 unkC;
+    u16 unkE;
+    s32 unk10;
+    u16 unk14;
+    u16 unk16;
+    s32 unk18;
+    u16 unk1C;
+    u16 unk1E;
+    s32 unk20;
+    u16 unk24;
+} Unk_80019D84;
 
 Heap *func_80017A20(u32 size) {
     Heap *heap;
@@ -446,7 +465,24 @@ void *func_80019B24(u32 *arg0, Unk_80019B24 *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019C04);
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019D84);
+void *func_80019D84(Unk_80019D84 *arg0, Unk_800199EC *arg1) {
+    if (arg1->unk78 != 0) {
+        func_8001A380(D_8008AEE8, arg1, &arg0->unk4, 1, arg0->unkE, arg0->unk16);
+        func_8001A4C0(&arg1->unk94, &arg1->unkA4, &arg0->unk8, &arg0->unk10, &arg0->unk18, &arg0->unk20);
+        arg1->unk94->unkA = arg0->unk1E;
+        arg1->unk98->unkA = arg0->unk1E;
+        arg1->unk9C->unkA = arg0->unk1E;
+        arg1->unkA0->unkA = arg0->unk1E;
+        arg1->unk94->unk8 = arg0->unkC;
+        arg1->unk98->unk8 = arg0->unk14;
+        arg1->unk9C->unk8 = arg0->unk1C;
+        arg1->unkA0->unk8 = arg0->unk24;
+        return RCpolyFT4(arg0, D_8008AEE8);
+    }
+    arg0->unk0 = (arg0->unk0 & 0xFF000000) | (*arg1->unk30 & 0xFFFFFF);
+    *arg1->unk30 = (*arg1->unk30 & 0xFF000000) | ((u32)arg0 & 0xFFFFFF);
+    return (u8 *)arg0 + 0x28;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80019EE4);
 

@@ -13,8 +13,72 @@ extern s32 EnterCriticalSection();
 extern s32 ExitCriticalSection();
 void VSyncCallback(void (*func)(void));
 void InterruptCallback(s32 irq, void (*func)(void));
+extern s32 D_8006DC98;
+extern s32 D_8006DCA4;
+extern s32 D_8009024C;
 
-INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032588);
+void func_80032588(s32 arg0) {
+    if (arg0 & 0x1000) {
+        D_8006DCA8 = 1;
+        D_8006DCA4 = arg0 & 0xFFF;
+    } else {
+        D_8006DCA8 = 0;
+        D_8006DCA4 = arg0;
+    }
+    if (D_8006DCA4 < 6) {
+        switch (D_8006DCA4) {
+        case 4:
+            D_8009024C = 0x32;
+            if (D_8006DC98 == 1) {
+                D_8006DCA4 = 5;
+            } else {
+                D_8006DCA4 = 0x32;
+            }
+            return;
+        case 1:
+            D_8009024C = 0x3C;
+            if (D_8006DC98 == 0) {
+                D_8006DCA4 = 5;
+            } else {
+                D_8006DCA4 = 0x3C;
+            }
+            return;
+        case 3:
+            D_8009024C = 0x78;
+            return;
+        case 2:
+            D_8009024C = 0xF0;
+            return;
+        case 5:
+            switch (D_8006DC98) {
+            case 1:
+                D_8009024C = 0x32;
+                return;
+            default:
+            case 0:
+                D_8009024C = 0x3C;
+                return;
+            }
+            break;
+        case 0:
+            if (D_8006DC98 != 0) {
+                if (D_8006DC98 == 1) {
+                    D_8009024C = 0x32;
+                    return;
+                }
+                D_8009024C = 0x3C;
+                return;
+            }
+            D_8009024C = 0x3C;
+            return;
+        default:
+            D_8009024C = 0x3C;
+            return;
+        }
+    } else {
+        D_8009024C = D_8006DCA4;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032708);
 

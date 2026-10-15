@@ -1060,6 +1060,161 @@ struct Unk_8003ECD0 {
     void *unk88;
     void *unk8C;
 };
+void *func_80042400(void);
+void *func_80042694(void);
+s32 func_8003E5D8(void);
+typedef struct Unk_8003E10C_Vtbl {
+    u8 pad_00[0x10];
+    void (*unk10)(void *, s32);
+    u8 pad_14[0x48 - 0x14];
+    void (*unk48)(void *);
+    void (*unk4C)(void *, s32, s32, s32);
+    u8 pad_50[0x60 - 0x50];
+    void (*unk60)(void *, s32);
+} Unk_8003E10C_Vtbl;
+typedef struct Unk_8003E10C_Obj {
+    Unk_8003E10C_Vtbl *unk0;
+} Unk_8003E10C_Obj;
+typedef struct Unk_8003E10C_Arg {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+} Unk_8003E10C_Arg;
+typedef struct Unk_8003E10C {
+    Unk_8003E10C_Vtbl *unk0;
+    u8 pad_04[0x8];
+    Unk_8003E10C_Arg *unkC;
+    s32 unk10;
+    Unk_8003E10C_Obj *unk14;
+    Unk_8003E10C_Obj *unk18;
+    u8 pad_1C[0x8];
+    s32 unk24;
+} Unk_8003E10C;
+typedef struct Unk_8003EEC0_Vtbl {
+    u8 pad_00[0xA0];
+    void (*unkA0)(void *, void *);
+} Unk_8003EEC0_Vtbl;
+struct Unk_8003EEC0 {
+    Unk_8003EEC0_Vtbl *unk0;
+    u8 pad_04[0x10 - 0x04];
+    struct Unk_8003F25C *unk10;
+    u8 pad_14[0x30 - 0x14];
+    s32 *unk30;
+    u8 pad_34[0x3C - 0x34];
+    s32 unk3C;
+    s32 unk40;
+    u8 pad_44[0x4C - 0x44];
+    s32 unk4C;
+    s32 unk50;
+    s32 unk54;
+    u8 pad_58[0x5B - 0x58];
+    u8 unk5B;
+    u8 unk5C;
+    u8 unk5D;
+    u8 pad_5E[0x60 - 0x5E];
+    s32 unk60;
+    u8 pad_64[0x70 - 0x64];
+    s32 unk70;
+    s32 unk74;
+    s32 unk78[4];
+    s32 unk88[1];
+    u8 pad_8C[0x98 - 0x8C];
+    s32 unk98;
+    u8 pad_9C[0xAC - 0x9C];
+    void *unkAC;
+};
+struct Unk_8003F25C *func_8003F25C(struct Unk_8003F25C *);
+void func_8003F28C(s32);
+void func_8003FB0C(s32);
+void func_8003FBE4(s32);
+void GsSetLightMode(s32);
+void SetFarColor(u8, u8, u8);
+void SetFogNear(s32, s32);
+typedef struct Unk_8003C238_Vtbl {
+    u8 pad_00[0xE0];
+    void (*unkE0)(void *, s32);
+    void (*unkE4)(void *, void *);
+} Unk_8003C238_Vtbl;
+typedef struct Unk_8003C238_Vt18 {
+    u8 pad_00[0x48];
+    void (*unk48)(void *, s32);
+    void (*unk4C)(void *, s32);
+    void (*unk50)(void *, s32);
+    u8 pad_54[0x70 - 0x54];
+    void (*unk70)(void *, s32, void *, void *, s32);
+    u8 pad_74[0x8C - 0x74];
+    void (*unk8C)(void *);
+} Unk_8003C238_Vt18;
+typedef struct Unk_8003C238_Obj18 {
+    Unk_8003C238_Vt18 *unk0;
+} Unk_8003C238_Obj18;
+typedef struct Unk_8003C238_Vt78 {
+    u8 pad_00[0x4C];
+    void (*unk4C)(void *, s32, s32);
+    u8 pad_50[0xB8 - 0x50];
+    void (*unkB8)(void *, s32, void *);
+} Unk_8003C238_Vt78;
+typedef struct Unk_8003C238_Obj78 {
+    Unk_8003C238_Vt78 *unk0;
+} Unk_8003C238_Obj78;
+typedef struct Unk_8003C238_VtC {
+    u8 pad_00[0x78];
+    void (*unk78)(void *, void *, void *);
+} Unk_8003C238_VtC;
+typedef struct Unk_8003C238_ObjC {
+    Unk_8003C238_VtC *unk0;
+} Unk_8003C238_ObjC;
+struct Unk_8003C238 {
+    Unk_8003C238_Vtbl *unk0;
+    u8 pad_04[0x0C - 0x04];
+    Unk_8003C238_ObjC **unkC;
+    u8 pad_10[0x14 - 0x10];
+    s32 unk14;
+    Unk_8003C238_Obj18 *unk18;
+    u8 pad_1C[0x28 - 0x1C];
+    s32 unk28;
+    s32 unk2C;
+    s32 unk30;
+    u8 pad_34[0x38 - 0x34];
+    s32 unk38;
+    u8 pad_3C[0x74 - 0x3C];
+    s32 unk74;
+    Unk_8003C238_Obj78 *unk78;
+    u8 pad_7C[0x88 - 0x7C];
+    s32 unk88;
+};
+extern s32 D_8006E854[];
+extern s32 D_8006E86C[];
+typedef struct Unk_8003E280_Vtbl {
+    u8 pad_00[0x4];
+    void *(*unk4)(void *);
+    u8 pad_08[0x14 - 0x08];
+    void (*unk14)(void *, s32);
+    u8 pad_18[0x50 - 0x18];
+    void (*unk50)(void *);
+} Unk_8003E280_Vtbl;
+typedef struct Unk_8003E280_Obj {
+    Unk_8003E280_Vtbl *unk0;
+} Unk_8003E280_Obj;
+typedef struct Unk_8003E280_Link {
+    s32 unk0;
+    s32 unk4;
+    void *unk8;
+    void *unkC;
+    void *unk10;
+} Unk_8003E280_Link;
+struct Unk_8003E280 {
+    Unk_8003E280_Vtbl *unk0;
+    u8 pad_04[0xC - 0x4];
+    Unk_8003E280_Link *unkC;
+    Unk_8003E280_Obj *unk10;
+    Unk_8003E280_Obj *unk14;
+    Unk_8003E280_Obj *unk18;
+    u8 pad_1C[0x24 - 0x1C];
+    s32 unk24;
+};
 
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -1274,7 +1429,29 @@ s32 func_8003C1DC(Unk_8003C1DC *arg0, s32 arg1, s32 arg2) {
     return arg0->unk38;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003C238);
+void func_8003C238(struct Unk_8003C238 *arg0) {
+    Unk_8003C238_Obj18 *temp_s2;
+    Unk_8003C238_Vt18 *temp_s3;
+
+    temp_s2 = arg0->unk18;
+    temp_s3 = temp_s2->unk0;
+    arg0->unk0->unkE0(arg0, arg0->unk14);
+    arg0->unk78->unk0->unk4C(arg0->unk78, arg0->unk14, 0);
+    if (arg0->unk88 != 0) {
+        arg0->unk0->unkE4(arg0, (u8 *)arg0 + 0x90);
+        arg0->unk78->unk0->unkB8(arg0->unk78, 1, (u8 *)arg0 + 0x90);
+    }
+    if (arg0->unk74 == 0) {
+        (*arg0->unkC)->unk0->unk78(*arg0->unkC, (u8 *)arg0 + 0x90, D_8006E854);
+    }
+    (*arg0->unkC)->unk0->unk78(*arg0->unkC, (u8 *)arg0 + 0x90, 0);
+    temp_s3->unk48(temp_s2, arg0->unk28);
+    temp_s3->unk4C(temp_s2, arg0->unk2C);
+    temp_s3->unk50(temp_s2, arg0->unk30);
+    temp_s3->unk70(temp_s2, arg0->unk14, D_8006E86C, D_8006E86C, 0);
+    temp_s3->unk8C(temp_s2);
+    arg0->unk38 = 0;
+}
 
 void func_8003C3D0(struct Unk_8003C3D0 *arg0) {
     Unk_8003C3D0_Obj *temp_s0;
@@ -1862,9 +2039,76 @@ void func_8003E030(Unk_8003E030 *arg0, s32 **arg1, s32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E100);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E10C);
+void func_8003E10C(Unk_8003E10C *arg0, Unk_8003E10C_Arg *arg1, s32 arg2) {
+    Unk_8003E10C_Vtbl *temp_s3;
+    Unk_8003E10C_Obj *temp_s2;
+    Unk_8003E10C_Obj *temp_a0;
+    s32 temp_v0;
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E280);
+    temp_s3 = arg0->unk0;
+    temp_v0 = arg1->unk8;
+    if (temp_v0 == 0) {
+        temp_v0 = (s32)func_80042400();
+    }
+    arg0->unk10 = temp_v0;
+    temp_v0 = arg1->unkC;
+    if (temp_v0 == 0) {
+        temp_v0 = (s32)func_80042694();
+    }
+    arg0->unk14 = (Unk_8003E10C_Obj *)temp_v0;
+    temp_v0 = arg1->unk10;
+    if (temp_v0 == 0) {
+        temp_v0 = func_8003E5D8();
+    }
+    arg0->unk18 = (Unk_8003E10C_Obj *)temp_v0;
+    arg0->unkC = arg1;
+    temp_s2 = arg0->unk18;
+    temp_s3->unk10(arg0, arg1->unk0);
+    temp_s3->unk10(arg0, arg1->unk4);
+    temp_s3->unk10(arg0, arg0->unk10);
+    temp_s3->unk4C(arg0, 0, 0, 0);
+    arg0->unk24 = arg2;
+    if (arg2 == 0) {
+        temp_s2->unk0->unk10(temp_s2, arg1->unk0);
+        temp_s2->unk0->unk10(temp_s2, arg0->unk10);
+        temp_a0 = arg0->unk14;
+        temp_a0->unk0->unk10(temp_a0, arg0->unk10);
+        temp_s3->unk60(arg0, 2);
+        temp_s3->unk48(arg0);
+    }
+}
+
+void func_8003E280(struct Unk_8003E280 *arg0) {
+    Unk_8003E280_Vtbl *temp_s2;
+    Unk_8003E280_Obj *temp_s1;
+    Unk_8003E280_Obj *temp_a0;
+    Unk_8003E280_Obj *temp_a0_2;
+    Unk_8003E280_Obj *temp_a0_3;
+
+    temp_s2 = arg0->unk0;
+    temp_s2->unk50(arg0);
+    temp_s1 = arg0->unk18;
+    if (arg0->unk24 == 0) {
+        temp_a0 = arg0->unk14;
+        temp_a0->unk0->unk14(temp_a0, (s32)arg0->unk10);
+        temp_s1->unk0->unk14(temp_s1, (s32)arg0->unk10);
+        temp_s1->unk0->unk14(temp_s1, arg0->unkC->unk0);
+    }
+    temp_s2->unk14(arg0, (s32)arg0->unk10);
+    temp_s2->unk14(arg0, arg0->unkC->unk4);
+    temp_s2->unk14(arg0, arg0->unkC->unk0);
+    if (arg0->unkC->unk10 != temp_s1) {
+        arg0->unk18 = (Unk_8003E280_Obj *)temp_s1->unk0->unk4(temp_s1);
+    }
+    temp_a0_2 = arg0->unk14;
+    if (arg0->unkC->unkC != temp_a0_2) {
+        arg0->unk14 = (Unk_8003E280_Obj *)temp_a0_2->unk0->unk4(temp_a0_2);
+    }
+    temp_a0_3 = arg0->unk10;
+    if (arg0->unkC->unk8 != temp_a0_3) {
+        arg0->unk10 = (Unk_8003E280_Obj *)temp_a0_3->unk0->unk4(temp_a0_3);
+    }
+}
 
 void func_8003E418(struct Unk_8003E418 *arg0, s32 arg1, s32 arg2) {
     Unk_8003E418_Obj *temp_a0;
@@ -2126,7 +2370,29 @@ void func_8003EE88(Unk_8003EE88 *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003EEC0);
+void func_8003EEC0(struct Unk_8003EEC0 *arg0) {
+    if (arg0->unk70 != 0) {
+        if (arg0->unk10->unkC != NULL) {
+            arg0->unk0->unkA0(arg0, arg0->unk10);
+        }
+        func_8003F28C(arg0->unk40);
+        func_8003FB0C(arg0->unk4C);
+        GsSetLightMode(arg0->unk54);
+        if (arg0->unk54 == 1 || arg0->unk54 == 3) {
+            SetFarColor(arg0->unk5B, arg0->unk5C, arg0->unk5D);
+            SetFogNear(arg0->unk60, arg0->unk40);
+        }
+        GsSetRefView2((u8 *)arg0 + 0x14);
+        *arg0->unk30 = 0;
+        arg0->unk98 = ((u32)(arg0->unk50 - arg0->unk4C) / (u32)(1 << arg0->unk3C)) + 1;
+        func_8003FBE4(arg0->unk88[arg0->unk74]);
+        GsClearOt(0, 0, arg0->unk78[arg0->unk74]);
+        arg0->unk0->unkA0(arg0, arg0->unkAC);
+        if (arg0->unk10 != NULL) {
+            arg0->unk0->unkA0(arg0, func_8003F25C(arg0->unk10));
+        }
+    }
+}
 
 void func_8003F04C(struct Unk_8003F04C *arg0) {
     if (arg0->unk70 != 0) {
