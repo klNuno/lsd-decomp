@@ -114,6 +114,38 @@ def normalize(unit):
     return out + "\n\n".join(bodies) + "\n"
 
 
+def type_name(item):
+    """The struct/union tag or typedef name an item defines, else None."""
+    code = " ".join(code_of(l) for l in item.splitlines())
+    if "{" not in code:
+        return None
+    m = re.search(r"\}\s*(\w+)\s*;\s*$", code) if code.lstrip().startswith("typedef") else None
+    if m:
+        return m.group(1)
+    m = re.match(r"\s*(?:typedef\s+)?(?:struct|union|enum)\s+(\w+)\s*\{", code)
+    return m.group(1) if m else None
+
+
+def replace_types(unit, items):
+    """Items that redefine a type the unit already defines replace that definition in place
+    (a matcher extended a sibling's struct); make check then judges every user of it.
+    Returns the patched unit and the items still to insert."""
+    rest = []
+    for item in items:
+        name = type_name(item)
+        old = None
+        if name:
+            for cand in top_level_items(unit):
+                if type_name(cand) == name:
+                    old = cand
+                    break
+        if old and old in unit:
+            unit = unit.replace(old, item, 1)
+        else:
+            rest.append(item)
+    return unit, rest
+
+
 def main():
     if sys.argv[1:2] == ["--normalize"]:
         for path in sorted(glob.glob(f"{ROOT}/src/**/*.c", recursive=True)):
@@ -131,8 +163,9 @@ def main():
     norm = lambda s: re.sub(r"\s+", " ", s).strip()
     have = norm(unit)
     new = [d for d in top_level_items(decls) if norm(d) not in have]
+    head, new = replace_types(unit[:m.start()], new)
     block = ("\n".join(new) + "\n\n" if new else "") + body + "\n"
-    patched = unit[:m.start()] + block + unit[m.end():]
+    patched = head + block + unit[m.end():]
     # The function's own strings and constants now come from its C literals, emitted at its
     # position: drop the INCLUDE_RODATA lines of every D_ symbol its asm references and the
     # candidate does not name (an `extern` use keeps the line).
