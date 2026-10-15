@@ -24,7 +24,8 @@ typedef struct Unk_80028A50 {
 } Unk_80028A50;
 void func_80028218(void);
 typedef struct Unk_800288E0 {
-    u8 pad_00[0xC];
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
     void (*unkC)(s32);
 } Unk_800288E0;
 Unk_800288E0 *func_80026C9C(void);
@@ -48,6 +49,11 @@ s32 func_80017B34(s32);
 s32 D_8008A858;
 void CdSetDebug(s32 level);
 s32 CdControlB(s32 com, u8 *param, s32 result);
+typedef struct Unk_80028898 {
+    void *unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+} Unk_80028898;
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -197,7 +203,11 @@ void func_80028864(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028888);
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028898);
+void func_80028898(Unk_80028898 *arg0) {
+    func_80026C9C()->unk8(arg0);
+    arg0->unk0 = func_80027E68();
+    arg0->unkC = 0;
+}
 
 void func_800288E0(s32 arg0) {
     func_80026C9C()->unkC(arg0);
