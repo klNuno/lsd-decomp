@@ -817,6 +817,15 @@ struct Unk_80043068 {
     struct Unk_80043068_Ent unk40[4];
     s32 unk80;
 };
+struct Unk_80043FE4_Hdr {
+    u8 pad_00[0x2];
+    u16 unk2;
+};
+struct Unk_80043FE4_Entry {
+    u8 pad_00[0x4];
+    u16 unk4;
+};
+u32 *func_8004416C(void *arg0, u32 *arg1, s8 *arg2, s8 *arg3, s8 *arg4, s8 *arg5);
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1260,7 +1269,49 @@ s32 func_80043FB0(struct Unk_80043FB0 *arg0, s32 arg1, s32 arg2) {
     return arg0->unk0->unk7C(arg0, arg1, arg2, arg0->unk10 + 8) & 0xFF;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043FE4);
+s32 func_80043FE4(s32 arg0, u8 *arg1, s32 *arg2, void *arg3) {
+    u8 sp18[4];
+    u16 count;
+    u32 i;
+    u8 n;
+    s32 found;
+    s32 j;
+
+    count = ((struct Unk_80043FE4_Hdr *)arg3)->unk2;
+    arg3 = (u8 *)arg3 + 8;
+    i = 0;
+    n = 0;
+    found = 0;
+    for (; i < count; i++) {
+        func_8004416C(arg0, (u32 *)arg3, (s8 *)&sp18[0], (s8 *)&sp18[1], (s8 *)&sp18[2], (s8 *)&sp18[3]);
+        if (sp18[1] == 8 && sp18[2] == 0) {
+            n++;
+            if (arg1 != NULL) {
+                *arg1++ = sp18[0];
+            }
+        } else if (sp18[1] == 2) {
+            if (arg1 != NULL) {
+                if (arg2 != NULL && ((struct Unk_80043FE4_Entry *)arg3)->unk4 == *arg2) {
+                    j = 0;
+                    arg1 -= n;
+                    for (; j < n; j++) {
+                        if (*arg1++ == sp18[0]) {
+                            found = j;
+                            break;
+                        }
+                    }
+                }
+            } else if (arg2 != NULL) {
+                found++;
+            }
+        }
+        arg3 = (u8 *)arg3 + sp18[3] * 4;
+    }
+    if (arg2 != NULL) {
+        *arg2 = found;
+    }
+    return n;
+}
 
 u32 *func_8004416C(void *arg0, u32 *arg1, s8 *arg2, s8 *arg3, s8 *arg4, s8 *arg5) {
     u32 temp_v1 = *arg1;

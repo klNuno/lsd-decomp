@@ -1245,6 +1245,13 @@ struct Unk_8004CDA4_Obj {
     Unk_8004CDA4_Entry entries[1];
 };
 extern Unk_8004CDA4_Entry D_80086990;
+typedef struct Unk_8004CD38 {
+    s16 unk0;
+    s16 unk2;
+    s32 unk4;
+    s32 unk8;
+} Unk_8004CD38;
+/* Returns 0 when the point (arg1[0], arg1[1]) lies inside the box, 1 otherwise or without a box. */
 
 s32 func_800494B4(void) {
     return 0xE;
@@ -2602,7 +2609,16 @@ void func_8004CC74(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CD38);
+s32 func_8004CD38(void *arg0, void *arg1) {
+    Unk_8004CD38 *box = arg0;
+    u8 *pt = arg1;
+
+    if (box != NULL && (s8)pt[0] >= box->unk0 && (s8)pt[0] <= box->unk4
+        && (s8)pt[1] >= box->unk2 && (s8)pt[1] <= box->unk8) {
+        return 0;
+    }
+    return 1;
+}
 
 s32 func_8004CDA4(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
     Unk_8004CDA4_Obj *self = arg0;

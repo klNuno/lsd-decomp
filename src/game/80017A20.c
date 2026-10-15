@@ -7,7 +7,7 @@ typedef struct Heap { Block *base; u32 size; Block *head; Block *tail; s32 ready
 Heap *D_8008A818;
 typedef struct VTable { s32 unk0, unk4, unk8; void (*fnC)(); } VTable;
 typedef struct { VTable *vt; } Object;
-extern void func_80017CFC(Object *);
+extern void *func_80017CFC();
 extern s32 D_8006B58C[];
 s32 D_8008A820;
 s32 D_8008A830;
@@ -462,7 +462,10 @@ void func_80017AC8(Heap *arg0) {
     *(u32 *)end = 0x80000000;
 }
 
-void *func_80017B34(size, arg1) u32 size; Heap *arg1; {
+void *func_80017B34(size, arg1)
+    u32 size;
+    Heap *arg1;
+{
     Heap *heap;
     Block *blk;
     Block *rem;
@@ -543,7 +546,94 @@ void *func_80017B34(size, arg1) u32 size; Heap *arg1; {
     return result;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017CFC);
+void *func_80017CFC(arg0, arg1)
+    void *arg0;
+    Heap *arg1;
+{
+    Heap *heap;
+    Block *blk;
+    Block *next;
+    u32 size;
+    u32 nextFree;
+
+    func_8001844C(1);
+    heap = D_8008A818;
+    if (heap == NULL) {
+        heap = arg1;
+    }
+    if (arg0 != NULL) {
+        blk = (Block *)((u8 *)arg0 - 4);
+        next = (Block *)((u8 *)blk + (blk->hdr & 0x0FFFFFFF));
+        nextFree = next->hdr & 0x40000000;
+        if ((s32)blk->hdr < 0) {
+            size = blk->hdr & 0x0FFFFFFF;
+            blk = ((Block **)blk)[-1];
+            blk->hdr = (blk->hdr & 0xF0000000) | (size + (blk->hdr & 0x0FFFFFFF));
+            {
+                Block *p;
+                Block *n;
+                n = blk->next;
+                p = blk->prev;
+                if (n != NULL) {
+                    n->prev = p;
+                } else {
+                    heap->tail = p;
+                }
+            }
+            {
+                Block *n;
+                Block *p;
+                p = blk->prev;
+                n = blk->next;
+                if (p != NULL) {
+                    p->next = n;
+                } else {
+                    heap->head = n;
+                }
+            }
+        }
+        if (nextFree != 0) {
+            size = next->hdr & 0x0FFFFFFF;
+            blk->hdr = (blk->hdr & 0xF0000000) | (size + (blk->hdr & 0x0FFFFFFF));
+            {
+                Block *p;
+                Block *n;
+                n = next->next;
+                p = next->prev;
+                if (n != NULL) {
+                    n->prev = p;
+                } else {
+                    heap->tail = p;
+                }
+            }
+            {
+                Block *n;
+                Block *p;
+                p = next->prev;
+                n = next->next;
+                if (p != NULL) {
+                    p->next = n;
+                } else {
+                    heap->head = n;
+                }
+            }
+            next = (Block *)((u8 *)blk + (blk->hdr & 0x0FFFFFFF));
+        }
+        blk->next = heap->head;
+        heap->head = blk;
+        blk->prev = NULL;
+        if (blk->next != NULL) {
+            blk->next->prev = blk;
+        } else {
+            heap->tail = blk;
+        }
+        ((Block **)next)[-1] = blk;
+        blk->hdr |= 0x40000000;
+        next->hdr |= 0x80000000;
+    }
+    func_8001844C(0);
+    return NULL;
+}
 
 void func_80017EA8(void) {
 }
