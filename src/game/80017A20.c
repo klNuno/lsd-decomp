@@ -12,7 +12,7 @@ s32 D_8008A820;
 s32 D_8008A830;
 s32 D_8008A834;
 extern s32 func_800181AC();
-void func_80018208(void *arg0);
+void func_80018208();
 extern s32 *func_80018390(void);
 typedef struct Unk_80017EF8 { s32 *unk0; s32 unk4; s32 unk8; } Unk_80017EF8;
 typedef struct Unk_80018358_Vtbl {
@@ -231,7 +231,26 @@ s32 func_800181AC(void **arg0, s32 arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018208);
+void func_80018208(Unk_800183A0 **arg0, s32 arg1) {
+    Unk_800183A0 *var_a0;
+    Unk_800183A0 *var_v1;
+
+    var_a0 = *arg0;
+    var_v1 = NULL;
+    while (var_a0 != NULL) {
+        if (var_a0->unk4 == arg1) {
+            if (var_v1 != NULL) {
+                var_v1->unk0 = var_a0->unk0;
+            } else {
+                *arg0 = var_a0->unk0;
+            }
+            func_80017CFC((Object *)var_a0);
+            return;
+        }
+        var_v1 = var_a0;
+        var_a0 = var_a0->unk0;
+    }
+}
 
 void func_80018288(Unk_80018288 **arg0) {
     Unk_80018288 *node;
