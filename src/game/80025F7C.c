@@ -88,8 +88,24 @@ typedef struct Unk_80026518_Vtbl {
 typedef struct Unk_80026518 {
     Unk_80026518_Vtbl *vt;
 } Unk_80026518;
+typedef struct Unk_80025F7C {
+    s32 unk0;
+    void (*unk4)(void);
+    void (*unk8)(s32, s32);
+} Unk_80025F7C;
+s32 func_80017B34(s32);
+Unk_80025F7C *func_800269E0(void);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80025F7C);
+s32 func_80025F7C(s32 arg0) {
+    s32 p;
+
+    p = func_80017B34(0x2C);
+    /* No return on the NULL path: v0 still holds p (0) from the allocator. */
+    if (p != 0) {
+        func_800269E0()->unk8(p, arg0);
+        return p;
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/game/80025F7C", D_800107A4);
 

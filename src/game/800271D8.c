@@ -68,6 +68,10 @@ s32 D_8008A89C;
 s32 D_8008A8A4;
 void func_800280EC(void);
 void VSyncCallback(void (*func)(void));
+s8 *func_800270B8(void);
+s8 *strcpy(s8 *dst, s8 *src);
+s8 *strcat(s8 *dst, s8 *src);
+extern s8 D_8008A8A8[]; /* ";1" in .sdata */
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -257,7 +261,13 @@ INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107F4);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028920);
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800289CC);
+s8 *func_800289CC(s8 *arg0, s8 *arg1) {
+    *arg0 = 0x5C;
+    strcpy(arg0 + 1, func_800270B8());
+    strcat(arg0, arg1);
+    strcat(arg0, D_8008A8A8);
+    return arg0;
+}
 
 void func_80028A34(Unk_80028A34 *arg0) {
     if (arg0->unkC != 0) {

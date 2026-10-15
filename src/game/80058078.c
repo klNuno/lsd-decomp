@@ -279,6 +279,11 @@ typedef struct Unk_80058A94_RetVt {
     void (*unk50)(void *);
 } Unk_80058A94_RetVt;
 Unk_80058A94_RetVt *func_80057C84(void);
+extern u16 D_8008875C[];
+typedef struct Unk_8005BE28 {
+    u8 pad_00[4];
+    u16 u4;
+} Unk_8005BE28;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -781,7 +786,19 @@ s32 func_8005BCF8(void *arg0, s16 *arg1, s32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BD3C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BE28);
+s32 func_8005BE28(Unk_8005BE28 *arg0, u8 arg1) {
+    s32 diff = arg0->u4 - D_8008875C[arg1 * 6];
+    s16 temp = diff;
+    s16 var_a1;
+
+    var_a1 = diff;
+    if (temp > 0xB4) {
+        var_a1 -= 0x168;
+    } else if (temp < -0xB4) {
+        var_a1 += 0x168;
+    }
+    return (u16)(var_a1 + 0x2C) < 0x59U;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BE90);
 

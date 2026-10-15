@@ -61,6 +61,13 @@ typedef struct Unk_8001934C_Dst {
     u8 pad_16[0x1C - 0x16];
     s32 unk1C;
 } Unk_8001934C_Dst;
+typedef struct Unk_800183DC_Vtbl {
+    s32 unk0;
+    void *(*unk4)(void *);
+} Unk_800183DC_Vtbl;
+typedef struct Unk_800183DC {
+    Unk_800183DC_Vtbl *vt;
+} Unk_800183DC;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);
 
@@ -194,7 +201,12 @@ void func_800183A0(s32 *arg0, Unk_800183A0 **arg1) {
     *arg0 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800183DC);
+void func_800183DC(Unk_800183DC **arg0, s32 arg1) {
+    while (arg1-- > 0) {
+        *arg0 = (*arg0)->vt->unk4(*arg0);
+        arg0++;
+    }
+}
 
 void func_8001844C(s32 arg0) {
     D_8008A820 = arg0;

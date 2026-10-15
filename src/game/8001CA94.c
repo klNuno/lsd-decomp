@@ -102,6 +102,7 @@ typedef struct Unk_8001EC84 {
     s16 unk0;
     s16 unk2;
 } Unk_8001EC84;
+/* Writes arg3 into the arg2-bit field at bit arg1 of *arg0, returns the old field value. */
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -295,7 +296,22 @@ s32 func_8001EC84(Unk_8001EC84 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001ECFC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EDAC);
+s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 i;
+    s32 mask;
+    s32 old;
+
+    mask = 1;
+    for (i = 0; i < arg2; i++) {
+        mask <<= 1;
+    }
+    mask = mask - 1;
+    mask = mask << arg1;
+    old = *arg0;
+    *arg0 &= ~mask;
+    *arg0 |= arg3 << arg1;
+    return (u32)(mask & old) >> arg1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EE04);
 
