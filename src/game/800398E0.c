@@ -149,6 +149,28 @@ typedef struct Unk_80039F64 {
     u16 unk1E;
     s32 unk20;
 } Unk_80039F64;
+extern s16 func_8003A99C(s32, s16);
+extern s32 printf(const char *fmt, ...);
+typedef struct Unk_80039C04C {
+    u8 pad_00[0x54];
+    s16 unk54;
+    u8 pad_56[0x2];
+    u16 unk58;
+} Unk_80039C04C;
+typedef struct Unk_80039C04P {
+    u8 pad_00[0x10];
+    s32 unk10;
+    u8 pad_14[0x18];
+    s32 unk2C;
+} Unk_80039C04P;
+typedef struct Unk_80039C04 {
+    u8 pad_00[0xC];
+    Unk_80039C04C *unkC;
+    Unk_80039C04P *unk10;
+    s16 unk14;
+    u8 pad_16[0x4];
+    u16 unk1A;
+} Unk_80039C04;
 
 void *func_800398E0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp_v0;
@@ -208,9 +230,34 @@ void func_80039B90(Unk_80039B90 *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/800398E0", D_80010FEC);
+s32 func_80039C04(Unk_80039C04 *arg0) {
+    Unk_80039C04C *temp_a1;
+    Unk_80039C04P *temp_v1;
+    s16 temp_v0;
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039C04);
+    temp_a1 = arg0->unkC;
+    if (temp_a1 == NULL) {
+        return 0;
+    }
+    temp_v1 = arg0->unk10;
+    if (temp_v1 == NULL) {
+        return 0;
+    }
+    if (temp_a1->unk58 == 0) {
+        return 0;
+    }
+    if (temp_v1->unk2C == 0) {
+        return 0;
+    }
+    temp_v0 = func_8003A99C(temp_v1->unk10, temp_a1->unk54);
+    arg0->unk14 = temp_v0;
+    if (temp_v0 == -1) {
+        printf("Seq Open error in WBgmHandleMonitorEvent");
+    }
+    SsSeqSetVol(arg0->unk14, 0x34, 0x34);
+    arg0->unk1A = 2;
+    return 1;
+}
 
 void func_80039CBC(Unk_80039CBC *arg0) {
     if (arg0->unk1E == 0) {

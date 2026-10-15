@@ -709,7 +709,9 @@ typedef struct Unk_8003DA10_Sub {
     s32 *unk24;
 } Unk_8003DA10_Sub;
 typedef struct Unk_8003DA10_ElemVtbl {
-    u8 pad_00[0xB8];
+    u8 pad_00[0x60];
+    void (*unk60)(void *, s32);
+    u8 pad_64[0xB8 - 0x64];
     void (*unkB8)(void *, s32);
 } Unk_8003DA10_ElemVtbl;
 typedef struct Unk_8003DA10_Elem {
@@ -1744,7 +1746,28 @@ void func_8003DA10(Unk_8003DA10 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003DAD4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003DCAC);
+void func_8003DCAC(Unk_8003DA10 *arg0) {
+    s32 i;
+    s32 idx;
+    s32 v;
+    Unk_8003DA10_Elem **arr;
+    Unk_8003DA10_Elem *e;
+
+    if (arg0->unk3C == 2) {
+        i = arg0->unk58;
+        idx = arg0->unk60[i];
+        arg0->unk0->unk100(arg0, arg0->unk14, 0);
+        arr = arg0->unk64[i];
+        e = arr[idx];
+        e->unk0->unkB8(e, (s32)arg0->unk4C + 0x10);
+        v = ((s32 *)arg0->unk4C->unk24[i])[1];
+        arg0->unk60[i] = v;
+        e = arr[v];
+        e->unk0->unk60(e, 1);
+        arg0->unk3C = 1;
+        arg0->unk0->unk60(arg0, 0x11);
+    }
+}
 
 void func_8003DDC8(struct Unk_8003DDC8 *arg0) {
     s32 var_a1;
