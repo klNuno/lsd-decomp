@@ -31,6 +31,8 @@ typedef struct Unk_8002CC34 {
 typedef struct Unk_8002C12C {
     /* 0x00 */ u8 pad_00[0x8];
     /* 0x08 */ void (*unk8)(void *, s32);
+    /* 0x0C */ u8 pad_0C[0x60];
+    /* 0x6C */ void (*unk6C)(void *, s32);
 } Unk_8002C12C;
 void *func_80017B34(s32 size);
 Unk_8002C12C *func_8002C3A8(void);
@@ -50,6 +52,16 @@ typedef struct Unk_8002C824 {
     u16 unk5A;
 } Unk_8002C824;
 s16 SsVabTransCompleted(s16 immediateFlag);
+typedef struct Unk_8002C18C {
+    Unk_8002C12C *unk0;
+    u8 pad_04[0x28];
+    s32 unk2C;
+    s32 unk30;
+} Unk_8002C18C;
+typedef struct Unk_8002C18C_sys_vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
+} Unk_8002C18C_sys_vt;
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -62,7 +74,15 @@ s32 func_8002C12C(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C18C);
+void func_8002C18C(Unk_8002C18C *arg0, s32 arg1) {
+    ((Unk_8002C18C_sys_vt *)func_80026CAC())->unk8(arg0);
+    arg0->unk0 = func_8002C3A8();
+    arg0->unk2C = 0;
+    arg0->unk30 = 0;
+    if (arg1 != 0) {
+        arg0->unk0->unk6C(arg0, arg1);
+    }
+}
 
 void func_8002C200(s32 arg0) {
     ((Unk_8002C200 *)func_80026CAC())->unkC(arg0);
