@@ -93,7 +93,8 @@ typedef struct Unk_8001E6F8_Src {
     s16 unk14;
 } Unk_8001E6F8_Src;
 typedef struct Unk_8001E6F8_Mid {
-    u8 pad_00[0x44];
+    s32 unk0;
+    u8 pad_04[0x44 - 0x04];
     Unk_8001E6F8_Src *unk44;
 } Unk_8001E6F8_Mid;
 struct Unk_8001E6F8 {
@@ -368,7 +369,34 @@ void func_8001CE30(Unk_8001CE30 *arg0) {
     *arg0->unk14 = 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CEB4);
+void func_8001CEB4(struct Unk_8001E6F8 *arg0, s32 arg1, Unk_8001EC84 *arg2) {
+    s32 sp10[3];
+    s32 i;
+    Unk_8001E6F8_Src *src;
+    s16 *p;
+    s16 *cur;
+
+    sp10[0] = func_8001EC84(arg2);
+    sp10[1] = func_8001EC84(arg2 + 1);
+    sp10[2] = func_8001EC84(arg2 + 2);
+    sp10[0] /= 0x168;
+    sp10[1] /= 0x168;
+    sp10[2] /= 0x168;
+    src = arg0->unk14->unk44;
+    p = &src->unk10;
+    if (arg1 != 0) {
+        src->unk10 = sp10[0];
+        src->unk12 = sp10[1];
+        src->unk14 = sp10[2];
+    } else {
+        for (i = 0; i < 3; i++) {
+            cur = p;
+            p = cur + 1;
+            *cur = (*cur + sp10[i]) % 0x1000;
+        }
+    }
+    arg0->unk14->unk0 = 0;
+}
 
 void func_8001D008(Unk_8001D008 *arg0, s32 arg1, Unk_8001EC84 *arg2) {
     s32 x;

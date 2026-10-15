@@ -839,6 +839,68 @@ typedef struct Unk_80058968_RetVtbl {
     u8 pad_00[0x4C];
     void (*unk4C)(void *, void *, void *);
 } Unk_80058968_RetVtbl;
+extern s16 D_8008ABC8[];
+extern u8 D_80087F08[];
+typedef struct Unk_8005AC24 {
+    Unk_8005AD68_Vtbl *vt;
+    u8 pad_04[0x88 - 0x04];
+    s32 unk88;
+    u8 pad_8C[0xA0 - 0x8C];
+    s32 unkA0;
+    s32 unkA4;
+    u8 pad_A8[0xAC - 0xA8];
+    s32 unkAC;
+    u8 pad_B0[0x914 - 0xB0];
+    s32 unk914;
+    u8 pad_918[0x91C - 0x918];
+    s16 unk91C[3];
+} Unk_8005AC24;
+typedef struct Unk_80058B08_Ret {
+    u8 pad_00[0x88];
+    void (*unk88)(void *, s32);
+} Unk_80058B08_Ret;
+typedef struct Unk_80058B08_Vt {
+    u8 pad_00[0x1D4];
+    void (*unk1D4)(void *, s32);
+    u8 pad_1D8[0x224 - 0x1D8];
+    void (*unk224)(void *);
+} Unk_80058B08_Vt;
+typedef struct Unk_80058B08_Sub {
+    u8 pad_00[0x2C];
+    s16 unk2C;
+} Unk_80058B08_Sub;
+typedef struct Unk_80058B08_Ret11C {
+    u8 pad_00[4];
+    Unk_80058B08_Sub *unk4;
+} Unk_80058B08_Ret11C;
+typedef struct Unk_80058B08_ObjVt {
+    u8 pad_00[0x10C];
+    s32 (*unk10C)(void *, s32, s32);
+    u8 pad_110[0x11C - 0x110];
+    Unk_80058B08_Ret11C *(*unk11C)(void *, s32);
+} Unk_80058B08_ObjVt;
+typedef struct Unk_80058B08_Obj {
+    Unk_80058B08_ObjVt *vt;
+} Unk_80058B08_Obj;
+typedef struct Unk_80058B08_Unk28 {
+    u8 pad_00[0x36];
+    u16 unk36;
+} Unk_80058B08_Unk28;
+typedef struct Unk_80058B08 {
+    Unk_80058B08_Vt *unk0;
+    u8 pad_04[0x14 - 0x04];
+    s32 unk14;
+    u8 pad_18[0x28 - 0x18];
+    Unk_80058B08_Unk28 *unk28;
+    u8 pad_2C[0x44 - 0x2C];
+    s32 unk44;
+    u8 pad_48[0x4C - 0x48];
+    Unk_80058B08_Obj *unk4C;
+    u8 pad_50[0xB8 - 0x50];
+    s32 unkB8;
+    u8 pad_BC[0x164 - 0xBC];
+    s32 unk164;
+} Unk_80058B08;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1004,7 +1066,38 @@ void func_80058A94(Unk_80058A94 *arg0) {
     func_80057C84()->unk50(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058B08);
+void func_80058B08(Unk_80058B08 *arg0, s32 arg1) {
+    s32 temp_v0;
+    Unk_80058B08_Obj *temp_a0;
+    Unk_80058B08_Obj *temp_a0_2;
+
+    ((Unk_80058B08_Ret *)func_80057C84())->unk88(arg0, arg1);
+    switch (arg1) {
+    case -1:
+        temp_v0 = arg0->unk28->unk36 & 0x7F;
+        arg0->unkB8 = temp_v0;
+        if (temp_v0 >= 0x18) {
+            arg0->unkB8 = 0;
+        }
+        if (arg0->unk44 == 0xF && arg0->unkB8 == 0) {
+            arg0->unkB8 = 2;
+        }
+        if (arg0->unk164 == 9) {
+            temp_a0 = arg0->unk4C;
+            arg0->unk0->unk1D4(arg0, temp_a0->vt->unk10C(temp_a0, 0, 0));
+        }
+        return;
+    case -2:
+        temp_a0_2 = arg0->unk4C;
+        if (temp_a0_2->vt->unk11C(temp_a0_2, arg0->unk14 + 0x18)->unk4->unk2C == 2) {
+            temp_a0 = arg0->unk4C;
+            arg0->unk0->unk1D4(arg0, temp_a0->vt->unk10C(temp_a0, 0, 0));
+        } else {
+            arg0->unk0->unk224(arg0);
+        }
+        return;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058C58);
 
@@ -1605,7 +1698,36 @@ s32 func_8005AB2C(Unk_8005AD68 *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005AC24);
+s32 func_8005AC24(Unk_8005AC24 *arg0) {
+    s32 flag;
+
+    if (arg0->unk914 == 0) {
+        func_8005AF64((Unk_8005AF64 *)arg0, D_8008ABC8, arg0->unk91C);
+    }
+    if (arg0->unkAC != 4) {
+        if (arg0->unk914 >= 0x95) {
+            return 1;
+        }
+        if ((u32)(arg0->unk914 - 0x16) < 0xF || (u32)(arg0->unk914 - 0x39) < 0x10 || (u32)(arg0->unk914 - 0x6E) < 0xF) {
+            arg0->unkA4 = 1;
+        }
+        flag = (u32)(arg0->unk914 - 0x39) < 0x35;
+    } else {
+        if (arg0->unk914 >= 0x19) {
+            return 1;
+        }
+        if ((u32)(arg0->unk914 - 6) < 2 || (u32)(arg0->unk914 - 0xB) < 2 || (u32)(arg0->unk914 - 0x14) < 2) {
+            arg0->vt->unk44(arg0, 0, D_80087F08);
+        }
+        flag = (u32)(arg0->unk914 - 3) < 0xE;
+    }
+    if (flag) {
+        arg0->unk88 = 2;
+    }
+    arg0->unkA0 = 1;
+    arg0->unk914++;
+    return 0;
+}
 
 s32 func_8005AD68(Unk_8005AD68 *arg0) {
     if (arg0->unk914 == 0) {

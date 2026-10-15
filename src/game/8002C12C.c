@@ -176,6 +176,39 @@ typedef struct Unk_8002C278 {
     s32 unk34;
     s32 unk38;
 } Unk_8002C278;
+typedef struct Unk_8002C4E0_sys_vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
+} Unk_8002C4E0_sys_vt;
+typedef struct Unk_8002C4E0_vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *, s32);
+    u8 pad_0C[0x60];
+    void (*unk6C)(void *, s8 *);
+    u8 pad_70[0x2C];
+    void (*unk9C)(void *, s32);
+} Unk_8002C4E0_vt;
+typedef struct Unk_8002C4E0 {
+    /* 0x00 */ Unk_8002C4E0_vt *unk0;
+    /* 0x04 */ u8 pad_04[0x26];
+    /* 0x2A */ u16 unk2A;
+    /* 0x2C */ u8 pad_2C[0x20];
+    /* 0x4C */ s32 unk4C;
+    /* 0x50 */ s32 unk50;
+    /* 0x54 */ s16 unk54;
+    /* 0x56 */ s16 unk56;
+    /* 0x58 */ s16 unk58;
+    /* 0x5A */ u16 unk5A;
+    /* 0x5C */ s32 unk5C;
+} Unk_8002C4E0;
+s32 D_8008A8CC;
+extern s8 D_8008A8D0[];
+void func_80032368(void);
+s32 func_8003A068(void);
+void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
+void func_80032588(s32 arg0);
+s32 strlen(u8 *s);
+s8 *strcpy(s8 *dst, s8 *src);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -306,7 +339,42 @@ void *func_8002C480(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C4E0);
+void func_8002C4E0(Unk_8002C4E0 *arg0, s8 *arg1) {
+    s8 sp10[0x20];
+    s8 *temp;
+
+    ((Unk_8002C4E0_sys_vt *)func_80026CAC())->unk8(arg0);
+    arg0->unk0 = (Unk_8002C4E0_vt *)func_8002CC0C();
+    arg0->unk4C = 0;
+    arg0->unk50 = 0;
+    arg0->unk54 = 0;
+    arg0->unk56 = 0;
+    arg0->unk0->unk9C(arg0, 0);
+    arg0->unk58 = 0;
+    arg0->unk5A = 0;
+    arg0->unk5C = 0;
+    if (D_8008A8B8 == 0) {
+        func_80032368();
+        D_8008A8B8 = 1;
+        SsSetTableSize((s8 *)func_8003A068(), 2, 1);
+    }
+    if (D_8008A8BC == 0) {
+        D_8008A8CC = 0x3C;
+        func_80032588(1);
+        D_8008A8BC = 1;
+    }
+    D_8008A8C4 += 1;
+    if (arg1 != 0) {
+        temp = func_80017B34(strlen((u8 *)arg1) + 1);
+        if (temp != NULL) {
+            arg0->unk5C = (s32)temp;
+            strcpy(temp, arg1);
+            func_800270C4(sp10, temp, (s8 *)0, D_8008A8D0);
+            arg0->unk2A = 1;
+            arg0->unk0->unk6C(arg0, sp10);
+        }
+    }
+}
 
 void func_8002C638(Unk_8002C638 *arg0) {
     SsVabClose(arg0->unk54);

@@ -75,6 +75,37 @@ struct Unk_8001F250 {
     void (*unk8)(void *, s32);
 };
 void *func_80017B34(s32 size);
+struct Unk_8001F51C {
+    s32 unk0;
+    u16 unk4;
+    u16 unk6;
+    u16 unk8;
+    u16 unkA;
+    u16 unkC;
+    u16 unkE;
+    u16 unk10;
+    u16 unk12;
+    u16 unk14;
+    u16 unk16;
+    u16 unk18;
+    u16 unk1A;
+    u16 unk1C;
+    u16 unk1E;
+    u16 unk20;
+    u16 unk22;
+    u16 unk24;
+    u16 unk26;
+    u16 unk28;
+    u16 unk2A;
+    u16 unk2C;
+    u16 unk2E;
+    u16 unk30;
+    u16 unk32;
+};
+struct Unk_8001F51C_tmp {
+    s32 one;
+    u16 buf[6];
+};
 
 void *func_8001F250(s32 arg0) {
     void *temp;
@@ -128,7 +159,37 @@ void func_8001F4E4(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F50C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F51C);
+void func_8001F51C(void *arg0, struct Unk_8001F51C *arg1) {
+    struct Unk_8001F51C_tmp t;
+
+    func_8001F3B0(arg0, (u8 *)t.buf);
+    t.one = 1;
+    arg1->unk4 = t.buf[0];
+    arg1->unk6 = t.buf[1];
+    arg1->unk8 = t.buf[2];
+    arg1->unkA = t.buf[0];
+    arg1->unkC = t.buf[4];
+    arg1->unkE = t.buf[2];
+    arg1->unk10 = t.buf[3];
+    arg1->unk12 = t.buf[4];
+    arg1->unk14 = t.buf[2];
+    arg1->unk16 = t.buf[3];
+    arg1->unk18 = t.buf[1];
+    arg1->unk1A = t.buf[2];
+    arg1->unk1C = t.buf[0];
+    arg1->unk1E = t.buf[1];
+    arg1->unk20 = t.buf[5];
+    arg1->unk22 = t.buf[0];
+    arg1->unk24 = t.buf[4];
+    arg1->unk26 = t.buf[5];
+    arg1->unk28 = t.buf[3];
+    arg1->unk2A = t.buf[4];
+    arg1->unk2C = t.buf[5];
+    arg1->unk2E = t.buf[3];
+    arg1->unk30 = t.buf[1];
+    arg1->unk32 = t.buf[5];
+    arg1->unk0 = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F66C);
 

@@ -159,6 +159,10 @@ struct Unk_80027D70 {
 s32 D_8008A87C;
 s32 D_8008A888;
 void CdFlush(void);
+s32 CdControlF(s32 com, u8 *param);
+void func_80028888(s32 arg0);
+s32 D_8008A880;
+s32 D_8008A884;
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -492,7 +496,48 @@ s32 func_80028540(s32 arg0) {
     return temp_s0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_8002858C);
+void func_8002858C(void) {
+    func_800280D0();
+    switch (D_8008A878) {
+    case 1:
+        if (CdControlF(2, (u8 *)(D_8008A87C + 0x14)) != 0) {
+            func_80028888(2);
+        }
+        break;
+    case 2:
+        switch (CdSync(1, 0)) {
+        case 5:
+            func_80028888(1);
+            break;
+        case 0:
+            if (++D_8008A8A0 > 0x258) {
+                func_80028888(1);
+            }
+            break;
+        case 2:
+            func_80028864();
+            break;
+        }
+        break;
+    case 7:
+        if (CdRead(D_8008A880, (void *)D_8008A884, 0x80) != 0) {
+            func_80028888(8);
+        }
+        break;
+    case 8:
+        switch (CdReadSync(1, 0)) {
+        case 0:
+            func_80028864();
+            break;
+        case -1:
+            CdFlush();
+            func_80028888(1);
+            break;
+        }
+        break;
+    }
+    func_800280E0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800286E4);
 

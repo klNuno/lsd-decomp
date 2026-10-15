@@ -585,6 +585,36 @@ struct Unk_8004564C {
     struct Unk_8004564C_Vec unk2C;
     s32 unk38;
 };
+s32 func_8003B39C(s32 arg0);
+s16 D_8008A934;
+struct Unk_80043CB8_Vtbl {
+    u8 pad_00[0x9C];
+    void (*unk9C)(void *self, void *arg1);
+};
+struct Unk_80043CB8_Obj {
+    struct Unk_80043CB8_Vtbl *unk0;
+    u8 pad_04[0xC];
+    u8 *unk10;
+    s32 unk14;
+    u8 pad_18[0x34];
+    s32 unk4C;
+};
+struct Unk_80043CB8 {
+    u8 pad_00[0x10];
+    s32 *unk10;
+    u8 pad_14[0x10];
+    s32 unk24;
+    u8 pad_28[0x4];
+    s32 unk2C;
+    struct Unk_80043CB8_Obj **unk30;
+    s32 unk34;
+    s32 unk38;
+};
+struct Unk_80043CB8_Sp {
+    u8 pad_00[0x12];
+    s16 unk12;
+    u8 pad_14[0xC];
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -753,7 +783,36 @@ void func_80043C60(struct Unk_80043C60 *arg0) {
     func_80026CAC()->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043CB8);
+void func_80043CB8(struct Unk_80043CB8 *arg0) {
+    struct Unk_80043CB8_Sp sp10;
+    struct Unk_80043CB8_Obj **temp_v0;
+    struct Unk_80043CB8_Obj *temp_v0_2;
+    struct Unk_80043CB8_Obj **var_s1;
+    s32 *var_s3;
+    s32 var_s2;
+
+    if ((arg0->unk24 & 0x200) || arg0->unk10 != NULL) {
+        arg0->unk2C = *arg0->unk10;
+        temp_v0 = (struct Unk_80043CB8_Obj **)func_80017B34(*arg0->unk10 * 4);
+        arg0->unk30 = temp_v0;
+        if (temp_v0 != NULL) {
+            var_s1 = temp_v0;
+            var_s3 = arg0->unk10 + 1;
+            for (var_s2 = 0; var_s2 < arg0->unk2C; var_s2++) {
+                temp_v0_2 = (struct Unk_80043CB8_Obj *)func_8003B39C(0);
+                *var_s1 = temp_v0_2;
+                temp_v0_2->unk10 = (u8 *)arg0->unk10 + *var_s3;
+                (*var_s1)->unk14 = 0;
+                var_s3++;
+                (*var_s1)->unk0->unk9C(*var_s1, &sp10);
+                (*var_s1)->unk4C = ((((s32)sp10.unk12 - 0x1E0) >> D_8008A934) * 0x10) + arg0->unk34;
+                var_s1++;
+            }
+            arg0->unk38 = 1;
+            ((struct Unk_80044808_Mgr *)func_80026CAC())->unk64(arg0);
+        }
+    }
+}
 
 void func_80043DFC(struct Unk_80043DFC *arg0) {
     s32 i;

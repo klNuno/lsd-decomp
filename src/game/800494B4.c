@@ -584,6 +584,60 @@ typedef struct Unk_8004ABD0 {
     u8 pad_1B6[0x1B8 - 0x1B6];
     s32 unk1B8;
 } Unk_8004ABD0;
+typedef struct Unk_8004AEA4_Vtbl {
+    u8 pad_00[0x110];
+    s32 (*unk110)(void *, void *, s32);
+} Unk_8004AEA4_Vtbl;
+typedef struct Unk_8004AEA4_Elem {
+    s32 w0;
+    s32 w1;
+    s32 w2;
+    s32 w3;
+} Unk_8004AEA4_Elem;
+typedef struct Unk_8004AEA4 {
+    Unk_8004AEA4_Vtbl *unk0;
+    u8 pad_04[0x68 - 0x04];
+    Unk_800861D4 *unk68;
+    u8 pad_6C[0x88 - 0x6C];
+    s32 unk88;
+    Unk_8004AEA4_Elem unk8C[3];
+} Unk_8004AEA4;
+typedef struct Unk_8004AEA4_Arg {
+    u8 pad_00[0xC];
+    s32 unkC;
+    u8 pad_10[0x14 - 0x10];
+    s32 unk14;
+} Unk_8004AEA4_Arg;
+void func_8004AFE0();
+void func_8004B030();
+void func_8004B100(Unk_8004AEA4 *arg0, Unk_8004AEA4_Arg *arg1, s32 arg2);
+typedef struct Unk_8004BD14_Obj {
+    u8 pad_00[0x2A];
+    u16 u2A;
+    s16 u2C;
+    s16 u2E;
+} Unk_8004BD14_Obj;
+typedef struct Unk_8004BD14_Slot {
+    u16 u0;
+    u8 pad_02[0x2];
+    Unk_8004BD14_Obj *obj;
+    u8 pad_08[0x1C - 0x8];
+} Unk_8004BD14_Slot;
+typedef struct Unk_8004BD14_Vtbl {
+    u8 pad_00[0x88];
+    void (*unk88)(void *, s32, Unk_8004BD14_Slot *, s32);
+    u8 pad_8C[0x104 - 0x8C];
+    void (*unk104)(void *, Unk_8004BD14_Slot *);
+} Unk_8004BD14_Vtbl;
+typedef struct Unk_8004BD14 {
+    Unk_8004BD14_Vtbl *unk0;
+    u8 pad_04[0xEC - 0x4];
+    Unk_8004BD14_Slot slots[7];
+    s32 u1B0;
+    u16 u1B4;
+    u8 pad_1B6[0x1B8 - 0x1B6];
+    s32 u1B8;
+} Unk_8004BD14;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -955,7 +1009,47 @@ void func_8004ADD8(Unk_8004ADD8 *arg0, s32 **arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004AEA4);
+s32 func_8004AEA4(Unk_8004AEA4 *arg0, Unk_8004AEA4_Arg *arg1, s32 arg2) {
+    Unk_8004AEA4_Elem buf[3];
+    Unk_8004AEA4_Elem out[3];
+    Unk_8004AEA4_Elem *src;
+    Unk_8004AEA4_Elem *dst;
+    s32 saved;
+    s32 ret;
+    s32 a2;
+
+    if (arg1->unkC != 0) {
+        a2 = arg1->unk14 + 0x38;
+    } else {
+        a2 = 0;
+    }
+    ret = arg0->unk0->unk110(arg0, out, a2);
+    if (ret != 0) {
+        return ret;
+    }
+    saved = arg0->unk88;
+    dst = buf;
+    src = arg0->unk8C;
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != &arg0->unk8C[3]);
+    if (arg0->unk68->unk_4 == 0) {
+        func_8004AFE0(arg0, out, 3);
+    } else {
+        func_8004B030(arg0, out, 3);
+    }
+    func_8004B100(arg0, arg1, arg2);
+    arg0->unk88 = saved;
+    dst = arg0->unk8C;
+    src = buf;
+    do {
+        *dst = *src;
+        src++;
+        dst++;
+    } while (src != &buf[3]);
+}
 
 void func_8004AFE0(Unk_8004AFE0 *arg0, s8 *arg1, s32 arg2) {
     arg0->u7C = arg1[2] - 1;
@@ -1095,7 +1189,42 @@ s32 func_8004BCE0(Unk_8004BCE0 *arg0) {
     return count;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004BD14);
+void func_8004BD14(Unk_8004BD14 *arg0, s32 arg1, s32 arg2) {
+    Unk_8004BD14_Slot *slot;
+    Unk_8004BD14_Obj *obj;
+    s32 i;
+    s32 state;
+    u16 temp;
+
+    if (arg2 == 2) {
+        for (i = 0; i < 7; i++) {
+            slot = &arg0->slots[i];
+            obj = slot->obj;
+            if (obj->u2E != 0) {
+                obj->u2E = 0;
+                arg0->unk0->unk88(arg0, 7, slot, i);
+            }
+            state = arg0->u1B0;
+            if (state == 1 && slot->u0 != 0) {
+                obj = slot->obj;
+                if (obj->u2C != 0) {
+                    arg0->unk0->unk104(arg0, slot);
+                    slot->obj->u2C = 2;
+                    slot->u0 = 0;
+                    temp = arg0->u1B4 - 1;
+                    arg0->u1B4 = temp;
+                    if (temp == 0) {
+                        arg0->u1B4 = 0;
+                        arg0->u1B0 = 0;
+                        arg0->u1B8 = state;
+                    }
+                } else if (obj->u2A == 0) {
+                    slot->u0 = 0;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004BE54);
 
