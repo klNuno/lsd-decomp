@@ -135,7 +135,7 @@ typedef struct Unk_8005A580 {
 typedef struct Unk_80059610_Vtbl {
     u8 pad[0x138];
     void (*unk138)(void *, s32);
-    void (*unk13C)(void *);
+    void (*unk13C)();
 } Unk_80059610_Vtbl;
 typedef struct Unk_80059610 {
     Unk_80059610_Vtbl *unk0;
@@ -479,7 +479,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059598);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800595A0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800595A8);
+void func_800595A8(Unk_80059610 *arg0, s32 arg1) {
+    arg0->unk0->unk13C(arg0, 0);
+    if (arg1 != 0) {
+        arg0->unk0->unk138(arg0, 0);
+    }
+}
 
 void func_80059610(Unk_80059610 *arg0, s32 arg1, s32 arg2) {
     arg0->unk0->unk13C(arg0);
