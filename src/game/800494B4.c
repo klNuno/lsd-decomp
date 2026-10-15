@@ -976,7 +976,43 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B5BC);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B700);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B930);
+s32 func_8004B930(Unk_8004B418 *arg0, s32 arg1, s32 arg2) {
+    Unk_800861D4 *grid;
+    s32 width;
+    s32 height;
+    s32 mask;
+    s32 i;
+
+    grid = arg0->u68;
+    width = grid->unk_0;
+    height = grid->unk_2;
+    if (grid->unk_4 == 0) {
+        mask = -(arg1 < width) & 3;
+        if (arg1 >= width * (height - 1)) {
+            mask |= 0x60;
+        }
+        if (arg1 % width == 0) {
+            if (arg2 != 0) {
+                mask |= 0x25;
+            } else {
+                mask |= 4;
+            }
+        }
+        if ((arg1 + 1) % width == 0) {
+            if (arg2 != 0) {
+                mask |= 0x10;
+            } else {
+                mask |= 0x52;
+            }
+        }
+    } else {
+        mask = -1;
+        for (i = 0; i < height; i++) {
+            mask *= 2;
+        }
+    }
+    return ~mask;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004BA40);
 

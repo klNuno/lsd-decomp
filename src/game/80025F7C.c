@@ -217,6 +217,7 @@ typedef struct Unk_80026348_Sub_80026698 {
     s32 unk4;
     s32 unk8;
     s32 unkC;
+    s32 unk10;
 } Unk_80026348_Sub_80026698;
 typedef struct Unk_80026348_80026698 {
     u8 pad_00[0x1C];
@@ -227,6 +228,44 @@ typedef struct Unk_80026348_80026698 {
 } Unk_80026348_80026698;
 s32 func_80049608(s32, s32, s32);
 void func_8002677C(Unk_80026348_80026698 *arg0);
+typedef struct Unk_8002658C_Vtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+    u8 pad_08[0x44 - 0x8];
+    void (*unk44)(void *, s32, s32, s32, s32);
+    u8 pad_48[0x6C - 0x48];
+    void (*unk6C)(void *, s32);
+    u8 pad_70[0x12C - 0x70];
+    void (*unk12C)(void *, s32);
+} Unk_8002658C_Vtbl;
+typedef struct Unk_8002658C_Obj {
+    Unk_8002658C_Vtbl *vt;
+} Unk_8002658C_Obj;
+typedef struct Unk_8002658C_Local {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+} Unk_8002658C_Local;
+s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2);
+s32 func_80026518(Unk_80026518 *(*arg0)(s32), s32 arg1, s32 arg2);
+extern Unk_80026518 *func_80057F68(s32 arg0);
+extern Unk_80026518 *func_8004D518(s32 arg0);
+typedef struct Unk_80026B08_Vtbl {
+    u8 pad_00[0x44];
+    void (*unk44)(void *, s32, s32, s32);
+    void (*unk48)(void *);
+    s32 (*unk4C)(void *, s32, s32);
+    u8 pad_50[0x54 - 0x50];
+    void (*unk54)(void *, s32, s32);
+} Unk_80026B08_Vtbl;
+typedef struct Unk_80026B08 {
+    Unk_80026B08_Vtbl *vt;
+    u8 pad_04[0x0C - 0x04];
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+} Unk_80026B08;
 
 s32 func_80025F7C(s32 arg0) {
     s32 p;
@@ -309,7 +348,27 @@ void func_80026348(Unk_80026348 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026410);
+s32 func_80026410(Unk_80026348_80026698 *arg0) {
+    s32 temp_v0;
+
+    if (arg0->unk20->unk10 != 0) {
+        func_80026F34(0, 0, 0);
+        if (arg0->unk28->vt->unk1A0(arg0->unk28, 0) != 1 && arg0->unk24 == 0 &&
+            func_80026518(func_80057F68, (s32)arg0->unk28, arg0->unk1C) == 2) {
+            func_8002658C(arg0);
+        }
+        for (;;) {
+            temp_v0 = func_80026518(func_8004D518, (s32)arg0->unk28, arg0->unk1C);
+            if (temp_v0 != 2) {
+                break;
+            }
+            func_80026518(func_80057F68, (s32)arg0->unk28, arg0->unk1C);
+        }
+        arg0->unk24 = 0;
+        return temp_v0 == 0 ? 2 : 0;
+    }
+    return 2;
+}
 
 s32 func_80026518(Unk_80026518 *(*arg0)(s32), s32 arg1, s32 arg2) {
     Unk_80026518 *temp_v0 = arg0(arg1);
@@ -318,7 +377,21 @@ s32 func_80026518(Unk_80026518 *(*arg0)(s32), s32 arg1, s32 arg2) {
     return temp_s0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_8002658C);
+void func_8002658C(Unk_80026348 *arg0) {
+    Unk_8002658C_Local sp18;
+    Unk_8002658C_Obj *temp_s0;
+    s32 temp_s1;
+
+    if (arg0->unk20->unk8 != 0) {
+        func_80026F34(0, 0, 0);
+        temp_s0 = (Unk_8002658C_Obj *)func_8003B854(0, 0, 0, 0);
+        temp_s1 = func_800493E4(&sp18.unk8, 0, 0xA);
+        temp_s0->vt->unk6C(temp_s0, (u32)sp18.unk8 / 15);
+        temp_s0->vt->unk12C(temp_s0, 0);
+        temp_s0->vt->unk44(temp_s0, arg0->unk1C, temp_s1, -1, 1);
+        temp_s0->vt->unk4(temp_s0);
+    }
+}
 
 void func_80026690(void) {
 }
@@ -396,7 +469,30 @@ void func_80026AB4(Unk_80026AB4 *arg0) {
     arg0->vtbl->unk5C(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026B08);
+void func_80026B08(Unk_80026B08 *arg0, s32 arg1) {
+    s32 temp_s3;
+    s32 temp_v0;
+    s32 temp_v0_2;
+
+    if (arg0->unk10 == 0) {
+        temp_s3 = arg0->unkC;
+        arg0->unkC = 0;
+        arg0->vt->unk44(arg0, arg1, 1, 0);
+        temp_v0 = arg0->vt->unk4C(arg0, 0, 2);
+        temp_v0_2 = func_80017B34(temp_v0);
+        if (temp_v0_2 != 0) {
+            arg0->vt->unk4C(arg0, 0, 0);
+            arg0->vt->unk54(arg0, temp_v0_2, temp_v0);
+            arg0->vt->unk48(arg0);
+            arg0->unk10 = temp_v0_2;
+            arg0->unk14 = temp_v0;
+            arg0->unkC = temp_s3;
+            return;
+        }
+        func_80017CFC(0);
+        arg0->vt->unk48(arg0);
+    }
+}
 
 void func_80026C20(Unk_80026C20 *arg0) {
     if (arg0->unk10 != 0 && arg0->unk14 != 0 && arg0->unk20 == 0) {

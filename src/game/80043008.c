@@ -569,6 +569,22 @@ struct Unk_800450B4 {
     struct Unk_800450B4_Entry *unk2C;
     u16 unk30;
 };
+struct Unk_8004564C_Vec {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+};
+struct Unk_8004564C {
+    u8 pad_00[0xC];
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    s32 unk1C;
+    struct Unk_8004564C_Vec unk20;
+    struct Unk_8004564C_Vec unk2C;
+    s32 unk38;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1312,7 +1328,49 @@ void func_800455D4(struct Unk_800455D4 *arg0) {
     ((struct Unk_800455D4_Mgr *)func_80018390())->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004564C);
+s32 func_8004564C(struct Unk_8004564C *arg0, struct Unk_8004564C_Vec *arg1, s32 arg2) {
+    s32 size;
+    s32 p;
+    s32 unused[2];
+
+    arg0->unkC = arg2;
+    if (arg2 == 0) {
+        arg0->unk1C = 0;
+        arg0->unk18 = 0;
+        arg0->unk14 = 0;
+        arg0->unk10 = 0;
+        size = (arg1->unk4 * arg1->unk8 * 2) + 0x1000;
+        p = func_80017B34(size);
+        arg0->unk14 = p;
+        if (p == 0) {
+            goto fail;
+        }
+        p = func_80017B34(size);
+        arg0->unk18 = p;
+        if (p == 0) {
+            goto fail;
+        }
+        p = func_80017B34(0x12000);
+        arg0->unk10 = p;
+        if (p == 0) {
+            goto fail;
+        }
+        p = func_80017B34(arg1->unk8 << 5);
+        arg0->unk1C = p;
+        if (p == 0) {
+            goto fail;
+        }
+    }
+    arg0->unk2C = *arg1;
+    arg0->unk20 = arg0->unk2C;
+    arg0->unk2C.unk4 = 0x10;
+    arg0->unk38 = (arg0->unk2C.unk8 * 0x10) >> 1;
+    return 0;
+
+fail:
+    func_8004575C(arg0);
+    return 1;
+}
 
 void func_8004575C(struct Unk_8004575C *arg0) {
     if (arg0->unkC == 0) {
