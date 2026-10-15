@@ -761,7 +761,7 @@ typedef struct Unk_80056E44_Parent {
 } Unk_80056E44_Parent;
 extern s8 D_80087324[];
 void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3);
-s32 *func_80054DA4(void *arg0, s32 arg1, s32 arg2);
+s32 *func_80054DA4(s32 *arg0, s32 arg1, void *arg2);
 s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2);
 void func_80054FD8(s32 *arg0, s32 arg1);
 void func_8005511C(s32 *arg0, s32 arg1);
@@ -1148,6 +1148,11 @@ typedef struct Unk_800531CC_B {
     u8 pad_40[0x80 - 0x40];
     s32 u80;
 } Unk_800531CC_B;
+void func_80055410();
+void *func_80056320(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+extern s32 D_8008E0BC;
+extern s32 D_80087328[];
+extern u8 D_800871C8[];
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -2058,7 +2063,30 @@ void func_80054D30(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80054DA4);
+s32 *func_80054DA4(s32 *arg0, s32 arg1, void *arg2) {
+    void (*fn)(void *, s32);
+    s32 i;
+    s32 s1;
+
+    D_8008E0BC = rand() % 7;
+    D_8008E0B4 = &D_800871C8[((u32)rand() % 5) * 12];
+    s1 = (u32)rand() % 5;
+    if (s1 != 0) {
+        s1 = D_80087328[s1];
+    }
+
+    fn = func_80055410;
+    if (D_8008AC74 % 7 != 0) {
+        fn = func_80055258;
+    }
+
+    for (i = 0; i < arg1; i++) {
+        fn(arg2, s1);
+        *arg0 = (s32)func_80056320(0, (s32)&D_8008E0A4, D_8008AB4C, (s32)arg2);
+        arg0++;
+    }
+    return arg0;
+}
 
 s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2) {
     s32 i;
