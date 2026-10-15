@@ -78,6 +78,7 @@ typedef struct Unk_80026C20 {
     u8 pad_18[0x20 - 0x18];
     u16 unk20;
 } Unk_80026C20;
+s8 *strcat(s8 *, s8 *);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80025F7C);
 
@@ -250,4 +251,12 @@ INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800270AC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800270B8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800270C4);
+s8 *func_800270C4(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3) {
+    *arg0 = 0;
+    if (arg2 != NULL) {
+        strcat(arg0, arg2);
+    }
+    strcat(arg0, arg1);
+    strcat(arg0, arg3);
+    return arg0;
+}

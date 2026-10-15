@@ -205,6 +205,22 @@ typedef struct Unk_80052498 {
     u8 pad_2C[0x50 - 0x2C];
     s32 u50;
 } Unk_80052498;
+typedef struct Unk_800533F0 Unk_800533F0;
+typedef struct Unk_800533F0_Vt {
+    u8 pad_00[0x8C];
+    void (*f8C)(Unk_800533F0 *);
+    u8 pad_90[0xD0 - 0x90];
+    void (*fD0)(Unk_800533F0 *);
+} Unk_800533F0_Vt;
+struct Unk_800533F0 {
+    Unk_800533F0_Vt *vt;
+    u8 pad_04[0x1C - 0x4];
+    s32 u1C;
+    u8 pad_20[0x68 - 0x20];
+    s32 u68;
+    u8 pad_6C[0x80 - 0x6C];
+    s32 u80;
+};
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -338,7 +354,16 @@ INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800531CC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80053358);
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800533F0);
+void func_800533F0(Unk_800533F0 *arg0) {
+    if (arg0->u68 != 0) {
+        arg0->u1C = arg0->u1C + 1;
+        if (arg0->u80 != 0) {
+            arg0->vt->fD0(arg0);
+        } else {
+            arg0->vt->f8C(arg0);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80053458);
 

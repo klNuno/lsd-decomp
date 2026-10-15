@@ -39,6 +39,17 @@ typedef struct Unk_8002C480_vt {
     void (*unk8)(void *, s32);
 } Unk_8002C480_vt;
 Unk_8002C480_vt *func_8002CC0C(void);
+typedef struct Unk_8002C824_vt {
+    u8 pad_00[0x7C];
+    void (*unk7C)(void *);
+} Unk_8002C824_vt;
+typedef struct Unk_8002C824 {
+    Unk_8002C824_vt *unk0;
+    u8 pad_04[0x54];
+    s16 unk58;
+    u16 unk5A;
+} Unk_8002C824;
+s16 SsVabTransCompleted(s16 immediateFlag);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -134,7 +145,20 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C638);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C6FC);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C824);
+s32 func_8002C824(Unk_8002C824 *arg0, s32 arg1) {
+    s32 ret = 0;
+
+    if (arg0->unk5A != 0) {
+        if (arg1 != 0) {
+            SsVabTransCompleted(1);
+            arg0->unk5A = 0;
+            arg0->unk58 = 1;
+            arg0->unk0->unk7C(arg0);
+            ret = 1;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C890);
 

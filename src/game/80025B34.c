@@ -21,8 +21,23 @@ typedef struct Unk_80025C30 {
 void PadStop(void);
 void *func_80018390(void);
 s32 D_8008A848;
+typedef struct Unk_80025B34 {
+    u8 pad0[0x8];
+    void (*unk8)(s32, s32, s32);
+} Unk_80025B34;
+s32 func_80017B34(s32);
+Unk_80025B34 *func_80025E9C(void);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025B34);
+s32 func_80025B34(s32 arg0, s32 arg1) {
+    s32 temp_v0;
+
+    temp_v0 = func_80017B34(0x20);
+    if (temp_v0 != 0) {
+        func_80025E9C()->unk8(temp_v0, arg0, arg1);
+        return temp_v0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025BA0);
 

@@ -243,6 +243,82 @@ typedef struct Unk_8005DB8C {
     u8 unk9C[0xF8 - 0x9C];
     s32 unkF8;
 } Unk_8005DB8C;
+typedef struct Unk_8005C5E8_Vtbl {
+    u8 pad0[0x4];
+    void *(*unk4)(void *);
+} Unk_8005C5E8_Vtbl;
+typedef struct Unk_8005C5E8_Obj {
+    Unk_8005C5E8_Vtbl *vt;
+} Unk_8005C5E8_Obj;
+typedef struct Unk_8005C5E8 {
+    Unk_8005C5E8_Obj *obj;
+    u8 pad[0x10];
+} Unk_8005C5E8;
+extern Unk_8005C5E8 D_80088D28[];
+typedef struct Unk_8005C76C_Vt {
+    u8 pad[4];
+    void *(*fn4)(void *);
+} Unk_8005C76C_Vt;
+typedef struct Unk_8005C76C {
+    Unk_8005C76C_Vt *vt;
+} Unk_8005C76C;
+typedef struct Unk_8005C76C_Entry {
+    Unk_8005C76C *obj;
+    u8 pad[0x14 - 4];
+} Unk_8005C76C_Entry;
+extern Unk_8005C76C_Entry D_80088D2C[];
+typedef struct Unk_8005D418_Vtbl {
+    u8 pad[0x160];
+    void (*unk160)(void *);
+} Unk_8005D418_Vtbl;
+typedef struct Unk_8005D418 {
+    Unk_8005D418_Vtbl *unk0;
+    u8 pad[0xC - 0x4];
+    s32 unkC;
+    u8 pad2[0x4C - 0x10];
+    s32 unk4C;
+} Unk_8005D418;
+typedef struct Unk_80066818_Vtbl {
+    u8 pad[0x50];
+    void (*unk50)(void *);
+} Unk_80066818_Vtbl;
+extern Unk_80066818_Vtbl *func_80066818(void);
+typedef struct Unk_8005D7FC_Node {
+    u8 pad[0x18];
+    s32 unk18;
+    u8 pad2[0x4];
+    s32 unk20;
+} Unk_8005D7FC_Node;
+typedef struct Unk_8005D7FC_Pos {
+    s32 unk0;
+    u8 pad[0x4];
+    s32 unk8;
+} Unk_8005D7FC_Pos;
+typedef struct Unk_8005D7FC_Arg0 {
+    u8 pad[0x14];
+    Unk_8005D7FC_Node *unk14;
+} Unk_8005D7FC_Arg0;
+typedef struct Unk_8005D7FC_Arg1 {
+    u8 pad[0xC];
+    s32 unkC;
+    u8 pad2[0x4];
+    u8 *unk14;
+} Unk_8005D7FC_Arg1;
+typedef struct Unk_80066748_Vt {
+    u8 pad[0x10];
+    void (*unk10)(void *, void *);
+} Unk_80066748_Vt;
+typedef struct Unk_80066748 {
+    Unk_80066748_Vt *unk0;
+    u8 pad[0x94 - 0x4];
+    void *unk94;
+} Unk_80066748;
+typedef struct Unk_800667B0_Vt { u8 pad[0x14]; void (*fn14)(void *, void *); } Unk_800667B0_Vt;
+typedef struct Unk_800667B0 {
+    Unk_800667B0_Vt *vt;
+    u8 pad[0x94 - 0x4];
+    struct Unk_800667B0 *unk94;
+} Unk_800667B0;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -250,7 +326,18 @@ INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001187C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C508);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C5E8);
+void func_8005C5E8(void) {
+    Unk_8005C5E8 *var_s0;
+    u32 i;
+
+    var_s0 = D_80088D28;
+    for (i = 0; i < 1; i++) {
+        if (var_s0->obj != NULL) {
+            var_s0->obj = var_s0->obj->vt->unk4(var_s0->obj);
+        }
+        var_s0++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C650);
 
@@ -275,7 +362,17 @@ void func_8005C714(s32 arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C76C);
+void func_8005C76C(void) {
+    Unk_8005C76C_Entry *var_s0;
+    u32 i;
+
+    for (i = 0, var_s0 = D_80088D2C; i < 1; i++) {
+        if (var_s0->obj != NULL) {
+            var_s0->obj = var_s0->obj->vt->fn4(var_s0->obj);
+        }
+        var_s0++;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005C7D4);
 
@@ -339,7 +436,13 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D278);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D314);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D418);
+void func_8005D418(Unk_8005D418 *arg0) {
+    if (arg0->unkC != 0) {
+        arg0->unk0->unk160(arg0);
+        func_80066818()->unk50(arg0);
+        arg0->unk4C = 0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D480);
 
@@ -354,7 +457,30 @@ void func_8005D6D4(Unk_8005D6D4 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D714);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D7FC);
+s32 func_8005D7FC(Unk_8005D7FC_Arg0 *arg0, Unk_8005D7FC_Arg1 *arg1) {
+    Unk_8005D7FC_Pos *var_a2;
+    Unk_8005D7FC_Node *temp_a0;
+    s32 temp_v0;
+    s32 var_a1;
+    s32 var_v0;
+
+    var_a2 = NULL;
+    if (arg1->unkC != 0) {
+        var_a2 = (Unk_8005D7FC_Pos *)(arg1->unk14 + 0x38);
+    }
+    temp_a0 = arg0->unk14;
+    var_a1 = temp_a0->unk18 - var_a2->unk0;
+    if (var_a1 < 0) {
+        var_a1 = ~var_a1 + 1;
+    }
+    temp_v0 = temp_a0->unk20 - var_a2->unk8;
+    if (temp_v0 >= 0) {
+        var_v0 = var_a1 + temp_v0;
+    } else {
+        var_v0 = var_a1 - temp_v0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D864);
 
@@ -814,8 +940,23 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_800662BC);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80066340);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80066748);
+void func_80066748(Unk_80066748 *arg0, Unk_80066748 *arg1) {
+    if (arg1 != NULL) {
+        arg1->unk0->unk10(arg1, arg0);
+        arg0->unk0->unk10(arg0, arg1);
+        arg0->unk94 = arg1;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_800667B0);
+void func_800667B0(Unk_800667B0 *arg0) {
+    Unk_800667B0 *temp_a0;
+
+    temp_a0 = arg0->unk94;
+    if (temp_a0 != NULL) {
+        temp_a0->vt->fn14(temp_a0, arg0);
+        arg0->vt->fn14(arg0, arg0->unk94);
+        arg0->unk94 = NULL;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80066818);

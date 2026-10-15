@@ -207,10 +207,26 @@ typedef struct Unk_80059AEC {
     s32 unk70;
 } Unk_80059AEC;
 void func_8005BCB4(void *, void *, s32);
+typedef struct Unk_80058078_Vtbl {
+    u8 pad_00[0x6C];
+    void (*unk6C)(void *, s32);
+    u8 pad_70[0xD4 - 0x70];
+    void (*unkD4)(void *, void *, s32);
+} Unk_80058078_Vtbl;
+typedef struct Unk_80058078 {
+    Unk_80058078_Vtbl *vt;
+    u8 pad_04[0x2C - 0x04];
+    s32 unk2C;
+    u8 pad_30[0x84 - 0x30];
+    s32 unk84;
+} Unk_80058078;
 
-INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
-
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058078);
+void func_80058078(Unk_80058078 *arg0) {
+    arg0->unk84 = 5;
+    arg0->unk2C = 0x190;
+    arg0->vt->unkD4(arg0, "ETC\\HGRAPH.TIM", 0);
+    arg0->vt->unk6C(arg0, 10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800580E0);
 

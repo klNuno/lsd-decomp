@@ -25,7 +25,8 @@ struct Unk_80051814_vtbl {
 };
 struct Unk_80051814 {
     struct Unk_80051814_vtbl *unk0;
-    u8 pad_04[0x14];
+    u8 pad_04[0x10];
+    s32 unk14;
     s32 unk18;
     s32 unk1C;
     u8 pad_20[0x28];
@@ -224,7 +225,19 @@ void func_80051720(Unk_80051720 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051784);
+void func_80051784(struct Unk_80051814 *arg0) {
+    s32 temp_a2;
+
+    if (arg0->unk48 != 0) {
+        temp_a2 = arg0->unk1C - 1;
+        arg0->unk1C = temp_a2;
+        if (temp_a2 > 0) {
+            arg0->unk0->unkA8(arg0, arg0->unk18, temp_a2, 1);
+            return;
+        }
+        arg0->unk1C = arg0->unk14;
+    }
+}
 
 void func_800517EC(Unk_800517EC *arg0) {
     if (arg0->u48 != 0) {
