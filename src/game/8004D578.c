@@ -32,6 +32,24 @@ typedef struct Unk_8004FF40_obj { Unk_8004FF40_vt *unk0; } Unk_8004FF40_obj;
 typedef struct Unk_8004FF40 { u8 pad[0x70]; Unk_8004FF40_obj *unk70; } Unk_8004FF40;
 s32 func_8004E7D0();
 void func_8004E890(s32, s32, s32);
+typedef struct Unk_8004DABC_mgr { u8 pad[0x94]; void (*unk94)(void *); } Unk_8004DABC_mgr;
+typedef struct Unk_8004DABC_vt { u8 pad[0x19C]; void (*unk19C)(void *, s32 *); } Unk_8004DABC_vt;
+typedef struct Unk_8004DABC_obj { Unk_8004DABC_vt *vt; } Unk_8004DABC_obj;
+typedef struct Unk_8004DABC_sub { u8 pad[0x14]; s32 unk14; } Unk_8004DABC_sub;
+typedef struct Unk_8004DABC { u8 pad[0x60]; Unk_8004DABC_sub *unk60; u8 pad2[0xA4 - 0x64]; Unk_8004DABC_obj *unkA4; } Unk_8004DABC;
+extern Unk_8004DABC_mgr *func_8003DFBC(void);
+typedef struct Unk_8004F5DC_Vtbl {
+    u8 pad[0x14];
+    void (*unk14)(void *, s32);
+} Unk_8004F5DC_Vtbl;
+typedef struct Unk_8004F5DC {
+    Unk_8004F5DC_Vtbl *unk0;
+    u8 pad_04[0x60 - 0x04];
+    s32 unk60;
+    s32 unk64;
+    s32 unk68;
+    s32 unk6C;
+} Unk_8004F5DC;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -74,7 +92,15 @@ INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004D90C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004D9D4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004DABC);
+void func_8004DABC(Unk_8004DABC *arg0) {
+    s32 sp10;
+    Unk_8004DABC_obj *temp_a0;
+
+    func_8003DFBC()->unk94(arg0);
+    temp_a0 = arg0->unkA4;
+    sp10 = arg0->unk60->unk14;
+    temp_a0->vt->unk19C(temp_a0, &sp10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004DB18);
 
@@ -205,7 +231,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F4C8);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F55C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F5DC);
+void func_8004F5DC(Unk_8004F5DC *arg0) {
+    arg0->unk6C = 0;
+    arg0->unk68 = 0;
+    arg0->unk0->unk14(arg0, arg0->unk60);
+    arg0->unk0->unk14(arg0, arg0->unk64);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F638);
 
