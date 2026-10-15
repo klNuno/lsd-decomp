@@ -38,8 +38,8 @@ typedef struct Unk_8002085C {
     /* 0x10 */ s32 unk10;
 } Unk_8002085C;
 typedef struct Unk_800206E0 {
-    /* 0x00 */ u8 pad_00[0x8];
-    /* 0x08 */ void (*unk8)(void *);
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
 } Unk_800206E0;
 void *func_80017B34(s32 size);
 Unk_800206E0 *func_80020C4C(void);
@@ -72,6 +72,11 @@ typedef struct Unk_80020AF4 {
     /* 0x24 */ s32 unk24;
 } Unk_80020AF4;
 Unk_80020AF4 *func_80020C5C(void);
+typedef struct Unk_80020730 {
+    u8 pad_00[0x40];
+    void (*unk40)(void *);
+} Unk_80020730;
+void *func_80018390(void);
 
 void *func_800206E0(void) {
     void *temp;
@@ -84,7 +89,14 @@ void *func_800206E0(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020730);
+void func_80020730(void **arg0) {
+    void *temp_v0;
+
+    ((Unk_800206E0 *)func_80018390())->unk8(arg0);
+    temp_v0 = func_80020C4C();
+    *arg0 = temp_v0;
+    ((Unk_80020730 *)temp_v0)->unk40(arg0);
+}
 
 void func_80020784(Unk_80020784 *arg0) {
     arg0->unk10 = 0;

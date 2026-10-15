@@ -62,7 +62,7 @@ struct Unk_8004497C {
 };
 struct Unk_80043F78 {
     u8 pad_00[0xC];
-    void (*unkC)(s32);
+    void (*unkC)(void *);
 };
 struct Unk_80043F78 *func_80026CAC(void);
 struct Unk_80044C58 {
@@ -151,12 +151,36 @@ struct Unk_80045060 {
     u8 pad_2C[6];
     u16 unk32;
 };
+struct Unk_800447B4 {
+    u8 pad_00[0x7C];
+    void (*unk7C)(void);
+};
+struct Unk_8004500C {
+    u8 pad_00[0x2C];
+    s32 unk2C;
+    u8 pad_30[0x4];
+    s32 unk34;
+};
+struct Unk_800431A8 {
+    u8 pad_00[0x2C];
+    s32 unk2C;
+    void *unk30;
+};
+struct Unk_80043C60 {
+    u8 pad_00[0x2C];
+    s32 unk2C;
+    void *unk30;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043008);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043068);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800431A8);
+void func_800431A8(struct Unk_800431A8 *arg0) {
+    func_800183DC(arg0->unk30, arg0->unk2C);
+    func_80017CFC(arg0->unk30);
+    func_80026CAC()->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043200);
 
@@ -207,7 +231,11 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043B88);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043BE8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043C60);
+void func_80043C60(struct Unk_80043C60 *arg0) {
+    func_800183DC(arg0->unk30, arg0->unk2C);
+    func_80017CFC(arg0->unk30);
+    func_80026CAC()->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043CB8);
 
@@ -266,7 +294,10 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004468C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800446FC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800447B4);
+void func_800447B4(struct Unk_800447B4 **arg0) {
+    (*arg0)->unk7C();
+    func_80026CAC()->unkC(arg0);
+}
 
 void func_80044808(struct Unk_80044808_Obj *arg0) {
     ((struct Unk_80044808_Mgr *)func_80026CAC())->unk64(arg0);
@@ -344,7 +375,11 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044F30);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044F90);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004500C);
+void func_8004500C(struct Unk_8004500C *arg0) {
+    func_80017CFC(arg0->unk34);
+    func_80017CFC(arg0->unk2C);
+    func_80026CAC()->unkC(arg0);
+}
 
 void func_80045060(struct Unk_80045060 *arg0) {
     s32 buf[8];
