@@ -38,7 +38,7 @@ typedef struct Unk_80039CBC {
 } Unk_80039CBC;
 extern s32 func_8002CC28(void);
 extern void SsSeqSetCrescendo(s16, s16, s32);
-extern s32 func_80039C04(void);
+extern s32 func_80039C04();
 typedef struct Unk_80039B90Vt {
     u8 pad_00[0x44];
     void (*unk44)(void *);
@@ -110,6 +110,45 @@ typedef struct Unk_8003995C {
     s16 unk1E;
     s32 unk20;
 } Unk_8003995C;
+extern void *func_800422CC(s32);
+typedef struct Unk_80039E7CVt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *);
+    void (*unk48)(void *);
+} Unk_80039E7CVt;
+typedef struct Unk_80039E7CObjVt {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+} Unk_80039E7CObjVt;
+typedef struct Unk_80039E7CObj {
+    Unk_80039E7CObjVt *vt;
+} Unk_80039E7CObj;
+typedef struct Unk_80039E7C {
+    Unk_80039E7CVt *unk0;
+    u8 pad_04[0xC];
+    Unk_80039E7CObj *unk10;
+    u8 pad_14[0x6];
+    u16 unk1A;
+    u8 pad_1C[0x2];
+    u16 unk1E;
+    s32 unk20;
+} Unk_80039E7C;
+void *func_8002C480(s32 arg0);
+typedef struct Unk_80039F64Vt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *);
+    void (*unk48)(void *);
+} Unk_80039F64Vt;
+typedef struct Unk_80039F64 {
+    Unk_80039F64Vt *unk0;
+    u8 pad_04[0x8];
+    Unk_80039A34Obj *unkC;
+    u8 pad_10[0xA];
+    u16 unk1A;
+    u8 pad_1C[0x2];
+    u16 unk1E;
+    s32 unk20;
+} Unk_80039F64;
 
 void *func_800398E0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp_v0;
@@ -212,9 +251,51 @@ void func_80039E24(struct Unk_80039DF4 *arg0, s16 arg1, s32 arg2) {
     SsSeqSetCrescendo(arg0->unk14, arg1, func_8002CC28() * arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039E7C);
+void func_80039E7C(Unk_80039E7C *arg0, s32 arg1) {
+    Unk_80039E7CObj *temp_a0;
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039F64);
+    if (arg0->unk1E != 0) {
+        arg0->unk0->unk48(arg0);
+    }
+    temp_a0 = arg0->unk10;
+    if (temp_a0 != NULL) {
+        temp_a0->vt->unk4(temp_a0);
+        arg0->unk10 = NULL;
+    }
+    if (arg1 != 0) {
+        arg0->unk10 = func_800422CC(arg1);
+        if (func_80039C04(arg0) != 0) {
+            if (arg0->unk20 != 0) {
+                arg0->unk0->unk44(arg0);
+            }
+        } else if (arg0->unk1A == 0) {
+            arg0->unk1A = 1;
+        }
+    }
+}
+
+void func_80039F64(Unk_80039F64 *arg0, s32 arg1) {
+    Unk_80039A34Obj *temp_a0;
+
+    if (arg0->unk1E != 0) {
+        arg0->unk0->unk48(arg0);
+    }
+    temp_a0 = arg0->unkC;
+    if (temp_a0 != NULL) {
+        temp_a0->vt->unk4(temp_a0);
+        arg0->unkC = NULL;
+    }
+    if (arg1 != 0) {
+        arg0->unkC = func_8002C480(arg1);
+        if (func_80039C04(arg0) != 0) {
+            if (arg0->unk20 != 0) {
+                arg0->unk0->unk44(arg0);
+            }
+        } else if (arg0->unk1A == 0) {
+            arg0->unk1A = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003A04C);
 
