@@ -164,6 +164,11 @@ def main():
     have = norm(unit)
     new = [d for d in top_level_items(decls) if norm(d) not in have]
     head, new = replace_types(unit[:m.start()], new)
+    # Earlier one-line declarations of FUNC in the unit (often `extern void FUNC();` written by a
+    # caller) must agree with its definition: replace them with the definition's own prototype.
+    proto = re.sub(r"\s+", " ", body.split("{", 1)[0]).strip() + ";"
+    head = re.sub(r"^(?:extern\s+)?[^\n;{}()]*\b" + re.escape(func) + r"\s*\([^;{}]*\)\s*;[ \t]*$",
+                  lambda _: proto, head, flags=re.M)
     block = ("\n".join(new) + "\n\n" if new else "") + body + "\n"
     patched = head + block + unit[m.end():]
     # The function's own strings and constants now come from its C literals, emitted at its
