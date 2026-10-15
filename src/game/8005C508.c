@@ -1,7 +1,7 @@
 #include "common.h"
 
 extern void func_800183DC(void *, s32);
-typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x70 - 0x28]; s32 u70; s32 u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
+typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x68 - 0x28]; s32 u68; s32 u6C; void *u70; void *u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
 typedef struct Unk_80089EA4 {
     u8 pad[0x6];
     s8 unk6;
@@ -68,7 +68,7 @@ typedef struct Unk_80065C2C {
 } Unk_80065C2C;
 extern void func_80065CEC();
 extern s32 func_80065E1C(Unk_80059394 *arg0);
-extern void func_80065F2C(Unk_80059394 *arg0);
+void func_80065F2C(Unk_80059394 *arg0);
 void func_8002CC84(void *, void *);
 typedef struct Unk_8005EF20_vt { u8 pad[0x48]; void (*fn48)(void *, s32, void *); } Unk_8005EF20_vt;
 typedef struct Unk_8005EF20 { Unk_8005EF20_vt *vt; } Unk_8005EF20;
@@ -1419,6 +1419,8 @@ typedef struct Unk_80062570 {
     u8 pad1[0xFC - 0x98];
     s32 uFC;
 } Unk_80062570;
+typedef struct Unk_80065F2C_Vt { u8 pad[0x4]; void (*fn4)(void *); } Unk_80065F2C_Vt;
+typedef struct Unk_80065F2C_Obj { Unk_80065F2C_Vt *vt; } Unk_80065F2C_Obj;
 
 void func_8005C508(void) {
     struct Unk_80026CE8 sp10;
@@ -2995,7 +2997,21 @@ void func_80065DEC(Unk_80059394 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80065E1C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80065F2C);
+void func_80065F2C(Unk_80059394 *arg0) {
+    Unk_80065F2C_Obj **p;
+    Unk_80065F2C_Obj *obj;
+
+    if (arg0->u70 != NULL && arg0->u74 != NULL) {
+        p = arg0->u70;
+        while (arg0->u6C-- > 0) {
+            obj = *p++;
+            obj->vt->fn4(obj);
+        }
+        arg0->u68 = 0;
+    }
+    arg0->u74 = ((void *(*)(void *))func_80017CFC)(arg0->u74);
+    arg0->u70 = ((void *(*)(void *))func_80017CFC)(arg0->u70);
+}
 
 void func_80065FD8(Unk_80065FD8 *arg0) {
     arg0->unk24 = arg0->unk24 + 1;
