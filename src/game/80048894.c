@@ -61,6 +61,12 @@ typedef struct Unk_80048960_Vtbl {
 struct Unk_80048960 {
     Unk_80048960_Vtbl *vt;
 };
+u8 *func_80049270(s32 *arg0, s32 arg1);
+s32 func_800492D0(s32 *arg0, s32 arg1);
+typedef struct Unk_80049334 {
+    s16 unk0;
+    s16 unk2;
+} Unk_80049334;
 
 s32 func_80048894(void) {
     s32 temp_v0;
@@ -240,7 +246,25 @@ s32 func_800492D0(s32 *arg0, s32 arg1) {
     return temp_v1 + (arg1 * 0xA8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049334);
+s32 func_80049334(s32 *arg0, Unk_80049334 arg1) {
+    s32 sp10;
+    s32 temp_v0;
+    s32 var_v1;
+
+    if (arg1.unk0 >= 0) {
+        temp_v0 = func_800492D0(&sp10, arg1.unk0);
+        if (arg0 != NULL) {
+            if ((u16)arg1.unk2 < 2U) {
+                var_v1 = arg1.unk2 + sp10;
+            } else {
+                var_v1 = -1;
+            }
+            *arg0 = var_v1;
+        }
+        return temp_v0 + (arg1.unk2 * 0x1C);
+    }
+    return (s32)func_80049270(arg0, arg1.unk2);
+}
 
 s16 func_800493C8(s32 arg0) {
     return D_80086170[arg0];

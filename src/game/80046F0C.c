@@ -45,6 +45,8 @@ struct Unk_80047574 {
     u8 unkC[0x2C - 0xC];
     s32 unk2C;
     s32 unk30;
+    u8 pad_34[0x54 - 0x34];
+    void *unk54;
 };
 Unk_80047574 *D_8008A950;
 extern void CdSyncCallback(void *cb);
@@ -92,6 +94,8 @@ typedef struct Unk_80046F0C {
     void (*unk8)(void *self, s32 arg0, s32 arg1, s32 arg2);
 } Unk_80046F0C;
 Unk_80046F0C *func_80047900(void);
+s32 CdControlF(s32 com, u8 *param);
+void func_80047388(u8 arg0);
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -146,7 +150,18 @@ void func_8004728C(Unk_80047574 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800472EC);
+void func_800472EC(Unk_80047574 *arg0, u8 *arg1) {
+    if (arg0->unk2C != 2 && D_8008A950 == arg0) {
+        if (arg0->unk54 != NULL) {
+            CdSyncCallback((void *)func_80047388);
+            CdControlF(0x15, arg1);
+        } else {
+            while (CdControl(0x15, arg1, 0) == 0) {
+            }
+        }
+        arg0->unk2C = 1;
+    }
+}
 
 void func_80047388(u8 arg0) {
     Unk_80047388 *obj;

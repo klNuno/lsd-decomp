@@ -69,6 +69,9 @@ typedef struct Unk_8002CC84_vt {
 typedef struct Unk_8002CC84 {
     Unk_8002CC84_vt *vt;
 } Unk_8002CC84;
+extern u8 D_8008E9D0;
+s32 func_8002CF18(s32 arg0);
+void func_8002DDBC(u8 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -302,7 +305,16 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002EA44);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002EDD4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F20C);
+void func_8002F20C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s16 temp_v0;
+
+    D_8008EA0C.u0[0xF] = 0x7F;
+    temp_v0 = func_8002CF18(0xFF) & 0xFF;
+    D_8008EA0C.u1A = temp_v0;
+    if (temp_v0 < D_8008E9D0) {
+        func_8002DDBC((u8) D_8008EA0C.u1A, arg0 & 0xFFFF, arg1 & 0xFFFF, arg2 & 0xFFFF, arg3 & 0xFFFF);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F2A4);
 

@@ -185,6 +185,15 @@ struct Unk_80041D18_mgr_vt {
     void (*unk8)(void *, s32, s32, s32, s32, s32);
 };
 struct Unk_80041DAC;
+struct Unk_80042170 {
+    u8 pad_00[0x84];
+    s32 unk84;
+};
+struct Unk_80042170_src {
+    u8 pad_00[0x8];
+    s16 unk8;
+    s16 unkA;
+};
 
 void *func_80041AB4(s32 arg0, u8 arg1) {
     void *temp;
@@ -306,7 +315,16 @@ void func_8004202C(struct Unk_8004202C *arg0, s32 arg1, s32 arg2, Unk_8004202C_S
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_8004208C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80042170);
+void func_80042170(struct Unk_80042170 *arg0, s32 arg1, struct Unk_80042170_src *arg2) {
+    s32 temp_a0_2;
+
+    temp_a0_2 = ((arg2->unk8 / arg2->unkA) << 12) + (((arg2->unk8 % arg2->unkA) << 12) / arg2->unkA);
+    if (arg1 != 0) {
+        arg0->unk84 = temp_a0_2;
+        return;
+    }
+    arg0->unk84 = temp_a0_2 + arg0->unk84;
+}
 
 s32 func_8004220C(u8 *arg0, s32 arg1) {
     return func_8001EDAC((s32 *)(arg0 + 0x64), 0x1F, 1, arg1 == 0) == 0;
