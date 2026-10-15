@@ -641,6 +641,47 @@ typedef struct Unk_8004FE24 {
     u8 pad_6C[0x4];
     void *unk70;
 } Unk_8004FE24;
+extern void *func_8004E2D0(void);
+extern void func_8004D6AC(s32 arg0);
+extern u8 D_80086D44[];
+typedef struct Unk_8004D578_mgr {
+    u8 pad[0x8];
+    void (*unk8)(void *, void *, void *, s32);
+} Unk_8004D578_mgr;
+typedef struct Unk_8004D578_vt {
+    u8 pad[0x40];
+    void (*unk40)(void *, void *);
+    u8 pad_44[0xD8 - 0x44];
+    void (*unkD8)(void *, void *);
+} Unk_8004D578_vt;
+typedef struct Unk_8004D578_obj_vt {
+    u8 pad[0x9C];
+    void (*unk9C)(void *, s32);
+} Unk_8004D578_obj_vt;
+typedef struct Unk_8004D578_obj {
+    Unk_8004D578_obj_vt *unk0;
+} Unk_8004D578_obj;
+typedef struct Unk_8004D578 {
+    Unk_8004D578_vt *unk0;
+    u8 pad_04[0x48 - 0x04];
+    Unk_8004D578_obj *unk48;
+    u8 pad_4C[0xA4 - 0x4C];
+    void *unkA4;
+    s32 unkA8;
+    s32 unkAC;
+    u8 pad_B0[0xBC - 0xB0];
+    s32 unkBC;
+    s32 unkC0;
+} Unk_8004D578;
+typedef struct Unk_8004D578_arg1_vt {
+    u8 pad[0x1A0];
+    s32 (*unk1A0)(void *, s32);
+    u8 pad_1A4[0x1B0 - 0x1A4];
+    s32 (*unk1B0)(void *, void *);
+} Unk_8004D578_arg1_vt;
+typedef struct Unk_8004D578_arg1 {
+    Unk_8004D578_arg1_vt *unk0;
+} Unk_8004D578_arg1;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -654,9 +695,17 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011474);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001149C);
 
-INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_800114DC);
-
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004D578);
+void func_8004D578(Unk_8004D578 *arg0, Unk_8004D578_arg1 *arg1) {
+    ((Unk_8004D578_mgr *)func_8003DFBC())->unk8(arg0, D_80086D44, "ETC\\ETCSE", 0);
+    arg0->unk0 = func_8004E2D0();
+    arg0->unk48->unk0->unk9C(arg0->unk48, -1);
+    arg0->unkA4 = arg1;
+    arg0->unkAC = 0;
+    arg0->unkBC = arg1->unk0->unk1B0(arg1, &arg0->unkC0);
+    func_8004D6AC(arg1->unk0->unk1A0(arg1, 0));
+    arg0->unk0->unkD8(arg0, D_80086D44);
+    arg0->unk0->unk40(arg0, arg1);
+}
 
 void func_8004D678(P *arg0, Q *arg1) {
     A *a = arg0->uBC;
