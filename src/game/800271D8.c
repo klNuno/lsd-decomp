@@ -253,6 +253,28 @@ typedef struct Unk_800272D0_File {
     u8 name[0x10];
 } Unk_800272D0_File;
 s32 func_80028448(char *arg0);
+typedef struct Unk_80027800_Vt {
+    u8 pad[0x48];
+    void (*unk48)(void *);
+    u8 pad2[0x64 - 0x4C];
+    void (*unk64)(void *);
+} Unk_80027800_Vt;
+typedef struct Unk_80027800 {
+    Unk_80027800_Vt *unk0;
+    u8 pad4[0xC];
+    s32 unk10;
+    s32 unk14;
+    u8 pad18[0x8];
+    u16 unk20;
+    u8 pad22[0x2];
+    s32 unk24;
+    u16 unk28;
+} Unk_80027800;
+typedef struct Unk_80027800_Entry {
+    u8 pad[0x18];
+    u32 unk18;
+} Unk_80027800_Entry;
+void func_80026B08();
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -427,7 +449,72 @@ s32 func_800276D0(Unk_80027480 *arg0, s32 arg1, u32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027800);
+void func_80027800(Unk_80027800 *arg0, char *arg1) {
+    s32 size;
+    s32 entry;
+    s32 buf;
+    s32 r;
+    s32 cur;
+    u32 sectors;
+
+    if (D_8008A85C == 0 && D_8008A860 == 0) {
+        func_80026B08();
+        arg0->unk24 |= 0x200;
+        arg0->unk0->unk64(arg0);
+        return;
+    }
+    func_800280D0();
+    if (arg0->unk28 != 0) {
+        if (D_8008A864 == 0 && (arg0->unk10 == 0 || arg0->unk20 != 0)) {
+            func_80028844(4, 1);
+            D_8008A888 = D_8008A87C;
+            entry = func_80028448(arg1);
+            D_8008A87C = entry;
+            if (entry == 0) {
+                return;
+            }
+            sectors = ((Unk_80027800_Entry *)entry)->unk18 >> 11;
+            D_8008A880 = sectors;
+            if (((Unk_80027800_Entry *)entry)->unk18 & 0x7FF) {
+                D_8008A880 = sectors + 1;
+            }
+            cur = arg0->unk10;
+            size = D_8008A880 << 11;
+            if (cur == 0) {
+                buf = func_80017B34(size);
+                if (buf == 0) {
+                    arg0->unk0->unk48(arg0);
+                    return;
+                }
+                D_8008A884 = buf;
+                arg0->unk10 = buf;
+            } else {
+                D_8008A884 = cur;
+            }
+            if (D_8008A85C != 0) {
+                arg0->unk14 = size;
+                D_8008A898 = 2;
+            } else {
+            retry:
+                do {
+                    CdControl(2, (u8 *)(D_8008A87C + 0x14), 0);
+                    while ((r = CdSync(0, 0)) == 0) {}
+                } while (r == 5);
+                CdRead(D_8008A880, (void *)arg0->unk10, 0x80);
+                while ((r = CdReadSync(0, 0)) > 0) {}
+                if (r == -1) {
+                    goto retry;
+                }
+                arg0->unk14 = size;
+                *D_8008A894 = 1;
+                func_80028864();
+            }
+        }
+    } else {
+        func_800282AC((Unk_800282AC *)arg0, func_800284C4(arg1), 7, 0, 0);
+    }
+    func_800280E0();
+}
 
 void func_80027A24(void) {
     s32 kind;

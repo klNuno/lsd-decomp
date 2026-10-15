@@ -379,7 +379,7 @@ typedef struct Unk_800505A8 {
     s32 unk7C;
 } Unk_800505A8;
 s32 func_80051A5C(s32 arg0, s32 arg1);
-s32 func_8004EF6C(s32, s32, s32, s32, s32, s32, s32);
+s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32 arg6);
 typedef struct Unk_800507F8_Pair {
     s8 x, y;
 } Unk_800507F8_Pair;
@@ -402,9 +402,12 @@ typedef struct Unk_8004F638_vt {
     void (*unk44)(void *);
     void (*unk48)(void *);
     s32 (*unk4C)(void *, s32 *, s32 *, s32 *);
-    u8 pad_50[0x5C - 0x50];
+    u8 pad_50[0x54 - 0x50];
+    s32 (*unk54)(void *, s32, s32);
+    u8 pad_58[0x5C - 0x58];
     s32 (*unk5C)(void *, s32, s32, s32, s32);
-    u8 pad_60[0x7C - 0x60];
+    s32 (*unk60)(void *, s32, s32);
+    u8 pad_64[0x7C - 0x64];
     void (*unk7C)(void *, s32);
 } Unk_8004F638_vt;
 typedef struct Unk_8004F638 {
@@ -419,7 +422,9 @@ typedef struct Unk_8004F638 {
     s32 unk3C;
     s32 unk40;
     s32 unk44;
-    u8 pad_48[0x54 - 0x48];
+    s32 unk48;
+    u8 unk4C;
+    s32 unk50;
     s32 unk54;
     s32 unk58;
 } Unk_8004F638;
@@ -824,6 +829,19 @@ typedef struct Unk_8004FBE4 {
     s32 unk58;
     s32 unk5C;
 } Unk_8004FBE4;
+typedef struct Unk_8004EF6C_arg4 {
+    u8 pad_00[0x10];
+    u8 *unk10;
+} Unk_8004EF6C_arg4;
+typedef struct Unk_8004EF6C_H {
+    u8 b[0x20];
+} Unk_8004EF6C_H;
+typedef struct Unk_8004EF6C_Icon {
+    u8 b[0x80];
+} Unk_8004EF6C_Icon;
+s32 write(s32 fd, void *buf, s32 n);
+s32 printf(char *fmt, ...);
+s32 func_8004EF6C(s32, s32, s32, u8, s32, s32, s32);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -1433,9 +1451,42 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011518);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011524);
 
-INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011530);
+s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32 arg6) {
+    char sp10[0x20];
+    char *name;
+    s32 fd;
+    u8 *buf;
+    u8 *p;
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004EF6C);
+    name = func_8004F32C(sp10, ((Unk_8004ECCC *)arg0)->unkC, (char *)arg1);
+    delete(name);
+    fd = open(name, (((u32)(arg6 + 0x21FF) >> 13) << 16) | 0x200);
+    if (fd == -1) {
+        printf("File not create in WriteFile\n");
+        return 0;
+    }
+    close(fd);
+    fd = open(name, 2);
+    if (fd == -1) {
+        return 0;
+    }
+    p = ((Unk_8004EF6C_arg4 *)arg4)->unk10;
+    buf = (u8 *)func_80017B34(0x200);
+    buf[0] = 0x53;
+    buf[1] = 0x43;
+    buf[2] = arg3 + 0x10;
+    buf[3] = (u32)(arg6 + 0x1FFF) >> 13;
+    strcpy((s32)(buf + 4), arg2);
+    *(Unk_8004EF6C_H *)(buf + 0x60) = *(Unk_8004EF6C_H *)(p + 0x14);
+    *(Unk_8004EF6C_Icon *)(buf + 0x80) = *(Unk_8004EF6C_Icon *)(p + 0x40);
+    *(Unk_8004EF6C_Icon *)(buf + 0x100) = *(Unk_8004EF6C_Icon *)(p + 0xC0);
+    *(Unk_8004EF6C_Icon *)(buf + 0x180) = *(Unk_8004EF6C_Icon *)(p + 0x140);
+    write(fd, buf, (arg3 << 7) + 0x80);
+    func_80017CFC((s32)buf);
+    write(fd, (u8 *)arg5, ((u32)(arg6 + 0x7F) >> 7) << 7);
+    close(fd);
+    return 1;
+}
 
 char *func_8004F32C(char *buf, s32 sel, char *suffix) {
     char *src = D_8008AAA4;
@@ -1576,7 +1627,33 @@ void func_8004F810(Unk_8004F810 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F8A4);
+void func_8004F8A4(Unk_8004F638 *arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4, s32 arg5, s32 arg6, s32 arg7) {
+    s32 next;
+
+    arg0->unk40 = arg1;
+    arg0->unk44 = arg2;
+    arg0->unk48 = arg3;
+    arg0->unk24 = 2;
+    arg0->unk4C = arg4;
+    arg0->unk50 = arg5;
+    arg0->unk54 = arg6;
+    arg0->unk58 = arg7;
+    if (func_8004F9D8(arg0) != 0) {
+        if (arg0->unk0->unk54(arg0, 0, arg1) != 0) {
+            next = 0xA;
+            if (arg0->unk28 == 0xA) {
+                next = 0x11;
+            } else if (arg0->unk28 == 0x11) {
+                next = 0xB;
+            }
+            arg0->unk0->unk7C(arg0, next);
+        } else if (arg0->unk0->unk60(arg0, arg4, arg7) == 0) {
+            arg0->unk0->unk7C(arg0, 9);
+        } else {
+            arg0->unk0->unk7C(arg0, arg0->unk28 == 0x11 ? 0xB : 0x11);
+        }
+    }
+}
 
 s32 func_8004F9D8(Unk_8004F638 *arg0) {
     s32 sp10;

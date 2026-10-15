@@ -329,6 +329,30 @@ extern s32 D_8008AAC8[];
 extern s32 D_8008AACC[];
 extern s32 D_8008AAD4[];
 extern s32 D_80086F7C[];
+typedef struct Unk_800513D0_Vtbl {
+    u8 pad_00[0x54];
+    void (*unk54)(void *, s32);
+    u8 pad_58[0x8];
+    void (*unk60)(void *, s32);
+    u8 pad_64[0x24];
+    void (*unk88)(void *);
+    void (*unk8C)(void *);
+    void (*unk90)(void *);
+    void (*unk94)(void *);
+    void (*unk98)(void *);
+    void (*unk9C)(void *);
+    void (*unkA0)(void *);
+} Unk_800513D0_Vtbl;
+typedef struct Unk_800513D0 {
+    Unk_800513D0_Vtbl *unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+    u8 pad_10[0x10];
+    s32 unk20;
+    u8 *unk24;
+    s8 *unk28;
+} Unk_800513D0;
+s8 *func_80041020(s8 *arg0, u8 *arg1);
 
 void *func_80050BA8(s32 arg0, s32 arg1) {
     void *temp_v0;
@@ -524,7 +548,72 @@ void func_80051370(Unk_80051370 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_800513D0);
+void func_800513D0(Unk_800513D0 *arg0, s32 arg1, s32 arg2) {
+    switch (arg2) {
+    case 25:
+        if (arg0->unkC == 1) {
+            func_80041020(arg0->unk24, arg0->unk28);
+        } else {
+            strcpy(arg0->unk24, arg0->unk28);
+        }
+        arg0->unk0->unk60(arg0, 0x10);
+        arg0->unk0->unk54(arg0, 2);
+        break;
+    case 23:
+        arg0->unk0->unk60(arg0, 0x10);
+        arg0->unk0->unk54(arg0, 3);
+        break;
+    case 32:
+        arg0->unk0->unkA0(arg0);
+        break;
+    case 31:
+        arg0->unk0->unk9C(arg0);
+        break;
+    case 28:
+        arg0->unk0->unk98(arg0);
+        break;
+    case 21:
+        if (arg0->unk20 == 0) {
+            arg0->unk0->unk88(arg0);
+        }
+        break;
+    case 5:
+        if (arg0->unk20 != 0) {
+            arg0->unk0->unk88(arg0);
+        }
+        break;
+    case 20:
+        if (arg0->unk20 == 0) {
+            arg0->unk0->unk8C(arg0);
+        }
+        break;
+    case 4:
+        if (arg0->unk20 != 0) {
+            arg0->unk0->unk8C(arg0);
+        }
+        break;
+    case 18:
+        if (arg0->unk20 == 0) {
+            arg0->unk0->unk90(arg0);
+        }
+        break;
+    case 2:
+        if (arg0->unk20 != 0) {
+            arg0->unk0->unk90(arg0);
+        }
+        break;
+    case 19:
+        if (arg0->unk20 == 0) {
+            arg0->unk0->unk94(arg0);
+        }
+        break;
+    case 3:
+        if (arg0->unk20 != 0) {
+            arg0->unk0->unk94(arg0);
+        }
+        break;
+    }
+}
 
 void func_8005161C(Unk_8005161C *arg0, s32 arg1) {
     Unk_8005161C_Obj *temp_a0;

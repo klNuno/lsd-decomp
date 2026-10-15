@@ -1290,6 +1290,7 @@ typedef struct Unk_8005A82C {
 extern Unk_8005C150_Y *D_800885B8[];
 extern u8 D_800885F0[];
 s32 rand();
+u32 Stage_FindChunkByMood(void *arg0, void *arg1);
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -3004,7 +3005,35 @@ s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *ar
     return -1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", Spawn_PickFromMood);
+s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3) {
+    s16 key[4];
+    s32 idx;
+    s32 cnt;
+    s32 i;
+    Unk_8005C150_Y *rec;
+    Unk_8005C150 *out;
+
+    idx = Stage_FindChunkByMood(key, arg2);
+    if (idx >= 0) {
+        *arg1 = g_stageTimeLimits[idx];
+        cnt = D_800885F0[idx];
+        rec = D_800885B8[idx];
+        for (i = 0; i < cnt; i++, rec++) {
+            if (key[0] == *(s16 *)rec) {
+                goto found;
+            }
+        }
+        rec = D_800885B8[idx] + key[0] % cnt;
+found:
+        out = arg0;
+        out->a = rec->c;
+        out->b = D_80087F30[rec->idx];
+        return idx;
+    }
+    idx = Spawn_PickRandom(arg0, idx, arg3);
+    *arg1 = g_stageTimeLimits[idx];
+    return idx;
+}
 
 s32 Day_FindSpecial(void *arg0, s32 arg1) {
     Unk_8005C438 *o = arg0;

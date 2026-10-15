@@ -16,6 +16,9 @@ Days and years
 - [The day counter and the hidden year](#the-day-counter-and-the-hidden-year): after day 365 you are back on day 1 and a hidden year counter goes up.
 - [The first dream of a new year starts from the wrong data](#the-first-dream-of-a-new-year-starts-from-the-wrong-data): a bug picks the start place from part of a score instead of day 365.
 
+The ending
+- [The ending plays when a year closes, not on day 365](#the-ending-plays-when-a-year-closes-not-on-day-365): the video comes right after the dream of day 365, when the counter goes back to day 1.
+
 The dream graph
 - [How a day becomes a point on the graph](#how-a-day-becomes-a-point-on-the-graph): an average of the moods of where you walked and what you touched.
 - [How the graph picks where tomorrow starts](#how-the-graph-picks-where-tomorrow-starts): 51 graph points lead nowhere and always send you to the same place.
@@ -29,18 +32,30 @@ Special days
 
 Flashbacks
 - [How flashback memories are kept](#how-flashback-memories-are-kept): 1 chance in 3 per moment, 10 slots, and the tenth is never replaced.
-- [What unlocks Flashback in the menu](#what-unlocks-flashback-in-the-menu): a score above 9,999,999, mostly from 30 hidden navigation goals.
-- [What erases the flashbacks](#what-erases-the-flashbacks): one kind of character wipes the list on contact; which one is not proven.
+- [What unlocks Flashback in the menu](#what-unlocks-flashback-in-the-menu): a score above 9,999,999, mostly from the navigation goals, which are the fixed links.
+- [What erases the flashbacks](#what-erases-the-flashbacks): touching the Grey Man wipes them all, every time.
 
 The Grey Man
+- [The Grey Man flips your graph and wipes your memories](#the-grey-man-flips-your-graph-and-wipes-your-memories): his mood sits past the edge of the graph, so touching him throws your day to the opposite corner.
 - [When the Grey Man can appear](#when-the-grey-man-can-appear): even days only, 1 chance in 12 at a spot left empty that day.
+- [Who can meet the Grey Man, and where](#who-can-meet-the-grey-man-and-where): he only replaces odd-day characters, and six places never get him.
+
+Characters and events
+- [The hidden rules that decide which characters appear](#the-hidden-rules-that-decide-which-characters-appear): day cycles, your mood so far, and groups that show up only once.
+- [The character record: mood, points, waking up and leaving](#the-character-record-mood-points-waking-up-and-leaving): 130 character types, and the five that end the dream on a video.
+- [Signals from characters and objects](#signals-from-characters-and-objects): touching, forced links, forced endings and event videos.
 
 Textures
 - [The 40-day texture cycle](#the-40-day-texture-cycle): the later in a 40-day cycle, the more texture sets a place can wear.
 
 Links between places
+- [Fixed links are the navigation goals, and one can never be completed](#fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): 29 of the 30 goals can be reached, so the big bonus never pays out.
 - [Where a random link sends you](#where-a-random-link-sends-you): the place after yours comes up twice as often as the others.
-- [Signals from characters and objects](#signals-from-characters-and-objects): touching, forced links, forced endings and event videos.
+- [Fixed links do not change with visits, but some depend on who showed up](#fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up): no visit counter; four characters switch on extra links.
+
+Music
+- [A Clockwork Machines track that can never play](#a-clockwork-machines-track-that-can-never-play): the dice can pick it, but the game plays the next track instead.
+- [A switch to pin the music that nobody pulls](#a-switch-to-pin-the-music-that-nobody-pulls): a leftover way to force one sound bank and one track.
 
 Memory card
 - [Everything the game remembers fits in one block](#everything-the-game-remembers-fits-in-one-block): 1,792 bytes, starting with the letters J01.
@@ -49,14 +64,16 @@ Memory card
 Randomness
 - [The dice of the game](#the-dice-of-the-game): a fixed number sequence that is almost never reseeded.
 
-Unused content
+Hidden and unused content
+- [A hidden way out of a dream that erases your game](#a-hidden-way-out-of-a-dream-that-erases-your-game): the pause code can wipe the whole game, but no button for it was found.
 - [The dog that never loads](#the-dog-that-never-loads): a dog model sits on the disc, but the loader stops before it.
+- [What the game never asks for](#what-the-game-never-asks-for): three files on the disc and one menu slot, and no debug menu found.
 
 ## Days and years
 
 ### The day counter and the hidden year
 
-The game counts your days. The number you see is the internal counter plus one, so the first day shows as day 1. When day 365 ends, the counter goes back to day 1 and a hidden year counter goes up by one. The game never shows the year, but it is saved, and it changes how the next dream starts (see the next finding).
+The game counts your days. The number you see is the internal counter plus one, so the first day shows as day 1. When day 365 ends, the counter goes back to day 1 and a hidden year counter goes up by one. The game never shows the year, but it is saved, it plays [the ending video](#the-ending-plays-when-a-year-closes-not-on-day-365) when it goes up, and it changes how the next dream starts (see the next finding).
 
 Status: 🎮 checked in the game.
 
@@ -94,13 +111,37 @@ First dream of a new year: the start point comes from the wrong bytes. `DreamSys
 
 </details>
 
+## The ending
+
+### The ending plays when a year closes, not on day 365
+
+The ending video (the erupting Mount Fuji and a countdown) does not play during day 365. It plays right after that dream ends, at the moment the day counter goes back to day 1 and the hidden year counter goes up. Then the menu comes back on "Day 001". The game checks for "day 1 and a year above 0", so the video should come back at the end of every later year too. Nothing else in the game asks for the ending video.
+
+Status: 🎮 checked in the game (the end of year 1; later years are read in the code only).
+
+<p>
+<img src="img/game/hidden-ending-fuji.png" alt="Ending video: a figure rises above Mount Fuji" width="49%">
+<img src="img/game/hidden-ending-countdown.png" alt="Ending video: a countdown circle showing 3" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+The scene class (vtable `0x8006D3C8`, built by `func_80025F7C` from `main` @0x800118DC) runs its loop in `func_8003B110`: slot 0x50 logos, then forever slot 0x54 opening video, slot 0x58 title; when the title returns 2, slot 0x60 runs the dream (`func_80026698`), and if that returns non-zero slot 0x64 `func_80026900` plays the video returned by `func_800491FC` (file table base `func_80048D48` + 0x3E04 = `ETC\ENDING.STR` @0x80085808, video index 7). `func_80026698` returns 1 when `DreamSys_GetDayNumber` @0x8005A2E4 (vtable 0x1A0) returns 1 and writes a non-zero year. After a normal end, `DreamSys_EndDay` @0x8005A41C calls `DreamSys_AdvanceDay` @0x8005A304, which wraps 364 to 0 and adds a year. No other code reads the ending entry.
+
+- Proof: `func_8003B110` @0x8003B110, `func_80026698` @0x80026698, `func_80026900` @0x80026900, `func_800491FC` @0x800491FC, `DreamSys_GetDayNumber` @0x8005A2E4, vtable 0x8006D3C8 (slot 0x64 = 0x80026900, the only pointer to it).
+- In game: yes. Interpreter run (`work/hunt3/run3.log`): day +0x180 = 364 at vsync 2300, dream started (StartDay at 3126), timer +0x24 = 3590 of 3600 at 4000. Breakpoints: `DreamSys_EndDay` type 0 at 4366, then `func_80026900` at 4378 with year 1, day 0; the video ran until the title at 6360, which showed "Day 001". Forced: day and timer.
+- Not checked: the end of year 2 and later. By the same test, a dream that does not advance the day (a flashback, or the type 1 quit of [the hidden exit](#a-hidden-way-out-of-a-dream-that-erases-your-game)) started on day 1 of year 1 or later should replay the ending; not run.
+- Questions: [14](mysteries.md#events-and-hidden-content), [8](mysteries.md#days-textures-randomness). Found 2026-10-15.
+
+</details>
+
 ## The dream graph
 
 ### How a day becomes a point on the graph
 
-Every area of a dream carries a mood, a point on the graph from -9 to 9 on each axis, and so do the characters and objects you touch. At the end of a normal day, the game averages the moods of the areas you walked through and adds a third of the last one; it does the same for what you touched, then takes the middle of the two. If you touched nothing, only the areas count. A result past 9 does not stop at the edge: it jumps to the opposite edge, -9. Only a normal day end stores a point, and days watched in flashback mode leave none. The graph screen shows your last 100 days.
+Every area of a dream carries a mood, a point on the graph from -9 to 9 on each axis, and so do the characters and objects you touch. At the end of a normal day, the game averages the moods of the areas you walked through and adds a third of the last one; it does the same for what you touched, then takes the middle of the two. If you touched nothing, only the areas count. A result past 9 does not stop at the edge: it jumps to the opposite edge, -9, and a result below -9 jumps to 9. That jump is how [the Grey Man flips your graph](#the-grey-man-flips-your-graph-and-wipes-your-memories). Only a normal day end stores a point, and days watched in flashback mode leave none. The graph screen shows your last 100 days.
 
-Status: 🎮 partly checked in the game (the "third of the last one" part was not exercised).
+Status: 🎮 checked in the game (the whole sum, the third of the last one and the jump included, during the Grey Man test).
 
 <img src="img/game/graph-screen.png" alt="The graph screen with one point per past day" width="60%">
 
@@ -109,7 +150,7 @@ Status: 🎮 partly checked in the game (the "third of the last one" part was no
 Graph point of a day: `Mood_Log` @0x8005B5B8 (vtable 0x208) keeps two accumulators, chunks at +0x144 and entities at +0x154, each {last point, sum x, sum y, count}. `Mood_CalcAxis` @0x8005B66C makes each axis `sum / count + last / 3` (C division, truncated), and a result above 9 becomes -9 and below -9 becomes 9 (a flip to the edge, not a modulo). `DreamSys_ComputeDayPoint` @0x8005B420 averages the chunk and entity results per axis, using the chunk result twice when no entity was logged (+0x160 = 0). `DreamSys_EndDay` @0x8005A41C stores it in the graph at +0x190 + day*2, only on a normal end (argument 0) outside flashback mode, then advances the day. The graph screen `func_80058404` draws the last 100 days at 10 units per step.
 
 - Proof: `Mood_Log` @0x8005B5B8, `Mood_CalcAxis` @0x8005B66C (both matched C), `Mood_Resolve` @0x8005B5F0, `DreamSys_ComputeDayPoint` @0x8005B420, `DreamSys_EndDay` @0x8005A41C, `func_80058404` @0x80058404.
-- In game: partly. The forced end wrote day 364's point from a chunk-only accumulator ((0,0), count 1); the new dream's chunk accumulator held (-3,1). The `last / 3` term was not exercised.
+- In game: yes. The forced end wrote day 364's point from a chunk-only accumulator ((0,0), count 1); the new dream's chunk accumulator held (-3,1). The Grey Man run then exercised every term: chunks {last (-3, 1), sum (-3, 1), n 1} gave (-3 + -1, 1 + 0) = (-4, 1); entities {last (-10, -10), sum (-10, -10), n 1} gave -10 + -3 = -13, flipped to 9 on both axes; the stored point was the truncated mean (2, 5). Logs `work/hunt3/gm.log` to `gm3.log`.
 - Question: [1](mysteries.md#graph-and-dream-start). Found 2026-10-15.
 
 </details>
@@ -211,16 +252,16 @@ Status: 📖 read in the code only.
 Flashback list: count at +0x46C, entries of 0x24 bytes from +0x470 (10 at most, ending at +0x5D8). `DreamSys_MaybeSaveFlashback` @0x8005B81C (vtable 0x218) saves one with probability 1/3 (`rand() % 3 == 0`) when the player object at +0x4C exists; it runs when the day timer expires (`DreamSys_TickTimer` @0x80058D94) and on entity message 9 (`DreamSys_OnEntityEvent` @0x8005B03C). `DreamSys_AddFlashback` @0x8005B74C (0x214) appends {stage, position, rotation, length 0x10, day} while fewer than 10 are kept, else overwrites entry `timer % 9`: once full, the 10th entry is never replaced. Flashback mode is +0x68, set by `DreamSys_SetFlashbackMode` @0x800590E8 (vtable 0xF0) from the menu (`func_8004D9D4` case 1). Playback: `DreamSys_LoadNextFlashback` @0x8005A63C (0x1CC) loads entry +0x87C (stage, position, its day into +0x180), `func_80058968` gives it 0x10 + 4 = 20 seconds and moves to the next; in that mode the day end stores no graph point.
 
 - Proof: `DreamSys_MaybeSaveFlashback` @0x8005B81C, `DreamSys_AddFlashback` @0x8005B74C, `DreamSys_LoadNextFlashback` @0x8005A63C, `func_80058968` @0x80058968, `DreamSys_SetFlashbackMode` @0x800590E8 (matched C), `func_8004D9D4` @0x8004D9D4.
-- In game: no.
+- In game: no (the Grey Man run saw one memory saved on a touch, the count going from 3 to 4, without checking the die).
 - Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
 
 ### What unlocks Flashback in the menu
 
-Flashback appears in the menu once two things are true: at least one memory is kept, and your score is above 9,999,999. The score is recomputed at the end of each normal day from two parts. The first: 1,000,000 for each of 30 hidden "navigation" goals you completed (all 30 give 50,000,000), minus 11,024 for every random link you took. The second: points from touching characters and objects, up to 50,000,000. So 10 navigation goals with no random link are enough on their own. What completes a navigation goal is not traced yet.
+Flashback appears in the menu once two things are true: at least one memory is kept, and your score is above 9,999,999. The score is recomputed at the end of each normal day from two parts. The first: 1,000,000 for each hidden "navigation" goal you completed, minus 11,024 for every random link you took. The second: points from touching characters and objects, up to 50,000,000. The navigation goals are [the fixed links between places](#fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): the first time you take each one, its goal is done. There are 30 goals and a 50,000,000 bonus for all 30, but one goal can never be completed, so that bonus never pays out and the navigation part stops at 29,000,000. So 10 navigation goals with no random link are enough on their own.
 
-Status: 🎮 checked in the game, with the values written in: a score of 10,000,000 and one kept memory made FLASHBACK appear between START and SAVE.
+Status: 🎮 checked in the game, with the values written in: a score of 10,000,000 and one kept memory made FLASHBACK appear between START and SAVE. The navigation goals are read in the code only.
 
 <p>
 <img src="img/game/flashback-locked.png" alt="Menu with the Flashback item still locked" width="49%">
@@ -229,35 +270,56 @@ Status: 🎮 checked in the game, with the values written in: a score of 10,000,
 
 <details><summary>Technical details</summary>
 
-Flashback unlock: the menu item is enabled by `Menu_UpdateFlashbackItem` @0x8004D678 only when the save block's +0xC (DreamSys +0x184, unlock score) is above 9,999,999 and +0x2F4 (+0x46C, flashbacks kept) is not 0. `DreamSys_CalcUnlockScore` @0x8005B6E0 (vtable 0x210, run by `DreamSys_EndDay` @0x8005A41C on a normal day end) sets +0x184 = +0x188 + +0x18C. +0x188 comes from `Nav_CalcScore` @0x8005BA7C: 1,000,000 per non-zero byte among the 30 navigation flags (+0x5E0 via `g_navFlags` @0x8008ACB4), 50,000,000 once all 30 are set, minus 11,024 per dynamic link (+0x600), floored at 0. +0x18C, the instance score, is clamped to 0..50,000,000 and grows on entity message 9 by the entity's vtable 0x150 value (`DreamSys_OnEntityEvent` @0x8005B03C). So 10 navigation challenges with no dynamic link unlock it; each dynamic link costs 11,024. What sets a navigation flag is not traced.
+Flashback unlock: the menu item is enabled by `Menu_UpdateFlashbackItem` @0x8004D678 only when the save block's +0xC (DreamSys +0x184, unlock score) is above 9,999,999 and +0x2F4 (+0x46C, flashbacks kept) is not 0. `DreamSys_CalcUnlockScore` @0x8005B6E0 (vtable 0x210, run by `DreamSys_EndDay` @0x8005A41C on a normal day end) sets +0x184 = +0x188 + +0x18C. +0x188 comes from `Nav_CalcScore` @0x8005BA7C: 1,000,000 per non-zero byte among the 30 navigation flags (+0x5E0 via `g_navFlags` @0x8008ACB4), 50,000,000 once all 30 are set (only above 29,999,999), minus 11,024 per dynamic link (+0x600), floored at 0. +0x18C, the instance score, is clamped to 0..50,000,000 and grows on entity message 9 by the entity's vtable 0x150 value (`DreamSys_OnEntityEvent` @0x8005B03C). So 10 navigation challenges with no dynamic link unlock it; each dynamic link costs 11,024. The flags are set only by `func_8005C150` @0x8005C150 when its sixth argument is not 0, from the two static link tables, whose union lacks flag 13: +0x188 stops at 29,000,000 and the unlock score at 79,000,000 (see [the fixed links](#fixed-links-are-the-navigation-goals-and-one-can-never-be-completed)).
 
-- Proof: `Menu_UpdateFlashbackItem` @0x8004D678, `DreamSys_CalcUnlockScore` @0x8005B6E0, `Nav_CalcScore` @0x8005BA7C (all matched C), `DreamSys_OnEntityEvent` @0x8005B03C, `DreamSys_EndDay` @0x8005A41C.
-- In game: yes, forced. On a fresh day 1 +0x184 and +0x46C read 0 and the item is absent. Writing +0x184 = 10,000,000, +0x46C = 1 and zeroing entry +0x470 at vsync 2100 made the menu show FLASHBACK between START and SAVE (capture at 2460; with a flashback kept, the title skips the graph and opens the menu). Script `work/shots/drive.lua`, log `work/shots/manifest.md`.
+- Proof: `Menu_UpdateFlashbackItem` @0x8004D678, `DreamSys_CalcUnlockScore` @0x8005B6E0, `Nav_CalcScore` @0x8005BA7C (all matched C), `DreamSys_OnEntityEvent` @0x8005B03C, `DreamSys_EndDay` @0x8005A41C, `func_8005C150` @0x8005C150.
+- In game: yes, forced. On a fresh day 1 +0x184 and +0x46C read 0 and the item is absent. Writing +0x184 = 10,000,000, +0x46C = 1 and zeroing entry +0x470 at vsync 2100 made the menu show FLASHBACK between START and SAVE (capture at 2460; with a flashback kept, the title skips the graph and opens the menu). Script `work/shots/drive.lua`, log `work/shots/manifest.md`. The navigation flags were not exercised (no fixed link was taken in the emulator).
 - Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
 
 ### What erases the flashbacks
 
-One piece of code empties the whole memory list, and only one kind of character runs it: when that character gets close to you or touches you, it changes state and wipes every kept memory. Players say the Grey Man does this, but the code does not yet tell which character it is. Players also report that the graph flips after meeting him; no code that flips stored graph points was found.
+The Grey Man does. One piece of code empties the whole memory list, and only he runs it: when he touches you, he vanishes in a white flash and every kept memory is gone. There is no die roll, so every touch erases them all. The same touch also [flips your graph](#the-grey-man-flips-your-graph-and-wipes-your-memories).
 
-Status: 📖 read in the code only.
+Status: 🎮 checked in the game, with the Grey Man forced to appear.
 
 <details><summary>Technical details</summary>
 
-Erasing flashbacks: `DreamSys_ClearFlashbacks` @0x8005B8FC (vtable 0x21C) sets +0x46C to 0 and has one caller, `Behavior_EraseFlashbacks` @0x80064618, an entity behaviour handler (16-byte record {handler, parameters} at 0x8008A4D0). When its +0xF4 is set and `func_8005D108(0, 0, 10, 0)` passes (likely a contact or range test), it sets state 7 on the object at +0x100, calls its own vtable 0x160, then clears the list. Which entity uses that record is not traced, so the link to `SYMSPY.MOM` (the Grey Man) is still a guess. No code that negates stored graph points was found, so the "graph flip" is not explained.
+Erasing flashbacks: `DreamSys_ClearFlashbacks` @0x8005B8FC (vtable 0x21C) sets +0x46C to 0 and has one caller, `Behavior_EraseFlashbacks` @0x80064618, the handler of entity type 98 (16-byte record {handler, parameters} at 0x8008A4D0, the handler at +0xC of record 98 from `D_80089EA4`). Type 98 is the Grey Man: `func_8005C650` creates the spy object with `func_8005CFDC(i + 0x62, ...)`, so the `SYMSPY.MOM` model and the eraser are the same character. A touch (`func_8005DE18`, slot 0x178 → slot 0x164 `func_8005DAAC`) sends message 9 and sets +0xF4. On its next run the handler sees +0xF4, starts the effect object `func_8005D108(obj, 0, 0, 10, 0)` (the white flash), sets state 7 on the object at +0x100, calls its own vtable 0x160, then clears the list. No code negates stored graph points: the "graph flip" is the wrap of `Mood_CalcAxis` @0x8005B66C on his mood (-10, -10).
 
-- Proof: `DreamSys_ClearFlashbacks` @0x8005B8FC, `Behavior_EraseFlashbacks` @0x80064618 (matched C), record 0x8008A4D0.
-- In game: no.
+- Proof: `DreamSys_ClearFlashbacks` @0x8005B8FC, `Behavior_EraseFlashbacks` @0x80064618, `func_8005C650`, `func_8005DAAC`, `func_8005DE18` (all matched C), record 0x8008A4D0.
+- In game: yes, forced. Flashback count +0x46C = 3 written at vsync 3700; at 4399 the Grey Man touched the player, the handler ran with +0xF4 = 1 on an object of type 98 and `DreamSys_ClearFlashbacks` ran with the count at 4 (the touch had just saved one); at 4449 the count read 0. Logs `work/hunt3/gm.log`, `gm2.log`, `gm3.log`.
 - Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
 
 </details>
 
 ## The Grey Man
 
+### The Grey Man flips your graph and wipes your memories
+
+When you touch the Grey Man, three things happen at once. He vanishes in a white flash, every kept flashback memory is erased, and his mood is logged like any character you touch. His mood is (-10, -10), one step beyond the -9 edge of the graph. Then the "last thing touched" bonus pushes your "things touched" score further down. Past -9 the value jumps to +9, so if he is the only thing you touched, or most of what you touched was dark, that half of your day point jumps to the opposite corner. This is the graph flip players report. In the emulator, one touch moved the day's point from where it should have landed, (-6, -4), to (2, 5). If you never touch him, he leaves on his own after a fixed time: 3 minutes if his clock runs at the speed of the dream timer.
+
+Status: 🎮 checked in the game, with the Grey Man forced to appear (his leaving on his own is read in the code only).
+
+<p>
+<img src="img/game/events-grey-man-flash.png" alt="The white flash right after touching the Grey Man under the torii of stage 2" width="49%">
+<img src="img/game/events-grey-man-graph.png" alt="The graph after that day: the newest point, in red, sits in the upper half, far from the earlier point on the left" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+The Grey Man is entity type 98: `func_8005C650` creates the spy object with `func_8005CFDC(i + 0x62, ...)`, and record 98 of the behaviour table (16 bytes from `D_80089EA4 + 16 * type`, handler at +0xC, so 0x8008A4D0) holds `Behavior_EraseFlashbacks` @0x80064618. Record 98: mood (-10, -10) at +0/+1, touch score 20 (x 1000, read by vtable 0x150 `func_8005D95C`), wake mode 0 (awake at spawn), sleep mode 180 (leaves after 180 x 15 ticks of his own counter +0x24), touch range 1, no link, no video. Touch: `func_8005DE18` (0x178) calls slot 0x164 `func_8005DAAC`, which sends message 9 and sets +0xF4. Message 9 (`DreamSys_OnEntityEvent` @0x8005B03C) logs the record's mood into the entity accumulator at DreamSys +0x154 (`func_8005B3F0` → `Mood_Log` @0x8005B5B8), adds 20,000 to +0x18C and may save a flashback. On its next run the handler sees +0xF4, starts the effect object `func_8005D108(obj, 0, 0, 10, 0)` (the white flash), sets state 7, calls slot 0x160 and `DreamSys_ClearFlashbacks` @0x8005B8FC. The day point is `Mood_CalcAxis` @0x8005B66C = sum / count + last / 3, wrapped to the other side past +/-9: with the Grey Man as the only entity, -10 + (-10 / 3 = -3) = -13 → +9 on both axes. The wrap happens whenever the mean of touched moods, the Grey Man included, is below -6 on an axis while he is the last one touched.
+
+- Proof: `func_8005C650` (0x62 constant), record 0x8008A4C4, `Behavior_EraseFlashbacks` @0x80064618, `func_8005DAAC`, `func_8005DE18`, `DreamSys_OnEntityEvent` @0x8005B03C, `Mood_CalcAxis` @0x8005B66C, `DreamSys_ComputeDayPoint` @0x8005B420 (all matched C).
+- In game: yes, forced. Interpreter, +0x180 = 3 (day number 4), +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `Sym_SpawnOrSpy` entry, flashback count +0x46C = 3 written at vsync 3700. At vsync 4399 he touched the player: message 9, the handler ran with +0xF4 = 1 on an object with type 98, and `DreamSys_ClearFlashbacks` ran with the count at 4 (the touch had just saved one); at 4449 the count read 0 and the instance score 20,000. The accumulators then read zones {last (-3, 1), sum (-3, 1), n 1} and entities {last (-10, -10), sum (-10, -10), n 1}. With the timer forced to the limit at 4700 the day ended and stored point (2, 5) for that day: zones give (-4, 1), entities wrap to (9, 9), mean (2, 5). Without the wrap it would have been (-6, -4). Flash captured at 4460, graph at 7100. Logs `work/hunt3/gm.log`, `gm2.log`, `gm3.log`.
+- Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
+
+</details>
+
 ### When the Grey Man can appear
 
-Each spot where a character can stand has a day rule: always, even days only, or odd days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white.
+Each spot where a character can stand has a day rule: always, odd days only, or even days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white and [the memories were erased](#what-erases-the-flashbacks).
 
 Status: 🎮 checked in the game, with the die forced.
 
@@ -265,11 +327,77 @@ Status: 🎮 checked in the game, with the die forced.
 
 <details><summary>Technical details</summary>
 
-Grey Man spawn: per entity spawn slot, `func_80054120` calls `Sym_SpawnOrSpy @0x8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `Sym_CheckDayParity` @0x8005C9A4 lets a slot's entity appear when its flag is 0, or 1 on even day numbers, or 2 on odd ones. When the flag blocks it, the stage index (`g_currentStage` @0x8008ABF8) is not 0, `rand() % 12 == 0` and the day number is even, `Sym_SpawnSpy` @0x8005CF34 spawns the model loaded from `ETC\SYMSPY.MOM` (`g_spyModel` @0x80088D28, loaded by `Sym_LoadModels` @0x8005C508). The forced spawn in the emulator shows the Grey Man (hat, long coat), so `SYMSPY.MOM` is his model. Erasing flashbacks is not traced yet (see [What erases the flashbacks](#what-erases-the-flashbacks) for what was found since).
+Grey Man spawn: per entity spawn slot, `func_80054120` calls `Sym_SpawnOrSpy @0x8005C7D4(entity, slot, day number)` (day number from vtable 0x1A0 of the object that `func_800534C8` also passes as `D_8008AC00`). `Sym_CheckDayParity` @0x8005C9A4 returns `flag != (day % 2) + 1` for a non-zero flag: a slot's entity appears when its flag is 0, or 1 on odd day numbers, or 2 on even ones. When the flag blocks it, the stage index (`g_currentStage` @0x8008ABF8) is not 0, `rand() % 12 == 0` and the day number is even, `Sym_SpawnSpy` @0x8005CF34 spawns the model loaded from `ETC\SYMSPY.MOM` (`g_spyModel` @0x80088D28, loaded by `Sym_LoadModels` @0x8005C508). So only flag-1 slots on even days can hold him. The forced spawn in the emulator shows the Grey Man (hat, long coat), so `SYMSPY.MOM` is his model; he is entity type 98, whose handler erases the flashbacks (see [What erases the flashbacks](#what-erases-the-flashbacks)).
 
 - Proof: `Sym_SpawnOrSpy` @0x8005C7D4 (asm: `andi s1,1` and the 0x2AAAAAAB divide by 12), `Sym_CheckDayParity` @0x8005C9A4, `func_8005C8AC` @0x8005C8AC, `Sym_LoadModels` @0x8005C508, `func_80054120` @0x80054120.
-- In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `Sym_SpawnOrSpy` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). Whether that contact erased the flashback list was not measured. Log `work/shots/manifest.md`.
+- In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `Sym_SpawnOrSpy` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). A later run with the same setup measured the flashback list cleared by that contact (`work/hunt3/gm.log`). Log `work/shots/manifest.md`.
 - Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
+
+</details>
+
+### Who can meet the Grey Man, and where
+
+The Grey Man only takes a spot that its own rule leaves empty. A spot marked "odd days only" is empty on even days, and since he also needs an even day, he only ever takes the place of odd-day characters. Some places have no such spot at all: stages 1, 3, 8, 10 and 12 have only "every day" spots, and stage 0 is excluded outright. He cannot appear in those six. He can appear in stages 2, 4, 5, 6, 7, 9, 11 and 13.
+
+Status: 📖 read in the code only (the rule that lets him spawn was seen working on stage 2).
+
+<details><summary>Technical details</summary>
+
+`Sym_CheckDayParity` @0x8005C9A4 returns `flag != (day % 2) + 1` for a non-zero flag: flag 1 lets the slot's characters appear on odd day numbers only, flag 2 on even ones only. `Sym_SpawnOrSpy` @0x8005C7D4 rolls for the Grey Man only when that check fails, the stage is not 0 and the day number is even, so only flag-1 slots on even days can hold him. Slot tables: per stage, `D_80089A8C[stage]` points to 6-byte slots {s16 chunk key, s8 day flag, s8 groups[3]}, with the count in `D_80089AC4[stage]`. All slots have flag 0 in stages 1, 3, 8, 10 and 12. Dump: `work/hunt3/spawns.py`.
+
+- Proof: `Sym_CheckDayParity` @0x8005C9A4, `Sym_SpawnOrSpy` @0x8005C7D4, `func_8005C8AC` @0x8005C8AC (matched C), tables 0x80089A8C and 0x80089AC4.
+- In game: only the stage 2 case (`work/shots/manifest.md`, grey-man.png); the empty stages were not walked.
+- Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
+
+</details>
+
+## Characters and events
+
+### The hidden rules that decide which characters appear
+
+Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character. This is the most likely source of the "many gunmen" and "many minotaurs" sightings, but which character each type is was not checked on screen.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+A slot lists up to 3 groups; `func_8005C9DC` tries each group in turn. Groups are 8-byte entries in `D_80089A44[stage]` (count `D_80089A7C[stage]`): {+0 done flag, +1 s8 rule, +2 model index, +3 entity type, +4 u8 places[4] ending at 0xFF}. `func_8005CBC8` reads the rule; a negative rule only passes while the done flag is clear, and the flags are cleared by `Sym_LoadModels` @0x8005C508, called from `func_80049684` (the world constructor that also loads `ETC\DREAMER.TMD`); that this runs once per dream is likely, not measured. Rules: 0 and 1 always; 2, 3 and 4 pass when the 30-day month `(day - 1) / 30 + 1` equals 1, 2 or 3 plus a multiple of 3 (`func_8005CDA8`; the 13th month, days 361 to 365, never passes); 5 day % 3 == 0; 6 day % 3 != 0; 8 and 9 day % 3 == 1 or 2; 20 even days; 21 odd days; 7 `func_8005630C` (bit 0 of `D_8008AC80`, picked by `func_80054758` from a 16-entry table; its meaning is unproven); 10 to 17 (`func_8005CD58`) compare `D_80088D16[rule]` (6, 4, 3, 7, 0, 2, 1, 5) with the current colour, DreamSys vtable 0x200 `func_8005B4E0` = `DreamSys_ComputeDayPoint` banded by `func_8005B518` (< -3, -3..3, >= 4) into the 3x3 table `D_80087E14` = {6,7,2 / 4,7,1 / 3,0,5}. `func_8005CAB4` spawns the type at every listed place (`func_8005CDF8` per place). Stage 4, slot 16 (chunk 1024) switches to slot 21 when the colour is 4 (`func_8005C930`), whose groups 26 and 27 put type 114 on 8 places. Other colour groups: stage 1 type 109 (x3, colour 6), stage 2 types 110, 20 (x4), 21 (x2), 94 (x2), stage 3 types 119 to 122, stage 4 types 112 (x4, colour 5) and 113, stage 5 type 85 (x4, colour 3), stage 8 type 95 (x4, colour 1), stage 12 type 108 (colour 6). Full dump: `work/hunt3/spawns.txt`.
+
+- Proof: `func_8005C9DC`, `func_8005CAB4`, `func_8005CBC8`, `func_8005CDA8`, `func_8005CD58`, `func_8005C930`, `func_8005CDF8` (all matched C), `func_8005B4E0`, `func_8005B518`, tables 0x80089A44, 0x80089A7C, 0x80088D16, 0x80087E14.
+- In game: no.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### The character record: mood, points, waking up and leaving
+
+Every character type, 130 of them, has a 16-byte record. It gives the mood logged when you touch it, the points it is worth (from -100,000 to +100,000), when it wakes up, when it leaves, how close you must be to touch it, and where it sends you or which video it plays. A character can wake up when you come near or when you walk away. Three types (7 and 8 in stage 1, 102 in stage 6) also need luck: near you, they have 1 chance in 128 per tick to wake. Type 102 is the only character of stage 6 and sends you to stage 12. The characters that end the dream on a video are type 13 (stage 2, always there), type 11 (stage 2, even days), type 47 (stage 4), type 79 (stage 9, rule "once") and type 89 (stage 5, rule "once"). Type 12 in stage 2 ends the dream without a video.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+Record `D_80089EA4 + 16 * type`: +0/+1 s8 mood (returned whole by vtable 0x14C `func_8005D944`), +2 s8 points / 1000 (0x150 `func_8005D95C`), +3 wake mode (`func_8005DBF0`, 0x170: 0 at spawn via `func_8005D314`, 1 in range, 2 out of range, 3 in range then `(rand() & 0x7F) == 0`, 4 `(rand() & 0x7F) == 0` anywhere), +4 sleep mode (`func_8005DD18`: 1 in range, 2 out of range, >= 10 after `mode * 15` ticks), +5 wake range, +6 touch range (`func_8005DE18`; negative also makes it face or follow the player through `func_8001EACC`), +7 link (0x154 `func_8005D994`: v > 0 → stage v - 1, v < 0 → stage ~v, sent as message 10; when v < 0 and +8 != 0, `func_8005DF9C` links as soon as the player is within +8 << 9), +8 video + 1 (0x158 `func_8005D9D0`, message 11), +9 range parameter, +0xB another range (0x168), +0xC handler run each tick (`func_8005DAFC` registers it). Message 11 senders: handlers of types 11 (`func_8005E7F8`, video 3), 13 (`func_8005EBB4`, video 3), 47 (`func_8006090C`, 11 or 12, video 1), 79 (`func_80062FAC`, video 0), 89 (`func_80063DC8`, video 4); message 12 from type 12 (`func_8005EA94`) and 47. Six `FILM\EVENTn.STR` paths sit 0x1C apart at 0x80085829; which video number maps to which file was not checked. Types 98 and 100 have mood (-10, -10), types 99 and 101 have (10, 10) and (9, 9); type 99 would be the dog (the loader's `i + 0x62` loop), and its record has no handler.
+
+- Proof: behaviour vtable 0x80089AD4 (slots 0x14C to 0x17C), the functions above (matched C), dump `work/hunt3/recs.txt`.
+- In game: only type 98 ([the Grey Man](#the-grey-man-flips-your-graph-and-wipes-your-memories)).
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### Signals from characters and objects
+
+Characters and objects talk to the dream through a handful of signals. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#how-flashback-memories-are-kept). Others send you to a fixed place, end the dream and queue their own video, or simply end the dream. These are the forced endings and event videos players know (the train, the astronaut, the lions). Which characters send which signal is now listed in [the character record](#the-character-record-mood-points-waking-up-and-leaving), and when they appear in [the spawn rules](#the-hidden-rules-that-decide-which-characters-appear); which of them is the train, the astronaut or the lions on screen is not matched yet. In flashback mode touching, event videos and forced endings do nothing.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos. Message 11 comes from the handlers of types 11, 13, 47, 79 and 89, message 12 from types 12 and 47 (record dump `work/hunt3/recs.txt`); no type was matched to the train, astronaut or lions model on screen.
+
+- Proof: `DreamSys_OnEntityEvent` @0x8005B03C, `Cine_GetEventPath` @0x80049270 (matched C), `DreamSys_ExecuteLink` @0x8005A928.
+- In game: no.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
 </details>
 
@@ -300,6 +428,22 @@ Texture set: when a stage loads, `func_80052F10` calls `Stage_PickTexturePath @0
 
 ## Links between places
 
+### Fixed links are the navigation goals, and one can never be completed
+
+The 30 hidden navigation goals behind the [Flashback score](#what-unlocks-flashback-in-the-menu) are the game's fixed links: the first time you take each fixed link between two places, its goal is marked done. There are 49 such links, through walls and through passages, and together they mark 29 different goals. Goal 13 is not marked by any of them. So the 30th goal never completes, the 50,000,000 bonus for all 30 never pays out, and the navigation score tops out at 29,000,000.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+`func_8005C150` @0x8005C150 matches the player's (chunk, tile) against a stage's link list and, when its sixth argument is not 0, sets `g_navFlags[y->flag] = 1` from the destination entry. Two callers pass 1: `func_8005BCB4` (wall touch, `DreamSys_LinkStatic` @0x8005A5D8; tables 0x80088748 counts, 0x80088710 lists, 0x80088664 destinations: 17 links, flags 0 to 12) and `func_8005BCF8` (`func_8005A700`, DreamSys vtable 0x1D0; tables 0x800889F0, 0x80088980, 0x80088820: 32 links, flags 14 to 29). The other two callers (`func_8005BF74`, `func_8005BFDC`) pass 0. No other code writes the flags (`Nav_InitFlags` clears them, `Nav_CalcScore` counts 30 bytes and pays 50,000,000 only above 29,999,999). The union of the two tables lacks flag 13, so +0x188 tops out at 29,000,000. Script `work/hunt3/links.py`, output `links.txt`.
+
+- Proof: `func_8005C150`, `func_8005BCB4`, `func_8005BCF8`, `Nav_CalcScore` @0x8005BA7C, `Nav_InitFlags` @0x8005BA50 (matched C), the six tables above. The flag writer and the missing flag 13 were checked a second time by the main thread.
+- In game: no (no fixed link was taken in the emulator).
+- Question: [6](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
+
+</details>
+
 ### Where a random link sends you
 
 Touching a wall can send you to another place. The game first looks for a fixed link for that wall; only if there is none, and random links are allowed at that moment, does it pick a place at random. It rolls a 6-sided die over the six main places (0 to 5 in its list). If the die names the place you are in, you go to the next one instead. So the place right after yours comes up 2 times in 6 and each of the other four 1 time in 6. Every random link is counted, and each one lowers the [flashback score](#what-unlocks-flashback-in-the-menu) by 11,024.
@@ -318,19 +462,53 @@ Links: a wall touch (`DreamSys_OnWallTouch` @0x80058FAC, message 4, no transitio
 
 </details>
 
-### Signals from characters and objects
+### Fixed links do not change with visits, but some depend on who showed up
 
-Characters and objects talk to the dream through a handful of signals. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#how-flashback-memories-are-kept). Others send you to a fixed place, end the dream and queue their own video, or simply end the dream. These are the forced endings and event videos players know (the train, the astronaut, the lions); what makes each character send its signal is not traced yet. In flashback mode touching, event videos and forced endings do nothing.
+A fixed link always leads to the same place: the game does not count visits and does not read the day when it looks one up. One extra list of walk-through links is switched on only in stages 3 and 11, or once a character of type 11, 56, 78 or 93 has appeared in that dream. Those characters follow [the day rules](#the-hidden-rules-that-decide-which-characters-appear): type 11 is in stage 2 on even days, 56 in stage 5, 78 in stage 8 when the day is a multiple of 3, and 93 in stage 0 under the "once" rule. So when a fixed link seems to change from day to day, the day number is behind it through who appeared, not through visit counts. One more link routine, used only from stages 1, 3, 5, 9 and 12, sends you to stage 12 instead of its usual pick about half the time, depending on the dream timer; what you do to trigger it was not found.
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos; the conditions that make an entity send them (train, astronaut, lions) are in the entity behaviour records, not traced.
+`func_8005C150` compares only (chunk, tile) (tile -1 is a wildcard) and stores the match in `D_8008ACBC`, `D_8008ACC0`, `D_8008ACC4`, `D_8008ACC8`; it reads neither the day nor a counter. The extra list (`func_8005BF74`, tables 0x80088B5C, 0x80088B24, 0x80088A80, run by `func_8005A82C`, DreamSys vtable 0x1D8) is used only while `D_8008ABE4` is set: `func_8005C6D8` sets it to (stage == 11 or stage == 3) at stage load, and `func_8005C714` sets it to 1 when a group of type 0xB, 0x38, 0x4E or 0x5D passes its rule in `func_8005CAB4`. Also in the link code: `func_8005BE90` (vtable 0x1D4) only works from stages 1, 3, 5, 9 and 12 and, when the dream timer is odd, sends the player to stage 12 instead of the usual pick; which player action calls it was not traced.
 
-- Proof: `DreamSys_OnEntityEvent` @0x8005B03C, `Cine_GetEventPath` @0x80049270 (matched C), `DreamSys_ExecuteLink` @0x8005A928.
+- Proof: `func_8005C150`, `func_8005BF74`, `func_8005C6D8`, `func_8005C714`, `func_8005BE90` (matched C).
 - In game: no.
-- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+- Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+## Music
+
+### A Clockwork Machines track that can never play
+
+Each place picks one of its five music tracks at random when you arrive. Stage 9 (Clockwork Machines in the community's numbering) has a special rule: when the dice choose its third track, the game plays the fourth one instead. The third track is a distinct piece of music on the disc, so it is never heard. This matches the "unused Clockwork Machines track" players had spotted in the files.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+`func_80048F84` @0x80048F84 draws `rand() % 5` and returns the stage's path entry at `Stage_GetPathBase(stage) + 0x70` (BGA to BGE.SEQ, 0x1C bytes each). For stage 9 it turns 2 into 3, and a forced track 3 (`D_8008A968`) into 4, so `STG09\BGC.SEQ` (1,500 bytes, md5 0ab37f1d..., different from the four others) is never returned. `func_80052F10` is its caller, when a stage loads.
+
+- Proof: `func_80048F84` @0x80048F84, `Stage_GetPathBase` @0x80048E2C (file table 0x80081A04, s16 first-file index per stage at 0x800819E8: stage 9 = 474), so track 2 of stage 9 is the entry at 0x80084E84, `STG09\BGC.SEQ`.
+- In game: no.
+- Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### A switch to pin the music that nobody pulls
+
+Every dream picks one of 7 sound banks and one of 5 tracks at random. The code keeps two override switches that would force a chosen bank and a chosen track, very likely left for the developers to test the music. Nothing in the game ever sets them.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+`func_80048D74` @0x80048D74 picks `rand() % 7` among the banks of `D_800819CC` (`SND\AMBIENT`, `CARTOON`, `ELECTRO`, `ETHNOVA`, `HUMAN`, `LOVELY`, `STANDERD`) unless `D_8008A964` is set; `func_80048F84` picks the track unless `D_8008A968` is set. The only writer of both is `func_80048D28` @0x80048D28, and no code calls it (no `jal`, no pointer to it in the executable).
+
+- Proof: `func_80048D28`, `func_80048D74`, `func_80048F84`, word scan of `SLPS_015.56` for 0x80048D28 (none).
+- In game: no.
+- Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
 </details>
 
@@ -354,7 +532,7 @@ One `DreamSys` object at `0x80091530` (vtable `0x80087BDC`). Its persistent bloc
 
 ### How the memory card save works
 
-Saving writes the whole memory block to the card under the file name `BISLPS-01556xxx`. The save title shows your day number in 3 digits. After one particular kind of dream ending, the game erases the first character of the file name before saving and adds extra text to the title; which ending that is, and what the text says, is not read yet. The card driver itself has not been read.
+Saving writes the whole memory block to the card under the file name `BISLPS-01556xxx`. The save title shows your day number in 3 digits. After [the hidden exit that erases your game](#a-hidden-way-out-of-a-dream-that-erases-your-game), the game erases the first character of the file name before saving and adds 19 blank full-width characters to the title, after the day digits. What the card does with a file name that starts with an empty character is not read: the card driver itself has not been read.
 
 Status: 🎮 partly checked: a save made in the emulator on day 42 carries the title "LSD a Day042"; the save screen itself does not show the day.
 
@@ -362,7 +540,7 @@ Status: 🎮 partly checked: a save made in the emulator on day 42 carries the t
 
 <details><summary>Technical details</summary>
 
-Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and its size 0x700 at +0xBC and +0xC0 of the save menu object and calls `SaveMenu_SetTitleDay @0x8004D6AC(day number)`, which writes the day as 3 characters (`func_8004109C`) into the save title `g_cardTitle` @0x8008AA18 (0x8001149C) at +0x12. `SaveMenu_Save` @0x8004E0E4 saves through the card object's slot 0x78 with file name `g_cardFileName` @0x8008AA10 = `BISLPS-01556xxx`, that title, 0xD, 3, the block and its size; `SaveMenu_Load` @0x8004E1C4 loads through slot 0x74. When DreamSys +0x878 is set (`func_8005A344`; `DreamSys_EndDay` @0x8005A41C sets it with `DreamSys_InitNewGame` @0x8005A258 on an end of type 2) the file name's first byte is zeroed before the save and `func_8004DB18` appends `D_8008AA14` to the title. The card driver itself is not read.
+Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and its size 0x700 at +0xBC and +0xC0 of the save menu object and calls `SaveMenu_SetTitleDay @0x8004D6AC(day number)`, which writes the day as 3 characters (`func_8004109C`) into the save title `g_cardTitle` @0x8008AA18 (0x8001149C) at +0x12. `SaveMenu_Save` @0x8004E0E4 saves through the card object's slot 0x78 with file name `g_cardFileName` @0x8008AA10 = `BISLPS-01556xxx`, that title, 0xD, 3, the block and its size; `SaveMenu_Load` @0x8004E1C4 loads through slot 0x74. When DreamSys +0x878 is set (`func_8005A344`; `DreamSys_EndDay` @0x8005A41C sets it with `DreamSys_InitNewGame` @0x8005A258 on an end of type 2, the pause exit slot 0xC8 `func_80054208` → `func_80049EB4` code 13) the file name's first byte is zeroed before the save and `func_8004DB18` copies `D_8008AA14` (19 full-width spaces) to title offset 0x18; `func_8005A33C` clears the flag. The card driver itself is not read.
 
 - Proof: `func_8004D578` @0x8004D578, `SaveMenu_SetTitleDay` @0x8004D6AC, `SaveMenu_Save` @0x8004E0E4, `SaveMenu_Load` @0x8004E1C4, `func_8004DB18` @0x8004DB18, strings 0x80011464, 0x8001149C.
 - In game: partly. With +0x180 = 41 (day 42), SAVE then an empty comment wrote card file `BISLPS-01556-01` with the title "ＬＳＤ　ａ　Ｄａｙ０４２" to the emulator's memory card (`~/.config/pcsx-redux/memcard1.mcd`); the screen shows only "Saving. Please wait.". The card driver and the type-2 ending were not exercised.
@@ -374,7 +552,7 @@ Memory card: `func_8004D578` keeps the DreamSys save block (vtable 0x1B0) and it
 
 ### The dice of the game
 
-Every die roll on this page (special days, flashbacks, the Grey Man, textures, random links) comes from one number sequence, the standard one of the PlayStation's development kit. The game can restart that sequence from a new point only once, early, before the title screen takes input, and the starting value is leftover data from drawing the screen. In the emulator that leftover was 0, which means "do not restart", so the sequence ran on from power-on. Whether a real console leaves something else there was not measured.
+Every die roll on this page (special days, flashbacks, the Grey Man, textures, random links, music) comes from one number sequence, the standard one of the PlayStation's development kit. The game can restart that sequence from a new point only once, early, before the title screen takes input, and the starting value is leftover data from drawing the screen. In the emulator that leftover was 0, which means "do not restart", so the sequence ran on from power-on. Whether a real console leaves something else there was not measured.
 
 Status: 🎮 partly checked in the game (in the emulator only, not on a console).
 
@@ -388,19 +566,53 @@ Random numbers: `rand` @0x80049480 is the PSY-Q LCG, state `g_randState` @0x8008
 
 </details>
 
-## Unused content
+## Hidden and unused content
+
+### A hidden way out of a dream that erases your game
+
+Pressing START in a dream shows a blinking red "Pause". The pause code has two more exits that nothing on screen tells you about. One ends the dream without counting the day. The other resets the whole game to a fresh start (day, year, scores, flashbacks, navigation goals; only the graph is left in place) and marks the game so that its next save is written under a broken file name. We did not find which buttons open these exits: twelve buttons and combinations tried during the pause did nothing.
+
+Status: 📖 read in the code only (the pause screen itself is checked in the game).
+
+<img src="img/game/hidden-pause.png" alt="The pause screen: a small red Pause at the top of the tatami room" width="60%">
+
+<details><summary>Technical details</summary>
+
+The dream stage class (vtable `0x80087034`, class id 0x2F230) has a pause routine `func_800542D0` (slot 0xD0) that opens a window with "Pause" (`D_8008AB44`). Slot 0xC0 `func_800541D4` arms an exit (+0x84 = 1) when the pause is open (+0x80 != 0) and +0x20 == 0; slot 0xC4 `func_80054200` disarms; slot 0xC8 `func_80054208` sends code 0xD and slot 0xCC `func_8005426C` sends code 0xC, each only when armed. The dream runner's handler `func_80049EB4` (vtable 0x800865C8 slot 0x84) turns code 12 into `DreamSys_EndDay(1)` and code 13 into `DreamSys_EndDay(2)`. Type 1 restores the day and records nothing. Type 2 calls vtable 0x198 = `DreamSys_InitNewGame` @0x8005A258 (year, day, three scores, flashback count, navigation flags and 500 bytes at +0x684 cleared; the graph at +0x190 is left in place) and sets +0x878. `SaveMenu_Save` @0x8004E0E4 then zeroes the first byte of `g_cardFileName` (`BISLPS-01556xxx` @0x80011464), and `func_8004DB18` copies `D_8008AA14` (19 full-width spaces) to title offset 0x18, after the day digits. `func_8005A33C` clears the flag. How the card driver handles a file name that starts with 0 was not read, so whether that save is hidden, lost or refused is unproven.
+
+- Proof: `func_800542D0`, `func_800541D4`, `func_80054200`, `func_80054208`, `func_8005426C` (vtable 0x80087034 + 0xC0 to 0xD0), `func_80049EB4` @0x80049EB4, `DreamSys_EndDay` @0x8005A41C, `DreamSys_InitNewGame` @0x8005A258, `SaveMenu_Save` @0x8004E0E4, `func_8004DB18` @0x8004DB18.
+- In game: partly. START in a dream shows the pause (run 1, vsync 3960). With breakpoints on all five pause slots and on `DreamSys_EndDay` (`work/hunt3/run2.log`), L1, L2, R1, R2, LEFT and SELECT+START during the pause never armed an exit (SELECT+START only called the disarm slot, then left the pause); SELECT, TRIANGLE, CIRCLE, CROSS and SQUARE (run 1, no breakpoints then) did not end the dream. Which input reaches slots 0xC0, 0xC8 and 0xCC is unknown; the key table handed to the player object (`D_8008710C`) is the next lead.
+- Questions: [14](mysteries.md#events-and-hidden-content), [15](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
 
 ### The dog that never loads
 
-The disc holds a model for a dog next to the Grey Man's. The loader is written to load both, but it stops after the first one, and nothing else in the game asks for the dog. So the dog is never loaded and cannot appear.
+The disc holds a model for a dog next to the Grey Man's. The loader is written to load both, but it stops after the first one, and nothing else in the game asks for the dog. So the dog is never loaded and cannot appear. The character list even keeps a slot for it, right after the Grey Man's, with a bright mood and no behaviour at all.
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-`ETC\SYMDOG.MOM` is never loaded: `Sym_LoadModels` @0x8005C508 loads `ETC\SYMSPY.MOM`, writes the dog's path into its load descriptor and leaves its loop after one pass (`beqz s1` after `s1++`). No other code references the dog path `D_8001187C`.
+`ETC\SYMDOG.MOM` is never loaded: `Sym_LoadModels` @0x8005C508 loads `ETC\SYMSPY.MOM`, writes the dog's path into its load descriptor and leaves its loop after one pass (`beqz s1` after `s1++`). No other code references the dog path `D_8001187C`. The spy objects are created as type `i + 0x62` (`func_8005C650`), so the dog would be type 99, right after the Grey Man's 98; record 99 has mood (10, 10) and no handler (`work/hunt3/recs.txt`).
 
-- Proof: `Sym_LoadModels` @0x8005C508, `D_8001187C`.
+- Proof: `Sym_LoadModels` @0x8005C508, `D_8001187C`, `func_8005C650`, record 99 at `D_80089EA4` + 0x630.
+- In game: no.
+- Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### What the game never asks for
+
+The executable names every file on the disc except three: a second Asmik logo picture, a second "ETC" picture, and a 62 MB dummy video that fills the end of the disc. The scene code also keeps an empty slot for a mode that the title screen can never choose. No debug menu, test mode or cheat sequence turned up in what we read, and the code has no path to a WC room file: rooms live inside the stage chunk files.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+All printable paths in `SLPS_015.56` were compared to the 685 files of the disc (patched English v1): every named path exists, and only `ETC\ASMKLOG.TIM` (153,620 bytes, dated 1997-05-20, same size as `ASMKLOGO.TIM`), `ETC\ETC2.TIM` (30,784 bytes) and `ZDUMMY\ZDUMMY.STR` (61,937,664 bytes) are never named. The `CARD\*.TIM` pictures are built from `CARD\` plus the names at 0x8008AA34 and are used. The scene loop `func_8003B110` calls slot 0x5C when the title returns 1; slot 0x5C is the empty `func_80026690`, and the title routine `func_80026410` only returns 0 or 2. The scene settings `D_80066828` passed by `main` (0x13, 0, 1, 1, 1, 1) turn the logos (+0xC), videos (+0x8) and title (+0x10) on; flipping them is the closest thing to a dev switch found. Not searched: pad sequences on the title or menu screens.
+
+- Proof: `func_8003B110`, `func_80026690`, `func_80026410`, `D_80066828`, `main` @0x800118DC, string scan (`work/hunt3`, inline scripts).
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
