@@ -287,7 +287,9 @@ void func_80020C3C(Unk_800209A0 *arg0, s32 arg1) {
     arg0->unk2C = arg1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C44);
+void func_80020C44(Unk_80020784 *arg0, s32 arg1) {
+    arg0->unk30 = arg1;
+}
 
 Unk_800206E0 *func_80020C4C(void) {
     return &D_8006C070;

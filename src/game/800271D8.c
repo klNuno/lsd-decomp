@@ -81,9 +81,11 @@ typedef struct Unk_800282AC {
     s32 unk10;
     s32 unk14;
     s32 unk18;
-    u8 pad2[0x6];
+    s32 unk1C;
+    u8 pad2[0x2];
     u16 unk22;
     s32 unk24;
+    u16 unk28;
 } Unk_800282AC;
 void func_800281B0(void);
 Unk_800282AC *func_8002832C(void);
@@ -165,6 +167,67 @@ s32 D_8008A880;
 s32 D_8008A884;
 s32 func_80028A84(Unk_80028A84 *arg0, void *arg1, u32 arg2);
 extern u8 D_8006D4E8[];
+typedef struct Unk_80027528 {
+    u8 pad[0xC];
+    s32 unkC;
+    u8 pad2[0x18 - 0x10];
+    u8 unk18[4];
+    u32 unk1C;
+    u8 pad3[0x28 - 0x20];
+    u16 unk28;
+} Unk_80027528;
+extern u8 D_8006D574[];
+s32 func_80028A50(Unk_80028A50 *arg0);
+s32 CdPosToInt(u8 *pos);
+void CdIntToPos(s32 i, u8 *pos);
+extern s32 printf(const char *fmt, ...);
+s32 CdSearchFile(void *, s8 *);
+s8 *func_800289CC(s8 *arg0, s8 *arg1);
+typedef struct Unk_80028920_Loc {
+    u8 m, s, f, t;
+} Unk_80028920_Loc;
+typedef struct Unk_80028920_File {
+    Unk_80028920_Loc pos;
+    s32 size;
+    u8 name[0x10];
+} Unk_80028920_File;
+typedef struct Unk_80028920 {
+    u8 pad[0xC];
+    s32 unkC;
+    u8 pad2[0x8];
+    Unk_80028920_Loc unk18;
+    s32 unk1C;
+} Unk_80028920;
+typedef struct Unk_80027FFC_Pos {
+    u8 minute, second, sector, track;
+} Unk_80027FFC_Pos;
+typedef struct Unk_80027FFC_File {
+    Unk_80027FFC_Pos pos;
+    s32 size;
+    s8 name[16];
+} Unk_80027FFC_File;
+typedef struct Unk_80027FFC {
+    s8 name[0x14];
+    Unk_80027FFC_Pos pos;
+    s32 size;
+} Unk_80027FFC;
+typedef struct Unk_800272D0_Loc {
+    u8 m;
+    u8 s;
+    u8 f;
+    u8 t;
+} Unk_800272D0_Loc;
+typedef struct Unk_800272D0 {
+    u8 pad[0x14];
+    Unk_800272D0_Loc unk14;
+    s32 unk18;
+} Unk_800272D0;
+typedef struct Unk_800272D0_File {
+    Unk_800272D0_Loc pos;
+    s32 size;
+    u8 name[0x10];
+} Unk_800272D0_File;
+s32 func_80028448(char *arg0);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -192,7 +255,49 @@ void func_80027274(Unk_80027274 *arg0) {
 void func_800272C8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800272D0);
+void func_800272D0(Unk_800282AC *arg0, char *arg1, s32 arg2, s32 arg3) {
+    s8 path[0x40];
+    Unk_800272D0_File file;
+    s32 result;
+
+    if (D_8008A85C == 0 && D_8008A860 == 0) {
+        func_80028920(arg0);
+        return;
+    }
+    func_800280D0();
+    if (arg0->unk28 != 0) {
+        if (D_8008A864 == 0 && arg0->unkC == 0) {
+            func_80028844(1, 1);
+            if (D_8008A85C != 0) {
+                D_8008A87C = func_80028448(arg1);
+                if (D_8008A87C == 0) {
+                    return;
+                }
+                *(Unk_800272D0_Loc *)&arg0->unk18 = ((Unk_800272D0 *)D_8008A87C)->unk14;
+                arg0->unk1C = ((Unk_800272D0 *)D_8008A87C)->unk18;
+                D_8008A898 = 1;
+                arg0->unkC = (void *)1;
+            } else {
+                func_800289CC(path, (s8 *)arg1);
+                while (CdSearchFile(&file, path) == 0) {
+                }
+                *(Unk_800272D0_Loc *)&arg0->unk18 = file.pos;
+                arg0->unk1C = file.size;
+                do {
+                    CdControl(2, (u8 *)&arg0->unk18, 0);
+                    do {
+                        result = CdSync(0, 0);
+                    } while (result == 0);
+                } while (result == 5);
+                arg0->unkC = (void *)1;
+                func_80028864();
+            }
+        }
+    } else {
+        func_800282AC(arg0, func_800284C4(arg1), 2, arg2, arg3);
+    }
+    func_800280E0();
+}
 
 void func_80027480(Unk_80027480 *arg0) {
     if (D_8008A85C == 0 && D_8008A860 == 0) {
@@ -212,7 +317,54 @@ void func_80027480(Unk_80027480 *arg0) {
     func_800280E0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027528);
+s32 func_80027528(Unk_80027528 *arg0, u32 arg1, s32 arg2) {
+    u8 *buf;
+    u32 sector;
+    s32 base;
+    s32 status;
+    u32 v;
+
+    if (D_8008A85C == 0 && D_8008A860 == 0) {
+        return func_80028A50((Unk_80028A50 *)arg0);
+    }
+    func_800280D0();
+    if (arg0->unk28 != 0) {
+        if (D_8008A864 == 0 && arg0->unkC != 0) {
+            func_80028844(2, 1);
+            sector = arg1 >> 11;
+            if (arg1 & 0x7FF) {
+                sector++;
+            }
+            base = CdPosToInt(arg0->unk18);
+            buf = D_8006D574;
+            CdIntToPos(base + sector, buf);
+            if (arg2 == 0) {
+                if (D_8008A85C != 0) {
+                    D_8008A87C = (s32)buf - 0x14;
+                    D_8008A898 = 1;
+                } else {
+                    do {
+                        CdControl(2, D_8006D574, 0);
+                        while ((status = CdSync(0, 0)) == 0) {}
+                    } while (status == 5);
+                    func_80028864();
+                }
+            } else {
+                func_80028864();
+                func_800280E0();
+                v = arg0->unk1C;
+                if (v & 0x7FF) {
+                    return ((v >> 11) + 1) << 11;
+                }
+                return v;
+            }
+        }
+    } else {
+        func_800282AC((Unk_800282AC *)arg0, 0, 4, arg1, arg2);
+    }
+    func_800280E0();
+    return 0;
+}
 
 void func_800276C8(void) {
 }
@@ -383,9 +535,29 @@ s32 func_80027FF0(void) {
     return D_8008A86C;
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107D8);
+s32 func_80027FFC(Unk_80027FFC *arg0, s32 arg1) {
+    s8 path[0x40];
+    Unk_80027FFC_File file;
+    Unk_80027FFC *end;
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027FFC);
+    end = arg0 + arg1;
+    func_80027E78();
+    for (; arg0 < end; arg0++) {
+        func_800289CC(path, arg0->name);
+        i = 0;
+        while (CdSearchFile(&file, path) == 0) {
+            i++;
+            if (i >= 101) {
+                printf("File not found. file = %s\n", path);
+                break;
+            }
+        }
+        arg0->pos = file.pos;
+        arg0->size = file.size;
+    }
+    return 1;
+}
 
 void func_800280D0(void) {
     D_8008A88C = 1;
@@ -696,9 +868,29 @@ void func_800288E0(s32 arg0) {
 void func_80028918(void) {
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/800271D8", D_800107F4);
+void func_80028920(Unk_80028920 *arg0) {
+    s32 var_s0;
+    Unk_80028920_File file;
+    s8 name[0x40];
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028920);
+    var_s0 = 0;
+    if (arg0->unkC == 0) {
+        ((s8 *(*)(s8 *))func_800289CC)(name);
+    again:
+        if (CdSearchFile(&file, name) != 0) {
+            goto found;
+        }
+        if (var_s0++ < 100) {
+            goto again;
+        }
+        printf("File not found. path = %s\n", name);
+        return;
+    found:
+        arg0->unk18 = file.pos;
+        arg0->unk1C = file.size;
+        arg0->unkC = 1;
+    }
+}
 
 s8 *func_800289CC(s8 *arg0, s8 *arg1) {
     *arg0 = 0x5C;

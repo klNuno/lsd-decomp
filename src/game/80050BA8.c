@@ -277,6 +277,58 @@ typedef struct Unk_80051F14 {
     s32 unk24;
     s32 unk28;
 } Unk_80051F14;
+void func_80051C74(Unk_80051E20 *arg0);
+typedef struct Unk_80051AC8_Obj {
+    u8 pad_00[0x40];
+    void (*unk40)(void *);
+} Unk_80051AC8_Obj;
+typedef struct Unk_80051AC8 {
+    Unk_80051AC8_Obj *unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    s8 **unk18;
+    s32 *unk1C;
+} Unk_80051AC8;
+typedef struct Unk_80050F98_Vtbl Unk_80050F98_Vtbl;
+typedef struct Unk_80050F98_Obj Unk_80050F98_Obj;
+typedef struct Unk_80050F98 Unk_80050F98;
+struct Unk_80050F98_Vtbl {
+    s32 unk0;
+    void (*unk4)(void *);
+    s32 pad8[17];
+    void (*unk4C)(void *, s32, void *);
+    s32 pad50[10];
+    void (*unk78)(void *);
+    s32 pad7C[15];
+    void (*unkB8)(void *, void *);
+};
+struct Unk_80050F98_Obj {
+    Unk_80050F98_Vtbl *vt;
+};
+struct Unk_80050F98 {
+    Unk_80050F98_Vtbl *vt;
+    s32 pad4[3];
+    s32 unk10;
+    s32 pad14[5];
+    s8 *unk28;
+    s32 pad2C[5];
+    Unk_80050F98_Obj *unk40;
+    Unk_80050F98_Obj *unk44;
+    Unk_80050F98_Obj *unk48;
+};
+extern s8 *func_800270C4(s8 *, s8 *, s8 *, s8 *);
+extern Unk_80050F98_Obj *func_8003B39C(s32);
+extern Unk_80050F98_Obj *func_80041C9C(Unk_80050F98_Obj *, s32 *, s32);
+extern s32 func_800408CC(s32, s32, s32);
+extern void *func_80041AB4(s32, u8);
+extern s8 D_8008AAE8[];
+extern s8 D_8008AAF0[];
+extern s32 D_8008AAC8[];
+extern s32 D_8008AACC[];
+extern s32 D_8008AAD4[];
+extern s32 D_80086F7C[];
 
 void *func_80050BA8(s32 arg0, s32 arg1) {
     void *temp_v0;
@@ -387,11 +439,32 @@ void func_80050F28(Unk_80050F28 *arg0, u8 *arg1, s32 arg2) {
 
 INCLUDE_RODATA("asm/nonmatchings/game/80050BA8", D_800115D0);
 
-INCLUDE_RODATA("asm/nonmatchings/game/80050BA8", D_80011610);
+void func_80050F98(Unk_80050F98 *arg0, s32 arg1) {
+    s8 sp10[0x20];
+    Unk_80050F98_Obj *temp_v0;
+    Unk_80050F98_Obj *temp_a0;
+    Unk_80050F98_Obj *temp_v0_2;
 
-INCLUDE_RODATA("asm/nonmatchings/game/80050BA8", D_8001161C);
-
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050F98);
+    if ((arg1 != 0) && (arg0->unk48 == NULL)) {
+        temp_v0 = func_8003B39C((s32)func_800270C4(sp10, "COMINPUT", D_8008AAE8, D_8008AAF0));
+        temp_v0->vt->unk78(temp_v0);
+        arg0->unk48 = func_80041C9C(temp_v0, D_80086F7C, 0);
+        temp_v0->vt->unk4(temp_v0);
+        temp_a0 = arg0->unk48;
+        temp_a0->vt->unk4C(temp_a0, arg1, D_8008AACC);
+        temp_v0_2 = func_8003B39C((s32)func_800270C4(sp10, "FONTICON", D_8008AAE8, D_8008AAF0));
+        temp_v0_2->vt->unk78(temp_v0_2);
+        arg0->unk44 = (Unk_80050F98_Obj *)func_800408CC((s32)temp_v0_2, arg0->unk10, (s32)arg0->unk28);
+        arg0->unk40 = func_80041AB4((s32)temp_v0_2, 0x5F);
+        temp_v0_2->vt->unk4(temp_v0_2);
+        temp_a0 = arg0->unk44;
+        temp_a0->vt->unk4C(temp_a0, arg1, D_8008AAD4);
+        temp_a0 = arg0->unk44;
+        temp_a0->vt->unkB8(temp_a0, D_8008AAC8);
+        temp_a0 = arg0->unk40;
+        temp_a0->vt->unk4C(temp_a0, arg1, &D_8008AADC);
+    }
+}
 
 void func_80051174(Unk_80051174 *arg0) {
     Unk_80051174_Obj *temp_a0;
@@ -594,7 +667,50 @@ s32 func_80051A5C(s32 arg0, s32 arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051AC8);
+void func_80051AC8(Unk_80051AC8 *arg0, s32 **arg1, s32 arg2) {
+    s32 len;
+    s32 i;
+    s32 **p;
+    s32 unused[2];
+
+    i = 0;
+    p = arg1;
+    ((void (*)(void *))func_80018390()->unk8)(arg0);
+    arg0->unk0 = (Unk_80051AC8_Obj *)func_80052B60();
+
+    while (*p++ != NULL) {
+        i++;
+    }
+    arg0->unk10 = i;
+    arg0->unk18 = func_80017B34(i * 4);
+    p = arg1;
+    arg0->unk1C = func_80017B34(arg0->unk10 * 4);
+    i = 0;
+    arg0->unk14 = 0;
+
+    if (arg0->unk10 > 0) {
+        do {
+            len = strlen((u8 *)*p);
+            if (arg2 == 1) {
+                len /= 2;
+            }
+            arg0->unk1C[i] = len;
+            arg0->unk18[i] = func_80017B34(len + 4);
+            if (arg2 == 1) {
+                func_80040FC0(arg0->unk18[i], (u8 *)*p);
+            } else {
+                strcpy(arg0->unk18[i], (u8 *)*p);
+            }
+            arg0->unk14 = (arg0->unk14 < len) ? len : arg0->unk14;
+            p++;
+            i++;
+        } while (i < arg0->unk10);
+    }
+
+    arg0->unkC = arg2;
+    func_80051C74((Unk_80051E20 *)arg0);
+    arg0->unk0->unk40(arg0);
+}
 
 void func_80051C74(Unk_80051E20 *arg0) {
     arg0->unk34 = 0;

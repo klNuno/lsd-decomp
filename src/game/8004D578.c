@@ -733,6 +733,36 @@ typedef struct Unk_8004E5D4 {
     s32 unk10;
 } Unk_8004E5D4;
 extern u8 D_80086DC4[];
+typedef struct Unk_80050034_vt {
+    u8 pad_00[0x74];
+    void (*unk74)(void *, s32, s32, s32, s32);
+    void (*unk78)(void *, s32, s32, s32, s32, s32, s32, s32);
+    void (*unk7C)(void *, s32);
+    u8 pad_80[0x8C - 0x80];
+    void (*unk8C)(void *, s32);
+} Unk_80050034_vt;
+typedef struct Unk_80050034 {
+    Unk_80050034_vt *unk0;
+    u8 pad_04[0x24 - 0x04];
+    s32 unk24;
+    s32 unk28;
+    u8 pad_2C[0x30 - 0x2C];
+    s8 *unk30;
+    u8 pad_34[0x38 - 0x34];
+    s8 **unk38;
+    s8 **unk3C;
+    s8 *unk40;
+    s8 *unk44;
+    s32 unk48;
+    u8 unk4C;
+    u8 pad_4D[0x50 - 0x4D];
+    s32 unk50;
+    s32 unk54;
+    s32 unk58;
+    u8 pad_5C[0x80 - 0x5C];
+    s32 unk80;
+} Unk_80050034;
+void *memcpy(void *dst, const void *src, u32 n);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -1339,7 +1369,15 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011530);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004EF6C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F32C);
+char *func_8004F32C(char *buf, s32 sel, char *suffix) {
+    char *src = D_8008AAA4;
+    if (sel != 0) {
+        src = D_8008AA9C;
+    }
+    memcpy(buf, src, 6);
+    strcat((s8 *)buf, (s8 *)suffix);
+    return buf;
+}
 
 void func_8004F394(s32 arg0) {
     func_8004F40C(arg0, EnableEvent, 1);
@@ -1568,7 +1606,45 @@ void func_8004FFF4(Unk_8004FFF4 *arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_80050034);
+void func_80050034(Unk_80050034 *arg0) {
+    Unk_80050034_vt *vt;
+
+    vt = arg0->unk0;
+    switch (arg0->unk28) {
+    case 2:
+    case 4:
+    case 10:
+    case 14:
+        vt->unk8C(arg0, 0);
+        if (arg0->unk28 == 14) {
+            strcpy(arg0->unk40, arg0->unk30);
+            strcat(arg0->unk40, arg0->unk3C[arg0->unk80]);
+            strcpy(arg0->unk44, arg0->unk38[arg0->unk80]);
+        }
+        if (arg0->unk24 == 2) {
+            vt->unk78(arg0, arg0->unk40, arg0->unk44, arg0->unk48, arg0->unk4C, arg0->unk50, arg0->unk54, arg0->unk58);
+            return;
+        } else if (arg0->unk24 == 1) {
+            vt->unk74(arg0, arg0->unk40, arg0->unk44, arg0->unk54, arg0->unk58);
+            return;
+        }
+        break;
+    case 6:
+        vt->unk8C(arg0, 0);
+        vt->unk7C(arg0, 7);
+        break;
+    case 3:
+    case 5:
+    case 8:
+    case 9:
+    case 12:
+    case 13:
+    case 16:
+        vt->unk8C(arg0, 0x10);
+        vt->unk7C(arg0, 0x17);
+        break;
+    }
+}
 
 void func_800501F0(Unk_800501F0 *arg0) {
     switch (arg0->unk28) {

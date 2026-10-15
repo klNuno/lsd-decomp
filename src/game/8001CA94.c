@@ -138,7 +138,12 @@ struct Unk_8001D624 {
     s32 unk2C;
     s32 *unk30;
 };
-void func_8001EE04(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3);
+typedef struct Unk_8001EE04 {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+} Unk_8001EE04;
+void func_8001EE04(Unk_8001EE04 *arg0, Unk_8001EE04 *arg1, s32 arg2, void *arg3);
 extern s32 D_8006B684[];
 extern s32 D_8006B690[];
 void GsInitCoordinate2(s32 *arg0, s32 *arg1);
@@ -281,6 +286,83 @@ typedef struct Unk_8001CAF4 {
 } Unk_8001CAF4;
 extern s32 D_8006B5CC[];
 s32 D_8008A838;
+typedef struct Unk_8001EACC_Vec {
+    s32 x;
+    s32 y;
+    s32 z;
+} Unk_8001EACC_Vec;
+typedef struct Unk_8001EACC_Vt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *, s32, void *);
+} Unk_8001EACC_Vt;
+typedef struct Unk_8001EACC_Sub {
+    u8 pad_00[0x18];
+    Unk_8001EACC_Vec vec18;
+} Unk_8001EACC_Sub;
+typedef struct Unk_8001EACC_Src {
+    u8 pad_00[0x38];
+    Unk_8001EACC_Vec vec38;
+} Unk_8001EACC_Src;
+typedef struct Unk_8001EACC_Obj {
+    Unk_8001EACC_Vt *unk0;
+    u8 pad_04[0x10];
+    Unk_8001EACC_Sub *unk14;
+} Unk_8001EACC_Obj;
+typedef struct Unk_8001EACC_Arg {
+    u8 pad_00[0xC];
+    s32 unkC;
+    u8 pad_10[4];
+    Unk_8001EACC_Src *unk14;
+} Unk_8001EACC_Arg;
+s32 ratan2(s32, s32);
+typedef struct Unk_8001D4DC {
+    s16 vx;
+    s16 vy;
+    s16 vz;
+    s16 pad;
+} Unk_8001D4DC;
+void RotMatrix(Unk_8001D4DC *r, void *m);
+typedef struct Unk_8001E2E8 {
+    s16 v[3];
+} Unk_8001E2E8;
+void ApplyMatrixSV(void *, Unk_8001EE04 *, Unk_8001EE04 *);
+s32 func_8001ECFC(Unk_8001ECFC *arg0, Unk_8001ECFC_Pt *arg1);
+typedef struct Unk_8001D714_Vt {
+    u8 pad_00[0xA4];
+    s32 (*unkA4)(void *, void *, void *, void *, s32);
+    s32 (*unkA8)(void *, void *, void *);
+    s32 (*unkAC)(void *, void *, void *, void *);
+} Unk_8001D714_Vt;
+typedef struct Unk_8001D714_Obj {
+    Unk_8001D714_Vt *unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+    u8 pad_10[0x4];
+    u8 *unk14;
+    u8 pad_18[0x8];
+    s32 unk20;
+    u8 pad_24[0x4];
+    void *unk28;
+} Unk_8001D714_Obj;
+typedef struct Unk_8001D714_Arg_Vt {
+    u8 pad_00[0x38];
+    void (*unk38)(void *, void *, s32);
+} Unk_8001D714_Arg_Vt;
+typedef struct Unk_8001D714_Arg {
+    Unk_8001D714_Arg_Vt *unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+    u8 pad_10[0x4];
+    u8 *unk14;
+    u8 pad_18[0x14];
+    s32 unk2C;
+    s32 *unk30;
+} Unk_8001D714_Arg;
+typedef struct Unk_8001D714_Loc {
+    s32 unk0;
+    s32 unk4;
+    u8 pad_08[0x30];
+} Unk_8001D714_Loc;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -524,7 +606,20 @@ s32 func_8001D4AC(u8 *arg0, s32 arg1) {
     return func_8001EDAC((s32 *)(arg0 + 0x10), 8, 1, arg1 == 0) == 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D4DC);
+void func_8001D4DC(struct Unk_8001E6F8 *arg0, void *arg1, s32 arg2) {
+    Unk_8001D4DC rot;
+    Unk_8001E6F8_Src *src;
+
+    src = arg0->unk14->unk44;
+    if (arg2 != 0) {
+        rot.vx = -src->unk10;
+        rot.vy = -src->unk12;
+        rot.vz = -src->unk14;
+    } else {
+        rot = *(Unk_8001D4DC *)&src->unk10;
+    }
+    RotMatrix(&rot, arg1);
+}
 
 void func_8001D568(Unk_8001D568 *arg0, s32 arg1) {
     s32 sp10[14];
@@ -572,7 +667,45 @@ void func_8001D6B4(Unk_8001D6B4 *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D714);
+void func_8001D714(Unk_8001D714_Obj *arg0, Unk_8001D714_Arg *arg1) {
+    Unk_8001D0EC_Vec sp18;
+    u16 sp28[3];
+    u8 sp30[0x20];
+    Unk_8001D714_Loc loc;
+    Unk_8001D0EC_Vec *src;
+    Unk_8001D0EC_Vec *dst;
+    s32 *p;
+
+    if (arg0->unk20 != 0 && func_8001F3A4(arg0->unk20) != 0) {
+        src = NULL;
+        if (arg1->unkC != 0) {
+            src = (Unk_8001D0EC_Vec *)(arg1->unk14 + 0x38);
+        }
+        sp18 = *src;
+        dst = NULL;
+        if (arg0->unkC != 0) {
+            dst = (Unk_8001D0EC_Vec *)(arg0->unk14 + 0x38);
+        }
+        sp18.unk0 -= dst->unk0;
+        sp18.unk4 -= dst->unk4;
+        sp18.unk8 -= dst->unk8;
+        if ((sp18.unk0 >= 0 ? sp18.unk0 < 0x4001 : ~sp18.unk0 + 1 < 0x4001)
+         && (sp18.unk4 >= 0 ? sp18.unk4 < 0x4001 : ~sp18.unk4 + 1 < 0x4001)
+         && (sp18.unk8 >= 0 ? sp18.unk8 < 0x4001 : ~sp18.unk8 + 1 < 0x4001)) {
+            sp28[0] = sp18.unk0;
+            sp28[1] = sp18.unk4;
+            sp28[2] = sp18.unk8;
+            loc.unk0 = *arg1->unk30;
+            p = arg1->unk30 + 1;
+            arg0->unk0->unkA4(arg0, sp28, &loc.unk4, p, loc.unk0 * 8);
+            if (arg0->unk0->unkA8(arg0, &loc.unk0, sp28) != 0
+             && arg0->unk0->unkAC(arg0, &arg1->unk2C, sp28, &loc.unk0) != 0) {
+                arg0->unk28 = arg1;
+                arg1->unk0->unk38(arg1, arg0, 4);
+            }
+        }
+    }
+}
 
 void func_8001D950(Unk_8001D950 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 arg4) {
     s32 sp10[8];
@@ -594,9 +727,89 @@ INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DA28);
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DDF4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001E110);
+s32 func_8001E110(Unk_8001ECFC_Pt *arg0, Unk_8001ECFC *arg1, Unk_8001ECFC_Pt *arg2, Unk_8001ECFC_Pt *arg3) {
+    Unk_8001ECFC_Pt mid;
+    u8 temp_s0;
+    u8 temp_v0;
+    s32 var_v0;
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001E2E8);
+    temp_s0 = func_8001ECFC(arg1, arg2);
+    temp_v0 = func_8001ECFC(arg1, arg3);
+    if (!temp_s0) {
+        if (!temp_v0) {
+            return 1;
+        }
+    } else if (!temp_v0) {
+        if (arg0 != 0) {
+            func_8001E2E8(arg0, arg1, arg3, arg2);
+        }
+        return 3;
+    }
+    if (!temp_s0) {
+        if (arg0 != 0) {
+            func_8001E2E8(arg0, arg1, arg2, arg3);
+        }
+        return 2;
+    }
+    if (temp_s0 & temp_v0) {
+        return 0;
+    }
+    mid.unk0 = (arg2->unk0 + arg3->unk0) >> 1;
+    mid.unk2 = (arg2->unk2 + arg3->unk2) >> 1;
+    mid.unk4 = (arg2->unk4 + arg3->unk4) >> 1;
+    if (arg2->unk0 == mid.unk0 && arg2->unk2 == mid.unk2 && arg2->unk4 == mid.unk4) {
+        return 0;
+    }
+    if (arg3->unk0 == mid.unk0 && arg3->unk2 == mid.unk2 && arg3->unk4 == mid.unk4) {
+        return 0;
+    }
+    if ((var_v0 = func_8001E110(arg0, arg1, arg2, &mid)) != 0
+     || (var_v0 = func_8001E110(arg0, arg1, &mid, arg3)) != 0) {
+        return var_v0;
+    }
+    return 0;
+}
+
+void func_8001E2E8(s16 *out, s16 *bounds, s16 *a, s16 *b)
+{
+    s16 tmp[2][4];
+    u8 bits;
+    s16 *t;
+
+    for (;;) {
+        out[0] = (a[0] + b[0]) >> 1;
+        out[1] = (a[1] + b[1]) >> 1;
+        out[2] = (a[2] + b[2]) >> 1;
+        if ((out[0] == a[0] && out[1] == a[1] && out[2] == a[2]) ||
+            (out[0] == b[0] && out[1] == b[1] && out[2] == b[2])) {
+            return;
+        }
+        bits = 0;
+        if (bounds[3] < out[0]) {
+            bits = 8;
+        } else if (out[0] < bounds[0]) {
+            bits = 4;
+        }
+        if (bounds[4] < out[1]) {
+            bits |= 2;
+        } else if (out[1] < bounds[1]) {
+            bits |= 1;
+        }
+        if (bounds[5] < out[2]) {
+            bits |= 0x20;
+        } else if (out[2] < bounds[2]) {
+            bits |= 0x10;
+        }
+        if (bits != 0) {
+            t = tmp[1];
+            b = t;
+        } else {
+            t = tmp[0];
+            a = t;
+        }
+        *(Unk_8001E2E8 *)t = *(Unk_8001E2E8 *)out;
+    }
+}
 
 void func_8001E49C(void) {
 }
@@ -671,7 +884,46 @@ void func_8001EA8C(s32 *arg0, s16 *arg1, s16 *arg2) {
     arg0[2] = arg2[2] - arg1[2];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EACC);
+void func_8001EACC(Unk_8001EACC_Obj *arg0, Unk_8001EACC_Arg *arg1, s32 arg2, s32 arg3, s32 *arg4) {
+    s16 buf[6];
+    Unk_8001EACC_Vec *s0;
+    Unk_8001EACC_Vec *s1;
+    s32 v1;
+
+    s1 = &arg0->unk14->vec18;
+    if (arg1->unkC != 0) {
+        s0 = &arg1->unk14->vec38;
+    } else {
+        s0 = NULL;
+    }
+    if (s0->x != s1->x) {
+        buf[2] = ratan2(s0->x - s1->x, s0->z - s1->z);
+    } else {
+        buf[2] = ratan2(1, s0->z - s1->z);
+    }
+    if (s0->z != s1->z) {
+        buf[0] = ratan2(s0->z - s1->z, s0->y - s1->y);
+    } else {
+        buf[0] = ratan2(1, s0->y - s1->y);
+    }
+    buf[0] = ((buf[0] + 0x400) * 0x168) / 0x1000;
+    v1 = (buf[2] * 0x168) / 0x1000;
+    buf[2] = v1;
+    buf[4] = 0;
+    buf[5] = 1;
+    buf[3] = 1;
+    buf[1] = 1;
+    if (arg2 != 0) {
+        buf[0] = 0;
+    }
+    if (arg3 == 0) {
+        buf[2] = v1 + 0xB4;
+    }
+    arg0->unk0->unk44(arg0, 1, buf);
+    if (arg4 != 0) {
+        arg0->unk0->unk44(arg0, 0, arg4);
+    }
+}
 
 s32 func_8001EC84(Unk_8001EC84 *arg0) {
     s32 a;
@@ -721,7 +973,18 @@ s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     return (u32)(mask & old) >> arg1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EE04);
+void func_8001EE04(Unk_8001EE04 *arg0, Unk_8001EE04 *arg1, s32 arg2, void *arg3) {
+    Unk_8001EE04 tmp;
+    Unk_8001EE04 *end;
+
+    end = arg0 + arg2;
+    while (arg0 < end) {
+        tmp = *arg1;
+        ApplyMatrixSV(arg3, &tmp, arg0);
+        arg0++;
+        arg1++;
+    }
+}
 
 void func_8001EE98(void *arg0, void *arg1, s32 arg2, s32 *arg3) {
     u8 *dst;

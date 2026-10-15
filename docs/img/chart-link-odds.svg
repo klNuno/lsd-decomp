@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 380" width="760" height="380" role="img" aria-labelledby="t d">
+<title id="t">Odds of the next place on a random link, example from stage 2</title>
+<desc id="d">Bar chart: from main stage 2, stage 3 has 2 chances in 6, stages 0, 1, 4 and 5 have 1 in 6 each, stage 2 itself has none.</desc>
+
+<style>
+  .card { fill: #fcfcfb; stroke: rgba(11,11,11,0.10); }
+  .t1 { fill: #0b0b0b; } .t2 { fill: #52514e; } .t3 { fill: #6d6c67; }
+  .grid { stroke: #e1e0d9; } .axis { stroke: #c3c2b7; }
+  .s1 { fill: #2a78d6; } .s2 { fill: #eb6834; } .s1s { stroke: #2a78d6; } .s2s { stroke: #eb6834; }
+  .s3 { fill: #1baf7a; } .s4 { fill: #eda100; }
+  .mute { fill: #e1e0d9; } .hole { fill: #fcfcfb; stroke: #eb6834; }
+  .gap { stroke: #fcfcfb; }
+  @media (prefers-color-scheme: dark) {
+    .card { fill: #1a1a19; stroke: rgba(255,255,255,0.10); }
+    .t1 { fill: #f0efec; } .t2 { fill: #c3c2b7; } .t3 { fill: #a3a29b; }
+    .grid { stroke: #2c2c2a; } .axis { stroke: #383835; }
+    .s1 { fill: #3987e5; } .s2 { fill: #d95926; } .s1s { stroke: #3987e5; } .s2s { stroke: #d95926; }
+    .s3 { fill: #199e70; } .s4 { fill: #c98500; }
+    .mute { fill: #383835; } .hole { fill: #1a1a19; stroke: #d95926; }
+    .gap { stroke: #1a1a19; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+</style>
+
+<rect x="0.5" y="0.5" width="759" height="379" rx="10" class="card"/>
+<text x="24" y="34" class="t1" font-size="17" text-anchor="start" font-weight="600">Where a random link sends you</text>
+<text x="24" y="56" class="t2" font-size="13" text-anchor="start" font-weight="normal">Example: you are on main stage 2 and touch a wall that links at random</text>
+<line x1="84" y1="288" x2="736" y2="288" class="axis" stroke-width="1"/>
+<text x="74" y="292" class="t3" font-size="11" text-anchor="end" font-weight="normal">0</text>
+<line x1="84" y1="192" x2="736" y2="192" class="grid" stroke-width="1"/>
+<text x="74" y="196" class="t3" font-size="11" text-anchor="end" font-weight="normal">1 in 6</text>
+<line x1="84" y1="96" x2="736" y2="96" class="grid" stroke-width="1"/>
+<text x="74" y="100" class="t3" font-size="11" text-anchor="end" font-weight="normal">2 in 6</text>
+<path d="M108.45,288 V196 Q108.45,192 112.45,192 H164.217 Q168.217,192 168.217,196 V288 Z" class="s1"><title>Stage 0: 1 in 6</title></path>
+<text x="138.333" y="186" class="t2" font-size="11" text-anchor="middle" font-weight="normal">1 in 6</text>
+<text x="138.333" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 0</text>
+<path d="M217.117,288 V196 Q217.117,192 221.117,192 H272.883 Q276.883,192 276.883,196 V288 Z" class="s1"><title>Stage 1: 1 in 6</title></path>
+<text x="247" y="186" class="t2" font-size="11" text-anchor="middle" font-weight="normal">1 in 6</text>
+<text x="247" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 1</text>
+<text x="355.667" y="280" class="t3" font-size="11" text-anchor="middle" font-weight="normal">you are here</text>
+<text x="355.667" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 2</text>
+<path d="M434.45,288 V100 Q434.45,96 438.45,96 H490.217 Q494.217,96 494.217,100 V288 Z" class="s2"><title>Stage 3: 2 in 6</title></path>
+<text x="464.333" y="90" class="t2" font-size="11" text-anchor="middle" font-weight="normal">2 in 6</text>
+<text x="464.333" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 3</text>
+<path d="M543.117,288 V196 Q543.117,192 547.117,192 H598.883 Q602.883,192 602.883,196 V288 Z" class="s1"><title>Stage 4: 1 in 6</title></path>
+<text x="573" y="186" class="t2" font-size="11" text-anchor="middle" font-weight="normal">1 in 6</text>
+<text x="573" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 4</text>
+<path d="M651.783,288 V196 Q651.783,192 655.783,192 H707.55 Q711.55,192 711.55,196 V288 Z" class="s1"><title>Stage 5: 1 in 6</title></path>
+<text x="681.667" y="186" class="t2" font-size="11" text-anchor="middle" font-weight="normal">1 in 6</text>
+<text x="681.667" y="306" class="t2" font-size="11" text-anchor="middle" font-weight="normal">stage 5</text>
+<text x="410" y="326" class="t3" font-size="12" text-anchor="middle" font-weight="normal">Next stage</text>
+<text x="24" y="345" class="t3" font-size="12" text-anchor="start" font-weight="normal">The game rolls a 6-sided die over the main stages 0 to 5. Rolling your own stage moves you one stage up</text>
+<text x="24" y="362" class="t3" font-size="12" text-anchor="start" font-weight="normal">(5 wraps to 0), so the stage after yours comes up twice as often as each of the other four.</text>
+</svg>

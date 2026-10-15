@@ -25,3 +25,6 @@ __pycache__/
 /captures/
 /linker/
 /work/
+
+# Game screenshots for docs/discoveries.md: game images, never tracked (our own charts in docs/img/ are)
+/docs/img/game/

@@ -341,7 +341,11 @@ struct Unk_800448F8 {
     struct Unk_800448F8_Obj *unk30;
     s32 unk34;
 };
-extern void func_8004593C(void);
+struct Unk_8004593C {
+    u8 pad_00[0x50];
+    s32 unk50;
+};
+void func_8004593C(struct Unk_8004593C *arg0); void func_8004593C(struct Unk_8004593C *arg0);
 struct Unk_80045DE0_Vtbl;
 struct Unk_800458B8_Sub;
 typedef void (*Unk_800458B8_Fn48)(void *self);
@@ -691,6 +695,7 @@ struct Unk_80045E3C {
 };
 struct Unk_80045438_Obj;
 extern u8 D_8006F614[];
+void func_8004593C(struct Unk_8004593C *arg0);
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1608,7 +1613,9 @@ void func_800458B8(void *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004593C);
+void func_8004593C(struct Unk_8004593C *arg0) {
+    arg0->unk50 = -1;
+}
 
 s32 func_80045948(struct Unk_80045DE0 *arg0) {
     struct Unk_80045DE0 *obj = D_8008A940;
