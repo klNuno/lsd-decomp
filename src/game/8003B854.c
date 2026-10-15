@@ -173,6 +173,24 @@ typedef struct Unk_8003E874_Vtbl {
     void (*unk18)(void *);
 } Unk_8003E874_Vtbl;
 Unk_8003E874_Vtbl *func_80018390(void);
+struct Unk_8003EE40;
+typedef struct Unk_8003EE40_Vtbl {
+    u8 pad_00[0x9C];
+    void (*unk9C)(struct Unk_8003EE40 *, s32, s32);
+} Unk_8003EE40_Vtbl;
+struct Unk_8003EE40 {
+    Unk_8003EE40_Vtbl *unk0;
+    u8 pad_04[0x90 - 0x04];
+    s32 unk90;
+};
+extern s32 DrawSync(s32);
+extern void func_80017CFC(s32);
+struct Unk_8003EDF4 {
+    u8 pad_00[0x70];
+    s32 unk70;
+    u8 pad_74[0x78 - 0x74];
+    s32 unk78;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003B854);
 
@@ -486,9 +504,23 @@ void func_8003ECC8(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003ECD0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003EDF4);
+void func_8003EDF4(struct Unk_8003EDF4 *arg0) {
+    if (arg0->unk70 != 0) {
+        DrawSync(0);
+        func_80017CFC(arg0->unk78);
+        arg0->unk70 = 0;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003EE40);
+void func_8003EE40(struct Unk_8003EE40 *arg0, s32 arg1, s32 arg2) {
+    s32 flag;
+
+    flag = (arg2 == 2 || arg2 == 3);
+    arg0->unk90++;
+    if (flag) {
+        arg0->unk0->unk9C(arg0, arg1, flag);
+    }
+}
 
 void func_8003EE88(Unk_8003EE88 *arg0, s32 arg1, s32 arg2) {
     if (arg2 == 2) {

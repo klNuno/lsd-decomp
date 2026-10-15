@@ -77,6 +77,25 @@ typedef struct Unk_80056238 {
     s32 u20;
 } Unk_80056238;
 s32 func_8005627C(void *arg0);
+extern void func_800558F0(s32, s32, s32);
+typedef struct Unk_8005393C_Vtbl {
+    u8 pad_00[0x10C];
+    s32 (*unk10C)(void *, s32, s32);
+} Unk_8005393C_Vtbl;
+typedef struct Unk_8005393C_Obj {
+    Unk_8005393C_Vtbl *unk0;
+} Unk_8005393C_Obj;
+typedef struct Unk_8005393C {
+    u8 pad_00[0x14];
+    Unk_8005393C_Obj *unk14;
+} Unk_8005393C;
+void func_8002CD08(s32, s32);
+s32 *D_8008AC7C;
+typedef struct Unk_80057444 {
+    u8 pad_00[0xBC];
+    void (*unkBC)(void *, void *);
+} Unk_80057444;
+extern void func_8001E58C(void *, void *, void *);
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -181,7 +200,10 @@ INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800536B0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80053764);
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_8005393C);
+void func_8005393C(Unk_8005393C *arg0) {
+    Unk_8005393C_Obj *temp = arg0->unk14;
+    func_800558F0(temp->unk0->unk10C(temp, 0, 0), 0, 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80053984);
 
@@ -296,7 +318,13 @@ INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80055620);
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800557DC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_8005582C);
+s32 func_8005582C(s32 arg0) {
+    if (func_80055874(arg0) != 0) {
+        func_8002CD08(*D_8008AC7C, arg0 + 0x14);
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_80055874(A *arg0, B *arg1) { s32 dx,dz,d; if (arg1 != NULL) {
     dx = arg0->u4 - arg1->u0;
@@ -445,7 +473,12 @@ void func_800573A8(void *arg0, s32 *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800573CC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80057444);
+void func_80057444(Unk_80057444 **arg0, void *arg1) {
+    s32 sp10[3];
+
+    func_8001E58C(arg0, sp10, arg1);
+    (*arg0)->unkBC(arg0, sp10);
+}
 
 void func_8005748C(void *arg0, s32 arg1, s32 arg2) {
     func_80057534(arg0, D_8008ABA8, arg1, arg2, 6);

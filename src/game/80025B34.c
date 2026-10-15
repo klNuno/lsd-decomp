@@ -13,6 +13,7 @@ typedef struct Unk_80025C84 {
     s32 unk14;
     s32 unk18;
 } Unk_80025C84;
+extern s32 PadRead(u16);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025B34);
 
@@ -29,7 +30,18 @@ void func_80025C84(Unk_80025C84 *arg0, s32 arg1) {
     arg0->unk0->unk50(arg0, temp);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025CC4);
+void func_80025CC4(Unk_80025C84 *arg0) {
+    s32 cur;
+    s32 prev;
+    s32 changed;
+
+    cur = PadRead(arg0->unkC);
+    prev = arg0->unk10;
+    arg0->unk10 = cur;
+    changed = cur ^ prev;
+    arg0->unk14 = changed & prev;
+    arg0->unk18 = changed & cur;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025D10);
 
