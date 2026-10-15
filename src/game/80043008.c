@@ -463,6 +463,46 @@ struct Unk_80044E64 {
     struct Unk_80043B58 *unk3C;
     u16 unk40;
 };
+struct Unk_80045BC8 {
+    u8 pad_00[0x1C];
+    s32 unk1C;
+    s16 unk20;
+    u16 unk22;
+    s32 unk24;
+    u8 pad_28[0x4];
+    u16 unk2C;
+    u16 unk2E;
+    u16 unk30;
+    u8 pad_32[0x2];
+    s32 unk34;
+    s32 unk38;
+    u8 pad_3C[0x8];
+    s32 unk44;
+    s32 unk48;
+    s32 unk4C;
+};
+typedef struct Unk_80045BC8_Vtbl {
+    u8 pad_00[0x58];
+    void (*unk58)(void *self, void *arg1, s32 arg2);
+} Unk_80045BC8_Vtbl;
+typedef struct Unk_80045BC8_Obj {
+    Unk_80045BC8_Vtbl *unk0;
+} Unk_80045BC8_Obj;
+Unk_80045BC8_Obj *func_80020C5C(void);
+extern s32 DrawSync(s32 mode);
+extern void DecDCTout(s32 p, s32 size);
+s32 func_8004468C(s32 arg0);
+struct Unk_80044B88_Vtbl {
+    u8 pad_00[0x7C];
+    void (*unk7C)(void *self);
+};
+struct Unk_80044B88 {
+    struct Unk_80044B88_Vtbl *unk0;
+    u8 pad_04[0xC];
+    s32 *unk10;
+    u8 pad_14[0x24];
+    s32 unk38;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -858,7 +898,32 @@ void func_80044B58(struct Unk_80044B58 **arg0) {
     (*arg0)->unk78();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044B88);
+s32 func_80044B88(struct Unk_80044B88 *arg0) {
+    struct Unk_80026CE8 sp10;
+    s32 *entry;
+    s32 count;
+    s32 i;
+    s32 r;
+
+    func_80026CE8(&sp10, 0, 0, 1);
+    entry = &arg0->unk10[2];
+    count = arg0->unk10[1];
+    arg0->unk38 = 0;
+    for (i = 0; i < count; i++) {
+        sp10.unk0 = (s32)((u8 *)arg0->unk10 + arg0->unk10[i + 2]);
+        r = func_8004468C((s32)&sp10);
+        *entry = r;
+        if (r == 0) {
+            goto fail;
+        }
+        arg0->unk38++;
+        entry++;
+    }
+    return 0;
+fail:
+    arg0->unk0->unk7C(arg0);
+    return 1;
+}
 
 void func_80044C58(struct Unk_80044C58 *arg0) {
     func_800183DC(arg0->unk10 + 8, arg0->unk38);
@@ -1131,7 +1196,28 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045AD8);
 void func_80045BC0(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045BC8);
+void func_80045BC8(struct Unk_80045BC8 *arg0) {
+    Unk_80045BC8_Obj *obj;
+    u16 temp;
+
+    obj = func_80020C5C();
+    obj->unk0->unk58(obj, &arg0->unk2C, arg0->unk1C);
+    temp = arg0->unk2C + arg0->unk30;
+    arg0->unk2C = temp;
+    if ((s16)temp < arg0->unk20 + arg0->unk24) {
+        if (arg0->unk34 < 0x80) {
+            DrawSync(0);
+        }
+        DecDCTout(arg0->unk1C, arg0->unk38);
+    } else {
+        arg0->unk4C = 1;
+        arg0->unk2C = arg0->unk20;
+        arg0->unk2E = arg0->unk22;
+        if (arg0->unk48 != 0) {
+            arg0->unk44 = 1;
+        }
+    }
+}
 
 s32 func_80045C94(struct Unk_80045C94 *arg0) {
     if (arg0->unk54 != 0) {
