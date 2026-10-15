@@ -86,8 +86,23 @@ struct Unk_80047810 {
     void (*unk48)(void *arg);
     s32 unk4C;
 };
+void *func_80017B34(s32 size);
+typedef struct Unk_80046F0C {
+    u8 pad_00[0x8];
+    void (*unk8)(void *self, s32 arg0, s32 arg1, s32 arg2);
+} Unk_80046F0C;
+Unk_80046F0C *func_80047900(void);
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80046F0C);
+s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
+    void *temp;
+
+    temp = func_80017B34(0x5C);
+    if (temp != NULL) {
+        func_80047900()->unk8(temp, arg0, arg1, arg2);
+        return (s32)temp;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80046F88);
 

@@ -93,6 +93,37 @@ typedef struct Unk_800209A0 {
 } Unk_800209A0;
 extern s32 DrawSync(s32);
 void StoreImage(Unk_80020A24 *rect, u32 *arg1);
+void GsInitGraph(u16 x, u16 y, u16 intmode, u16 dith, u16 vrammode);
+void GsDefDispBuff(u16 x0, u16 y0, u16 x1, u16 y1);
+typedef struct Unk_800207DC_Pair {
+    s32 unk0;
+    s32 unk4;
+} Unk_800207DC_Pair;
+typedef struct Unk_800207DC {
+    u8 pad_00[0x14];
+    Unk_800207DC_Pair unk14;
+    s32 unk1C;
+} Unk_800207DC;
+typedef struct Unk_800207DC_Src {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+} Unk_800207DC_Src;
+typedef struct Unk_80020A74_vt {
+    /* 0x00 */ u8 pad_00[0x30];
+    /* 0x30 */ void (*unk30)(void *, s32);
+} Unk_80020A74_vt;
+typedef struct Unk_80020A74 {
+    /* 0x00 */ Unk_80020A74_vt *unk0;
+    /* 0x04 */ u8 pad_04[0xC];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0xC];
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ u8 pad_24[0xC];
+    /* 0x30 */ void (*unk30)(void);
+} Unk_80020A74;
+s32 VSync(s32 mode);
 
 void *func_800206E0(void) {
     void *temp;
@@ -121,7 +152,12 @@ void func_80020784(Unk_80020784 *arg0) {
     arg0->unk30 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800207DC);
+void func_800207DC(Unk_800207DC *arg0, Unk_800207DC_Src *arg1, s32 arg2) {
+    GsInitGraph(arg1->unk0, arg1->unk4, 0, 1, arg2);
+    GsDefDispBuff(0, 0, 0, arg1->unk4);
+    arg0->unk14 = *(Unk_800207DC_Pair *)arg1;
+    arg0->unk1C = arg2;
+}
 
 void func_8002085C(Unk_8002085C *arg0) {
     if (arg0->unk10 == 0) {
@@ -184,7 +220,15 @@ void func_80020A24(void *arg0, Unk_80020970 *arg1, s16 arg2, s16 arg3) {
     MoveImage(&sp10, arg2, arg3);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020A74);
+void func_80020A74(Unk_80020A74 *arg0) {
+    while (arg0->unk10 != 0) {
+        VSync(arg0->unk20);
+        if (arg0->unk30 != NULL) {
+            arg0->unk30();
+        }
+        arg0->unk0->unk30(arg0, 2);
+    }
+}
 
 void func_80020AF4(void) {
     Unk_80020AF4 *temp;

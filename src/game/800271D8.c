@@ -74,6 +74,19 @@ s8 *strcat(s8 *dst, s8 *src);
 extern s8 D_8008A8A8[]; /* ";1" in .sdata */
 s32 D_8008A86C;
 char *strstr(char *haystack, char *needle);
+typedef struct Unk_800282AC {
+    u8 pad[0x8];
+    s32 unk8;
+    void *unkC;
+    s32 unk10;
+    s32 unk14;
+    s32 unk18;
+    u8 pad2[0x6];
+    u16 unk22;
+    s32 unk24;
+} Unk_800282AC;
+void func_800281B0(void);
+Unk_800282AC *func_8002832C(void);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -203,7 +216,19 @@ void func_80028280(void) {
     func_800280E0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800282AC);
+void func_800282AC(Unk_800282AC *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    Unk_800282AC *temp_v0;
+
+    temp_v0 = func_8002832C();
+    temp_v0->unk8 = arg2;
+    temp_v0->unk14 = arg3;
+    temp_v0->unkC = arg0;
+    temp_v0->unk10 = arg1;
+    temp_v0->unk18 = arg4;
+    arg0->unk24 = 0;
+    arg0->unk22 = arg0->unk22 + 1;
+    func_800281B0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_8002832C);
 

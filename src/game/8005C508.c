@@ -281,6 +281,8 @@ typedef struct Unk_8005D418 {
 typedef struct Unk_80066818_Vtbl {
     u8 pad[0x50];
     void (*unk50)(void *);
+    u8 pad2[0xE0 - 0x54];
+    void (*unkE0)(void *, void *, s32);
 } Unk_80066818_Vtbl;
 extern Unk_80066818_Vtbl *func_80066818(void);
 typedef struct Unk_8005D7FC_Node {
@@ -565,7 +567,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D480);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D560);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005D658);
+void func_8005D658(Unk_8005D418 *arg0, void *arg1, s32 arg2) {
+    func_80066818()->unkE0(arg0, arg1, arg2);
+    if (arg2 == 4) {
+        arg0->unk0->unk160(arg0);
+    }
+}
 
 void func_8005D6D4(Unk_8005D6D4 *arg0) {
     func_8002CD08(arg0->u58, &arg0->u9C);

@@ -117,6 +117,20 @@ struct Unk_8001D204_Obj {
     Unk_8001D204_Vt *vt;
 };
 void ApplyMatrixLV(s32 *, void *, void *);
+typedef struct Unk_8001D624_Vt {
+    u8 pad_00[0x30];
+    void (*unk30)(void *, s32);
+} Unk_8001D624_Vt;
+struct Unk_8001D624 {
+    Unk_8001D624_Vt *unk0;
+    u8 pad_04[0x10];
+    s32 unk14;
+    u8 pad_18[0x10];
+    s32 unk28;
+    s32 unk2C;
+    s32 *unk30;
+};
+void func_8001EE04(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -239,7 +253,14 @@ void func_8001D600(struct Unk_8001D600 *arg0) {
     func_8001F51C(arg0->unk20);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D624);
+void func_8001D624(struct Unk_8001D624 *arg0, s32 *arg1, s32 arg2) {
+    func_8001EE04(arg1 + 1, arg1 + 1, arg1[0] * 8, arg0->unk14 + 0x24);
+    arg0->unk28 = 0;
+    arg0->unk2C = 0;
+    arg0->unk30 = arg1;
+    arg0->unk0->unk30(arg0, arg2);
+    arg0->unk30 = NULL;
+}
 
 void func_8001D6A4(void) {
 }
