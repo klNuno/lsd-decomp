@@ -28,6 +28,15 @@ typedef struct Unk_80025B34 {
 s32 func_80017B34(s32);
 Unk_80025B34 *func_80025E9C(void);
 extern s32 D_8008B388[16];
+typedef struct Unk_80025BA0_Base {
+    u8 pad0[0x8];
+    void (*unk8)(void *);
+} Unk_80025BA0_Base;
+typedef struct Unk_80025BA0_Vtbl {
+    u8 pad0[0x40];
+    void (*unk40)(void *, s32);
+} Unk_80025BA0_Vtbl;
+void PadInit(s32);
 
 s32 func_80025B34(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -40,7 +49,20 @@ s32 func_80025B34(s32 arg0, s32 arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025BA0);
+void func_80025BA0(Unk_80025BA0_Vtbl **arg0, s32 arg1, s32 arg2) {
+    Unk_80025BA0_Vtbl *vt;
+    s32 count;
+
+    ((Unk_80025BA0_Base *)func_80018390())->unk8(arg0);
+    vt = (Unk_80025BA0_Vtbl *)func_80025E9C();
+    count = D_8008A848;
+    *arg0 = vt;
+    D_8008A848 = count + 1;
+    if (count == 0) {
+        PadInit(arg1);
+    }
+    (*arg0)->unk40(arg0, arg2);
+}
 
 void func_80025C30(s32 arg0) {
     if (--D_8008A848 == 0) {
