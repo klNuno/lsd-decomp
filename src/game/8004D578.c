@@ -32,7 +32,7 @@ typedef struct Unk_8004FF40_vt { u8 pad[4]; void *(*unk4)(void *); } Unk_8004FF4
 typedef struct Unk_8004FF40_obj { Unk_8004FF40_vt *unk0; } Unk_8004FF40_obj;
 typedef struct Unk_8004FF40 { u8 pad[0x70]; Unk_8004FF40_obj *unk70; } Unk_8004FF40;
 s32 func_8004E7D0();
-void func_8004E890(s32, s32, s32);
+s32 func_8004E890();
 typedef struct Unk_8004DABC_mgr { u8 pad[0x94]; void (*unk94)(void *); u8 pad_98[0xDC - 0x98]; void (*unkDC)(void *); void (*unkE0)(void *, s32); } Unk_8004DABC_mgr;
 typedef struct Unk_8004DABC_vt { u8 pad[0x19C]; void (*unk19C)(void *, s32 *); } Unk_8004DABC_vt;
 typedef struct Unk_8004DABC_obj { Unk_8004DABC_vt *vt; } Unk_8004DABC_obj;
@@ -602,6 +602,21 @@ void InitCARD(s32);
 void StartCARD(void);
 void _bu_init(void);
 s32 D_8008AA30;
+typedef struct Unk_8004E7D0 {
+    u8 pad[0x10];
+    s32 unk10;
+} Unk_8004E7D0;
+s32 _card_info(s32);
+void _card_clear(s32);
+void func_8004F3E4(s32);
+void func_8004F4A4(s32);
+typedef struct Unk_8004E890 {
+    u8 pad_00[0x10];
+    s32 unk10;
+} Unk_8004E890;
+extern s32 _card_load(s32);
+void func_8004F3E4(s32 arg0);
+void func_8004F4A4(s32 arg0);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -945,9 +960,51 @@ void func_8004E77C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E7D0);
+s32 func_8004E7D0(Unk_8004E7D0 *arg0, s32 *arg1, s32 *arg2) {
+    s32 ret;
+    s32 status;
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E890);
+    ret = 1;
+    *arg1 = 0;
+    *arg2 = 0;
+    func_8004F3E4((s32)arg0);
+    do {
+        status = _card_info(arg0->unk10);
+    } while (status == 0);
+    status = ((s32 (*)(s32))func_8004F4A4)((s32)arg0);
+    if (status == 0x100) {
+        ret = 0;
+    } else if (status == 0x8000) {
+        ret = 0;
+        *arg1 = 1;
+    } else if (status == 0x2000) {
+        *arg2 = 1;
+        _card_clear(arg0->unk10);
+    }
+    return ret;
+}
+
+s32 func_8004E890(Unk_8004E890 *arg0, s32 *arg1, s32 *arg2) {
+    s32 ret;
+    s32 r;
+
+    ret = 1;
+    *arg1 = 0;
+    *arg2 = 1;
+    func_8004F3E4((s32)arg0);
+    while (_card_load(arg0->unk10) == 0) {
+    }
+    r = ((s32 (*)(s32))func_8004F4A4)((s32)arg0);
+    if (r == 0x100) {
+        ret = 0;
+    } else if (r == 0x8000) {
+        ret = 0;
+        *arg1 = 1;
+    } else if (r == 0x2000) {
+        *arg2 = 0;
+    }
+    return ret;
+}
 
 s32 func_8004E940(Unk_8004E940 *arg0) {
     s32 r;
