@@ -761,7 +761,13 @@ void func_80055F74(void *arg0, Unk_80055F74 *arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80055FE8);
+void func_80055FE8(void *arg0, Unk_80056238 *arg1) {
+    arg1->u10 = func_8005627C(arg0);
+    if (arg1->u4 == ((arg1->u4 / 20) * 20)) {
+        arg1->u1C = 9;
+        arg1->u20 = -2;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80056054);
 
