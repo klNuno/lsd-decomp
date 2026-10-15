@@ -88,6 +88,17 @@ typedef struct Unk_800181AC {
     void *unk0;
     s32 unk4;
 } Unk_800181AC;
+typedef struct Unk_800182CC {
+    u8 pad0[0x8];
+    Unk_800183A0 *unk8;
+} Unk_800182CC;
+typedef struct Unk_800182CC_Vtbl {
+    u8 pad0[0x38];
+    void (*unk38)(void *, void *, void *);
+} Unk_800182CC_Vtbl;
+typedef struct Unk_800182CC_Obj {
+    Unk_800182CC_Vtbl *vtbl;
+} Unk_800182CC_Obj;
 
 Heap *func_80017A20(u32 size) {
     Heap *heap;
@@ -234,7 +245,17 @@ void func_80018288(Unk_80018288 **arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_800182CC);
+void func_800182CC(Unk_800182CC *arg0, void *arg1) {
+    Unk_800182CC_Obj *sp10;
+    Unk_800183A0 *sp14;
+
+    sp14 = arg0->unk8;
+    func_800183A0(&sp10, &sp14);
+    while (sp10 != NULL) {
+        sp10->vtbl->unk38(sp10, arg0, arg1);
+        func_800183A0(&sp10, &sp14);
+    }
+}
 
 void func_80018350(void) {
 }

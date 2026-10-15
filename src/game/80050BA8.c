@@ -1,6 +1,6 @@
 #include "common.h"
 
-typedef struct Unk_80018390 { s32 unk0, unk4, unk8; void (*unkC)(); u8 pad_10[0x8]; void (*unk18)(void *); } Unk_80018390;
+typedef struct Unk_80018390 { s32 unk0, unk4, unk8; void (*unkC)(); u8 pad_10[0x4]; void (*unk14)(void *, s32 **); void (*unk18)(void *); } Unk_80018390;
 extern void func_80017CFC(s32);
 extern Unk_80018390 *func_80018390(void);
 typedef struct { u8 pad[0x20]; s32 u20; u8 pad2[0x24]; s32 u48; } Unk_800517EC;
@@ -34,8 +34,8 @@ struct Unk_80051814 {
 };
 typedef struct Unk_80050E34 {
     u8 pad_00[0x34];
-    s32 unk34;
-    s32 unk38;
+    s32 **unk34;
+    s32 **unk38;
     u8 pad_3C[0x48 - 0x3C];
     s32 unk48;
 } Unk_80050E34;
@@ -142,6 +142,11 @@ typedef struct Unk_80051A5C {
     void (*unk8)(void *, s32, s32);
 } Unk_80051A5C;
 Unk_80051A5C *func_80052B60(void);
+typedef struct Unk_80051DA0 {
+    u8 pad_00[0x34];
+    s32 **unk34;
+    s32 **unk38;
+} Unk_80051DA0;
 
 void *func_80050BA8(s32 arg0, s32 arg1) {
     void *temp_v0;
@@ -165,7 +170,19 @@ void func_80050CE8(u8 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050D30);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050DB4);
+void func_80050DB4(Unk_80050E34 *arg0, s32 **arg1) {
+    s32 temp_v1;
+
+    if (arg1 != NULL) {
+        temp_v1 = **arg1 & 0xF;
+        if (temp_v1 == 2) {
+            arg0->unk34 = NULL;
+        } else if (temp_v1 == 5) {
+            arg0->unk38 = NULL;
+        }
+        func_80018390()->unk14(arg0, arg1);
+    }
+}
 
 void func_80050E34(Unk_80050E34 *arg0) {
     arg0->unk34 = 0;
@@ -342,7 +359,19 @@ INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051C84);
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051D1C);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051DA0);
+void func_80051DA0(Unk_80051DA0 *arg0, s32 **arg1) {
+    s32 temp_v1;
+
+    if (arg1 != NULL) {
+        temp_v1 = **arg1 & 0xF;
+        if (temp_v1 == 2) {
+            arg0->unk34 = NULL;
+        } else if (temp_v1 == 5) {
+            arg0->unk38 = NULL;
+        }
+        func_80018390()->unk14(arg0, arg1);
+    }
+}
 
 void func_80051E20(Unk_80051E20 *arg0) {
     arg0->unk34 = 0;

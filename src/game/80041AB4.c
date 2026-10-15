@@ -156,6 +156,17 @@ struct Unk_80041DAC_mgr_vt {
 };
 struct Unk_80041DAC_mgr_vt *func_800422BC(void);
 extern s32 D_8006EE10[3];
+typedef struct Unk_80042790_vt {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+    u8 pad_08[0xB8 - 0x8];
+    void **(*unkB8)(void *, s32);
+} Unk_80042790_vt;
+typedef struct Unk_80042790_ret_vt {
+    u8 pad_00[0xC];
+    void (*unkC)(void *);
+} Unk_80042790_ret_vt;
+Unk_80042790_ret_vt *func_8001E57C(void);
 
 void *func_80041AB4(s32 arg0, u8 arg1) {
     void *temp;
@@ -390,7 +401,16 @@ void *func_80042694(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_800426E4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80042790);
+void func_80042790(void **arg0) {
+    s32 i;
+    void **child;
+
+    for (i = 0; i < 3; i++) {
+        child = ((Unk_80042790_vt *)*arg0)->unkB8(arg0, i);
+        ((Unk_80042790_vt *)*child)->unk4(child);
+    }
+    func_8001E57C()->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80042814);
 

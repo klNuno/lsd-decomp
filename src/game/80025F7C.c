@@ -97,6 +97,21 @@ s32 func_80017B34(s32);
 Unk_80025F7C *func_800269E0(void);
 s32 func_8002C468(s32, s32, s32);
 s32 func_80027F18(s32, s32, s32);
+typedef struct Unk_80026D88 {
+    u8 pad_00[0x40];
+    s32 unk40;
+    s32 unk44;
+    s32 unk48;
+    s32 unk4C;
+    s32 unk50;
+    s32 unk54;
+    s32 unk58;
+    u8 pad_5C[0x68 - 0x5C];
+    s32 unk68;
+    s32 unk6C;
+    s32 unk70;
+    s32 unk74;
+} Unk_80026D88;
 
 s32 func_80025F7C(s32 arg0) {
     s32 p;
@@ -219,7 +234,19 @@ struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, s32 arg2
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026CFC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026D88);
+void func_80026D88(Unk_80026D88 *arg0, Unk_80026D88 *arg1) {
+    arg0->unk40 = arg1->unk40;
+    arg0->unk44 = arg1->unk44;
+    arg0->unk48 = arg1->unk48;
+    arg0->unk4C = arg1->unk4C;
+    arg0->unk50 = arg1->unk50;
+    arg0->unk54 = arg1->unk54;
+    arg0->unk58 = arg1->unk58;
+    arg0->unk68 = arg1->unk68;
+    arg0->unk6C = arg1->unk6C;
+    arg0->unk70 = arg1->unk70;
+    arg0->unk74 = arg1->unk74;
+}
 
 void func_80026E0C(void) {
     if (D_8008A84C == 0x13) {

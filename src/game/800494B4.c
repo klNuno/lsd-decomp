@@ -250,6 +250,38 @@ typedef struct Unk_80049608 {
     void (*unk8)(s32, s32, s32, s32);
 } Unk_80049608;
 Unk_80049608 *func_8004A060(void);
+extern void *func_80052B70(s32, s32, s32, s32, s32);
+typedef struct Unk_80049E20 Unk_80049E20;
+typedef struct Unk_80049E20_Vtbl {
+    u8 pad_00[0x10];
+    void (*unk10)(void *, void *);
+    u8 pad_14[0x44 - 0x14];
+    void (*unk44)(void *, s32, s32);
+} Unk_80049E20_Vtbl;
+typedef struct Unk_80049E20_Obj {
+    Unk_80049E20_Vtbl *unk0;
+} Unk_80049E20_Obj;
+struct Unk_80049E20 {
+    Unk_80049E20_Vtbl *unk0;
+    u8 pad_04[0x0C - 0x04];
+    s32 unkC;
+    u8 pad_10[0x34 - 0x10];
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    s32 unk40;
+    s32 unk44;
+    s32 unk48;
+    Unk_80049E20_Obj *unk4C;
+};
+typedef struct Unk_8004D47C_Mgr {
+    u8 pad_00[0x9C];
+    void (*unk9C)(void **, void *, s32);
+} Unk_8004D47C_Mgr;
+typedef struct Unk_8004D47C_Obj {
+    u8 pad_00[0xA0];
+    void (*unkA0)(void **, void *, s32);
+} Unk_8004D47C_Obj;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -309,7 +341,15 @@ void func_80049C50(Unk_80049C50 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049CA8);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_80049E20);
+void func_80049E20(Unk_80049E20 *arg0, s32 arg1) {
+    void *temp;
+
+    temp = func_80052B70(arg0->unk34, arg0->unk40, arg0->unk44, arg0->unk48, arg1);
+    arg0->unk4C = temp;
+    arg0->unk0->unk10(arg0, temp);
+    arg0->unk4C->unk0->unk44(arg0->unk4C, arg0->unkC, arg0->unk38);
+    arg0->unk3C = 2;
+}
 
 void func_80049EA4(void) {
 }
@@ -719,7 +759,14 @@ void func_8004D434(Unk_8004D434 *arg0, u8 **arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D47C);
+void func_8004D47C(void **arg0, void *arg1, s32 arg2) {
+    ((Unk_8004D47C_Mgr *)func_8001E57C())->unk9C(arg0, arg1, arg2);
+    if (arg2 < 9) {
+        if (arg2 >= 5) {
+            ((Unk_8004D47C_Obj *)*arg0)->unkA0(arg0, arg1, arg2);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004D500);
 

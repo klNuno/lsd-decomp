@@ -131,6 +131,22 @@ struct Unk_8001D624 {
     s32 *unk30;
 };
 void func_8001EE04(s32 *arg0, s32 *arg1, s32 arg2, s32 arg3);
+extern s32 D_8006B684[];
+extern s32 D_8006B690[];
+void GsInitCoordinate2(s32 *arg0, s32 *arg1);
+typedef struct Unk_8001CE30_Vt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *, s32, s32 *);
+    void (*unk48)(void *, s32, s32 *);
+} Unk_8001CE30_Vt;
+typedef struct Unk_8001CE30 {
+    Unk_8001CE30_Vt *unk0;
+    u8 pad_04[0xC];
+    s32 unk10;
+    s32 *unk14;
+    u8 pad_18[0xC];
+    s32 unk24;
+} Unk_8001CE30;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -171,7 +187,14 @@ void func_8001CD20(s32 arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CD60);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CE30);
+void func_8001CE30(Unk_8001CE30 *arg0) {
+    arg0->unk24 = 0;
+    arg0->unk10 = 0;
+    GsInitCoordinate2(0, arg0->unk14);
+    arg0->unk0->unk44(arg0, 1, D_8006B684);
+    arg0->unk0->unk48(arg0, 1, D_8006B690);
+    *arg0->unk14 = 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CEB4);
 
