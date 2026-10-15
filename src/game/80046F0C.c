@@ -165,6 +165,7 @@ typedef struct Unk_80047694Rec {
 s32 StGetNext(void **arg0, Unk_80047694Rec **arg1);
 void func_800477B0();
 void func_80047810();
+extern Unk_80046F0C D_800817E0;
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -417,4 +418,6 @@ void func_800478D0(u8 *arg0, s32 arg1) {
 void func_800478F8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047900);
+Unk_80046F0C *func_80047900(void) {
+    return &D_800817E0;
+}

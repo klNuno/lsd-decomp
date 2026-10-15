@@ -22,6 +22,7 @@ typedef struct Unk_8004297C {
 void *func_80018390(void);
 Unk_8004297C *func_80042A7C(void);
 s32 func_80017B34(s32 size);
+extern Unk_8004297C D_8006F06C;
 
 s32 func_8004291C(s32 arg0) {
     s32 temp_s0;
@@ -43,7 +44,9 @@ void func_8004297C(void **arg0, s32 arg1) {
     temp_v0->unk40(arg0, arg1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_800429E0);
+void func_800429E0(Unk_800429E8 *arg0, s32 arg1) {
+    arg0->unkC = arg1;
+}
 
 void func_800429E8(Unk_800429E8 *arg0, s32 arg1, s8 *arg2) {
     s32 r;
@@ -70,4 +73,6 @@ void func_80042A2C(Unk_800429E8 *arg0, s32 arg1, s16 *arg2) {
     GsSetFlatLight(arg0->unkC, arg0->unk10, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_80042A7C);
+Unk_8004297C *func_80042A7C(void) {
+    return &D_8006F06C;
+}

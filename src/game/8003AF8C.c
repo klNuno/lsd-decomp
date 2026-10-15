@@ -57,6 +57,7 @@ void func_80020C68(void **arg0);
 void func_80032368(void);
 void GsInit3D(void);
 void *func_80017B34(s32 size);
+extern u8 D_8006E4F0[];
 
 void func_8003AF8C(Unk_8003AF8C *arg0, s32 arg1) {
     ((Unk_8003AF8C_Mgr *)func_80018390())->unk8(arg0);
@@ -126,4 +127,6 @@ void func_8003B110(Unk_8003AF8C *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003AF8C", func_8003B20C);
+void *func_8003B20C(void) {
+    return D_8006E4F0;
+}

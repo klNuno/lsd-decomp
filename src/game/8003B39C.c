@@ -52,6 +52,7 @@ typedef struct Unk_8003B624_Rect {
     s32 unk8;
 } Unk_8003B624_Rect;
 Unk_8003B624_Obj *func_80020C5C(void);
+extern u8 D_8006E558[];
 
 s32 func_8003B39C(s32 arg0) {
     void *temp;
@@ -101,13 +102,17 @@ void func_8003B5D4(void) {
 void func_8003B5DC(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B5E4);
+void func_8003B5E4(Unk_8003B3FC *arg0) {
+    arg0->unk48 = 1;
+}
 
 void func_8003B5F0(Unk_8003B5F0 *arg0, void *arg1) {
     GsGetTimInfo(arg0->unk10 + 1, arg1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B614);
+void *func_8003B614(void) {
+    return D_8006E558;
+}
 
 void func_8003B624(Unk_8003B624 *arg0, s32 arg1, Unk_8003B624_Pos *arg2) {
     Unk_8003B624_Rect rect;

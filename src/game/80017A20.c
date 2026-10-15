@@ -381,7 +381,9 @@ void func_8001844C(s32 arg0) {
     D_8008A820 = arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018458);
+s32 func_80018458(void) {
+    return D_8008A820;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018464);
 

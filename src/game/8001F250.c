@@ -106,6 +106,8 @@ struct Unk_8001F51C_tmp {
     s32 one;
     u16 buf[6];
 };
+extern u8 D_8006BEA0[];
+s32 D_8008AC4C;
 
 void *func_8001F250(s32 arg0) {
     void *temp;
@@ -145,11 +147,17 @@ s32 func_8001F360(struct Unk_8001F360 *arg0, s32 arg1) {
 void func_8001F37C(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F384);
+s32 func_8001F384(void) {
+    return (s32)D_8006BEA0;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F394);
+void func_8001F394(void *arg0) {
+    D_8008AC4C = 1;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F3A4);
+s32 func_8001F3A4(s32 arg0) {
+    return D_8008AC4C;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F3B0);
 
@@ -157,7 +165,9 @@ void func_8001F4E4(void *arg0) {
     func_8001F3B0(arg0, D_8008B21C);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F50C);
+void *func_8001F50C(void) {
+    return D_8008B21C;
+}
 
 void func_8001F51C(void *arg0, struct Unk_8001F51C *arg1) {
     struct Unk_8001F51C_tmp t;

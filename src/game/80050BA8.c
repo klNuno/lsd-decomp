@@ -110,7 +110,7 @@ typedef struct Unk_80050BA8 {
     void (*unk8)(void *, s32, s32);
 } Unk_80050BA8;
 extern void *func_80017B34(s32 size);
-extern Unk_80050BA8 *func_80051A4C(void);
+Unk_80050BA8 *func_80051A4C(void);
 typedef struct Unk_80050F28 {
     u8 pad_00[0xC];
     s32 unkC;
@@ -256,7 +256,7 @@ typedef struct Unk_80051998 {
     s32 unk48;
 } Unk_80051998;
 u8 *D_8008AAE4;
-extern void func_80050CD8(void *);
+void func_80050CD8(Unk_80050E34 *arg0);
 extern s32 strlen(u8 *);
 typedef struct Unk_80050C14_Vtbl {
     u8 pad_00[0x40];
@@ -270,6 +270,13 @@ typedef struct Unk_80050C14 {
     u8 pad_18[0x10];
     void *unk28;
 } Unk_80050C14;
+extern u8 D_80086ED0[];
+typedef struct Unk_80051F14 {
+    u8 pad_00[0x20];
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+} Unk_80051F14;
 
 void *func_80050BA8(s32 arg0, s32 arg1) {
     void *temp_v0;
@@ -305,7 +312,11 @@ void func_80050C14(Unk_80050C14 *arg0, u8 *arg1, s32 arg2) {
     arg0->unk0->unk40(arg0, arg1, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050CD8);
+void func_80050CD8(Unk_80050E34 *arg0) {
+    arg0->unk34 = NULL;
+    arg0->unk38 = NULL;
+    arg0->unk48 = 0;
+}
 
 void func_80050CE8(u8 *arg0) {
     func_80017CFC(*(s32 *)(arg0 + 0x28));
@@ -568,7 +579,9 @@ void func_80051998(Unk_80051998 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051A4C);
+Unk_80050BA8 *func_80051A4C(void) {
+    return (Unk_80050BA8 *)D_80086ED0;
+}
 
 s32 func_80051A5C(s32 arg0, s32 arg1) {
     void *p;
@@ -583,7 +596,11 @@ s32 func_80051A5C(s32 arg0, s32 arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051AC8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051C74);
+void func_80051C74(Unk_80051E20 *arg0) {
+    arg0->unk34 = 0;
+    arg0->unk38 = 0;
+    arg0->unk50 = 0;
+}
 
 void func_80051C84(Unk_80051C84 *arg0) {
     s32 i;
@@ -645,4 +662,8 @@ void func_80051E64(Unk_80051E64 **arg0, s32 **arg1, s32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80051F14);
+void func_80051F14(Unk_80051F14 *arg0) {
+    arg0->unk20 = 0;
+    arg0->unk24 = 0;
+    arg0->unk28 = 0;
+}

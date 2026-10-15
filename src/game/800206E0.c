@@ -130,6 +130,8 @@ typedef struct Unk_80020B74 {
     void (*unk7C)(void **, Unk_80020A24 *);
 } Unk_80020B74;
 void ClearImage(Unk_80020A24 *rect, u8 r, u8 g, u8 b);
+extern Unk_800206E0 D_8006C070;
+Unk_80020AF4 *D_8008A83C;
 
 void *func_800206E0(void) {
     void *temp;
@@ -217,7 +219,9 @@ void func_800209A0(Unk_800209A0 *arg0, u32 *arg1, Unk_80020970 *arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020A1C);
+s32 func_80020A1C(void) {
+    return 0;
+}
 
 void func_80020A24(void *arg0, Unk_80020970 *arg1, s16 arg2, s16 arg3) {
     Unk_80020A24 sp10;
@@ -252,7 +256,9 @@ void func_80020B4C(Unk_80020B4C *arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020B68);
+s32 func_80020B68(Unk_80020B4C *arg0) {
+    return arg0->unk20;
+}
 
 void func_80020B74(void **arg0, u8 *arg1, s32 arg2) {
     Unk_80020970 sp10;
@@ -277,12 +283,20 @@ s32 *func_80020C08(Unk_80020C08 *arg0, Unk_80020C08 *arg1) {
     return &arg0->unk14;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C3C);
+void func_80020C3C(Unk_800209A0 *arg0, s32 arg1) {
+    arg0->unk2C = arg1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C44);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C4C);
+Unk_800206E0 *func_80020C4C(void) {
+    return &D_8006C070;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C5C);
+Unk_80020AF4 *func_80020C5C(void) {
+    return D_8008A83C;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020C68);
+void func_80020C68(Unk_80020AF4 *arg0) {
+    D_8008A83C = arg0;
+}

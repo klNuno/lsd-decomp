@@ -37,6 +37,7 @@ typedef struct Unk_80025BA0_Vtbl {
     void (*unk40)(void *, s32);
 } Unk_80025BA0_Vtbl;
 void PadInit(s32);
+extern Unk_80025B34 D_8006D370;
 
 s32 func_80025B34(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -116,4 +117,6 @@ void func_80025E1C(void) {
 void func_80025E94(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025E9C);
+Unk_80025B34 *func_80025E9C(void) {
+    return &D_8006D370;
+}

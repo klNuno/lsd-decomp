@@ -171,6 +171,8 @@ typedef struct Unk_80039C04 {
     u8 pad_16[0x4];
     u16 unk1A;
 } Unk_80039C04;
+extern Unk_800398E0Vt D_8006E48C;
+extern u8 D_8008DF38[];
 
 void *func_800398E0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp_v0;
@@ -344,8 +346,14 @@ void func_80039F64(Unk_80039F64 *arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003A04C);
+Unk_800398E0Vt *func_8003A04C(void) {
+    return &D_8006E48C;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003A05C);
+s32 func_8003A05C(void) {
+    return D_8008A8D8;
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003A068);
+s32 func_8003A068(void) {
+    return (s32)D_8008DF38;
+}
