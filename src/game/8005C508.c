@@ -59,7 +59,7 @@ typedef struct Unk_80065C2C {
     u8 pad[0x5C];
     s32 u5C;
 } Unk_80065C2C;
-extern void func_80065CEC(void);
+extern void func_80065CEC();
 extern s32 func_80065E1C(Unk_80059394 *arg0);
 extern void func_80065F2C(Unk_80059394 *arg0);
 void func_8002CC84(void *, void *);
@@ -401,6 +401,32 @@ typedef struct Unk_80063CC8 {
     u8 p2[0x08];
     s32 unk1C;
 } Unk_80063CC8;
+typedef struct Unk_80063E68 {
+    u8 pad_00[0x4];
+    s32 unk4;
+    u8 pad_08[0x10 - 0x8];
+    s32 unk10;
+    u8 pad_14[0x1C - 0x14];
+    s32 unk1C;
+    s32 unk20;
+} Unk_80063E68;
+typedef struct Unk_80065CEC_Vtbl {
+    u8 pad[0x104];
+    void (*unk104)(void *);
+} Unk_80065CEC_Vtbl;
+typedef struct Unk_80065CEC_Obj_Vtbl {
+    u8 pad[0x4];
+    void *(*unk4)(void *);
+} Unk_80065CEC_Obj_Vtbl;
+typedef struct Unk_80065CEC_Obj {
+    Unk_80065CEC_Obj_Vtbl *vt;
+} Unk_80065CEC_Obj;
+typedef struct Unk_80065CEC {
+    Unk_80065CEC_Vtbl *unk0;
+    u8 pad[0x5C - 0x4];
+    Unk_80065CEC_Obj *unk5C;
+    s32 unk60;
+} Unk_80065CEC;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -878,7 +904,20 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063D40);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063DC8);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063E68);
+void func_80063E68(Unk_80063CC8_Obj *arg0, Unk_80063E68 *arg1) {
+    s32 var_v1;
+
+    arg1->unk10 = arg0->unk0->fn148(arg0);
+    if (arg1->unk4 == 0) {
+        if (rand() & 1) {
+            var_v1 = 2;
+        } else {
+            var_v1 = 1;
+        }
+        arg1->unk1C = var_v1;
+        arg1->unk20 = 2;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063ED4);
 
@@ -1004,7 +1043,17 @@ void func_80065C2C(Unk_80065C2C *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80065C5C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80065CEC);
+void func_80065CEC(Unk_80065CEC *arg0) {
+    Unk_80065CEC_Obj *var_v0;
+
+    arg0->unk0->unk104(arg0);
+    if (arg0->unk60 != 0) {
+        var_v0 = arg0->unk5C->vt->unk4(arg0->unk5C);
+    } else {
+        var_v0 = 0;
+    }
+    arg0->unk5C = var_v0;
+}
 
 s32 func_80065D64(Unk_80065D64 *arg0, u8 arg1) {
     u8 *p;
