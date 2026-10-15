@@ -146,6 +146,25 @@ struct Unk_80047114 {
     u8 pad_44[0x50 - 0x44];
     s32 unk50;
 };
+typedef struct Unk_80047694Vt {
+    u8 pad_00[0x70];
+    void (*unk70)(void *self, void *arg);
+} Unk_80047694Vt;
+typedef struct Unk_80047694 Unk_80047694;
+struct Unk_80047694 {
+    Unk_80047694Vt *unk0;
+    u8 pad_04[0x40 - 0x04];
+    s32 unk40;
+    u8 pad_44[0x58 - 0x44];
+    u32 unk58;
+};
+typedef struct Unk_80047694Rec {
+    u8 pad_00[0x8];
+    u32 unk8;
+} Unk_80047694Rec;
+s32 StGetNext(void **arg0, Unk_80047694Rec **arg1);
+void func_800477B0();
+void func_80047810();
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -319,7 +338,48 @@ void func_80047638(Unk_80047638 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047694);
+s32 func_80047694(Unk_80047694 *arg0, void **arg1, s32 *arg2, s32 arg3) {
+    Unk_80047694Rec *sp10;
+    s32 n;
+    u32 v1;
+
+    n = arg3;
+    if (n < 0) {
+        n = 0x800000;
+    }
+    for (;;) {
+        if (StGetNext(arg1, &sp10) == 0) {
+            break;
+        }
+        n--;
+        if (n < 0) {
+            arg0->unk0->unk70(arg0, arg1);
+            return 0;
+        }
+    }
+    n--;
+    v1 = sp10->unk8;
+    *arg2 = v1;
+    if (arg0->unk40 <= 0) {
+        goto ret1;
+    }
+    if (v1 < (u32)arg0->unk40) {
+        if (v1 >= arg0->unk58) {
+            goto store;
+        }
+    }
+    if (v1 < arg0->unk58) {
+        *arg2 = 0;
+    }
+    func_800477B0(arg0, *arg1, *arg2);
+    func_80047810(arg0);
+    return -1;
+store:
+    arg0->unk58 = v1;
+ret1:
+    func_800477B0(arg0, *arg1, *arg2);
+    return 1;
+}
 
 void func_800477B0(Unk_800477B0 *arg0, void *arg1) {
     void (*temp)(void *);
