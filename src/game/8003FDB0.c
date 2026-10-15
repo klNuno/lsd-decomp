@@ -279,6 +279,11 @@ typedef struct Unk_80040948_tbl {
     void (*unk8)(void *, s32, s32);
 } Unk_80040948_tbl;
 void *func_80041AB4(s32, u8);
+s8 *itoa(s32 value);
+s8 *strcpy(s8 *dst, s8 *src);
+s32 strlen(u8 *s);
+void *memset(void *dst, s32 c, s32 n);
+s8 *func_80041020(s8 *arg0, u8 *arg1);
 
 void *func_8003FDB0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -672,4 +677,21 @@ s8 *func_80041020(s8 *arg0, u8 *arg1) {
     return next;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8004109C);
+void func_8004109C(s8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    char bufA[arg2 + 1];
+    char bufB[arg2 + 1];
+    s32 pad;
+    u8 *out;
+
+    pad = strlen(strcpy(bufA, itoa(arg1)));
+    pad = arg2 - pad;
+    if (arg3 == 0) {
+        memset(bufB, 0x30, arg2);
+        strcpy(bufB + pad, bufA);
+    }
+    out = bufB;
+    if (arg3 != 0) {
+        out = bufA;
+    }
+    func_80041020(arg0, out);
+}

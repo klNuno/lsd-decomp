@@ -866,6 +866,46 @@ typedef struct Unk_8003E8B8_Vtbl {
 typedef struct Unk_8003E8B8 {
     Unk_8003E8B8_Vtbl *unk0;
 } Unk_8003E8B8;
+typedef struct Unk_8003CDE0_Vtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+    u8 pad_08[0x5C - 0x08];
+    void (*unk5C)(void *);
+    u8 pad_60[0x78 - 0x60];
+    void (*unk78)(void *);
+} Unk_8003CDE0_Vtbl;
+struct Unk_8003CDE0_Obj {
+    Unk_8003CDE0_Vtbl *unk0;
+};
+struct Unk_8003CDE0 {
+    u8 pad_00[0x70];
+    s32 unk70;
+    struct Unk_8003CDE0_Obj *unk74;
+};
+extern s32 func_8003B39C(s32);
+typedef struct Unk_8003D2CC_ObjVtbl {
+    u8 pad_00[0xB8];
+    void (*unkB8)(void *, s32);
+} Unk_8003D2CC_ObjVtbl;
+typedef struct Unk_8003D2CC_Obj {
+    Unk_8003D2CC_ObjVtbl *unk0;
+} Unk_8003D2CC_Obj;
+typedef struct Unk_8003D2CC_Sub {
+    u8 pad_00[0x24];
+    s32 *unk24;
+} Unk_8003D2CC_Sub;
+typedef struct Unk_8003D2CC_Vtbl {
+    u8 pad_00[0x104];
+    void (*unk104)(void *, s32);
+} Unk_8003D2CC_Vtbl;
+typedef struct Unk_8003D2CC {
+    Unk_8003D2CC_Vtbl *unk0;
+    u8 pad_04[0x4C - 0x04];
+    Unk_8003D2CC_Sub *unk4C;
+    s32 unk50;
+    Unk_8003D2CC_Obj **unk54;
+    s32 unk58;
+} Unk_8003D2CC;
 
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -1293,7 +1333,25 @@ s32 func_8003CD48(struct Unk_8003CD48 *arg0) {
     return (u8)temp > 0x80;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003CDE0);
+void func_8003CDE0(struct Unk_8003CDE0 *arg0, s32 arg1, struct Unk_8003CDE0_Obj *arg2) {
+    struct Unk_8003CDE0_Obj *temp_a0;
+    struct Unk_8003CDE0_Obj *temp_v0;
+
+    if (arg1 != 0) {
+        if (arg0->unk70 != 0) {
+            temp_a0 = arg0->unk74;
+            temp_a0->unk0->unk4(temp_a0);
+        }
+        temp_v0 = (struct Unk_8003CDE0_Obj *)func_8003B39C(arg1);
+        arg0->unk74 = temp_v0;
+        temp_v0->unk0->unk78(temp_v0);
+        temp_a0 = arg0->unk74;
+        temp_a0->unk0->unk5C(temp_a0);
+    } else {
+        arg0->unk74 = arg2;
+    }
+    arg0->unk70 = arg1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003CE98);
 
@@ -1301,7 +1359,26 @@ INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003D050);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003D194);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003D2CC);
+void func_8003D2CC(Unk_8003D2CC *arg0, s32 arg1) {
+    s32 i;
+    s32 saved;
+    Unk_8003D2CC_Obj **p;
+    Unk_8003D2CC_Obj *obj;
+
+    if (arg0->unk4C != NULL) {
+        p = arg0->unk54;
+        saved = arg0->unk58;
+        for (i = 0; i < arg0->unk50; i++, p++) {
+            obj = *p;
+            obj->unk0->unkB8(obj, arg1);
+            if (arg0->unk4C->unk24[i] != 0) {
+                arg0->unk58 = i;
+                arg0->unk0->unk104(arg0, arg1);
+            }
+        }
+        arg0->unk58 = saved;
+    }
+}
 
 void func_8003D3B0(struct Unk_8003D3B0 *arg0) {
     s32 i;

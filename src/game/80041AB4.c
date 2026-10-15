@@ -260,6 +260,22 @@ typedef struct Unk_8004208C {
     s32 unk20;
 } Unk_8004208C;
 u16 GetTPage(s32 tp, s32 abr, s16 x, s16 y);
+s32 func_8004291C(s32);
+struct Unk_800426E4_ret_vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
+};
+struct Unk_800426E4_vt {
+    u8 pad_00[0x10];
+    void (*unk10)(void *, s32);
+    u8 pad_14[0x2C];
+    void (*unk40)(void *);
+};
+struct Unk_800426E4 {
+    void *unk0;
+    u8 pad_04[0x40];
+    s32 unk44[3];
+};
 
 void *func_80041AB4(s32 arg0, u8 arg1) {
     void *temp;
@@ -563,7 +579,18 @@ void *func_80042694(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_800426E4);
+void func_800426E4(struct Unk_800426E4 *arg0) {
+    s32 i;
+    s32 *p;
+
+    ((struct Unk_800426E4_ret_vt *)func_8001E57C())->unk8(arg0);
+    arg0->unk0 = func_800428E4();
+    for (i = 0, p = arg0->unk44; i < 3; i++, p++) {
+        *p = func_8004291C(i);
+        ((struct Unk_800426E4_vt *)arg0->unk0)->unk10(arg0, *p);
+    }
+    ((struct Unk_800426E4_vt *)arg0->unk0)->unk40(arg0);
+}
 
 void func_80042790(void **arg0) {
     s32 i;

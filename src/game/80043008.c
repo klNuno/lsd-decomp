@@ -653,7 +653,29 @@ s32 func_80043840(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800438B0);
+struct Unk_80043EE4 *func_800438B0(struct Unk_80043EE4 *arg0, struct Unk_80043EE4_Src *arg1) {
+    s32 temp_v1;
+    struct Unk_80043840_Obj *temp_v0;
+
+    ((struct Unk_80043BE8_Svc *)func_80026CAC())->unk8(arg0);
+    temp_v0 = func_80043B78();
+    arg0->unk0 = (struct Unk_80043EE4_Obj *)temp_v0;
+    if (arg1 != NULL) {
+        temp_v1 = arg1->unk0;
+        if (temp_v1 != 0) {
+            arg0->unk10 = temp_v1;
+            arg0->unk14 = 0;
+            if (((s32 (*)(void *))arg0->unk0->unk64)(arg0) != 0) {
+                goto fail;
+            }
+        } else {
+            ((struct Unk_80043EE4_Obj *)temp_v0)->unk6C(arg0, arg1->unk4);
+        }
+    }
+    return arg0;
+fail:
+    return NULL;
+}
 
 void func_80043954(struct Unk_80043954 *arg0) {
     struct Unk_800448F8_Obj **p;
