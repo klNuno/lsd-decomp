@@ -1,8 +1,8 @@
 #include "common.h"
 
-typedef struct VTable { s32 unk0, unk4, unk8; void (*fnC)(); } VTable;
+typedef struct Unk_80018390 { s32 unk0, unk4, unk8; void (*unkC)(); u8 pad_10[0x8]; void (*unk18)(void *); } Unk_80018390;
 extern void func_80017CFC(s32);
-extern VTable *func_80018390(void);
+extern Unk_80018390 *func_80018390(void);
 typedef struct { u8 pad[0x20]; s32 u20; u8 pad2[0x24]; s32 u48; } Unk_800517EC;
 extern void func_800183DC(void *, s32);
 extern void func_800531CC(void *, void *);
@@ -31,6 +31,13 @@ struct Unk_80051814 {
     u8 pad_20[0x28];
     s32 unk48;
 };
+typedef struct Unk_80050E34 {
+    u8 pad_00[0x34];
+    s32 unk34;
+    s32 unk38;
+    u8 pad_3C[0x48 - 0x3C];
+    s32 unk48;
+} Unk_80050E34;
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050BA8);
 
@@ -40,14 +47,19 @@ INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050CD8);
 
 void func_80050CE8(u8 *arg0) {
     func_80017CFC(*(s32 *)(arg0 + 0x28));
-    func_80018390()->fnC(arg0);
+    func_80018390()->unkC(arg0);
 }
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050D30);
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050DB4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050E34);
+void func_80050E34(Unk_80050E34 *arg0) {
+    arg0->unk34 = 0;
+    arg0->unk38 = 0;
+    arg0->unk48 = 0;
+    func_80018390()->unk18(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80050BA8", func_80050E78);
 
