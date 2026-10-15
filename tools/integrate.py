@@ -167,7 +167,8 @@ def main():
     # Earlier one-line declarations of FUNC in the unit (often `extern void FUNC();` written by a
     # caller) must agree with its definition: replace them with the definition's own prototype.
     proto = re.sub(r"\s+", " ", body.split("{", 1)[0]).strip() + ";"
-    head = re.sub(r"^(?:extern\s+)?[^\n;{}()]*\b" + re.escape(func) + r"\s*\([^;{}]*\)\s*;[ \t]*$",
+    # Only top-level lines (column 0, a type before the name): an indented `FUNC(a);` is a call.
+    head = re.sub(r"^(?:extern\s+)?[A-Za-z_][\w \t*]*[\s*]" + re.escape(func) + r"\s*\([^;{}]*\)\s*;[ \t]*$",
                   lambda _: proto, head, flags=re.M)
     block = ("\n".join(new) + "\n\n" if new else "") + body + "\n"
     patched = head + block + unit[m.end():]
