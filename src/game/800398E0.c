@@ -38,6 +38,18 @@ typedef struct Unk_80039CBC {
 } Unk_80039CBC;
 extern s32 func_8002CC28(void);
 extern void SsSeqSetCrescendo(s16, s16, s32);
+extern s32 func_80039C04(void);
+typedef struct Unk_80039B90Vt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *);
+} Unk_80039B90Vt;
+typedef struct Unk_80039B90 {
+    Unk_80039B90Vt *unk0;
+    u8 pad_04[0x16];
+    u16 unk1A;
+    u8 pad_1C[0x4];
+    s32 unk20;
+} Unk_80039B90;
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_800398E0);
 
@@ -47,7 +59,11 @@ INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039A34);
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039B04);
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039B90);
+void func_80039B90(Unk_80039B90 *arg0, s32 arg1, s32 arg2) {
+    if ((arg2 == 2) && (arg0->unk1A == 1) && (func_80039C04() != 0) && (arg0->unk20 != 0)) {
+        arg0->unk0->unk44(arg0);
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/game/800398E0", D_80010FEC);
 

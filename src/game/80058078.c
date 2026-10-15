@@ -247,6 +247,38 @@ typedef struct Unk_8005B6E0 {
     s32 unk188;
     s32 unk18C;
 } Unk_8005B6E0;
+typedef struct Unk_80058390_Vt {
+    u8 pad_00[0x44];
+    void (*unk44)(void *, void *, s32);
+} Unk_80058390_Vt;
+typedef struct Unk_80058390 {
+    u8 pad_00[0x38];
+    s32 unk38;
+    u8 pad_3C[0x238 - 0x3C];
+    s32 unk238;
+} Unk_80058390;
+extern Unk_80058390_Vt *func_8003DFBC(void);
+typedef struct Unk_80058A94_Vt {
+    u8 pad_00[0x14];
+    void (*unk14)(void *, void *);
+} Unk_80058A94_Vt;
+typedef struct Unk_80058A94_ObjVt {
+    u8 pad_00[0xF0];
+    void (*unkF0)(void *);
+} Unk_80058A94_ObjVt;
+typedef struct Unk_80058A94_Obj {
+    Unk_80058A94_ObjVt *vt;
+} Unk_80058A94_Obj;
+typedef struct Unk_80058A94 {
+    Unk_80058A94_Vt *unk0;
+    u8 pad_04[0x4C - 0x4];
+    Unk_80058A94_Obj *unk4C;
+} Unk_80058A94;
+typedef struct Unk_80058A94_RetVt {
+    u8 pad_00[0x50];
+    void (*unk50)(void *);
+} Unk_80058A94_RetVt;
+Unk_80058A94_RetVt *func_80057C84(void);
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -268,7 +300,16 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058228);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058308);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058390);
+s32 func_80058390(Unk_80058390 *arg0, void *arg1, s32 arg2) {
+    s32 ret;
+
+    func_8003DFBC()->unk44(arg0, arg1, arg2);
+    ret = 2;
+    if (arg0->unk238 == 0) {
+        ret = arg0->unk38;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058404);
 
@@ -286,7 +327,14 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800588EC);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058968);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058A94);
+void func_80058A94(Unk_80058A94 *arg0) {
+    Unk_80058A94_Obj *temp_a0;
+
+    temp_a0 = arg0->unk4C;
+    temp_a0->vt->unkF0(temp_a0);
+    arg0->unk0->unk14(arg0, arg0->unk4C);
+    func_80057C84()->unk50(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80058B08);
 
