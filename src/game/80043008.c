@@ -74,12 +74,20 @@ struct Unk_80044C58 {
 extern void func_800183DC(void *, s32);
 typedef void (*Unk_80045DE0_Fn)(void *self);
 struct Unk_80045DE0_Vtbl {
-    u8 pad_00[0x60];
+    u8 pad_00[0x58];
+    s32 (*unk58)(void *self);
+    u8 pad_5C[0x4];
     Unk_80045DE0_Fn unk60;
+    void (*unk64)(void *self);
 };
 struct Unk_80045DE0 {
     struct Unk_80045DE0_Vtbl *unk0;
-    u8 pad_04[0x38];
+    u8 pad_04[0x10];
+    s32 unk14[2];
+    s32 unk1C;
+    u8 pad_20[0x14];
+    s32 unk34;
+    s32 unk38;
     s32 unk3C;
     s32 unk40;
     s32 unk44;
@@ -520,6 +528,8 @@ struct Unk_800452FC {
     u8 pad_00[0x10];
     struct Unk_800452FC_Tbl *unk10;
 };
+void func_80045E18(struct Unk_80045E18 *arg0);
+extern void DecDCTin(s32 p, s32 mode);
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1276,7 +1286,27 @@ s32 func_80045C94(struct Unk_80045C94 *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045CFC);
+s32 func_80045CFC(struct Unk_80045DE0 *arg0) {
+    struct Unk_80045DE0 *temp_s0;
+
+    temp_s0 = D_8008A940;
+    if (temp_s0 == arg0) {
+        if (temp_s0->unk44 == 0) {
+            if (temp_s0->unk40 != 0) {
+                func_80045E18((struct Unk_80045E18 *)temp_s0);
+                temp_s0->unk4C = 0;
+                if (temp_s0->unk34 < 0x80) {
+                    DrawSync(0);
+                }
+                DecDCTin(temp_s0->unk14[temp_s0->unk3C], 2);
+                DecDCTout(temp_s0->unk1C, temp_s0->unk38);
+            }
+            arg0->unk40 = arg0->unk0->unk58(arg0) == 0;
+            return 0;
+        }
+        temp_s0->unk0->unk64(temp_s0);
+    }
+}
 
 void func_80045DE0(void) {
     struct Unk_80045DE0 *obj = D_8008A940;

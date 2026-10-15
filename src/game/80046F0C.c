@@ -101,6 +101,26 @@ typedef struct Unk_80046F0C {
 Unk_80046F0C *func_80047900(void);
 s32 CdControlF(s32 com, u8 *param);
 void func_80047388(u8 arg0);
+typedef struct Unk_800473E4 Unk_800473E4;
+typedef struct Unk_800473E4Vt {
+    u8 pad_00[0x64];
+    void (*unk64)(Unk_800473E4 *self);
+    void (*unk68)(Unk_800473E4 *self);
+} Unk_800473E4Vt;
+struct Unk_800473E4 {
+    Unk_800473E4Vt *unk0;
+    u8 pad_04[0xC - 0x4];
+    u8 unkC[0x2C - 0xC];
+    s32 unk2C;
+    u8 pad_30[0x34 - 0x30];
+    s32 unk34;
+    u8 pad_38[0x40 - 0x38];
+    s32 unk40;
+    u8 pad_44[0x58 - 0x44];
+    s32 unk58;
+};
+s32 CdRead2(s32 mode);
+void StSetStream(s32 a, s32 b, s32 c, s32 d, s32 e);
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -180,7 +200,27 @@ void func_80047388(u8 arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800473E4);
+void func_800473E4(Unk_800473E4 *arg0, s32 arg1, s32 arg2) {
+    s32 var_s1;
+
+    if (arg0->unk2C == 1 && (Unk_800473E4 *)D_8008A950 == arg0) {
+        var_s1 = 0x140;
+        if (arg0->unk34 < 4) {
+            var_s1 = 0x1C0;
+        }
+        if (arg2 != 0) {
+            arg0->unk40 = arg2;
+        }
+        arg0->unk58 = 0;
+        StSetStream(0, arg1, -1, 0, 0);
+        arg0->unk0->unk64(arg0);
+        do {
+            while (CdControl(2, arg0->unkC, 0) == 0) {}
+        } while (CdRead2(var_s1) == 0);
+        arg0->unk0->unk68(arg0);
+        arg0->unk2C = 2;
+    }
+}
 
 void func_800474C8(Unk_80047574 *arg0) {
     if (arg0->unk2C == 2 && D_8008A950 == arg0) {

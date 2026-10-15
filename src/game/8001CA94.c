@@ -238,6 +238,16 @@ typedef struct Unk_8001D950 {
     struct Unk_8001D950 *unkC;
 } Unk_8001D950;
 void MulMatrix2(s32 *arg0, s32 *arg1);
+s32 func_8001EC84(Unk_8001EC84 *arg0);
+typedef struct Unk_8001D008_Mid {
+    s32 unk0;
+    u8 pad_04[0x40];
+    s32 *unk44;
+} Unk_8001D008_Mid;
+typedef struct Unk_8001D008 {
+    u8 pad_00[0x14];
+    Unk_8001D008_Mid *unk14;
+} Unk_8001D008;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -308,7 +318,27 @@ void func_8001CE30(Unk_8001CE30 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CEB4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D008);
+void func_8001D008(Unk_8001D008 *arg0, s32 arg1, Unk_8001EC84 *arg2) {
+    s32 x;
+    s32 y;
+    s32 z;
+    s32 *dst;
+
+    x = func_8001EC84(arg2);
+    y = func_8001EC84(arg2 + 1);
+    z = func_8001EC84(arg2 + 2);
+    dst = arg0->unk14->unk44;
+    if (arg1 != 0) {
+        dst[0] = (s16)x;
+        dst[1] = (s16)y;
+        dst[2] = (s16)z;
+    } else {
+        dst[0] = (s16)x + dst[0];
+        dst[1] = (s16)y + dst[1];
+        dst[2] = (s16)z + dst[2];
+    }
+    arg0->unk14->unk0 = 0;
+}
 
 void *func_8001D0EC(struct Unk_8001D1A4 *arg0, Unk_8001D0EC_Obj *arg1, Unk_8001D0EC_Vec *arg2) {
     Unk_8001D1A4_Sub *temp_v1;
