@@ -615,6 +615,26 @@ struct Unk_80043CB8_Sp {
     s16 unk12;
     u8 pad_14[0xC];
 };
+struct Unk_800454C4_Vtbl {
+    u8 pad_00[0x40];
+    void (*unk40)(void *self, s32 arg1, s32 arg2);
+};
+struct Unk_800454C4_Obj {
+    struct Unk_800454C4_Vtbl *unk0;
+};
+struct Unk_800454C4 {
+    struct Unk_80043EE4_Obj *unk0;
+    u8 pad_04[0xC];
+    s32 unk10;
+    u8 pad_14[0x3C];
+    s32 unk50;
+    u8 pad_54[0xC];
+    struct Unk_800454C4_Obj *unk60;
+};
+void func_80045DE0(void);
+struct Unk_800454C4_Obj *func_80046F0C(void *arg0, s32 arg1, s32 arg2);
+s32 func_8004564C();
+s32 D_8008A93C;
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1375,7 +1395,29 @@ s32 func_80045438(s32 arg0, s32 arg1, s32 arg2) {
     return temp_s0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800454C4);
+s32 func_800454C4(struct Unk_800454C4 *arg0, s32 arg1, void *arg2, s32 arg3) {
+    struct Unk_800454C4_Obj *obj;
+
+    ((struct Unk_80043BE8_Svc *)func_80018390())->unk8(arg0);
+    arg0->unk0 = ((struct Unk_80043EE4_Obj *)func_80045E44());
+    obj = func_80046F0C(arg2, 0xF, 0);
+    arg0->unk60 = obj;
+    if (obj != NULL) {
+        if (func_8004564C(arg0, arg1, arg3) == 0) {
+            if (D_8008A93C == 0) {
+                DecDCTReset(0);
+            }
+            D_8008A93C = 1;
+            DecDCToutCallback(func_80045DE0);
+            arg0->unk60->unk0->unk40(arg0->unk60, arg0->unk10, 0x12000);
+            arg0->unk50 = 0;
+            arg0->unk0->unk6C(arg0, 1);
+            return 0;
+        }
+        return 1;
+    }
+    return 1;
+}
 
 void func_800455D4(struct Unk_800455D4 *arg0) {
     struct Unk_800455D4_Obj *temp_a0 = arg0->unk60;
