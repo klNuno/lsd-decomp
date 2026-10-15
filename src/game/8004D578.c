@@ -570,6 +570,38 @@ typedef struct Unk_8004E3F4_8004E444 {
     s32 unk78;
     s32 unk7C;
 } Unk_8004E3F4_8004E444;
+typedef struct Unk_8004D9D4_mgr { u8 pad[0x90]; void (*unk90)(void *); } Unk_8004D9D4_mgr;
+typedef struct Unk_8004D9D4_obj_vt { u8 pad[0xF0]; void (*unkF0)(void *, s32, s32); } Unk_8004D9D4_obj_vt;
+typedef struct Unk_8004D9D4_obj { Unk_8004D9D4_obj_vt *vt; } Unk_8004D9D4_obj;
+typedef struct Unk_8004D9D4_vt {
+    u8 pad[0x94];
+    void (*unk94)(void *);
+    u8 pad_98[0x130 - 0x98];
+    void (*unk130)(void *);
+    void (*unk134)(void *);
+} Unk_8004D9D4_vt;
+typedef struct Unk_8004D9D4 {
+    Unk_8004D9D4_vt *unk0;
+    u8 pad_04[0x38 - 0x04];
+    s32 unk38;
+    u8 pad_3C[0x58 - 0x3C];
+    s32 unk58;
+    u8 pad_5C[0xA4 - 0x5C];
+    Unk_8004D9D4_obj *unkA4;
+} Unk_8004D9D4;
+typedef struct Unk_8004E34C_Base {
+    u8 pad0[0x8];
+    void (*unk8)(void *);
+} Unk_8004E34C_Base;
+typedef struct Unk_8004E34C_Vtbl {
+    u8 pad0[0x40];
+    void (*unk40)(void *, s32);
+} Unk_8004E34C_Vtbl;
+void func_8004E3F4(Unk_8004E3F4 *);
+void InitCARD(s32);
+void StartCARD(void);
+void _bu_init(void);
+s32 D_8008AA30;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -648,7 +680,33 @@ void func_8004D90C(Unk_8004D90C *arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004D9D4);
+void func_8004D9D4(Unk_8004D9D4 *arg0) {
+    void (*fn)(void *);
+    Unk_8004D9D4_obj *temp_a0;
+
+    ((Unk_8004D9D4_mgr *)func_8003DFBC())->unk90(arg0);
+    switch (arg0->unk58) {
+    case 1:
+        temp_a0 = arg0->unkA4;
+        arg0->unk38 = 0;
+        temp_a0->vt->unkF0(temp_a0, 0, 1);
+        fn = arg0->unk0->unk94;
+        break;
+    case 2:
+        fn = arg0->unk0->unk130;
+        break;
+    case 3:
+        fn = arg0->unk0->unk134;
+        break;
+    case 4:
+        arg0->unk38 = 2;
+        fn = arg0->unk0->unk94;
+        break;
+    default:
+        return;
+    }
+    fn(arg0);
+}
 
 void func_8004DABC(Unk_8004DABC *arg0) {
     s32 sp10;
@@ -766,7 +824,23 @@ s32 func_8004E2E0(s32 arg0, s32 arg1) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004E34C);
+void func_8004E34C(Unk_8004E34C_Vtbl **arg0, s32 arg1, s32 arg2) {
+    Unk_8004E34C_Vtbl *vt;
+    s32 count;
+
+    ((Unk_8004E34C_Base *)func_80018390())->unk8(arg0);
+    vt = ((Unk_8004E34C_Vtbl *)func_800507E8());
+    count = D_8008AA30;
+    *arg0 = vt;
+    D_8008AA30 = count + 1;
+    if (count == 0) {
+        InitCARD(arg1);
+        StartCARD();
+        _bu_init();
+    }
+    func_8004E3F4((Unk_8004E3F4 *)arg0);
+    (*arg0)->unk40(arg0, arg2);
+}
 
 void func_8004E3F4(Unk_8004E3F4 *arg0) {
     arg0->unk60 = 0;
