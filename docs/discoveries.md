@@ -8,7 +8,7 @@ Status of each finding:
 - 🎮 Partly checked: part of it was seen in the emulator, the rest is read in the code.
 - 📖 Read in the code only: the code says so, nobody has seen it happen yet.
 
-Game screenshots live in `img/game/`, which is not tracked: they show in a local clone with your own captures, not on GitHub. The charts are ours and are tracked.
+The screenshots come from the game running in an emulator, sometimes with memory values written in to reach a state quickly; each finding says when.
 
 ## The findings at a glance
 
