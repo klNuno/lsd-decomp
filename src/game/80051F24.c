@@ -1880,7 +1880,27 @@ void func_80055BC8(void *arg0, Unk_80056238 *arg1) {
     arg1->u50 = 0xA;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80055CA8);
+void func_80055CA8(void *arg0, Unk_80056238 *arg1) {
+    arg1->u10 = func_8005627C((Unk_8005627C *)arg0);
+    if (arg1->u4 % 3 == 0) {
+        arg1->u1C = 0x1E;
+        arg1->u20 = 0;
+    }
+    if (arg1->u4 % 5 == 0) {
+        arg1->u30 = 0x1E;
+        arg1->u34 = 0;
+        arg1->u38 = 0x18;
+        arg1->u3C = 0x18;
+    }
+    if (arg1->u4 % 7 == 0) {
+        arg1->u1C = 0x1E;
+        arg1->u20 = 0;
+    }
+    arg1->u44 = 6;
+    arg1->u48 = 1;
+    arg1->u4C = 0x2A;
+    arg1->u50 = 0xA;
+}
 
 void func_80055DB4(void *arg0, Unk_80056238 *arg1) {
     arg1->u10 = func_8005627C((Unk_8005627C *)arg0);
