@@ -686,6 +686,40 @@ typedef struct Unk_8004D578_arg1_vt {
 typedef struct Unk_8004D578_arg1 {
     Unk_8004D578_arg1_vt *unk0;
 } Unk_8004D578_arg1;
+typedef struct Unk_8004DE08_vt {
+    u8 pad_00[0x60];
+    void (*unk60)(void *, s32);
+    u8 pad_64[0xE0 - 0x64];
+    void (*unkE0)(void *, s32);
+    u8 pad_E4[0xF0 - 0xE4];
+    void (*unkF0)(void *, s32, s32);
+    u8 pad_F4[0x11C - 0xF4];
+    void (*unk11C)(void *, s32, s32);
+} Unk_8004DE08_vt;
+typedef struct Unk_8004DE08_obj_vt {
+    u8 pad_00[0xCC];
+    void (*unkCC)(void *, s32);
+    u8 pad_D0[0x19C - 0xD0];
+    void (*unk19C)(void *, s32 *);
+} Unk_8004DE08_obj_vt;
+typedef struct Unk_8004DE08_obj {
+    Unk_8004DE08_obj_vt *unk0;
+    u8 pad_04[0xA9 - 0x04];
+    u8 unkA9;
+} Unk_8004DE08_obj;
+typedef struct Unk_8004DE08 {
+    Unk_8004DE08_vt *unk0;
+    u8 pad_04[0x14 - 0x04];
+    s32 unk14;
+    u8 pad_18[0x4C - 0x18];
+    s32 unk4C;
+    u8 pad_50[0x58 - 0x50];
+    s32 unk58;
+    u8 pad_5C[0xA4 - 0x5C];
+    Unk_8004DE08_obj *unkA4;
+    u8 pad_A8[0xB0 - 0xA8];
+    Unk_8004DE08_obj *unkB0;
+} Unk_8004DE08;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -850,7 +884,26 @@ void func_8004DC64(Unk_8004DC64 *arg0, s32 arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004DCD0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004DE08);
+void func_8004DE08(Unk_8004DE08 *arg0) {
+    s32 sp10;
+    s32 temp_s1;
+    s32 temp_s2;
+
+    temp_s2 = arg0->unk58;
+    temp_s1 = func_80017B34(arg0->unkB0->unkA9);
+    func_80040FC0((s8 *)temp_s1, (u8 *)D_8008AA18);
+    arg0->unkB0->unk0->unkCC(arg0->unkB0, temp_s1);
+    func_80017CFC(temp_s1);
+    ((void (*)())func_8004D678)(arg0, arg0->unk4C, arg0->unkA4);
+    arg0->unk0->unkE0(arg0, arg0->unk14);
+    arg0->unkA4->unk0->unk19C(arg0->unkA4, &sp10);
+    arg0->unk58 = 5;
+    arg0->unk0->unk60(arg0, 0xB);
+    arg0->unk0->unk11C(arg0, sp10, 1);
+    arg0->unk0->unk60(arg0, 0xF);
+    arg0->unk0->unkF0(arg0, temp_s2, 0);
+    arg0->unkA4->unk0->unk19C(arg0->unkA4, &sp10);
+}
 
 void func_8004DF64(Unk_8004DF64 *arg0) {
     if (arg0->unkAC == NULL) {
