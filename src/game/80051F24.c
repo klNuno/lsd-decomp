@@ -1500,6 +1500,17 @@ typedef struct Unk_8005511C_Slot {
 } Unk_8005511C_Slot;
 extern s32 D_80087430;
 extern u8 D_80087228[];
+typedef struct Unk_80057534_Vt {
+    u8 pad_00[0x88];
+    void (*unk88)(void *, s32);
+    u8 pad_8C[0xC0 - 0x8C];
+    void (*unkC0)(void *, void *);
+} Unk_80057534_Vt;
+typedef struct Unk_80057534 {
+    Unk_80057534_Vt *unk0;
+    u8 pad_04[0x48 - 0x04];
+    s16 unk48;
+} Unk_80057534;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -3485,7 +3496,16 @@ void func_800574FC(void *arg0, s32 arg1, s32 arg2) {
     func_80057534(arg0, D_8008ABA4 + 1, arg1, arg2, 8);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80057534);
+void func_80057534(void *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    Unk_80057534 *obj = arg0;
+
+    obj->unk48 = *arg1 = arg2;
+    obj->unk0->unkC0(obj, D_8008ABA4);
+    *arg1 = 0;
+    if (arg3 != 0) {
+        obj->unk0->unk88(obj, arg4);
+    }
+}
 
 void func_800575B0(Unk_800575B0_Obj *arg0, s32 arg1, s32 arg2) {
     func_80057618((Unk_80057618 *)arg0, arg0->vt->fC4, arg1, arg2);

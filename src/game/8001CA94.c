@@ -402,6 +402,26 @@ typedef struct Unk_8001DDF4 {
 } Unk_8001DDF4;
 s32 func_8001E110(Unk_8001ECFC_Pt *arg0, Unk_8001ECFC *arg1, Unk_8001ECFC_Pt *arg2, Unk_8001ECFC_Pt *arg3);
 s32 func_8001F8B8(s32, s32 *, void *, s32 *, Unk_8001ECFC_Pt *, Unk_8001ECFC_Pt *);
+typedef struct Unk_8001E7BC_Vt {
+    u8 pad_00[0xA4];
+    void (*unkA4)(void *, s32, Unk_8001ECFC_Pt *, Unk_8001ECFC_Pt *, s32);
+} Unk_8001E7BC_Vt;
+typedef struct Unk_8001E7BC_Sub {
+    u8 pad_00[0x18];
+    Unk_8001EACC_Vec vec18;
+    u8 pad_24[0x14];
+    Unk_8001EACC_Vec vec38;
+} Unk_8001E7BC_Sub;
+typedef struct Unk_8001E7BC {
+    Unk_8001E7BC_Vt *unk0;
+    u8 pad_04[0x8];
+    struct Unk_8001E7BC *unkC;
+    s32 unk10;
+    Unk_8001E7BC_Sub *unk14;
+    u8 pad_18[0x8];
+    s32 unk20;
+} Unk_8001E7BC;
+void func_8001EA8C(s32 *arg0, s16 *arg1, s16 *arg2);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -1058,7 +1078,49 @@ void func_8001E7B0(s32 arg0) {
     *(s32 *)(arg0 + 0x20) = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001E7BC);
+s32 func_8001E7BC(Unk_8001E7BC *arg0, s32 *arg1, Unk_8001EACC_Vec *arg2) {
+    Unk_8001ECFC_Pt from;
+    Unk_8001ECFC_Pt to;
+    Unk_8001ECFC_Pt hit;
+    s32 dist;
+    Unk_8001EACC_Vec *base;
+    Unk_8001E7BC *n;
+
+    if (arg0->unk20 == 0) {
+        return 0;
+    }
+    if (arg0->unk10 < 0 && arg0->unkC != NULL) {
+        if (&arg0->unk14->vec38 != NULL) {
+            arg0->unk14->vec38 = arg0->unk14->vec18;
+            for (n = arg0->unkC; n != NULL; n = n->unkC) {
+                (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->x =
+                    (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->x + n->unk14->vec18.x;
+                (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->y =
+                    (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->y + n->unk14->vec18.y;
+                (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->z =
+                    (arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL)->z + n->unk14->vec18.z;
+            }
+        }
+    }
+    base = arg0->unkC != NULL ? &arg0->unk14->vec38 : NULL;
+    to.unk0 = arg2->x - base->x;
+    to.unk2 = arg2->y - base->y;
+    to.unk4 = arg2->z - base->z;
+    arg0->unk0->unkA4(arg0, 0, &from, &to, 1);
+    to.unk0 = from.unk0;
+    to.unk2 = from.unk2 - 0x400;
+    to.unk4 = from.unk4;
+    if (func_8001F8B8(arg0->unk20, &dist, &hit, NULL, &from, &to) != 0) {
+        func_8001EA8C(arg1, &from.unk0, &hit.unk0);
+        return 1;
+    }
+    to.unk2 = from.unk2 + 0x400;
+    if (func_8001F8B8(arg0->unk20, &dist, &hit, NULL, &from, &to) == 0) {
+        return 0;
+    }
+    func_8001EA8C(arg1, &from.unk0, &hit.unk0);
+    return 1;
+}
 
 void func_8001EA8C(s32 *arg0, s16 *arg1, s16 *arg2) {
     arg0[0] = arg2[0] - arg1[0];

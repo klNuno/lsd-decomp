@@ -307,7 +307,25 @@ typedef struct Unk_8004C620 {
     s32 unk1B8;
 } Unk_8004C620;
 void func_8004CE24(void *arg0, s32 arg1);
-void func_8004C6A8(void *arg0, s32 arg1, s16 arg2);
+typedef struct Unk_8004C6A8_M { s16 m[3][3]; s32 t[3]; } Unk_8004C6A8_M;
+typedef struct Unk_8004C6A8_C { u8 pad[0x10]; s16 rot[3]; } Unk_8004C6A8_C;
+typedef struct Unk_8004C6A8_B { u8 pad[0x44]; Unk_8004C6A8_C *u44; } Unk_8004C6A8_B;
+typedef struct Unk_8004C6A8_A { u8 pad[0x14]; Unk_8004C6A8_B *u14; } Unk_8004C6A8_A;
+typedef struct Unk_8004C6A8_vt { u8 pad[0x10C]; void (*f10C)(void *, void *, s32); } Unk_8004C6A8_vt;
+typedef struct Unk_8004C6A8 {
+    Unk_8004C6A8_vt *unk0;
+    u8 pad4[0x68];
+    Unk_8004C6A8_A *u6C;
+    u8 pad70[0x4];
+    s32 u74;
+    s16 u78;
+    u8 pad7A[0x2];
+    u16 u7C;
+    u16 u7E;
+    s32 u80;
+    s32 u84;
+} Unk_8004C6A8;
+void func_8004C6A8(Unk_8004C6A8 *self, s32 arg1, s32 arg2);
 void func_8004CC74(void *arg0);
 typedef struct Unk_8004A984_Mgr {
     u8 pad_00[0x38];
@@ -1252,6 +1270,9 @@ typedef struct Unk_8004CD38 {
     s32 unk8;
 } Unk_8004CD38;
 /* Returns 0 when the point (arg1[0], arg1[1]) lies inside the box, 1 otherwise or without a box. */
+extern Unk_8004C6A8_M D_8008E98C;
+void RotMatrix(void *, void *);
+void ApplyMatrixLV(s32 *, void *, void *);
 
 s32 func_800494B4(void) {
     return 0xE;
@@ -2483,7 +2504,62 @@ void func_8004C620(Unk_8004C620 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C6A8);
+void func_8004C6A8(Unk_8004C6A8 *self, s32 arg1, s32 arg2) {
+    s8 buf[0x30];
+    Unk_8004C6A8_M mat;
+    Unk_8004C6A8_C *c;
+    s16 *rot;
+    u16 angle;
+    s32 x;
+    s32 y;
+    s32 d;
+    s32 vert;
+
+    c = self->u6C->u14->u44;
+    rot = c->rot;
+    self->unk0->f10C(self, buf, 0);
+    x = buf[2];
+    y = buf[3];
+    angle = c->rot[1];
+    if (c->rot[1] < 0) {
+        angle += 0x1000;
+    }
+    mat = D_8008E98C;
+    mat.t[0] = 0;
+    mat.t[1] = 0;
+    mat.t[2] = self->u74;
+    RotMatrix(rot, &mat);
+    ApplyMatrixLV((s32 *)&mat, mat.t, mat.t);
+
+    if ((angle >= 0x200 && angle < 0x600) || (angle >= 0xA00 && angle < 0xE00)) {
+        d = mat.t[2];
+        self->u80 = arg2;
+        self->u84 = arg1;
+        self->u7C = (mat.t[0] > 0) ? x : x - arg1 + 1;
+        self->u7E = (mat.t[2] > 0) ? y - (u16)self->u78 - 1 : y - (u16)self->u78 + 1;
+        vert = 0;
+    } else if ((angle >= 0x600 && angle < 0xA00) || (angle < 0x200 || angle >= 0xE00)) {
+        d = mat.t[0];
+        self->u80 = arg1;
+        self->u84 = arg2;
+        self->u7C = (mat.t[0] > 0) ? x - (u16)self->u78 - 1 : x - (u16)self->u78 + 1;
+        self->u7E = (mat.t[2] > 0) ? y : y - arg2 + 1;
+        vert = 1;
+    }
+    d = d >> 11;
+    if (d >= self->u78) {
+        d = self->u78 - 1;
+    }
+    if (-self->u78 >= d) {
+        d = -self->u78 + 1;
+    }
+    if (vert != 0) {
+        self->u7C += d;
+    } else {
+        self->u7E += d;
+    }
+    func_8004C93C(self);
+}
 
 void func_8004C93C(Unk_8004CAF0_Obj *arg0) {
     s32 s0;
