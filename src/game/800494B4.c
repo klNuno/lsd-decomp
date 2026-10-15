@@ -539,6 +539,51 @@ typedef struct Unk_80049B54 {
     void *unk38;
     s32 unk3C;
 } Unk_80049B54;
+struct Unk_8004ABD0;
+typedef struct Unk_8004ABD0_ObjVtbl {
+    u8 pad_00[0x74];
+    void (*unk74)(void *);
+    u8 pad_78[0x84 - 0x78];
+    void (*unk84)(void *);
+} Unk_8004ABD0_ObjVtbl;
+typedef struct Unk_8004ABD0_Obj {
+    Unk_8004ABD0_ObjVtbl *unk0;
+} Unk_8004ABD0_Obj;
+typedef struct Unk_8004ABD0_InnerVtbl {
+    u8 pad_00[0x4];
+    void *(*unk4)(void *);
+} Unk_8004ABD0_InnerVtbl;
+typedef struct Unk_8004ABD0_Inner {
+    Unk_8004ABD0_InnerVtbl *unk0;
+} Unk_8004ABD0_Inner;
+typedef struct Unk_8004ABD0_Sub {
+    u8 pad_00[0x2C];
+    Unk_8004ABD0_Inner *unk2C;
+} Unk_8004ABD0_Sub;
+typedef struct Unk_8004ABD0_Slot {
+    s16 unk0;
+    u8 pad_02[0x4 - 0x2];
+    Unk_8004ABD0_Obj *unk4;
+    Unk_8004ABD0_Sub *unk8;
+    u8 pad_0C[0x1C - 0x0C];
+} Unk_8004ABD0_Slot;
+typedef struct Unk_8004ABD0_Vtbl {
+    u8 pad_00[0x88];
+    void (*unk88)(void *, s32, void *, s32);
+    u8 pad_8C[0x108 - 0x8C];
+    void (*unk108)(void *, void *);
+    u8 pad_10C[0x140 - 0x10C];
+    void (*unk140)(void *);
+} Unk_8004ABD0_Vtbl;
+typedef struct Unk_8004ABD0 {
+    Unk_8004ABD0_Vtbl *unk0;
+    u8 pad_04[0xEC - 0x04];
+    Unk_8004ABD0_Slot unkEC[7];
+    u8 pad_1B0[0x1B4 - 0x1B0];
+    s16 unk1B4;
+    u8 pad_1B6[0x1B8 - 0x1B6];
+    s32 unk1B8;
+} Unk_8004ABD0;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -847,7 +892,27 @@ void func_8004AB88(Unk_8004AB88 *arg0, u8 **arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004ABD0);
+void func_8004ABD0(Unk_8004ABD0 *arg0) {
+    Unk_8004ABD0_Slot *slot;
+    Unk_8004ABD0_Sub *sub;
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        slot = &arg0->unkEC[i];
+        slot->unk4->unk0->unk74(slot->unk4);
+        slot->unk0 = 0;
+        arg0->unk0->unk108(arg0, slot);
+        sub = slot->unk8;
+        if (sub->unk2C != NULL) {
+            sub->unk2C = sub->unk2C->unk0->unk4(sub->unk2C);
+        }
+        arg0->unk0->unk88(arg0, 6, slot, i);
+        slot->unk4->unk0->unk84(slot->unk4);
+    }
+    arg0->unk1B8 = 0;
+    arg0->unk1B4 = 0;
+    arg0->unk0->unk140(arg0);
+}
 
 void func_8004ACF8(Unk_8004ACF8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 i;

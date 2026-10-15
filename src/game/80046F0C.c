@@ -121,6 +121,31 @@ struct Unk_800473E4 {
 };
 s32 CdRead2(s32 mode);
 void StSetStream(s32 a, s32 b, s32 c, s32 d, s32 e);
+s8 *func_800270B8(void);
+s8 *strcpy(s8 *dst, s8 *src);
+s8 *strcat(s8 *dst, s8 *src);
+s32 CdSearchFile(void *, s8 *);
+s32 func_80047240();
+s32 D_8008A94C;
+extern s8 D_8008A954[];
+typedef struct Unk_80047114 Unk_80047114;
+typedef struct Unk_80047114Vt {
+    u8 pad_00[0x4C];
+    void (*unk4C)(Unk_80047114 *self, void *arg);
+} Unk_80047114Vt;
+struct Unk_80047114 {
+    Unk_80047114Vt *unk0;
+    u8 pad_04[0x10 - 0x4];
+    u32 unk10;
+    u8 pad_14[0x2C - 0x14];
+    s32 unk2C;
+    u8 pad_30[0x38 - 0x30];
+    u32 unk38;
+    u8 pad_3C[0x40 - 0x3C];
+    s32 unk40;
+    u8 pad_44[0x50 - 0x44];
+    s32 unk50;
+};
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -147,7 +172,39 @@ void func_800470C8(Unk_800470C8 *arg0, s32 arg1, u32 arg2) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80047114);
+s32 func_80047114(Unk_80047114 *arg0, s8 *arg1, s32 arg2) {
+    s8 buf[0x20];
+    void *temp_s2;
+    s32 temp_s3;
+
+    temp_s3 = arg2;
+    if (arg0->unk2C == 0) {
+        if (arg0->unk50 != 0) {
+            if (D_8008A950 == NULL) {
+                buf[0] = 0x5C;
+                strcpy(buf + 1, func_800270B8());
+                strcat(buf, arg1);
+                strcat(buf, D_8008A954);
+                temp_s2 = (u8 *)arg0 + 0xC;
+                while (CdSearchFile(temp_s2, buf) == 0) {
+                    if (temp_s3 >= 0) {
+                        arg2 -= 1;
+                        if (arg2 < 0) {
+                            return 1;
+                        }
+                    }
+                }
+                arg0->unk40 = (s32)(arg0->unk10 / arg0->unk38);
+                D_8008A94C = func_80047240(arg0);
+                D_8008A950 = (Unk_80047574 *)arg0;
+                arg0->unk0->unk4C(arg0, temp_s2);
+                return 0;
+            }
+            return 0;
+        }
+    }
+    return 1;
+}
 
 s32 func_80047240(void) {
     Unk_80047240 attr;

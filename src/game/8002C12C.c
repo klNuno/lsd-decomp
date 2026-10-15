@@ -115,6 +115,67 @@ typedef struct Unk_8002E038 {
     u8 pad_06[0x1A];
 } Unk_8002E038;
 extern Unk_8002E038 *D_8008E978;
+typedef struct Unk_8002C6FC_vt {
+    u8 pad_00[0x58];
+    void (*unk58)(void *, void *, s32);
+    u8 pad_5C[0x1C];
+    void (*unk78)(void *, s32);
+} Unk_8002C6FC_vt;
+typedef struct Unk_8002C6FC {
+    /* 0x00 */ Unk_8002C6FC_vt *unk0;
+    /* 0x04 */ u8 pad_04[0xC];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0x10];
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ u8 pad_28[0x2];
+    /* 0x2A */ u16 unk2A;
+    /* 0x2C */ u8 pad_2C[0x28];
+    /* 0x54 */ s16 unk54;
+    /* 0x56 */ u8 pad_56[0x4];
+    /* 0x5A */ u16 unk5A;
+    /* 0x5C */ s32 unk5C;
+} Unk_8002C6FC;
+extern s8 D_8008A8D4[];
+s32 D_8008A8C8;
+s16 SsVabOpenHead(void *vh, s16 vabid);
+s16 SsVabTransBody(void *vb, s16 vabid);
+s8 *func_800270C4(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
+typedef struct Unk_8002C278_rec {
+    u8 unk0;
+    u8 unk1;
+    u16 unk2;
+    u8 unk4;
+    u8 unk5;
+    s16 unk6;
+    s32 unk8;
+} Unk_8002C278_rec;
+typedef struct Unk_8002C278_vt {
+    u8 pad_00[0x80];
+    s32 (*unk80)(void *, u16, s32, void *);
+} Unk_8002C278_vt;
+typedef struct Unk_8002C278_obj {
+    Unk_8002C278_vt *vt;
+} Unk_8002C278_obj;
+typedef struct Unk_8002C278_ctx {
+    u8 pad_00[0x10];
+    u8 *unk10;
+    u8 pad_14[0x18];
+    Unk_8002C278_obj *unk2C;
+} Unk_8002C278_ctx;
+typedef struct Unk_8002C278 {
+    u8 pad_00[0xC];
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    u8 pad_18[0x2];
+    s16 unk1A;
+    u8 pad_1C[0x10];
+    s16 unk2C;
+    s16 unk2E;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+} Unk_8002C278;
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -146,7 +207,40 @@ void func_8002C238(Unk_8002C238 *arg0) {
     ((Unk_8002C238_vt *)func_80026CAC())->unk64(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C278);
+s32 func_8002C278(Unk_8002C278_ctx *arg0, Unk_8002C278 *arg1, s32 arg2) {
+    Unk_8002C278_rec *rec;
+    s32 next;
+    u16 id;
+    s32 val6;
+    u8 *base;
+
+    if (arg2 < 0x190) {
+        next = arg1->unk34;
+        if (next != 0) {
+            base = arg0->unk10;
+            rec = (Unk_8002C278_rec *)(base + next);
+            arg1->unk30 = 1;
+        } else {
+            rec = (Unk_8002C278_rec *)(arg2 * 0xC + 8 + arg0->unk10);
+            arg1->unk30 = 0;
+        }
+        arg1->unk34 = rec->unk8;
+        if (rec->unk0 != 0) {
+            arg1->unkC = ((arg2 % 20) << 0xB) + 0x400;
+            val6 = rec->unk6;
+            arg1->unk14 = ((arg2 / 20) << 0xB) + 0x400;
+            arg1->unk10 = val6 << 0xB;
+            arg1->unk1A = rec->unk5 << 0xA;
+            arg1->unk2C = rec->unk1;
+            arg1->unk2E = rec->unk4;
+            id = rec->unk2;
+            arg1->unk38 = id;
+            return arg0->unk2C->vt->unk80(arg0->unk2C, id, arg2, arg1);
+        }
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C3A8);
 
@@ -232,7 +326,41 @@ void func_8002C638(Unk_8002C638 *arg0) {
     ((Unk_8002C200 *)func_80026CAC())->unkC((s32)arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C6FC);
+void func_8002C6FC(Unk_8002C6FC *arg0) {
+    u8 sp10[0x20];
+    s32 old;
+    s16 ret;
+
+    switch (arg0->unk2A) {
+        case 0:
+            break;
+        case 1:
+            if (arg0->unk24 & 0x200) {
+                arg0->unk54 = SsVabOpenHead((void *)arg0->unk10, -1);
+                func_800270C4((s8 *)sp10, (s8 *)arg0->unk5C, (s8 *)0, D_8008A8D4);
+                arg0->unk2A = 6;
+                old = arg0->unk10;
+                arg0->unk10 = 0;
+                D_8008A8C8 = old;
+                arg0->unk0->unk58(arg0, sp10, old);
+                if (arg0->unk5C != 0) {
+                    func_80017CFC(arg0->unk5C);
+                    arg0->unk5C = 0;
+                }
+            }
+            break;
+        case 6:
+            if (arg0->unk24 & 0x200) {
+                ret = SsVabTransBody((void *)arg0->unk10, arg0->unk54);
+                arg0->unk54 = ret;
+                if (ret != -1) {
+                    arg0->unk5A = 1;
+                    arg0->unk0->unk78(arg0, 1);
+                }
+            }
+            break;
+    }
+}
 
 s32 func_8002C824(Unk_8002C824 *arg0, s32 arg1) {
     s32 ret = 0;
