@@ -1,12 +1,14 @@
 # lsd-decomp
 
-A work-in-progress matching decompilation of LSD: Dream Emulator (PlayStation, Asmik Ace, 1998), retail release SLPS-01556.
+A matching decompilation of LSD: Dream Emulator (PlayStation, Asmik Ace, 1998), retail release SLPS-01556.
 
 The goal is to understand how the game works: the dream graph, links, special days, the Grey Man, texture sets and the random seed. Every finding is written down with the function and address that prove it ([docs/discoveries.md](docs/discoveries.md)), against a list of open questions ([docs/mysteries.md](docs/mysteries.md)).
 
 ## Status
 
-Phase 0 done: pinned toolchain, disc extraction and a headless emulator. Nothing is split or decompiled yet.
+All 1,458 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 613 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. Most names are still addresses (`func_8001XXXX`): a name needs evidence.
+
+The findings page holds 42 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
 
 ## Requirements
 
@@ -21,6 +23,7 @@ tools/setup.sh                  # pinned toolchain into tools/ and .venv/
 ln -s /path/to/your.bin disks/SLPS-01556.bin
 printf 'FILE "SLPS-01556.bin" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n' > disks/SLPS-01556.cue
 make check-disk                 # extracts the disc, checks SLPS_015.56
+make split && make check        # splits the executable, builds it from src/, compares the sha1
 ln -s /path/to/your/bios.bin disks/bios.bin
 LSD_EMU_SHOTS=3600 LSD_EMU_FRAMES=3600 tools/emu/run.sh   # boots headless in PCSX-Redux, captures the title screen
 ```
@@ -29,7 +32,7 @@ LSD_EMU_SHOTS=3600 LSD_EMU_FRAMES=3600 tools/emu/run.sh   # boots headless in PC
 
 ## Legal
 
-Fan project, not affiliated with Asmik Ace or Osamu Sato. It contains no game code, data, text or images, and you need to own the game. Nothing built from it is distributed. A takedown request from the rights holder will be honored.
+Fan project, not affiliated with Asmik Ace or Osamu Sato. It ships no game asset (no executable, disc data, text or audio) and you need to own the game; the only game images are the small emulator screenshots that illustrate the findings. Nothing built from it is distributed. A takedown request from the rights holder will be honored.
 
 ## Credits
 

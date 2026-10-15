@@ -42,8 +42,15 @@ The Grey Man
 - [When the Grey Man can appear](#when-the-grey-man-can-appear): even days only, 1 chance in 12 at a spot left empty that day.
 - [Who can meet the Grey Man, and where](#who-can-meet-the-grey-man-and-where): he only replaces odd-day characters, and six places never get him.
 
-Characters and events
+Rare sights
+- [The flying train: a pink day and a long dream](#the-flying-train-a-pink-day-and-a-long-dream): on an odd pink day Happy Town's train stops at the opera pillar, honks and flies off, if the dream lasts long enough.
+- [The astronaut lands at the bar on a pink day](#the-astronaut-lands-at-the-bar-on-a-pink-day): on an even pink day it dives into the cottage's yard and stands at the bar; the day number does not matter.
 - [A red day fills a Happy Town street with gunmen](#a-red-day-fills-a-happy-town-street-with-gunmen): one gunman becomes nine, and the question mark in the sky goes away.
+- [Three minotaur rickshaws on a yellow day in Kyoto](#three-minotaur-rickshaws-on-a-yellow-day-in-kyoto): one rickshaw becomes three on an odd yellow day.
+- [Three purple beasts on a yellow day: our best match for the special lions](#three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions): a lone beast of Pit & Temple gets three walking companions.
+- [A red day puts a geisha on a Kyoto bridge](#a-red-day-puts-a-geisha-on-a-kyoto-bridge): she stands still on the red bridge, and her link goes to Black Space.
+
+Characters and events
 - [The hidden rules that decide which characters appear](#the-hidden-rules-that-decide-which-characters-appear): day cycles, your mood so far, and groups that show up only once.
 - [The character record: mood, points, waking up and leaving](#the-character-record-mood-points-waking-up-and-leaving): 130 character types, and the five that end the dream on a video.
 - [Signals from characters and objects](#signals-from-characters-and-objects): touching, forced links, forced endings and event videos.
@@ -77,6 +84,7 @@ Myths checked
 - [Myth: a hidden ending if the graph is full](#myth-a-hidden-ending-if-the-graph-is-full): false.
 - [Myth: no Grey Man after day 365](#myth-no-grey-man-after-day-365): false, he came back in year two.
 - [Myth: over 500 music tracks](#myth-over-500-music-tracks): false, 462 at most, and some of them are silence.
+- [Myth: the astronaut lands only between days 200 and 300](#myth-the-astronaut-lands-only-between-days-200-and-300): false, a pink day decides it, and it landed on day 4.
 
 ## Days and years
 
@@ -416,13 +424,68 @@ Status: 📖 read in the code only (the rule that lets him spawn was seen workin
 
 </details>
 
-## Characters and events
+## Rare sights
+
+The rare events players hunt for are ordinary characters with a condition attached. Most of the conditions are the colour of your day so far: the game cuts [your graph point](#how-a-day-becomes-a-point-on-the-graph) into a 3 by 3 grid and gives each part one of 8 colours, and some characters only come out, or only act differently, in one of them. The ones below were all seen in the emulator. To reach them quickly we wrote the day number, yesterday's point and, for most of them, the colour into memory; what the characters did on screen was the game's own code.
+
+### The flying train: a pink day and a long dream
+
+On odd-numbered days, Happy Town's slow train (a green locomotive and one wagon) starts rolling along its track once you have looked toward its spot on the rails from far away. Standing close to that spot and looking at it does nothing. This is the code behind the players' "it spawns when you look at a certain spot of the railroad".
+
+If your day is pink at the moment it starts, the train does not vanish at the end of its run. It stops beside the opera singer's pillar, waits about 40 seconds, honks, sets off again and climbs into the sky. Pink is the graph's upper-right corner. The same pink colour brings four opera singers down to the foot of the pillar, so the two sights come together.
+
+The catch is time. In the emulator the train took a little over three minutes after it started to reach the pillar, and a dream that starts in Happy Town ends before that. The dream has to start in a place with a longer clock, reach Happy Town early, on an odd day, with a pink day, and you have to wake the train quickly. On a day of any other colour, the code makes the train vanish just after the point where the pink train stops, near the same pillar (not filmed).
+
+Status: 🎮 checked in the game: the odd day, the start square, the pink colour and a longer dream were forced, and the player was moved to look at the spot, then kept beside the train. The stop, the honk and the flight were the game's own.
+
+<p>
+<img src="img/game/flying-train-rolling.png" alt="Happy Town's slow train, a green locomotive and one wagon, rolling along the track in front of a wall of colourful tiles" width="32%">
+<img src="img/game/flying-train-pillar.png" alt="The train reaching the opera singer's pillar, with the singer on top and the four pink-day singers standing on the ground in front" width="32%">
+<img src="img/game/flying-train-sky.png" alt="The train in the sky above Happy Town's roofs, its wheels off the ground" width="32%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 4 (Happy Town), square (col 1, row 1), slot 3 (key 257, day flag 1: odd day numbers only), group 4: type 111, rule 1 (always), model 0, place 2. Record 111 (0x8008A594): wake mode 1 (in range), wake range +5 = 15, range +9 = 3, touch range 15, link -4 (stage 3, the Natural World), handler `func_80064E34` @0x80064E34 (C, `src/game/8005C508.c`).
+- How "in range" works: `func_8005D714` asks DreamSys slot 0x120 `func_8005942C` for the point (record +5) << 11 units straight ahead of the player and tests, axis by axis (`func_8001EF14`), whether the character is within (record +9) << 11 of it. For the train: the spot 30,720 units ahead of you must land within 6,144 of it. Player position: DreamSys (0x80091530) +0x14 points to a block with x, y, z as s32 at +0x18, +0x1C, +0x20, copied at +0x38, +0x3C, +0x40 (the copy `func_8005D7FC` and `func_8005942C` read).
+- Handler: at tick +0xFC = 0 it asks DreamSys slot 0x200 (`GetDreamColor`); colour 5 (pink) sets +0x44 = 11. Normal run: `func_80064FBC(.., 0x1E1, 0x884, -0x3C)`, forward at speed 0x3C, horn (`D_80089D18`) in three tick windows from 481, and at tick 0x884 = 2,180 slot 0x160 (leave). Pink run: the same until tick 0x870 = 2,160, then slot 0x130 (stop); tick 0xA00 = 2,560 calls slot 0x12C (the honk); from tick 0xA03 it rolls again with the leave tick moved to 0xFA0 = 4,000, and from tick 0xAF1 = 2,801 slot 0xCC with -0x20 every tick lifts it (PS1 y points down).
+- Opera singers: stage 4 square (col 1, row 0), slot 0 (every day): group 0 is the singer on the pillar (type 38), group 28 is type 112 at places 137 to 140 with rule 17 (`SPECIAL_COLORS[7]` = 5, pink).
+- In game: yes, interpreter (`work/hunt5/C/r5.log`). Forced: day +0x180 = 4 (day number 5), yesterday's point +0x196 = (-2, 7) (start on square (1, 1)), mood accumulator (6, 5) at each spot check (colour 5), time limit +0x134 = 200,000 at vsync 3600, player moved at vsync 3600 to 30,720 units behind the spot facing it, then put back every 10 vsyncs 14,000 units south of the train. Spawned at vsync 3488, woke at 3603, +0x44 = 11 from the first tick, stopped at tick 2,160 at (-59117, 0, -70763), 4,100 units from the pillar and next to the four type 112 singers; still from vsync 14,800 to 17,100; moving again at tick 2,642; y left 0 between ticks 2,787 and 2,837 and reached -9,088 at tick 3,085. Control `r4.log`: 12,000 units from the spot, facing it, it never woke in 13,000 vsyncs.
+- Why it is rare: the train's ticks ran at about 0.175 per vsync, so the stop came about 11,200 vsyncs after it woke; a dream that started in Happy Town (120 s limit in `g_stageTimeLimits`) ended at vsync 12,091 in `r4.log`, about 8,600 vsyncs after it began. Measured in the emulator only; a console's frame rate may differ.
+- Not seen: the normal train leaving at tick 2,180 and the pink train leaving at tick 4,000 (code only). Types 41 and 49 share its model (Happy Town squares (3, 3) and (5, 3)) and may be the fast even-day train players describe; not run.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### The astronaut lands at the bar on a pink day
+
+On even-numbered days a giant astronaut floats over Bright Moon Cottage, out and back, playing its trumpet. If your day is pink at the moment it appears, it turns out of its flight path, dives into the yard, walks to the cottage's bar and stays standing beside the counter, and the trumpet stops. On any other colour it never comes down.
+
+Nothing in its code looks at the day number beyond odd or even, so the "days 200 to 300" players repeat is [a myth](#myth-the-astronaut-lands-only-between-days-200-and-300): it landed on day 4. It appears once per dream. A dream that starts in the cottage probably cannot do it, since the cottage's own squares do not reach pink; the pink has to come from earlier in the dream (our guess from the squares' moods, not played).
+
+Status: 🎮 checked in the game: the even day, the start square and the pink colour were forced; the turn, the dive, the walk to the bar and the stop were the game's own. With the natural colour it kept flying.
+
+<p>
+<img src="img/game/astronaut-dive.png" alt="The giant astronaut in a green sky over the cottage's roof, turned head-down at the start of its dive" width="49%">
+<img src="img/game/astronaut-at-the-bar.png" alt="The astronaut standing beside the cottage's bar: bottle shelves and the counter on the left, the garden behind" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 0 (Bright Moon Cottage), square (col 0, row 4), mood (-5, -7), slot 4 (key 1024, day flag 2: even day numbers). Group 0: type 0, rule -1 (always, once per world build: the done flag is cleared by `Sym_LoadModels`), place 42. Record 0 (0x80089EA4): mood (0, 2), points 20, wake mode 0, touch range 2, link -13 (stage 12, Black Space, as players report), handler `func_8005E160` @0x8005E160.
+- Handler: at its first tick it reads DreamSys slot 0x200 (`GetDreamColor`); 5 (pink) sets +0x44 = 100. Normal: trumpet every 10 ticks, `unkC4(+0x32)` for 1,200 ticks then `unkC4(-0x32)` for 1,200 ticks, and at tick 2,400 the counter restarts. Landing: forward for 100 ticks, then `unkBC(D_80089DA8)` = (0, 0x40, -0x40) until tick 250 (the dive), sound only before tick 250, walk `unkC4(-0x32)` with the walk animation `D_80089CE8` from tick 261 to 567, then the standing animation `D_80089CF4` from tick 569.
+- No day rule: the only day-of-year rules in the spawn code are the 30-day "month" rules 2 to 4 (another square of stage 0, another model); the [40-day cycle](#the-40-day-texture-cycle) changes only textures; the ambience pick `func_80054758` feeds only rule 7, used by one group of stage 3.
+- In game: yes, interpreter. Pink runs `work/hunt5/C/r6-astro-pink.log`, `r14`, `r16`: colour point (8, 6) at vsync 3463, +0x44 = 100 from the first tick; y went from -9,216 to 384 between ticks 68 and 308, then it reached (-5104, 384, -5328) and stayed there from tick 588 to the end of the run (tick 866). Control `r6b-astro-ctl.log`: natural colour point (-6, -9), +0x44 = 0, y stayed -9,216, still flying at tick 508. Forced: day +0x180 = 3 (day number 4), yesterday's point +0x194 = (-5, -7), mood (6, 5) at spot checks, limit +0x134 = 200,000, camera kept 4,000 to 5,000 units behind it; in `r16` the player's height was set to the astronaut's minus 1,000 after its tick 600 to see the ground floor. In `r16` the camera touched it at vsync 3500 (instance score +20,000, no link); its landing had been decided at its first tick.
+- Not played: the natural route (a link into the cottage's yard square with a pink day). The cottage squares carry moods from (-5, -7) to (1, 1), hence the guess above.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
 
 ### A red day fills a Happy Town street with gunmen
 
 In Happy Town there is a street square where, on odd-numbered days, a single figure with a long gun stands and a big question mark floats in the sky. If the colour of your day so far is red when that square loads, the question mark is gone and eight more gunmen stand there, nine in all. Touching one flashes the screen red and sends you to another corner of Happy Town, a grey courtyard with a blue and white checkered floor.
 
-The colour of your day comes from your graph point so far: the game cuts the graph into a 3 by 3 grid and gives each part one of 8 colours. Red is the bottom middle part: neither static nor dynamic, and downer. The easiest way in is to end a day on the point (2, 8), near the top of the graph. If the next day has an odd number, the dream starts on that very square, and the square's own mood plus the game's bonus for the last place visited pushes your point past the top edge. It flips to the bottom of the graph: red, and the gunmen come out.
+Red is the bottom middle part of the colour grid: neither static nor dynamic, and downer. The easiest way in is to end a day on the point (2, 8), near the top of the graph. If the next day has an odd number, the dream starts on that very square, and the square's own mood plus the game's bonus for the last place visited pushes your point past the top edge. It flips to the bottom of the graph: red, and the gunmen come out.
 
 Status: 🎮 checked in the game: only the day number and yesterday's point were written in; the red colour and the crowd came from the game itself.
 
@@ -443,15 +506,82 @@ Square: stage 4 (Happy Town), column 0 row 4 (key 0x400, `STG04\N1\M024.LBD`, mo
 
 </details>
 
+### Three minotaur rickshaws on a yellow day in Kyoto
+
+Kyoto's rickshaw minotaur, a cart pulled by a brown bull-man, normally rolls alone down one street on odd-numbered days. If your day so far is yellow when that street loads, two more rickshaws join it, three in a row. Yellow is the graph's lower-left corner. Kyoto's own squares mostly lean the other way, so the yellow has to come from places or touches earlier that day.
+
+Status: 🎮 checked in the game: the odd day, the start square and the yellow colour were forced; with the natural colour only one rickshaw came. Their link to the Natural World, which players report, is read in the code only.
+
+<p>
+<img src="img/game/minotaurs-yellow-day.png" alt="A Kyoto street on a yellow day: three rickshaw carts with big wheels rolling one behind the other" width="49%">
+<img src="img/game/minotaur-alone.png" alt="The same street on a day of another colour: one rickshaw only" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 2 (Kyoto), square (col 0, row 2), mood (2, -1), slot 5 (key 512, day flag 1: odd day numbers). Group 14: type 21, rule 1 (always), place 35. Group 19: type 21, rule 10 (`SPECIAL_COLORS[0]` = 6, yellow), places 126 and 127. Both use model 0 of the square, so the extra two look the same. Record 21 (0x80089FF4): mood (-1, -2), wake mode 0, link -4 (stage 3, the Natural World), handler `func_8005F0D8` (moves at -0x1E with the follow flag, sound every half animation loop).
+- In game: yes, interpreter. Yellow runs `work/hunt5/C/r9-mino-yellow.log`, `r12-mino-yellow.log`: colour point (-8, -8) at vsync 3445, type 21 at places 35, 126 and 127, at (-89088, -200, -15360), (-93184, -200, -17408), (-91136, -200, -19456), all moving the same way. Control `r9b-mino-ctl.log`, `r12b-mino-ctl.log`: colour point (2, -1) (white), type 21 at place 35 only. Forced: day +0x180 = 4 (day number 5), yesterday's point +0x196 = (2, -1), mood (-6, -6) at each spot check in the yellow runs, limit raised, camera 5,000 units behind the first cart.
+- Other Kyoto colour groups in the same table, not run: green (rule 15) puts 4 more of type 20 on square (3, 1); white (rule 13) 2 more of type 94; red (rule 11) type 110, [the geisha on the bridge](#a-red-day-puts-a-geisha-on-a-kyoto-bridge).
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### Three purple beasts on a yellow day: our best match for the special lions
+
+Pit & Temple (stage 1) normally has one purple beast with a mane that stands still and, rarely, wakes up when you are near. On a yellow day three more of the same beast walk through that square in single file. In the code, coming close to any of them sends you elsewhere in Pit & Temple.
+
+Players talk about "special lions near Temple Dojo". These four-legged maned beasts are our best match, by their look and their behaviour, but nothing in the game names them, so the match is not proven. The lions players see in the Natural World were not looked for.
+
+Status: 🎮 checked in the game: the start square and the yellow colour were forced; the trio and its walk were the game's own. The link when you come close is read in the code only.
+
+<p>
+<img src="img/game/purple-beasts-trio.png" alt="Three purple maned beasts walking in single file on green ground, under a dark blue sky" width="49%">
+<img src="img/game/purple-beast-front.png" alt="The first purple beast seen head-on, the other two hidden behind it" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 1, square (col 1, row 1), mood (0, -9), slot 1 (key 257, every day). Group 1: type 8, rule 1, place 24. Group 2: type 109, rule 10 (yellow), places 110 to 112. Both model 0 of the square (10 objects, 90 polygons, `work/hunt4/A/models.txt`).
+- Record 8: wake mode 3 (in range, then 1 in 128 per tick), handler `func_8005E694` (idle animation, turns toward a fixed target). Record 109: wake mode 0, touch range 7, link -2 (stage 1) with +8 = 4 (links as soon as the player is within 4 << 9 = 2,048), handler `func_80064CEC` (walk animation and `unkC4(-10)` each tick).
+- In game: yes, interpreter. Yellow runs `work/hunt5/C/r7-lions-yellow.log`, `r11-lions-yellow.log`, `r15-lions-side`: colour point (-8, -8) at vsync 3347, type 109 at (-3072, -200, -25600), (-3072, -200, -27648), (-3072, -200, -29696), all moving +z at about 2 units per vsync. Control `work/hunt4/A/lc.log` (colour blue): type 8 only. Forced: day +0x180 = 4, yesterday's point +0x196 = (0, -9), mood (-6, -6) at each spot check, camera 6,000 units from the first beast (9,000 behind and 2,500 to the side in `r15`).
+- Kyoto square (4, 3), the other candidate, holds a geisha model, not a lion (see [the geisha](#a-red-day-puts-a-geisha-on-a-kyoto-bridge)).
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### A red day puts a geisha on a Kyoto bridge
+
+On a red day, a geisha stands still on the red arched bridge of a Kyoto canal, in the same square where on even days another geisha walks down the street toward you. Players report a geisha "rarely standing still on a bridge" whose link goes to Black Space, and her code sends you there.
+
+The walking one is the dangerous one: in one of her two scripts she turns, comes at you and ends the dream with her video.
+
+Status: 🎮 checked in the game: the start square and the red colour were forced; she stood on the bridge for the whole run. Her link and the walking geisha's video are read in the code only.
+
+<p>
+<img src="img/game/geisha-red-bridge.png" alt="A figure in a long dark robe standing still on Kyoto's red arched bridge at night" width="49%">
+<img src="img/game/geisha-even-street.png" alt="The even-day geisha in white walking down the same square's street, the red bridge on the right" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 2 (Kyoto), square (col 4, row 3), mood (-1, -1), slot 10 (key 772, every day). Group 2: type 11, rule 20 (even days), place 58. Group 17: type 110, rule 11 (`SPECIAL_COLORS[1]` = 4, red), place 121. Group 21: type 125, rule 21 (odd days), places 207 to 210. All model 0 of the square (5 objects, 88 polygons).
+- Record 110: wake mode 0, touch range 5, link -13 (stage 12, Black Space in the community numbering), handler `func_80064D48`: idle animation, and when the player comes within 0x800 a 45-tick animation, then 500 ticks of rest. Record 11: +7 = 8, +8 = 4 (video 3), handler `func_8005E7F8`: at tick 1,560 a coin flip picks one of two scripts; in one, if DreamSys slot 0x100 answers non-zero between ticks 3,421 and 3,540, she turns, comes at the player at speed 0x78 and ends the dream with her video within 0x400. Record 125: 1 in 4 leaves at its first tick, the others walk slowly and leave at tick 3,600.
+- In game: yes, interpreter. Red runs `work/hunt5/C/r8c-ky43-red.log`, `r13-ky43-red.log`: colour point (0, -8) at vsync 3465, type 110 at place 121, standing at (31744, -900, 29048) on the bridge (y -900, above the street's -200), still through the run; type 11 also spawned (even day). Forced: day +0x180 = 3 (day number 4), yesterday's point +0x194 = (-1, -1), mood (0, -6) at spot checks, camera 4,000 units from her. The walking geisha: `r8b-ky43-even.log`, no colour forced.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+## Characters and events
+
 ### The hidden rules that decide which characters appear
 
-Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: that is the ["many gunmen" sighting, now seen in the game](#a-red-day-fills-a-happy-town-street-with-gunmen). The "many minotaurs" are not matched yet.
+Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: that is the ["many gunmen" sighting, now seen in the game](#a-red-day-fills-a-happy-town-street-with-gunmen). The "many minotaurs" work the same way: [three rickshaws on a yellow day in Kyoto](#three-minotaur-rickshaws-on-a-yellow-day-in-kyoto).
 
 The colour table players know from lsddecomp as `SPECIAL_COLORS` is part of these rules: for 8 of them it names the colour your day must be in for a group to come out (yellow, red, cyan, white, black, green, blue, pink, one each). It has nothing to do with links.
 
-A character's look comes from the map square it stands on, not from its type: each square's file carries one to three models, and a group only says "model 0, 1 or 2 of this square". So a "rare version" of a character is often the same model with another behaviour swapped in by a day or colour rule. The Happy Town gunman is one (types 51 and 114). Another: in stage 1, a creature that normally stands alone comes as three on a yellow day, walking, and sends you elsewhere in stage 1 as soon as you come near (seen in the spawn log, not on screen).
+A character's look comes from the map square it stands on, not from its type: each square's file carries one to three models, and a group only says "model 0, 1 or 2 of this square". So a "rare version" of a character is often the same model with another behaviour swapped in by a day or colour rule. The Happy Town gunman is one (types 51 and 114). Another: in stage 1, a creature that normally stands alone comes as three on a yellow day, walking, and sends you elsewhere in stage 1 as soon as you come near ([now seen on screen](#three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)). All the sights of [Rare sights](#rare-sights) come from these rules or from a character that checks the colour itself.
 
-Status: 📖 read in the code only (one colour rule, the gunmen, is checked in the game).
+Status: 📖 read in the code only, except the colour rules shown in [Rare sights](#rare-sights), which are checked in the game.
 
 <details><summary>Technical details</summary>
 
@@ -462,7 +592,7 @@ A slot lists up to 3 groups; `func_8005C9DC` tries each group in turn. Groups ar
 Models: `func_8005CAB4` gets the model with `chunk->vt->unk88(chunk, group.model)` on the square's LBD object (`func_80044A0C`), then creates the entity with the group's type (`func_8005CDF8` → `func_8005CFDC(type, ...)`). The square file's MML (offset at LBD +0x10) holds the models; every group's model index exists in its square's file (all 14 stages, `work/hunt4/A/mml.py`, list `work/hunt4/A/models.txt`). Stage 1, square (col 1, row 1), model 0 is shared by type 8 (rule always, place 24, wake mode 3, handler `func_8005E694` stands still) and type 109 (rule 10 = yellow, places 110 to 112, awake at spawn, link -2 → stage 1 with +8 = 4, handler `func_80064CEC` walks).
 
 - Proof: `func_8005C9DC`, `func_8005CAB4`, `func_8005CBC8`, `func_8005CDA8`, `func_8005CD58`, `func_8005C930`, `func_8005CDF8` (all matched C), `func_8005B4E0`, `func_8005B518`, tables 0x80089A44, 0x80089A7C, 0x80088D16, 0x80087E14.
-- In game: the stage 4 colour rule, see [the gunmen](#a-red-day-fills-a-happy-town-street-with-gunmen). The stage 1 yellow trio in the spawn log only: interpreter, +0x180 = 4, yesterday's point +0x196 = (0, -9) (the dream starts on that square), chunk accumulator forced to (-6, -6) at each slot check (colour 6): `work/hunt4/A/ly.log` shows type 8 at place 24 and type 109 at places 110 to 112; control `lc.log` (natural colour blue): type 8 only. They did not come into view, so no picture; whether they are the community's "special lions" is not proven.
+- In game: the stage 4 colour rule ([the gunmen](#a-red-day-fills-a-happy-town-street-with-gunmen)), the stage 2 rules 10 and 11 ([the minotaurs](#three-minotaur-rickshaws-on-a-yellow-day-in-kyoto), [the geisha](#a-red-day-puts-a-geisha-on-a-kyoto-bridge)) and the stage 4 rule 17 (the opera singers of [the flying train](#the-flying-train-a-pink-day-and-a-long-dream)). The stage 1 yellow trio, first in the spawn log: interpreter, +0x180 = 4, yesterday's point +0x196 = (0, -9) (the dream starts on that square), chunk accumulator forced to (-6, -6) at each slot check (colour 6): `work/hunt4/A/ly.log` shows type 8 at place 24 and type 109 at places 110 to 112; control `lc.log` (natural colour blue): type 8 only. Hunt 5 brought them into view ([the purple beasts](#three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)); whether they are the community's "special lions" is not proven.
 - Questions: [12](mysteries.md#events-and-hidden-content), [3](mysteries.md#graph-and-dream-start). Found 2026-10-15.
 
 </details>
@@ -485,13 +615,13 @@ Record `D_80089EA4 + 16 * type`: +0/+1 s8 mood (returned whole by vtable 0x14C `
 
 ### Signals from characters and objects
 
-Characters and objects talk to the dream through a handful of signals. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#how-flashback-memories-are-kept). Others send you to a fixed place, end the dream and queue their own video, or simply end the dream. These are the forced endings and event videos players know (the train, the astronaut, the lions). Which characters send which signal is now listed in [the character record](#the-character-record-mood-points-waking-up-and-leaving), and when they appear in [the spawn rules](#the-hidden-rules-that-decide-which-characters-appear); which of them is the train, the astronaut or the lions on screen is not matched yet. In flashback mode touching, event videos and forced endings do nothing.
+Characters and objects talk to the dream through a handful of signals. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#how-flashback-memories-are-kept). Others send you to a fixed place, end the dream and queue their own video, or simply end the dream. Which characters send which signal is listed in [the character record](#the-character-record-mood-points-waking-up-and-leaving), and when they appear in [the spawn rules](#the-hidden-rules-that-decide-which-characters-appear). The [flying train](#the-flying-train-a-pink-day-and-a-long-dream), [the astronaut](#the-astronaut-lands-at-the-bar-on-a-pink-day) and [the purple beasts](#three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions) are now matched on screen: their records name a place to send you to, and none of them ends the dream or plays a video. In flashback mode touching, event videos and forced endings do nothing.
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos. Message 11 comes from the handlers of types 11, 13, 47, 79 and 89, message 12 from types 12 and 47 (record dump `work/hunt3/recs.txt`); no type was matched to the train, astronaut or lions model on screen.
+Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos. Message 11 comes from the handlers of types 11, 13, 47, 79 and 89, message 12 from types 12 and 47 (record dump `work/hunt3/recs.txt`); the flying train is type 111, the astronaut type 0 and the purple beasts type 109 (matched on screen in hunt 5, see [Rare sights](#rare-sights)), and none of them sends message 11 or 12.
 
 - Proof: `DreamSys_OnEntityEvent` @0x8005B03C, `Cine_GetEventPath` @0x80049270 (matched C), `DreamSys_ExecuteLink` @0x8005A928.
 - In game: no.
@@ -815,5 +945,23 @@ Bank: `rand() % 7` among `SND\AMBIENT`, `CARTOON`, `ELECTRO`, `ETHNOVA`, `HUMAN`
 - Proof: `func_80048D74`, `func_80048F84`, `func_80049684`, `func_80052F10`; hashes in `work/hunt4/B-seq.txt`, read in place by `work/hunt4/B-tools/isohash.py`.
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
+
+</details>
+
+### Myth: the astronaut lands only between days 200 and 300
+
+The myth: the giant astronaut lands at Bright Moon Cottage's bar only on days 200 to 300.
+
+Verdict: false. What decides the landing is the colour of your day when the astronaut appears: pink, and only on even days. Its code never looks at the day number beyond odd or even, and in the emulator it landed at the bar on day 4. See [the astronaut at the bar](#the-astronaut-lands-at-the-bar-on-a-pink-day).
+
+Status: 🎮 checked in the game, with the day and the colour forced.
+
+<details><summary>Technical details</summary>
+
+Type 0's group (stage 0, slot 4) has day flag 2 (even days) and rule -1 (once, no day term); its handler `func_8005E160` reads only the colour (DreamSys slot 0x200) at its first tick. The only day-of-year rules in the spawn code are the 30-day month rules 2 to 4 (`func_8005CDA8`), used by another square of stage 0 with another model.
+
+- Proof: `func_8005E160`, `func_8005CBC8`, `func_8005CDA8`, spawn dump `work/hunt3/spawns.txt`.
+- In game: yes (interpreter, `work/hunt5/C/r16`): day +0x180 = 3 (day number 4), pink forced, standing at the bar from tick 588.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 
 </details>
