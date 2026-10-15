@@ -14,13 +14,25 @@ typedef struct Unk_8004297C_Mgr {
     void (*unk8)(void **);
 } Unk_8004297C_Mgr;
 typedef struct Unk_8004297C {
-    u8 pad_00[0x40];
+    u8 pad_00[0x8];
+    void (*unk8)(s32, s32);
+    u8 pad_0C[0x34];
     void (*unk40)(void **, s32);
 } Unk_8004297C;
 void *func_80018390(void);
 Unk_8004297C *func_80042A7C(void);
+s32 func_80017B34(s32 size);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_8004291C);
+s32 func_8004291C(s32 arg0) {
+    s32 temp_s0;
+
+    temp_s0 = func_80017B34(0x20);
+    if (temp_s0 != 0) {
+        func_80042A7C()->unk8(temp_s0, arg0);
+        return temp_s0;
+    }
+    return 0;
+}
 
 void func_8004297C(void **arg0, s32 arg1) {
     Unk_8004297C *temp_v0;
