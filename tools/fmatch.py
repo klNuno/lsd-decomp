@@ -7,6 +7,8 @@
       A compile error prints the compiler output (exit 2).
   tools/fmatch.py m2c FUNC     first-pass C from m2c, with include/ as context
   tools/fmatch.py asm FUNC     path of the original asm
+  tools/fmatch.py decls FUNC   the declarations of FUNC's unit that FUNC needs: those naming a symbol
+                               its asm uses, prototypes of unit functions it calls, the types they use
 
 Run from anywhere; work files go to build/fmatch/<FUNC>/. A 100 % here is necessary, not
 sufficient: only `make check` on the whole executable decides.
@@ -183,6 +185,66 @@ def cmd_m2c(a):
     return r.returncode
 
 
+def unit_items(text):
+    """(declarations, function prototypes) of a unit: top-level items and the head of each definition."""
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import integrate
+    decls, protos, buf, depth = [], {}, [], 0
+    for line in text.splitlines():
+        if not buf and (not line.strip() or line.startswith(("#include", "INCLUDE_ASM", "INCLUDE_RODATA"))):
+            continue
+        buf.append(line)
+        code = integrate.code_of(line)
+        depth += code.count("{") - code.count("}")
+        if depth == 0 and (code.endswith((";", "}")) or not code.strip()):
+            item = "\n".join(buf)
+            buf = []
+            if integrate.is_function_start(item) and not item.rstrip().endswith(";"):
+                head = re.sub(r"\s+", " ", item.split("{", 1)[0]).strip()
+                m = re.search(r"(\w+)\s*\(", head)
+                if m:
+                    protos[m.group(1)] = head + ";"
+            else:
+                decls.append(item)
+    return decls, protos
+
+
+def cmd_decls(a):
+    asm = find_asm(a.func)
+    unit = asm.split("/")[-2]
+    path = os.path.join(ROOT, "src/game", unit + ".c")
+    names = set(re.findall(r"\b((?:func|D|jtbl)_[0-9A-F]{8})\b", open(os.path.join(ROOT, asm), encoding="utf-8").read()))
+    names.add(a.func)
+    decls, protos = unit_items(open(path, encoding="utf-8").read())
+    words = lambda t: set(re.findall(r"\b\w+\b", t))
+    picked = [d for d in decls if words(d) & names]
+    picked += [protos[n] for n in sorted(names) if n in protos and n != a.func]
+    # Close over the types they use: a struct, union or typedef defined in the unit.
+    typedefs = {}
+    for d in decls:
+        code = " ".join(d.split())
+        m = re.search(r"\}\s*(\w+)\s*;$", code) if code.startswith("typedef") and "{" in code else None
+        m = m or re.match(r"(?:typedef\s+)?(?:struct|union|enum)\s+(\w+)\s*\{", code)
+        m = m or re.match(r"typedef\s+[^;{]*?\b(\w+)\s*;$", code)
+        if m:
+            typedefs.setdefault(m.group(1), []).append(d)
+    seen, todo, types = set(), list(picked), []
+    while todo:
+        for w in words(todo.pop()):
+            if w in typedefs and w not in seen:
+                seen.add(w)
+                for d in typedefs[w]:
+                    types.append(d)
+                    todo.append(d)
+    out, done = [], set()
+    for d in [d for d in decls if d in types] + picked:
+        if d not in done:
+            done.add(d)
+            out.append(d)
+    print(f"/* src/game/{unit}.c: {len(out)} of {len(decls)} declarations, in unit order (types first) */")
+    print("\n".join(out))
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -198,7 +260,11 @@ def main():
     m.add_argument("func")
     s = sub.add_parser("asm")
     s.add_argument("func")
+    c = sub.add_parser("decls")
+    c.add_argument("func")
     a = p.parse_args()
+    if a.cmd == "decls":
+        sys.exit(cmd_decls(a))
     if a.cmd == "diff":
         sys.exit(cmd_diff(a))
     if a.cmd == "m2c":
