@@ -28,6 +28,30 @@ typedef struct Unk_8003B3FC {
     s32 unk48;
     s32 unk4C;
 } Unk_8003B3FC;
+typedef struct Unk_8003B624_Vtbl {
+    u8 pad_00[0x64];
+    void (*unk64)(void *, void *, s32, s32);
+} Unk_8003B624_Vtbl;
+typedef struct Unk_8003B624_Obj {
+    Unk_8003B624_Vtbl *vt;
+} Unk_8003B624_Obj;
+typedef struct Unk_8003B624 {
+    s16 unk0;
+    s16 unk2;
+    s32 unk4;
+    s32 unk8;
+} Unk_8003B624;
+typedef struct Unk_8003B624_Pos {
+    s16 unk0;
+    s16 unk2;
+} Unk_8003B624_Pos;
+typedef struct Unk_8003B624_Rect {
+    u16 unk0;
+    u16 unk2;
+    s32 unk4;
+    s32 unk8;
+} Unk_8003B624_Rect;
+Unk_8003B624_Obj *func_80020C5C(void);
 
 s32 func_8003B39C(s32 arg0) {
     void *temp;
@@ -85,4 +109,31 @@ void func_8003B5F0(Unk_8003B5F0 *arg0, void *arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B614);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B624);
+void func_8003B624(Unk_8003B624 *arg0, s32 arg1, Unk_8003B624_Pos *arg2) {
+    Unk_8003B624_Rect rect;
+    s32 i;
+    Unk_8003B624_Obj *obj;
+    void (*fn)(void *, void *, s32, s32);
+
+    obj = func_80020C5C();
+    fn = obj->vt->unk64;
+    if (arg1 != 0) {
+        for (i = 0; i < arg1; i++) {
+                rect.unk0 = arg0->unk0 + arg0->unk4 - 1;
+                rect.unk2 = arg0->unk2;
+                rect.unk4 = 1;
+                rect.unk8 = arg0->unk8;
+                fn(obj, &rect, arg2->unk0, arg2->unk2);
+                rect.unk0 = arg0->unk0;
+                rect.unk2 = arg0->unk2;
+                rect.unk4 = arg0->unk4 - 1;
+                rect.unk8 = arg0->unk8;
+                fn(obj, &rect, arg0->unk0 + 1, arg0->unk2);
+                rect.unk0 = arg2->unk0;
+                rect.unk2 = arg2->unk2;
+                rect.unk4 = 1;
+                rect.unk8 = arg0->unk8;
+                fn(obj, &rect, arg0->unk0, arg0->unk2);
+        }
+    }
+}

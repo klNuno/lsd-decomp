@@ -21,7 +21,9 @@ typedef struct Unk_8005B5A4 {
     s32 unkC;
 } Unk_8005B5A4;
 typedef struct Unk_80059360 {
-    u8 pad[0x24];
+    u8 pad[0x18];
+    u32 unk18;
+    u8 pad2[0x24 - 0x1C];
     u32 unk24;
 } Unk_80059360;
 typedef struct Unk_8005A168 {
@@ -920,6 +922,24 @@ typedef struct Unk_8005AE40 {
     s16 unk91C[3];
 } Unk_8005AE40;
 extern s16 D_8008ABD8[];
+typedef struct Unk_80059BE0_Vtbl {
+    u8 pad_00[0x168];
+    void (*unk168)(void *);
+    void (*unk16C)(void *, void *);
+} Unk_80059BE0_Vtbl;
+typedef struct Unk_80059BE0 {
+    Unk_80059BE0_Vtbl *unk0;
+    u8 pad_04[0x5C - 0x04];
+    Unk_80059360 *unk5C;
+    u8 pad_60[0xA0 - 0x60];
+    s32 unkA0;
+    u8 pad_A4[0xAC - 0xA4];
+    s32 unkAC;
+    u8 pad_B0[0xB4 - 0xB0];
+    s32 unkB4;
+    u8 pad_B8[0x678 - 0xB8];
+    s32 unk678;
+} Unk_80059BE0;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1391,7 +1411,49 @@ void func_80059B50(Unk_80059AEC *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059BD4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059BE0);
+s32 func_80059BE0(Unk_80059BE0 *arg0, void *arg1) {
+    s32 var_s1 = 0;
+    s32 var_s3;
+    s32 temp_a0;
+    s32 bit;
+    s32 step;
+    Unk_80059360 *a1 = arg1;
+
+    var_s3 = 0;
+    if (arg0->unkA0 != 0) {
+        var_s3 = arg0->unkA0;
+        temp_a0 = arg0->unkB4 + 1;
+        arg0->unkB4 = temp_a0;
+        if (temp_a0 < 4) {
+            if (arg0->unkAC == 4) {
+                bit = temp_a0 & 1;
+                var_s1 = bit == 0;
+            }
+        } else {
+            arg0->unkA0 = 0;
+            var_s1 = 1;
+        }
+        if (var_s1 != 0) {
+            arg0->unk0->unk168(arg0);
+        }
+        a1 = arg0->unk5C;
+        if (a1 != 0 && arg0->unk678 != 0 && arg1 != 0) {
+            step = -0x32;
+            if (arg0->unkB4 >= 3) {
+                step = 0x32;
+            }
+            a1->unk18 += step;
+            a1->unk24 += step;
+        }
+        if (arg0->unkA0 == 0) {
+            arg0->unkB4 = 0;
+        }
+    }
+    if (var_s1 == 0) {
+        arg0->unk0->unk16C(arg0, a1);
+    }
+    return var_s3;
+}
 
 void func_80059D1C(Unk_80059D1C *arg0) {
     Unk_80059D1C_Obj *obj = arg0->unk58;

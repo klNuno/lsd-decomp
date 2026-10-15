@@ -674,6 +674,19 @@ typedef struct Unk_80049830 {
     Unk_80049830_Obj *unk44;
     Unk_80049830_Obj *unk48;
 } Unk_80049830;
+typedef struct Unk_8004C470 Unk_8004C470;
+typedef struct Unk_8004C470_Vtbl {
+    u8 pad_00[0x118];
+    void *(*unk118)(Unk_8004C470 *, s32);
+} Unk_8004C470_Vtbl;
+struct Unk_8004C470 {
+    Unk_8004C470_Vtbl *unk0;
+    u8 pad_04[0x68 - 0x4];
+    Unk_800861D4 *u68;
+};
+typedef struct Unk_8004C470_Range { u8 pad_00[0x18]; s32 unk18; u8 pad_1C[0x20 - 0x1C]; s32 unk20; } Unk_8004C470_Range;
+typedef struct Unk_8004C470_Pair { u8 pad_00[0x14]; Unk_8004C470_Range *unk14; } Unk_8004C470_Pair;
+typedef struct Unk_8004C470_Obj { u8 pad_00[0xC]; Unk_8004C470_Pair *unkC; } Unk_8004C470_Obj;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -1359,7 +1372,26 @@ Slot *func_8004C434(Owner *arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C470);
+void *func_8004C470(Unk_8004C470 *arg0, s32 *arg1) {
+    s32 i;
+
+    for (i = 0; i < 7; i++) {
+        Unk_8004C470_Obj *obj = arg0->unk0->unk118(arg0, i);
+        Unk_8004C470_Range *r = obj->unkC->unk14;
+        if (arg1[0] >= r->unk18 && arg1[0] < r->unk18 + 0xA000 && arg1[2] >= r->unk20 && arg1[2] < r->unk20 + 0xA000) {
+            if (arg0->u68->unk_4 == 0) {
+                return obj;
+            }
+            if (i * -0x800 < arg1[1]) {
+                continue;
+            }
+            if (i * -0x800 - 0x800 < arg1[1]) {
+                return obj;
+            }
+        }
+    }
+    return NULL;
+}
 
 s32 func_8004C588(Owner *arg0, s32 arg1) {
     s32 found = 0;
