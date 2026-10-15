@@ -484,7 +484,7 @@ typedef struct Unk_80056320_Vt {
 extern Unk_80056320_Vt *func_80056F4C(void);
 extern Unk_800545FC_Src *D_800873EC[];
 extern Unk_800545FC D_80087424;
-extern void *func_80054758(void);
+void *func_80054758(void);
 extern void func_800545FC(Unk_800545FC *arg0, Unk_800545FC_Src *arg1);
 typedef struct Unk_800563C0_Vtbl {
     u8 pad_00[0x40];
@@ -756,6 +756,20 @@ typedef struct Unk_80056E44_Parent {
     u8 pad_00[0x88];
     Unk_80056E44 *unk88[4];
 } Unk_80056E44_Parent;
+extern s8 D_80087324[];
+void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3);
+s32 *func_80054DA4(void *arg0, s32 arg1, s32 arg2);
+s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2);
+void func_80054FD8(s32 *arg0, s32 arg1);
+void func_8005511C(s32 *arg0, s32 arg1);
+s32 D_8008AC84;
+void *D_8008AC8C;
+u8 *D_8008AC90;
+extern s8 D_800873DC[];
+extern s8 D_800873D8[];
+extern u8 D_80087234[];
+extern u8 D_8008726C[];
+extern Unk_800545FC_Src *D_800873C8[];
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -1290,7 +1304,34 @@ void func_80054714(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80054758);
+void *func_80054758(void) {
+    s32 sum;
+    s32 val;
+    s32 rem;
+    Unk_800545FC_Src *rec;
+    void *ptr;
+
+    sum = D_8008AC74 + D_8008AC6C;
+    val = D_800873DC[sum & 0xF];
+    D_8008AC80 = val;
+    rem = sum % D_800873D8[val];
+    D_8008AC84 = rem;
+    rec = D_800873C8[val] + rem;
+    if (val == 0) {
+        D_8008AC90 = D_800872C4 + rec->unk3 * 3;
+        ptr = D_8008726C;
+        if (rec->unk2 != 0x12) {
+            ptr = D_80087234;
+        }
+        D_8008AC8C = ptr;
+        if (rem < 4) {
+            D_8008AB50 = 1;
+        } else if (rem < 6) {
+            D_8008AB50 = 2;
+        }
+    }
+    return rec;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80054850);
 
@@ -1309,7 +1350,26 @@ void func_80054B50(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_80054B84);
+void func_80054B84(s32 arg0) {
+    s32 *temp_a0;
+    s32 var_s0;
+    s32 temp_a1;
+
+    if (D_8008AC80 >= 0) {
+        func_80056F5C((void *)D_8008AC80, (Unk_80056F5C_Obj *)D_8008AC7C[1], (void *)D_8008AC7C[2], (void *)D_8008AC7C[3]);
+        temp_a1 = D_80087324[rand() & 3];
+        var_s0 = (D_8008AC80 == 2) ? (0x10 - temp_a1) : 0;
+        D_8008AC88 = temp_a1 + var_s0;
+        temp_a0 = func_80054F30(func_80054DA4(D_8008E0C8, temp_a1, arg0), var_s0, (void *)arg0);
+        if (D_8008AC80 == 0) {
+            func_80054FD8(temp_a0, arg0);
+            D_8008AC88 += 1;
+        } else if (D_8008AC80 == 2) {
+            func_8005511C(temp_a0, arg0);
+            D_8008AC88 += 1;
+        }
+    }
+}
 
 void func_80054C74(s32 arg0) {
     s32 var_s0;

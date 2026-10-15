@@ -148,6 +148,17 @@ s32 CdControl(s32 com, u8 *param, s32 result);
 s32 CdRead(s32 sectors, void *buf, s32 mode);
 s32 CdReadSync(s32 mode, u8 *result);
 s32 CdSync(s32 mode, u8 *result);
+typedef struct Unk_80027D70 Unk_80027D70;
+struct Unk_80027D70 {
+    void *unk0;
+    u8 pad4[0x8];
+    void *unkC;
+    u8 pad10[0x10];
+    Unk_80027D70 *unk20;
+};
+s32 D_8008A87C;
+s32 D_8008A888;
+void CdFlush(void);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -230,7 +241,35 @@ void func_80027D40(void) {
     func_800280E0();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027D70);
+void func_80027D70(Unk_800282AC *arg0) {
+    Unk_80027D70 *node;
+    Unk_80027D70 *cur;
+    Unk_80027D70 *next;
+    s32 tmp;
+
+    func_800280D0();
+    node = (Unk_80027D70 *)D_8008A894;
+    if (node != NULL && arg0->unk22 != 0) {
+        arg0->unk24 = 0;
+        if (node->unkC == arg0 && node->unk0 != NULL && D_8008A870 == 0) {
+            CdFlush();
+            func_80028864();
+            tmp = D_8008A888;
+            D_8008A888 = 0;
+            D_8008A87C = tmp;
+        }
+        cur = (Unk_80027D70 *)D_8008A894;
+        while (cur != NULL) {
+            next = cur->unk20;
+            if (cur->unkC == arg0) {
+                func_800283C4(cur);
+                arg0->unk22--;
+            }
+            cur = next;
+        }
+    }
+    func_800280E0();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027E68);
 

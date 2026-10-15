@@ -106,6 +106,8 @@ typedef struct Unk_8002F2A4 {
 extern u8 D_8008D98C[];
 extern u8 D_8008D9A3[];
 extern Unk_8002F2A4 *D_8006DAD4;
+void SpuVmVSetUp(s16 arg0, s16 arg1);
+s16 func_8002F3E8(s16 arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -426,7 +428,24 @@ void func_8002F368(s32 arg0, s32 arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F3E8);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F610);
+s32 func_8002F610(s16 arg0, s16 arg1, s16 arg2, u16 arg3) {
+    s16 i;
+    s32 sum;
+    /* Unused local: only reserves the 8 bytes that make the frame 0x40. */
+    s32 pad[2];
+
+    SpuVmVSetUp(arg1, arg2);
+    i = 0;
+    D_8008EA0C.unk16 = arg0;
+    sum = 0;
+    if ((s16) D_8008E9D0 > 0) {
+        do {
+            sum += func_8002F3E8(i, arg0, arg1, arg2, arg3);
+            i++;
+        } while (i < (s32) D_8008E9D0);
+    }
+    return sum;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F700);
 

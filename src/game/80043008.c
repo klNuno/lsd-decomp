@@ -530,6 +530,45 @@ struct Unk_800452FC {
 };
 void func_80045E18(struct Unk_80045E18 *arg0);
 extern void DecDCTin(s32 p, s32 mode);
+extern Unk_8004464C_Color D_8008A938;
+struct Unk_80044294 {
+    u8 pad_00[0x44];
+    u32 unk44;
+    u16 unk48;
+    u16 unk4A;
+    s16 unk4C;
+    s16 unk4E;
+    u16 unk50;
+    u16 unk52;
+    Unk_8004464C_Color unk54;
+    u8 pad_57[0x1];
+    void *unk58;
+    s16 unk5C;
+    s16 unk5E;
+    u16 unk60;
+    u16 unk62;
+    s32 unk64;
+};
+struct Unk_80044294_Src {
+    u8 pad_00[0x2C];
+    u8 unk2C;
+    u8 unk2D;
+    u16 unk2E;
+    u16 unk30;
+};
+extern s32 GetTPage(s32 tp, s32 abr, s32 x, s32 y);
+struct Unk_800450B4_Entry {
+    u8 unk0;
+    u8 unk1;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+};
+struct Unk_800450B4 {
+    u8 pad_00[0x2C];
+    struct Unk_800450B4_Entry *unk2C;
+    u16 unk30;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -764,7 +803,28 @@ void func_80044220(void **arg0, s32 arg1, s32 arg2) {
     temp_v0->unk40(arg0, arg1, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044294);
+void func_80044294(struct Unk_80044294 *arg0, struct Unk_80044294_Src *arg1, s32 arg2) {
+    if (arg2 == 0) {
+        arg0->unk44 = 0x01000000;
+        arg0->unk4C = arg1->unk2C * arg1->unk2E;
+        arg0->unk4E = arg1->unk2D * arg1->unk30;
+    } else if (arg2 == 1) {
+        arg0->unk44 = 0x02000000;
+        arg0->unk4C = 0x140;
+        arg0->unk4E = 0xF0;
+    }
+    arg0->unk48 = 0;
+    arg0->unk4A = 0;
+    arg0->unk50 = 0;
+    arg0->unk52 = 0;
+    arg0->unk54 = D_8008A938;
+    arg0->unk58 = &arg1->unk2C;
+    arg0->unk60 = 0x1000;
+    arg0->unk62 = 0x1000;
+    arg0->unk64 = 0;
+    arg0->unk5C = arg0->unk4C / 2;
+    arg0->unk5E = arg0->unk4E / 2;
+}
 
 void func_80044380(struct Unk_80044380_Obj *arg0, s32 arg1, struct Unk_80044380_Src *arg2) {
     s16 temp_a0 = arg2->unk8;
@@ -1083,7 +1143,53 @@ void func_80045060(struct Unk_80045060 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800450B4);
+void func_800450B4(struct Unk_800450B4 *arg0) {
+    s32 i;
+    s32 n;
+    s32 u;
+    s32 v;
+    s32 x;
+    s32 tpage;
+    struct Unk_800450B4_Entry *p;
+    struct Unk_800450B4_Entry *temp;
+
+    if (arg0->unk30 != 0) {
+        x = 0x280;
+        v = 0;
+        u = 0;
+        tpage = GetTPage(2, 0, 0x280, 0) & 0xFFFF;
+        temp = (struct Unk_800450B4_Entry *)func_80017B34(0x960);
+        arg0->unk2C = temp;
+        if (temp != NULL) {
+            i = 0;
+            p = temp;
+            n = 0x12C;
+            do {
+                p->unk0 = u;
+                u += 0x10;
+                x += 0x10;
+                p->unk6 = tpage;
+                p->unk1 = v;
+                p->unk2 = 0;
+                p->unk4 = 0;
+                if (x >= 0x3C0) {
+                    u = 0;
+                    x = 0x280;
+                    v += 0x10;
+                }
+                if ((x & 0x3F) == 0) {
+                    tpage = x >> 6;
+                    if (v >= 0x100) {
+                        tpage += 0x10;
+                    }
+                    u = 0;
+                }
+                i += 1;
+                p++;
+            } while (i < n);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800451A8);
 
