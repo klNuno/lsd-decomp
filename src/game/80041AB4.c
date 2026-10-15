@@ -104,7 +104,7 @@ struct Unk_8004202C {
     u8 pad_5C[0x64 - 0x5C];
     u8 unk64[1];
 };
-void func_8004208C(u8 *arg0, s32 arg1, Unk_8004202C_Src *arg2, s32 arg3);
+void func_8004208C();
 struct Unk_800422CC_vt {
     u8 pad_00[0x8];
     void (*unk8)(void *, s32);
@@ -221,6 +221,45 @@ struct Unk_8004283C {
     Unk_8004229C_Rgb unk50;
 };
 void GsSetAmbient(s32 r, s32 g, s32 b);
+typedef struct Unk_8004208C_Src {
+    u8 unk0;
+    u8 pad_01;
+    u8 unk2;
+    u8 pad_03;
+    u16 unk4;
+    u16 pad_06;
+    u16 unk8;
+} Unk_8004208C_Src;
+typedef struct Unk_8004208C_Cfg {
+    s32 unk0;
+    s16 unk4;
+    s16 unk6;
+    u8 pad_08[0x8];
+    u16 unk10;
+    u16 unk12;
+} Unk_8004208C_Cfg;
+typedef struct Unk_8004208C {
+    s32 unk0;
+    u16 unk4;
+    u16 unk6;
+    u16 unk8;
+    u16 unkA;
+    u16 unkC;
+    u8 unkE;
+    u8 unkF;
+    u16 unk10;
+    u16 unk12;
+    u8 unk14;
+    u8 unk15;
+    u8 unk16;
+    u8 pad_17;
+    s16 unk18;
+    s16 unk1A;
+    u16 unk1C;
+    u16 unk1E;
+    s32 unk20;
+} Unk_8004208C;
+u16 GetTPage(s32 tp, s32 abr, s16 x, s16 y);
 
 void *func_80041AB4(s32 arg0, u8 arg1) {
     void *temp;
@@ -356,7 +395,30 @@ void func_8004202C(struct Unk_8004202C *arg0, s32 arg1, s32 arg2, Unk_8004202C_S
     arg0->unk58 = 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_8004208C);
+void func_8004208C(Unk_8004208C *dst, s32 arg1, Unk_8004208C_Src *src, Unk_8004208C_Cfg *cfg) {
+    s32 temp_a0;
+
+    temp_a0 = cfg->unk0;
+    dst->unk4 = 0;
+    dst->unk6 = 0;
+    temp_a0 &= 3;
+    dst->unk0 = temp_a0 << 0x18;
+    dst->unk8 = src->unk4;
+    dst->unkA = src->unk8;
+    dst->unk18 = dst->unk8 >> 1;
+    dst->unk1A = dst->unkA >> 1;
+    dst->unkC = GetTPage(temp_a0, arg1, cfg->unk4, cfg->unk6);
+    dst->unkE = src->unk0;
+    dst->unkF = src->unk2;
+    dst->unk10 = cfg->unk10;
+    dst->unk12 = cfg->unk12;
+    dst->unk16 = 0x80;
+    dst->unk15 = 0x80;
+    dst->unk14 = 0x80;
+    dst->unk20 = 0;
+    dst->unk1C = 0x1000;
+    dst->unk1E = 0x1000;
+}
 
 void func_80042170(struct Unk_80042170 *arg0, s32 arg1, struct Unk_80042170_src *arg2) {
     s32 temp_a0_2;
