@@ -158,6 +158,26 @@ typedef struct Unk_8001D568 {
     u8 pad_04[0x1C];
     s32 unk20;
 } Unk_8001D568;
+typedef struct Unk_8001CBA4_Vt {
+    u8 pad_00[0x50];
+    void (*unk50)(void *);
+    void (*unk54)(void *);
+    u8 pad_58[0x4];
+    void (*unk5C)(void *, s32);
+} Unk_8001CBA4_Vt;
+typedef struct Unk_8001CBA4_Sub {
+    u8 pad_00[0x44];
+    s32 unk44;
+} Unk_8001CBA4_Sub;
+typedef struct Unk_8001CBA4 {
+    Unk_8001CBA4_Vt *unk0;
+    u8 pad_04[0x10];
+    Unk_8001CBA4_Sub *unk14;
+} Unk_8001CBA4;
+typedef struct Unk_8001CBA4_Ret {
+    u8 pad_00[0xC];
+    void (*unkC)(void *);
+} Unk_8001CBA4_Ret;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -175,7 +195,14 @@ s32 func_8001CA94(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CAF4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001CBA4);
+void func_8001CBA4(Unk_8001CBA4 *arg0) {
+    arg0->unk0->unk50(arg0);
+    arg0->unk0->unk54(arg0);
+    arg0->unk0->unk5C(arg0, 0);
+    func_80017CFC(arg0->unk14->unk44);
+    func_80017CFC((s32)arg0->unk14);
+    ((Unk_8001CBA4_Ret *)func_80018390())->unkC(arg0);
+}
 
 void func_8001CC48(s32 arg0, s32 **arg1) {
     func_80018390()->unk10(arg0, arg1);

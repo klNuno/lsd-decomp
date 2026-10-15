@@ -171,7 +171,7 @@ struct Unk_8003E874 {
 typedef struct Unk_8003E874_Vtbl {
     u8 pad_00[0x8];
     void (*unk8)(void *);
-    u8 pad_0C[0x4];
+    void (*unkC)(void *);
     void (*unk10)(void *, void *);
     u8 pad_14[0x4];
     void (*unk18)(void *);
@@ -544,6 +544,49 @@ typedef struct Unk_8003E7F4_vt {
     u8 pad_00[0x14];
     void (*unk14)(void *, s32 **);
 } Unk_8003E7F4_vt;
+s32 func_8001CA94(void);
+void *func_8003FDB0(s32 arg0, s32 arg1, s32 arg2);
+extern s32 D_8008A90C;
+typedef struct Unk_8003E628_Vtbl {
+    u8 pad_00[0x40];
+    void (*unk40)(void *);
+} Unk_8003E628_Vtbl;
+typedef struct Unk_8003E628_ObjVtbl {
+    u8 pad_00[0x4C];
+    void (*unk4C)(void *, s32, s32 *);
+} Unk_8003E628_ObjVtbl;
+typedef struct Unk_8003E628_Obj {
+    Unk_8003E628_ObjVtbl *unk0;
+} Unk_8003E628_Obj;
+struct Unk_8003E628 {
+    Unk_8003E628_Vtbl *unk0;
+    u8 pad_04[0xC - 0x4];
+    s32 unkC;
+    s32 unk10;
+    u8 pad_14[0xAC - 0x14];
+    s32 unkAC;
+    Unk_8003E628_Obj *unkB0;
+};
+typedef struct Unk_8003E6CC_ObjVtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *);
+} Unk_8003E6CC_ObjVtbl;
+typedef struct Unk_8003E6CC_Obj {
+    Unk_8003E6CC_ObjVtbl *unk0;
+} Unk_8003E6CC_Obj;
+typedef struct Unk_8003E6CC_Vtbl {
+    u8 pad_00[0x74];
+    void (*unk74)(void *);
+    u8 pad_78[0x90 - 0x78];
+    void (*unk90)(void);
+    u8 pad_94[0xA8 - 0x94];
+    void (*unkA8)(void *, s32);
+} Unk_8003E6CC_Vtbl;
+struct Unk_8003E6CC {
+    Unk_8003E6CC_Vtbl *unk0;
+    u8 pad_04[0xAC - 0x04];
+    Unk_8003E6CC_Obj *unkAC;
+};
 
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -1021,9 +1064,30 @@ s32 func_8003E5D8(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E628);
+void func_8003E628(struct Unk_8003E628 *arg0) {
+    Unk_8003E628_Obj *temp;
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E6CC);
+    func_80018390()->unk8(arg0);
+    arg0->unk0 = (Unk_8003E628_Vtbl *)func_8003F24C();
+    arg0->unkC = 0;
+    arg0->unk10 = 0;
+    arg0->unkAC = func_8001CA94();
+    temp = func_8003FDB0((s32)&D_8008A90C, 0, 0);
+    arg0->unkB0 = temp;
+    temp->unk0->unk4C(temp, arg0->unkAC, &D_8008A904);
+    arg0->unk0->unk40(arg0);
+}
+
+void func_8003E6CC(struct Unk_8003E6CC *arg0) {
+    Unk_8003E6CC_Obj *temp_a0;
+
+    arg0->unk0->unk90();
+    arg0->unk0->unk74(arg0);
+    temp_a0 = arg0->unkAC;
+    temp_a0->unk0->unk4(temp_a0);
+    arg0->unk0->unkA8(arg0, 0);
+    func_80018390()->unkC(arg0);
+}
 
 void func_8003E770(struct Unk_8003E874 *arg0, struct Unk_8003E770 *arg1) {
     s32 temp;

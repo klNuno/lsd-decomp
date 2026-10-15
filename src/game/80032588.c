@@ -5,6 +5,14 @@ extern void SsSeqCalledTbyT(void);
 void func_80032708(s32 arg0);
 extern void SpuQuit(void);
 extern void (*D_8006DC9C)(void);
+extern s32 D_8006DC8C;
+extern s32 D_8006DC90;
+extern s32 D_8006DC94;
+extern s32 D_8006DCA8;
+extern s32 EnterCriticalSection();
+extern s32 ExitCriticalSection();
+void VSyncCallback(void (*func)(void));
+void InterruptCallback(s32 irq, void (*func)(void));
 
 INCLUDE_ASM("asm/nonmatchings/game/80032588", func_80032588);
 
@@ -18,7 +26,24 @@ void func_800329B8(void) {
     func_80032708(0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80032588", func_800329D8);
+void func_800329D8(void) {
+    if (D_8006DCA8 == 0) {
+        D_8006DC94 = 0;
+        EnterCriticalSection();
+        if (D_8006DC8C != 0) {
+            VSyncCallback(0);
+            D_8006DC8C = 0;
+        } else if (D_8006DC90 != -1) {
+            if (D_8006DC90 == 0) {
+                InterruptCallback(0, D_8006DC9C);
+            } else {
+                InterruptCallback(D_8006DC90, 0);
+            }
+            D_8006DC90 = -1;
+        }
+        ExitCriticalSection();
+    }
+}
 
 void func_80032A7C(void) {
     SpuQuit();
