@@ -15,7 +15,7 @@ typedef struct Unk_8004E3F4 {
     s32 unk7C;
 } Unk_8004E3F4;
 extern s32 EnableEvent();
-extern void func_8004F40C(s32, s32 (*)(), s32);
+s32 func_8004F40C(s32 arg0, s32 (*arg1)(), s32 arg2);
 s32 func_8004F4C8(s32 *arg0, s32 arg1);
 extern s32 DisableEvent();
 extern s32 TestEvent();
@@ -249,6 +249,10 @@ typedef struct Unk_8004F810 {
     s32 *unk38;
     s32 unk3C;
 } Unk_8004F810;
+typedef struct Unk_8004F40C {
+    u8 pad_00[0x14];
+    s32 unk14[4];
+} Unk_8004F40C;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -540,7 +544,24 @@ void func_8004F3E4(s32 arg0) {
     func_8004F40C(arg0, TestEvent, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004F40C);
+s32 func_8004F40C(s32 arg0, s32 (*arg1)(), s32 arg2) {
+    s32 ret;
+    s32 i;
+
+    if (arg2 != 0) {
+        EnterCriticalSection();
+    }
+    for (i = 0; i < 4; i++) {
+        ret = arg1(*(s32 *)(arg0 + 0x14 + i * 4));
+        if (ret == 0) {
+            break;
+        }
+    }
+    if (arg2 != 0) {
+        ExitCriticalSection();
+    }
+    return ret;
+}
 
 void func_8004F4A4(s32 arg0) {
     func_8004F4C8(arg0 + 0x14, 4);

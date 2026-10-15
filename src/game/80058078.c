@@ -83,7 +83,7 @@ typedef struct Unk_8005B4E0_Vtbl {
 typedef struct Unk_8005B4E0 {
     Unk_8005B4E0_Vtbl *unk0;
 } Unk_8005B4E0;
-void func_8005B518(s16 *arg0);
+s8 func_8005B518(s16 *arg0);
 typedef struct Unk_8005B5B8 {
     s8 unk0;
     s8 unk1;
@@ -440,6 +440,23 @@ typedef struct Unk_80058F18 {
 } Unk_80058F18;
 extern s32 D_80087EA4[];
 extern void func_8002CD08(s32, void *);
+extern s8 D_80087E14[][3];
+typedef struct Unk_8005B904_B28 {
+    s32 unk[10];
+} Unk_8005B904_B28;
+typedef struct Unk_8005B904_B50 {
+    s32 unk0;
+    u8 pad_04[0x40];
+    Unk_8005B904_B28 *unk44;
+    u8 pad_48[0x8];
+} Unk_8005B904_B50;
+typedef struct Unk_8005B904 {
+    u8 pad_00[0x14];
+    Unk_8005B904_B50 *unk14;
+    u8 pad_18[0x890 - 0x18];
+    Unk_8005B904_B50 unk890;
+    Unk_8005B904_B28 unk8E0;
+} Unk_8005B904;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -983,7 +1000,30 @@ void func_8005B4E0(Unk_8005B4E0 *arg0) {
     func_8005B518(&sp10);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B518);
+s8 func_8005B518(s16 *arg0) {
+    s8 buf[2];
+    s8 *p;
+    s32 i;
+    s8 v;
+
+
+    *(u16 *)buf = *(u16 *)arg0;
+    p = buf;
+    i = 0;
+    do {
+        v = *p;
+        if (v >= 4) {
+            *p = 2;
+        } else if (v < -3) {
+            *p = 0;
+        } else {
+            *p = 1;
+        }
+        i++;
+        p++;
+    } while (i < 2);
+    return D_80087E14[buf[0]][buf[1]];
+}
 
 void func_8005B5A4(s32 arg0, Unk_8005B5A4 *arg1) {
     arg1->unk0 = 0;
@@ -1040,9 +1080,20 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B81C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B8FC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B904);
+void func_8005B904(Unk_8005B904 *arg0) {
+    Unk_8005B904_B50 *src = arg0->unk14;
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005B990);
+    arg0->unk890 = *src;
+    arg0->unk8E0 = *src->unk44;
+}
+
+void func_8005B990(Unk_8005B904 *arg0) {
+    Unk_8005B904_B50 *dst = arg0->unk14;
+
+    *dst = arg0->unk890;
+    *dst->unk44 = arg0->unk8E0;
+    dst->unk0 = 0;
+}
 
 s32 func_8005BA20(Unk_8005BA20 *arg0, s32 arg1) {
     s32 temp;

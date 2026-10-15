@@ -13,11 +13,11 @@ typedef struct Unk_80020B4C {
 void GsSwapDispBuff(void);
 extern int GsGetActiveBuff(void);
 typedef struct Unk_80020970 {
-    /* 0x00 */ u16 unk0;
-    /* 0x02 */ u16 unk2;
-    /* 0x04 */ u16 unk4;
-    /* 0x06 */ u16 unk6;
-    /* 0x08 */ u16 unk8;
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+    u16 unk8;
 } Unk_80020970;
 typedef struct Unk_80020C08 {
     /* 0x00 */ s16 unk0;
@@ -124,6 +124,12 @@ typedef struct Unk_80020A74 {
     /* 0x30 */ void (*unk30)(void);
 } Unk_80020A74;
 s32 VSync(s32 mode);
+typedef struct Unk_80020B74 {
+    u8 pad_00[0x78];
+    void (*unk78)(void **, void *, Unk_80020A24 *);
+    void (*unk7C)(void **, Unk_80020A24 *);
+} Unk_80020B74;
+void ClearImage(Unk_80020A24 *rect, u8 r, u8 g, u8 b);
 
 void *func_800206E0(void) {
     void *temp;
@@ -248,7 +254,18 @@ void func_80020B4C(Unk_80020B4C *arg0, s32 arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020B68);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020B74);
+void func_80020B74(void **arg0, u8 *arg1, s32 arg2) {
+    Unk_80020970 sp10;
+    Unk_80020A24 sp20;
+
+    if (arg2 == 0) {
+        ((Unk_80020B74 *)*arg0)->unk7C(arg0, (Unk_80020A24 *)&sp10);
+        ((Unk_80020B74 *)*arg0)->unk78(arg0, arg1, (Unk_80020A24 *)&sp10);
+        return;
+    }
+    func_80020970((Unk_80020970 *)&sp20, (Unk_80020970 *)arg2);
+    ClearImage(&sp20, arg1[0], arg1[1], arg1[2]);
+}
 
 s32 *func_80020C08(Unk_80020C08 *arg0, Unk_80020C08 *arg1) {
     if (arg1 != NULL) {

@@ -300,4 +300,18 @@ s16 func_800493C8(s32 arg0) {
     return D_80086170[arg0];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800493E4);
+s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2) {
+    s32 start;
+    s32 ret;
+    s32 i;
+
+    ret = func_800492D0(&start, arg1);
+    *arg0 = 0;
+    arg2 *= 2;
+    arg2 += start;
+    for (i = start; i < arg2; i++) {
+        *arg0 += 10 + D_80086170[i];
+    }
+    *arg0 -= 10;
+    return ret;
+}
