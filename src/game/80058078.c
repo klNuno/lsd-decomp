@@ -100,6 +100,12 @@ typedef struct Unk_8005B3A4 {
     s32 unk164;
 } Unk_8005B3A4;
 s16 *func_800495B8(s32 arg0, s8 *arg1);
+extern u8 D_80088B5C;
+extern s32 D_80088B24;
+extern s32 D_80088A80;
+s32 D_8008ABE4;
+extern u8 D_80088CBC[];
+extern s32 D_80088C4C[];
 
 INCLUDE_RODATA("asm/nonmatchings/game/80058078", D_80011778);
 
@@ -497,13 +503,23 @@ s32 *func_8005BF48(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BF68);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BF74);
+s32 func_8005BF74(void *arg0, void *arg1, s32 arg2) {
+    if (D_8008ABE4 != 0) {
+        return func_8005C150(arg0, arg1, arg2, &D_80088B5C, &D_80088B24, &D_80088A80, 0);
+    }
+    return -1;
+}
 
 s32 func_8005BFC4(void) {
     return D_8008ACBC == 0 ? 10 : 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BFDC);
+s32 func_8005BFDC(void *arg0, void *arg1, s32 arg2) {
+    if (arg2 == 0) {
+        return func_8005C150(arg0, arg1, 0, D_80088CBC, D_80088C4C, (s32 *)D_80088BA4, 0);
+    }
+    return -1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005C02C);
 

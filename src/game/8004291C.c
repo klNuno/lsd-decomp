@@ -32,6 +32,13 @@ void func_800429E8(Unk_800429E8 *arg0, s32 arg1, s8 *arg2) {
     GsSetFlatLight(arg0->unkC, arg0->unk10, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_80042A2C);
+void func_80042A2C(Unk_800429E8 *arg0, s32 arg1, s16 *arg2) {
+    if (arg1 != 0) {
+        *(s32 *)&arg0->unk10[0] = arg2[0];
+        *(s32 *)&arg0->unk10[4] = arg2[1];
+        *(s32 *)&arg0->unk10[8] = arg2[2];
+    }
+    GsSetFlatLight(arg0->unkC, arg0->unk10, arg2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_80042A7C);

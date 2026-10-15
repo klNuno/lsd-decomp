@@ -18,6 +18,16 @@ typedef struct { u8 pad[0x56]; s16 unk56; } Unk_8002CB9C;
 void SsSetMute(s16 arg0);
 typedef struct { u8 pad[0xC]; void (*unkC)(s32); } Unk_8002C200;
 typedef struct Unk_8002CB58 { u8 pad[0x56]; s16 unk56; } Unk_8002CB58;
+typedef struct { s32 unk0; s32 unk4[4]; } Unk_8002CC34_Entry;
+typedef struct Unk_8002CC34 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+    s32 unk10;
+    s32 unk14;
+    Unk_8002CC34_Entry entries[3];
+} Unk_8002CC34;
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002C12C);
 
@@ -143,7 +153,27 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CC1C);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CC28);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CC34);
+s32 func_8002CC34(s32 arg0, Unk_8002CC34 *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    Unk_8002CC34_Entry *entry;
+    s32 none;
+    s32 i;
+
+    if (arg1->unk0 != 0) {
+        return 0;
+    }
+    entry = arg1->entries;
+    none = -1;
+    arg1->unk0 = arg2;
+    arg1->unk8 = arg3;
+    arg1->unkC = arg4;
+    for (i = 2; i >= 0; i--) {
+        entry->unk0 = none;
+        entry++;
+    }
+    arg1->unk4 = 0;
+    arg1->unk14 = 0xA;
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CC84);
 

@@ -14,12 +14,24 @@ typedef struct Unk_80025C84 {
     s32 unk18;
 } Unk_80025C84;
 extern s32 PadRead(u16);
+typedef struct Unk_80025C30 {
+    u8 pad0[0xC];
+    void (*unkC)(s32);
+} Unk_80025C30;
+void PadStop(void);
+void *func_80018390(void);
+s32 D_8008A848;
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025B34);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025BA0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025C30);
+void func_80025C30(s32 arg0) {
+    if (--D_8008A848 == 0) {
+        PadStop();
+    }
+    ((Unk_80025C30 *)func_80018390())->unkC(arg0);
+}
 
 void func_80025C84(Unk_80025C84 *arg0, s32 arg1) {
     s32 temp = arg1 != 0;
