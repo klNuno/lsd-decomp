@@ -1229,6 +1229,22 @@ typedef struct Unk_8004A534 {
     s32 unk1E0;
     u8 pad_1E4[0x1E8 - 0x1E4];
 } Unk_8004A534;
+typedef struct Unk_8004CDA4_Entry {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+} Unk_8004CDA4_Entry;
+typedef struct Unk_8004CDA4_Obj Unk_8004CDA4_Obj;
+typedef struct Unk_8004CDA4_Vt {
+    u8 pad0[0x124];
+    s32 (*unk124)(Unk_8004CDA4_Obj *, s32);
+} Unk_8004CDA4_Vt;
+struct Unk_8004CDA4_Obj {
+    Unk_8004CDA4_Vt *unk0;
+    u8 pad4[0x88];
+    Unk_8004CDA4_Entry entries[1];
+};
+extern Unk_8004CDA4_Entry D_80086990;
 
 s32 func_800494B4(void) {
     return 0xE;
@@ -2588,7 +2604,14 @@ void func_8004CC74(void *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CD38);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004CDA4);
+s32 func_8004CDA4(void *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk_8004CDA4_Obj *self = arg0;
+    Unk_8004CDA4_Entry *entry = &self->entries[arg2];
+
+    *entry = D_80086990;
+    entry->unk0 = self->unk0->unk124(self, arg3);
+    return arg2 + 1;
+}
 
 void func_8004CE24(void *arg0, s32 arg1) {
     Unk_8004CE24 *self = arg0;

@@ -374,6 +374,26 @@ typedef struct Unk_8001E4A4 {
     u8 pad_01[0xF];
     void (*unk10)(s32 **, s32);
 } Unk_8001E4A4;
+typedef struct Unk_8001DA28_Pt {
+    s16 x;
+    s16 y;
+    s16 z;
+} Unk_8001DA28_Pt;
+typedef struct Unk_8001DA28_Box {
+    Unk_8001DA28_Pt min;
+    Unk_8001DA28_Pt max;
+} Unk_8001DA28_Box;
+typedef struct Unk_8001DA28_Arg1 {
+    s32 count;
+    Unk_8001DA28_Pt bbox;
+    Unk_8001DA28_Pt verts;
+} Unk_8001DA28_Arg1;
+typedef struct Unk_8001DA28 {
+    u8 pad_00[0x20];
+    s32 unk20;
+} Unk_8001DA28;
+void func_8001F4E4(s32);
+Unk_8001DA28_Box *func_8001F50C(s32, s32);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -734,7 +754,54 @@ void func_8001D950(Unk_8001D950 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 arg4
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DA28);
+s32 func_8001DA28(Unk_8001DA28 *arg0, Unk_8001DA28_Arg1 *arg1, Unk_8001DA28_Pt *arg2) {
+    Unk_8001DA28_Box own;
+    Unk_8001DA28_Box other;
+    u8 *end;
+    Unk_8001DA28_Pt *p;
+    Unk_8001DA28_Box *box;
+    Unk_8001DA28_Box *b;
+    Unk_8001DA28_Box *bend;
+    s32 n;
+
+    p = &arg1->bbox;
+    end = (u8 *)p + arg1->count * 0x30;
+    arg1->bbox.x += arg2->x;
+    arg1->bbox.y += arg2->y;
+    arg1->bbox.z += arg2->z;
+    own.min = arg1->bbox;
+    own.max = arg1->bbox;
+    box = &own;
+    for (p = &arg1->verts; (u8 *)p < end; p++) {
+        p->x += arg2->x;
+        p->y += arg2->y;
+        p->z += arg2->z;
+        box->min.x = (box->min.x < p->x) ? box->min.x : p->x;
+        box->min.y = (box->min.y < p->y) ? box->min.y : p->y;
+        box->min.z = (box->min.z < p->z) ? box->min.z : p->z;
+        box->max.x = (box->max.x > p->x) ? box->max.x : p->x;
+        box->max.y = (box->max.y > p->y) ? box->max.y : p->y;
+        box->max.z = (box->max.z > p->z) ? box->max.z : p->z;
+    }
+
+    func_8001F4E4(arg0->unk20);
+    b = func_8001F50C(arg0->unk20, 0);
+    n = func_8001F3A4(arg0->unk20);
+    other = *b;
+    bend = b + n;
+    for (b++; b < bend; b++) {
+        other.min.x = (other.min.x < b->min.x) ? other.min.x : b->min.x;
+        other.min.y = (other.min.y < b->min.y) ? other.min.y : b->min.y;
+        other.min.z = (other.min.z < b->min.z) ? other.min.z : b->min.z;
+        other.max.x = (other.max.x > b->max.x) ? other.max.x : b->max.x;
+        other.max.y = (other.max.y > b->max.y) ? other.max.y : b->max.y;
+        other.max.z = (other.max.z > b->max.z) ? other.max.z : b->max.z;
+    }
+
+    return (own.min.z <= other.max.z) && (own.max.z >= other.min.z) &&
+           (own.min.x <= other.max.x) && (own.max.x >= other.min.x) &&
+           (own.min.y <= other.max.y) && (own.max.y >= other.min.y);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DDF4);
 

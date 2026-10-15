@@ -30,7 +30,8 @@ typedef struct Unk_80047074 {
     void (*unk48)(void *);
 } Unk_80047074;
 typedef struct Unk_80047074_Ret {
-    u8 pad_00[0xC];
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
     void (*unkC)(void *);
 } Unk_80047074_Ret;
 Unk_80047074_Ret *func_80018390(void);
@@ -166,6 +167,20 @@ s32 StGetNext(void **arg0, Unk_80047694Rec **arg1);
 void func_800477B0();
 void func_80047810();
 extern Unk_80046F0C D_800817E0;
+typedef struct Unk_80046F88 {
+    Unk_80046F0C *unk0;
+    u8 pad_04[0x2C - 0x04];
+    s32 unk2C;
+    s32 unk30;
+    u32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    u8 pad_40[0x48 - 0x40];
+    s32 unk48;
+    s32 unk4C;
+    s32 unk50;
+    s32 unk54;
+} Unk_80046F88;
 
 s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
@@ -178,7 +193,19 @@ s32 func_80046F0C(s32 arg0, s32 arg1, s32 arg2) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_80046F88);
+void func_80046F88(Unk_80046F88 *arg0, u32 arg1, s32 arg2, s32 arg3) {
+    func_80018390()->unk8(arg0);
+    arg0->unk0 = func_80047900();
+    arg0->unk34 = arg1;
+    arg0->unk30 = 0;
+    arg0->unk38 = (arg1 < 4 ? 300 : 150) / arg2 / 2 * 0x806;
+    arg0->unk3C = arg3;
+    arg0->unk50 = 0;
+    arg0->unk4C = 0;
+    arg0->unk48 = 0;
+    arg0->unk54 = 0;
+    arg0->unk2C = 0;
+}
 
 void func_80047074(Unk_80047074 **arg0) {
     (*arg0)->unk48(arg0);

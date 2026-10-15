@@ -787,6 +787,36 @@ struct Unk_80043200 {
 struct Unk_80043200_Hdr {
     u8 b[0x24];
 };
+struct Unk_80043068_Obj {
+    u8 pad_00[0x44];
+    void (*unk44)(void *self, s32 arg1, s32 arg2, s32 arg3);
+    u8 pad_48[0xC];
+    void (*unk54)(void *self, s32 arg1, s32 arg2);
+};
+struct Unk_80043068_Ent {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+    u8 pad_0C[4];
+};
+struct Unk_80043068 {
+    struct Unk_80043068_Obj *unk0;
+    u8 pad_04[0xC];
+    s32 unk10;
+    s32 unk14;
+    u8 pad_18[0x12];
+    s16 unk2A;
+    s32 unk2C;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    struct Unk_80043068_Ent unk40[4];
+    s32 unk80;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -799,7 +829,48 @@ s32 func_80043008(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043068);
+void func_80043068(struct Unk_80043068 *arg0, s32 arg1) {
+    s32 i;
+    s16 acc;
+    s16 step;
+    s32 s1;
+    s32 temp;
+    struct Unk_80043068_Ent *e;
+
+    ((struct Unk_80043BE8_Svc *)func_80026CAC())->unk8(arg0);
+    arg0->unk0 = (struct Unk_80043068_Obj *)func_80043830();
+    arg0->unk2C = 0;
+    arg0->unk30 = 0;
+    arg0->unk3C = 0;
+    arg0->unk34 = 0;
+    arg0->unk38 = 0;
+    step = 1 << D_8008A92C;
+    acc = 0;
+    for (i = 0; i < 4; i++) {
+        e = &arg0->unk40[i];
+        e->unk0 = D_8008A92C;
+        e->unk2 = step;
+        e->unk4 = 0;
+        e->unk6 = acc + 0x1E0;
+        e->unk8 = 0x100;
+        e->unkA = 1;
+        acc += step;
+    }
+
+    s1 = func_80017B34(0x24);
+    if (s1 != 0) {
+        temp = func_80017B34(0x800);
+        arg0->unk34 = temp;
+        if (temp != 0) {
+            arg0->unk14 = 0x24;
+            arg0->unk10 = s1;
+            arg0->unk2A = 9;
+            arg0->unk80 = 0;
+            arg0->unk0->unk44(arg0, arg1, 1, 0);
+            arg0->unk0->unk54(arg0, arg0->unk34, 0x800);
+        }
+    }
+}
 
 void func_800431A8(struct Unk_800431A8 *arg0) {
     func_800183DC(arg0->unk30, arg0->unk2C);
