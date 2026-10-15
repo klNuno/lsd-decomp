@@ -394,6 +394,14 @@ typedef struct Unk_8001DA28 {
 } Unk_8001DA28;
 void func_8001F4E4(s32);
 Unk_8001DA28_Box *func_8001F50C(s32, s32);
+typedef struct Unk_8001DDF4 {
+    u8 pad_00[0x20];
+    s32 unk20;
+    u8 pad_24[0x8];
+    s32 unk2C;
+} Unk_8001DDF4;
+s32 func_8001E110(Unk_8001ECFC_Pt *arg0, Unk_8001ECFC *arg1, Unk_8001ECFC_Pt *arg2, Unk_8001ECFC_Pt *arg3);
+s32 func_8001F8B8(s32, s32 *, void *, s32 *, Unk_8001ECFC_Pt *, Unk_8001ECFC_Pt *);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -803,7 +811,79 @@ s32 func_8001DA28(Unk_8001DA28 *arg0, Unk_8001DA28_Arg1 *arg1, Unk_8001DA28_Pt *
            (own.min.y <= other.max.y) && (own.max.y >= other.min.y);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DDF4);
+s32 func_8001DDF4(Unk_8001DDF4 *arg0, s32 *arg1, void *arg2, s32 *arg3) {
+    Unk_8001ECFC_Pt sp18[2];
+    Unk_8001ECFC sp28[2];
+    s32 sp40;
+    s32 sp44;
+    Unk_8001ECFC_Pt *p;
+    Unk_8001ECFC_Pt *q;
+    Unk_8001ECFC_Pt *dst;
+    s32 count;
+    s32 ret;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 n;
+    Unk_8001DA28_Box *box;
+
+    sp40 = 0x7FFFFFFF;
+    p = (Unk_8001ECFC_Pt *) (arg3 + 1);
+    q = (Unk_8001ECFC_Pt *) (arg3 + 4);
+    for (dst = sp18; dst < sp18 + 2; dst++) {
+        dst->unk0 = (p->unk0 + q->unk0) >> 1;
+        dst->unk2 = (p->unk2 + q->unk2) >> 1;
+        dst->unk4 = (p->unk4 + q->unk4) >> 1;
+        p += 4;
+        q += 4;
+    }
+
+    arg0->unk2C = 0;
+    count = func_8001F3A4(arg0->unk20);
+    ret = 0;
+    for (i = 0; i < count; i++) {
+        box = func_8001F50C(arg0->unk20, i);
+        if (func_8001E110(0, (Unk_8001ECFC *) box, sp18, sp18 + 1) != 0 &&
+            func_8001F8B8(arg0->unk20, &sp40, arg2, &sp44, sp18, sp18 + 1) != 0) {
+            if (D_8008A838 == 0) {
+                arg0->unk2C |= 1 << i;
+            } else if (sp44 >= 0x201) {
+                arg0->unk2C |= 1 << i;
+            }
+        }
+    }
+
+    if (arg0->unk2C != 0) {
+        *arg1 = 1;
+        if (ret != 0) {
+            return 2;
+        }
+        return 1;
+    }
+
+    *arg1 = 0;
+    n = *arg3;
+    for (i = 0; i < count; i++) {
+        k = 0;
+        box = func_8001F50C(arg0->unk20, i);
+        p = (Unk_8001ECFC_Pt *) (arg3 + 1);
+        for (; k < n; k++) {
+            for (j = 0; j < 4; j++) {
+                if (j > 0 && j < 3) {
+                    if (func_8001E110(0, (Unk_8001ECFC *) box, p, p + 4) != 0 &&
+                        func_8001F8B8(arg0->unk20, &sp40, arg2, &sp44, p, p + 4) != 0 &&
+                        sp44 >= 0x201) {
+                        arg0->unk2C |= 1 << i;
+                        *arg1 |= 1 << k;
+                    }
+                }
+                p++;
+            }
+            p += 4;
+        }
+    }
+    return *arg1 != 0;
+}
 
 s32 func_8001E110(Unk_8001ECFC_Pt *arg0, Unk_8001ECFC *arg1, Unk_8001ECFC_Pt *arg2, Unk_8001ECFC_Pt *arg3) {
     Unk_8001ECFC_Pt mid;

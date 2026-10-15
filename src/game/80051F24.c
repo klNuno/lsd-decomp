@@ -780,7 +780,7 @@ void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3);
 s32 *func_80054DA4(s32 *arg0, s32 arg1, void *arg2);
 s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2);
 s32 *func_80054FD8(s32 *arg0, s32 arg1);
-void func_8005511C(s32 *arg0, s32 arg1);
+s32 *func_8005511C(s32 *arg0, s32 arg1);
 s32 D_8008AC84;
 void *D_8008AC8C;
 u8 *D_8008AC90;
@@ -1495,6 +1495,11 @@ typedef struct Unk_80056858 {
 extern Unk_80056794 D_800877EC;
 extern s32 D_800877F8[];
 void *func_80056FE4(void);
+typedef struct Unk_8005511C_Slot {
+    s32 v;
+} Unk_8005511C_Slot;
+extern s32 D_80087430;
+extern u8 D_80087228[];
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -2631,7 +2636,29 @@ s32 *func_80054FD8(s32 *arg0, s32 arg1) {
     return arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_8005511C);
+s32 *func_8005511C(s32 *arg0, s32 arg1) {
+    Unk_8005511C_Slot *p;
+    s32 *q;
+    s32 x;
+    s32 v;
+
+    v = (s32)(D_80087228 + ((u32)rand() % 3) * 3);
+    p = (Unk_8005511C_Slot *)&D_8008E0A4.unk1C;
+    p->v = v;
+    p++;
+    if (D_8008AC74 % 20) {
+        x = D_80087430;
+    } else {
+        x = D_8008AC74 % 20;
+    }
+    p->v = x;
+    func_80055258((void *)arg1, D_80087330);
+    q = (s32 *)&D_8008E0A4.unkC;
+    *q = (s32)D_80087174;
+    D_8008E0A4.unk18 = rand() % 6;
+    *arg0++ = (s32)func_80056320(2, (s32)&D_8008E0A4, D_8008AB4C, arg1);
+    return arg0;
+}
 
 void func_80055258(void *arg0, s32 arg1) {
     if (arg1 == 0) {
