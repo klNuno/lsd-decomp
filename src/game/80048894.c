@@ -50,6 +50,7 @@ extern s16 D_800819E8[];
 typedef struct { s16 unk_0; s16 unk_2; s32 unk_4; } Unk_800861D4;
 Unk_800861D4 *func_800494D8(s32 arg0);
 u8 *func_80049060(s32 arg0, s32 arg1);
+u8 *func_80049240(s32 *arg0);
 
 s32 func_80048894(void) {
     s32 temp_v0;
@@ -205,7 +206,16 @@ u8 *func_80049240(s32 *arg0) {
     return (u8 *)func_80048D48(NULL) + 0x3E20;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049270);
+u8 *func_80049270(s32 *arg0, s32 arg1) {
+    s32 sp10;
+    u8 *temp_v1;
+
+    temp_v1 = func_80049240(&sp10);
+    if (arg0 != NULL) {
+        *arg0 = arg1 + sp10;
+    }
+    return temp_v1 + arg1 * 0x1C;
+}
 
 s32 func_800492D0(s32 *arg0, s32 arg1) {
     s32 temp_v1;

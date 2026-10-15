@@ -10,8 +10,23 @@ typedef struct Unk_8003B470 {
     void (*unkC)(s32);
 } Unk_8003B470;
 void *func_80026CAC(void);
+void *func_80017B34(s32 size);
+void *func_8003B614(void);
+typedef struct Unk_8003B39C {
+    u8 pad_00[8];
+    void (*unk8)(void *, s32);
+} Unk_8003B39C;
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B39C);
+s32 func_8003B39C(s32 arg0) {
+    void *temp;
+
+    temp = func_80017B34(0x50);
+    if (temp != 0) {
+        ((Unk_8003B39C *)func_8003B614())->unk8(temp, arg0);
+        return (s32)temp;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003B39C", func_8003B3FC);
 
