@@ -32,6 +32,35 @@ typedef struct Unk_80026AB4_Vtbl {
 typedef struct Unk_80026AB4 {
     Unk_80026AB4_Vtbl *vtbl;
 } Unk_80026AB4;
+void func_80048CFC(s32, s32);
+typedef struct Unk_80026A50_Vtbl {
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
+} Unk_80026A50_Vtbl;
+typedef struct Unk_80026A50 {
+    /* 0x00 */ s32 unk0;
+    /* 0x04 */ u8 pad_04[0x8];
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ u8 pad_18[0x8];
+    /* 0x20 */ s16 unk20;
+    /* 0x22 */ s16 unk22;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s16 unk28;
+    /* 0x2A */ s16 unk2A;
+} Unk_80026A50;
+void *func_80018390(void);
+s32 func_80026C9C(void);
+typedef struct Unk_80026108 {
+    u8 pad_00[0x18];
+    s32 unk18;
+} Unk_80026108;
+typedef struct Unk_80026108_Obj {
+    u8 pad_00[0x44];
+    void (*unk44)(Unk_80026108 *, s32, s32, s32);
+} Unk_80026108_Obj;
+extern void *func_8003B20C(void);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80025F7C);
 
@@ -39,9 +68,15 @@ INCLUDE_RODATA("asm/nonmatchings/game/80025F7C", D_800107A4);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80025FDC);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800260A4);
+void func_800260A4(void) {
+    func_80048CFC(*(s32 *)0x1F800000 % 365, 0);
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026108);
+void func_80026108(Unk_80026108 *arg0, s32 arg1, s32 arg2) {
+    if (arg0->unk18 == 0) {
+        ((Unk_80026108_Obj *)func_8003B20C())->unk44(arg0, arg1, arg2, 0);
+    }
+}
 
 INCLUDE_RODATA("asm/nonmatchings/game/80025F7C", D_800107B4);
 
@@ -76,7 +111,18 @@ INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800269E0);
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800269F0);
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026A50);
+void func_80026A50(Unk_80026A50 *arg0) {
+    ((Unk_80026A50_Vtbl *)func_80018390())->unk8(arg0);
+    arg0->unk0 = func_80026C9C();
+    arg0->unkC = 0;
+    arg0->unk10 = 0;
+    arg0->unk14 = 0;
+    arg0->unk20 = 0;
+    arg0->unk22 = 0;
+    arg0->unk24 = 0;
+    arg0->unk28 = 0;
+    arg0->unk2A = 0;
+}
 
 void func_80026AB4(Unk_80026AB4 *arg0) {
     arg0->vtbl->unk48();

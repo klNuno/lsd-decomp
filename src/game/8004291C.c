@@ -9,10 +9,27 @@ typedef struct Unk_800429E8 {
     s8 unk1D;
     s8 unk1E;
 } Unk_800429E8;
+typedef struct Unk_8004297C_Mgr {
+    u8 pad_00[0x8];
+    void (*unk8)(void **);
+} Unk_8004297C_Mgr;
+typedef struct Unk_8004297C {
+    u8 pad_00[0x40];
+    void (*unk40)(void **, s32);
+} Unk_8004297C;
+void *func_80018390(void);
+Unk_8004297C *func_80042A7C(void);
 
 INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_8004291C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_8004297C);
+void func_8004297C(void **arg0, s32 arg1) {
+    Unk_8004297C *temp_v0;
+
+    ((Unk_8004297C_Mgr *)func_80018390())->unk8(arg0);
+    temp_v0 = func_80042A7C();
+    *arg0 = temp_v0;
+    temp_v0->unk40(arg0, arg1);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004291C", func_800429E0);
 

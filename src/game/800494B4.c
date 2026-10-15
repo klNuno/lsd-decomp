@@ -30,6 +30,10 @@ struct Unk_8004B57C;
 typedef struct Unk_8004B57C_Vtbl {
     u8 pad_00[0xC0];
     void (*unkC0)(struct Unk_8004B57C *);
+    u8 pad_C4[0xF4 - 0xC4];
+    void (*unkF4)(struct Unk_8004B57C *);
+    u8 pad_F8[0x13C - 0xF8];
+    void (*unk13C)(struct Unk_8004B57C *);
 } Unk_8004B57C_Vtbl;
 typedef struct Unk_8004B57C {
     Unk_8004B57C_Vtbl *unk0;
@@ -294,7 +298,12 @@ void func_8004AA10(Unk_8004AA10 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004AA6C);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004AB24);
+void func_8004AB24(Unk_8004B57C *arg0) {
+    if (arg0->unk70 != 0) {
+        arg0->unk0->unkF4(arg0);
+        arg0->unk0->unk13C(arg0);
+    }
+}
 
 void func_8004AB88(Unk_8004AB88 *arg0, u8 **arg1) {
     if (**arg1 == 0x34) {

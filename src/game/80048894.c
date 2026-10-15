@@ -207,7 +207,15 @@ u8 *func_80049240(s32 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049270);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_800492D0);
+s32 func_800492D0(s32 *arg0, s32 arg1) {
+    s32 temp_v1;
+
+    temp_v1 = (s32)func_80048D48(NULL) + 0x3EC8;
+    if (arg0 != NULL) {
+        *arg0 = (arg1 * 2) + 0xE;
+    }
+    return temp_v1 + (arg1 * 0xA8);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80049334);
 

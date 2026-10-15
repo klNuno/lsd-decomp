@@ -64,6 +64,10 @@ typedef struct {
 struct Unk_80027274 {
     Unk_80027274_Vt *vt;
 };
+s32 D_8008A89C;
+s32 D_8008A8A4;
+void func_800280EC(void);
+void VSyncCallback(void (*func)(void));
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -163,9 +167,29 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800280E0);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800280EC);
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800281B0);
+void func_800281B0(void) {
+    func_800280D0();
+    if (D_8008A89C == 0) {
+        if (D_8008A8A4 != 0) {
+            VSyncCallback(&func_800280EC);
+        }
+        D_8008A89C = 1;
+    }
+    D_8008A890 = 1;
+    func_800280E0();
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028218);
+void func_80028218(void) {
+    func_800280D0();
+    if ((D_8008A898 == 0) && (D_8008A89C != 0)) {
+        if (D_8008A8A4 != 0) {
+            VSyncCallback(0);
+        }
+        D_8008A89C = 0;
+        D_8008A890 = 0;
+    }
+    func_800280E0();
+}
 
 void func_80028280(void) {
     func_800280D0();

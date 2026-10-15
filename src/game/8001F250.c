@@ -57,10 +57,32 @@ struct Unk_80020510_Arg {
     s16 unk0;
     s16 unk2;
 };
+typedef struct Unk_8001F2B0_Ret {
+    u8 pad_00[0x8];
+    void (*unk8)(void *);
+} Unk_8001F2B0_Ret;
+typedef struct Unk_8001F2B0 {
+    s32 unk0;
+    u8 pad_04[0x8];
+    s32 unkC;
+    s32 unk10;
+} Unk_8001F2B0;
+void *func_80018390(void);
+s32 func_8001F384(void);
+void func_8001F394(void *arg0);
 
 INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F250);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F2B0);
+void func_8001F2B0(Unk_8001F2B0 *arg0, s32 arg1) {
+    s32 temp;
+
+    ((Unk_8001F2B0_Ret *)func_80018390())->unk8(arg0);
+    temp = func_8001F384();
+    arg0->unk10 = arg1;
+    arg0->unk0 = temp;
+    arg0->unkC = arg1 - 0xC;
+    func_8001F394(arg0);
+}
 
 void func_8001F314(struct Unk_8001F314 *arg0, struct Unk_8001F314_Data *arg1) {
     arg0->unk14 = *arg1;
