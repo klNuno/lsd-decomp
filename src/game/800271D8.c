@@ -72,6 +72,8 @@ s8 *func_800270B8(void);
 s8 *strcpy(s8 *dst, s8 *src);
 s8 *strcat(s8 *dst, s8 *src);
 extern s8 D_8008A8A8[]; /* ";1" in .sdata */
+s32 D_8008A86C;
+char *strstr(char *haystack, char *needle);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -207,9 +209,41 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_8002832C);
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800283C4);
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028448);
+s32 func_80028448(char *arg0) {
+    s32 entry;
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800284C4);
+    entry = D_8008A868;
+    i = 0;
+    func_800280D0();
+    do {
+        if (strstr((char *)entry, arg0) != NULL) {
+            func_800280E0();
+            return entry;
+        }
+        i++;
+        entry += 0x1C;
+    } while (i < D_8008A86C);
+    return 0;
+}
+
+s32 func_800284C4(char *arg0) {
+    s32 entry;
+    s32 i;
+
+    entry = D_8008A868;
+    i = 0;
+    func_800280D0();
+    do {
+        if (strstr((char *)entry, arg0) != NULL) {
+            func_800280E0();
+            return i;
+        }
+        entry += 0x1C;
+        i++;
+    } while (i < D_8008A86C);
+    return -1;
+}
 
 s32 func_80028540(s32 arg0) {
     s32 temp_s0;

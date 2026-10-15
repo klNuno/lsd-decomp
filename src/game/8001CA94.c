@@ -103,6 +103,17 @@ typedef struct Unk_8001EC84 {
     s16 unk2;
 } Unk_8001EC84;
 /* Writes arg3 into the arg2-bit field at bit arg1 of *arg0, returns the old field value. */
+typedef struct Unk_8001D204_Obj Unk_8001D204_Obj;
+typedef struct Unk_8001D204_Vt {
+    u8 pad_00[0x50];
+    void (*unk50)(Unk_8001D204_Obj *);
+    u8 pad_54[0x4];
+    void (*unk58)(Unk_8001D204_Obj *, Unk_8001D204_Obj **, s32 *);
+} Unk_8001D204_Vt;
+struct Unk_8001D204_Obj {
+    Unk_8001D204_Vt *vt;
+};
+void ApplyMatrixLV(s32 *, void *, void *);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -153,7 +164,18 @@ void *func_8001D1A4(struct Unk_8001D1A4 *arg0) {
     return arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D204);
+void func_8001D204(Unk_8001D204_Obj *arg0) {
+    Unk_8001D204_Obj *sp10;
+    s32 sp14;
+
+    sp10 = NULL;
+    do {
+        arg0->vt->unk58(arg0, &sp10, &sp14);
+        if (sp10 != NULL) {
+            sp10->vt->unk50(sp10);
+        }
+    } while (sp14 != 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D280);
 
@@ -315,7 +337,23 @@ s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EE04);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001EE98);
+void func_8001EE98(void *arg0, void *arg1, s32 arg2, s32 *arg3) {
+    u8 *dst;
+    u8 *src;
+    u8 *end;
+    s32 *mtx;
+    s32 pad[2];
+
+    dst = arg0;
+    src = arg1;
+    mtx = arg3;
+    end = (u8 *)arg0 + arg2 * 12;
+    while (dst < end) {
+        ApplyMatrixLV(mtx, src, dst);
+        dst += 12;
+        src += 12;
+    }
+}
 
 s32 func_8001EF14(s32 *arg0, s32 arg1, s32 *arg2) {
     s32 i;

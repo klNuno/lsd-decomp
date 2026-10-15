@@ -384,6 +384,23 @@ typedef struct Unk_80066150 {
     s32 unk64;
     Unk_80066150_Inner *unk68;
 } Unk_80066150;
+typedef struct Unk_80063CC8_Vtbl {
+    u8 pad[0x148];
+    s32 (*fn148)(void *);
+} Unk_80063CC8_Vtbl;
+typedef struct Unk_80063CC8_Obj {
+    Unk_80063CC8_Vtbl *unk0;
+    u8 p0[0x80 - 0x4];
+    s32 unk80;
+} Unk_80063CC8_Obj;
+typedef struct Unk_80063CC8 {
+    u8 p0[0x4];
+    s32 unk4;
+    u8 p1[0x08];
+    s32 unk10;
+    u8 p2[0x08];
+    s32 unk1C;
+} Unk_80063CC8;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -661,7 +678,13 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005EA94);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005EBB4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005EC98);
+void func_8005EC98(void **arg0, Unk_8005E480 *arg1) {
+    arg1->u10 = ((Unk_8005E480_0 *)*arg0)->fn148(arg0);
+    if (((Unk_80061C04_0 *)arg0)->unk84 == 0xA) {
+        arg1->u1C = 0xD;
+    }
+    ((Unk_8005E7A8_Obj *)*arg0)->unkC4(arg0, -0xA, 0);
+}
 
 void func_8005ED10(Unk_8005ED10_0 *arg0, Unk_8005ED10 *arg1) {
     if (arg0->uFC == 0) {
@@ -779,7 +802,12 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80061E60);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80061F30);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8006204C);
+void func_8006204C(void **arg0, Unk_8005E480 *arg1) {
+    arg1->u10 = ((Unk_8005E480_0 *)*arg0)->fn148(arg0);
+    if (arg1->u4 == ((arg1->u4 / 30) * 30)) {
+        arg1->u1C = 0xD;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_800620C4);
 
@@ -836,7 +864,15 @@ void func_80063CAC(Unk_80063CAC *arg0) {
     arg0->unk44 = 3;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063CC8);
+void func_80063CC8(Unk_80063CC8_Obj *arg0, Unk_80063CC8 *arg1) {
+    arg1->unk10 = arg0->unk0->fn148(arg0);
+    if (arg1->unk4 == 0) {
+        arg1->unk1C = 0x12;
+    }
+    if (arg1->unk4 >= arg0->unk80 - 1) {
+        arg1->unk4 = -1;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80063D40);
 

@@ -95,6 +95,8 @@ typedef struct Unk_80025F7C {
 } Unk_80025F7C;
 s32 func_80017B34(s32);
 Unk_80025F7C *func_800269E0(void);
+s32 func_8002C468(s32, s32, s32);
+s32 func_80027F18(s32, s32, s32);
 
 s32 func_80025F7C(s32 arg0) {
     s32 p;
@@ -259,7 +261,16 @@ s32 func_80026F00(void) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026F34);
+void func_80026F34(s32 arg0, s32 arg1, s32 arg2) {
+    s32 (*var_s0)(s32, s32, s32);
+
+    var_s0 = func_8002C468;
+    if (D_8008A84C == 0x13) {
+        var_s0 = func_80027F18;
+    }
+    while (var_s0(arg0, arg1, arg2) == 0) {
+    }
+}
 
 s32 func_80026FAC(s32 *arg0) {
     if (D_8008A84C == 0x13) {

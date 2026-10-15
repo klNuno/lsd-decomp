@@ -27,6 +27,7 @@ typedef struct Unk_80025B34 {
 } Unk_80025B34;
 s32 func_80017B34(s32);
 Unk_80025B34 *func_80025E9C(void);
+extern s32 D_8008B388[16];
 
 s32 func_80025B34(s32 arg0, s32 arg1) {
     s32 temp_v0;
@@ -75,9 +76,20 @@ INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025D10);
 void func_80025E14(void) {
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/80025B34", D_80010764);
+void func_80025E1C(void) {
+    s32 *dst = D_8008B388;
+    s32 local[16] = {
+        0x1000, 0x4000, 0x8000, 0x2000,
+        0x10, 0x40, 0x80, 0x20,
+        0x200, 0x400, 0x100, 0x8,
+        0x2, 0x4, 0x1, 0x800,
+    };
+    s32 i;
 
-INCLUDE_ASM("asm/nonmatchings/game/80025B34", func_80025E1C);
+    for (i = 0; i < 16; i++) {
+        *dst++ = local[i];
+    }
+}
 
 void func_80025E94(void) {
 }

@@ -249,6 +249,58 @@ struct Unk_80044CD4_Vtbl {
     s32 (*unk8)(s32 arg0, s32 arg1, s32 arg2);
 };
 struct Unk_80044CD4_Vtbl *func_80044F20(void);
+struct Unk_800435D0_Entry {
+    u8 pad_00[0xC];
+    Unk_8004464C_Color unkC;
+    u8 pad_0F;
+};
+struct Unk_800435D0 {
+    u8 pad_00[0x40];
+    struct Unk_800435D0_Entry unk40[1];
+};
+extern void func_80043648(void *arg0, s32 arg1);
+struct Unk_80043BE8_Svc {
+    u8 pad_00[0x8];
+    void (*unk8)(void *arg0);
+};
+struct Unk_80043BE8_Vtbl {
+    u8 pad_00[0x6C];
+    void (*unk6C)(void *self, s32 arg1);
+};
+struct Unk_80043BE8 {
+    struct Unk_80043BE8_Vtbl *unk0;
+    u8 pad_04[0x28];
+    s32 unk2C;
+    void *unk30;
+    u8 pad_34[0x4];
+    s32 unk38;
+};
+struct Unk_80043DFC {
+    u8 pad_00[0x2C];
+    s32 unk2C;
+    struct Unk_80044808_Obj **unk30;
+};
+struct Unk_800455D4_Obj;
+typedef struct Unk_800455D4_Obj *(*Unk_800455D4_Fn)(struct Unk_800455D4_Obj *self);
+struct Unk_800455D4_Vtbl {
+    u8 pad_00[0x4];
+    Unk_800455D4_Fn unk4;
+};
+struct Unk_800455D4_Obj {
+    struct Unk_800455D4_Vtbl *unk0;
+};
+struct Unk_800455D4 {
+    u8 pad_00[0x60];
+    struct Unk_800455D4_Obj *unk60;
+};
+struct Unk_800455D4_Mgr {
+    u8 pad_00[0xC];
+    void (*unkC)(struct Unk_800455D4 *arg0);
+};
+extern void DecDCTReset(s32 mode);
+extern void DecDCToutCallback(void (*func)(void));
+extern void func_8004575C(struct Unk_8004575C *arg0);
+void *func_80018390(void);
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -306,7 +358,15 @@ void func_8004355C(Unk_8004355C *arg0, s32 arg1) {
     func_80026E38();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800435D0);
+void func_800435D0(struct Unk_800435D0 *arg0, s32 arg1, Unk_8004464C_Color *arg2) {
+    struct Unk_800435D0_Entry *entry;
+
+    func_80026E0C();
+    entry = &arg0->unk40[arg1];
+    entry->unkC = *arg2;
+    func_80043648(entry, arg1);
+    func_80026E38();
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043648);
 
@@ -360,7 +420,16 @@ s32 func_80043B88(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043BE8);
+void func_80043BE8(struct Unk_80043BE8 *arg0, s32 arg1) {
+    ((struct Unk_80043BE8_Svc *)func_80026CAC())->unk8(arg0);
+    arg0->unk0 = (struct Unk_80043BE8_Vtbl *)func_80043E74();
+    arg0->unk2C = 0;
+    arg0->unk30 = 0;
+    arg0->unk38 = 0;
+    if (arg1 != 0) {
+        arg0->unk0->unk6C(arg0, arg1);
+    }
+}
 
 void func_80043C60(struct Unk_80043C60 *arg0) {
     func_800183DC(arg0->unk30, arg0->unk2C);
@@ -370,7 +439,20 @@ void func_80043C60(struct Unk_80043C60 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043CB8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043DFC);
+void func_80043DFC(struct Unk_80043DFC *arg0) {
+    s32 i;
+    struct Unk_80044808_Obj **p;
+    struct Unk_80044808_Obj *obj;
+    void (*fn)(void *arg0);
+
+    p = arg0->unk30;
+    for (i = 0; i < arg0->unk2C; i++) {
+        obj = *p;
+        fn = obj->unk0->unk78;
+        p++;
+        fn(obj);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80043E74);
 
@@ -605,7 +687,15 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045438);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800454C4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800455D4);
+void func_800455D4(struct Unk_800455D4 *arg0) {
+    struct Unk_800455D4_Obj *temp_a0 = arg0->unk60;
+
+    arg0->unk60 = temp_a0->unk0->unk4(temp_a0);
+    DecDCToutCallback(0);
+    DecDCTReset(0);
+    func_8004575C((struct Unk_8004575C *)arg0);
+    ((struct Unk_800455D4_Mgr *)func_80018390())->unkC(arg0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004564C);
 

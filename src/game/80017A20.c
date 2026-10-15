@@ -68,10 +68,34 @@ typedef struct Unk_800183DC_Vtbl {
 typedef struct Unk_800183DC {
     Unk_800183DC_Vtbl *vt;
 } Unk_800183DC;
+extern void *malloc(u32);
+extern s32 printf(const char *fmt, ...);
+extern void func_80017AC8(Heap *arg0);
+typedef struct Unk_80018040_Vtbl {
+    u8 pad[0x14];
+    void (*unk14)(void *, s32);
+} Unk_80018040_Vtbl;
+typedef struct Unk_80018040 {
+    Unk_80018040_Vtbl *vt;
+    Unk_800183A0 *unk4;
+} Unk_80018040;
 
-INCLUDE_RODATA("asm/nonmatchings/game/80017A20", D_8001028C);
+Heap *func_80017A20(u32 size) {
+    Heap *heap;
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80017A20);
+    if (size < 0x400) {
+        size = 0x400;
+    }
+    heap = malloc(size + 0x20);
+    if (heap != NULL) {
+        heap->base = (Block *)((u8 *)heap + 0x1C);
+        heap->size = size;
+        func_80017AC8(heap);
+    } else {
+        printf("bMemPMgr = %p, poolSize = %ld in BMemPMgrInit\n", 0, size);
+    }
+    return heap;
+}
 
 void func_80017A9C(Heap *arg0) {
     D_8008A818 = arg0;
@@ -132,7 +156,19 @@ void func_80017FF0(void *arg0, Unk_80017FF0 **arg1) {
     (*arg1)->unk24(arg1, arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80017A20", func_80018040);
+void func_80018040(Unk_80018040 *arg0) {
+    s32 sp10;
+    s32 *p;
+    Unk_800183A0 *sp14;
+
+    p = &sp10;
+    sp14 = arg0->unk4;
+    func_800183A0(p, &sp14);
+    while (sp10 != 0) {
+        arg0->vt->unk14(arg0, sp10);
+        func_800183A0(p, &sp14);
+    }
+}
 
 void func_800180BC(Unk_800180BC *arg0, s32 *arg1, s32 *arg2) {
     if (*arg1 == 0) {

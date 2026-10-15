@@ -77,6 +77,22 @@ typedef struct Unk_80020730 {
     void (*unk40)(void *);
 } Unk_80020730;
 void *func_80018390(void);
+typedef struct Unk_800208F8 {
+    /* 0x00 */ u8 pad_00[0x10];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0x18];
+    /* 0x2C */ s32 unk2C;
+} Unk_800208F8;
+s32 LoadImage(Unk_80020A24 *rect, u32 *p);
+s32 DrawSync(s32 mode);
+typedef struct Unk_800209A0 {
+    /* 0x00 */ u8 pad_00[0x10];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0x18];
+    /* 0x2C */ s32 unk2C;
+} Unk_800209A0;
+extern s32 DrawSync(s32);
+void StoreImage(Unk_80020A24 *rect, u32 *arg1);
 
 void *func_800206E0(void) {
     void *temp;
@@ -128,7 +144,17 @@ void func_800208D8(void) {
     GsGetActiveBuff();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800208F8);
+void func_800208F8(Unk_800208F8 *arg0, Unk_80020970 *arg1, u32 *arg2) {
+    Unk_80020A24 sp10;
+
+    if ((arg0->unk10 == 0) || (arg0->unk2C != 0)) {
+        func_80020970((Unk_80020970 *)&sp10, arg1);
+        LoadImage(&sp10, arg2);
+        if (arg0->unk2C != 0) {
+            DrawSync(0);
+        }
+    }
+}
 
 void func_80020970(Unk_80020970 *arg0, Unk_80020970 *arg1) {
     arg0->unk0 = arg1->unk0;
@@ -137,7 +163,17 @@ void func_80020970(Unk_80020970 *arg0, Unk_80020970 *arg1) {
     arg0->unk6 = arg1->unk8;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800209A0);
+void func_800209A0(Unk_800209A0 *arg0, u32 *arg1, Unk_80020970 *arg2) {
+    Unk_80020A24 sp10;
+
+    if ((arg0->unk10 == 0) || (arg0->unk2C != 0)) {
+        func_80020970((Unk_80020970 *)&sp10, arg2);
+        StoreImage(&sp10, arg1);
+        if (arg0->unk2C != 0) {
+            DrawSync(0);
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020A1C);
 

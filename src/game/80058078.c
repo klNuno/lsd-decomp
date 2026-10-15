@@ -284,6 +284,48 @@ typedef struct Unk_8005BE28 {
     u8 pad_00[4];
     u16 u4;
 } Unk_8005BE28;
+s32 D_8008ABE0;
+extern void func_8005BA50(u8 *arg0, s32 *arg1);
+extern void *memset(void *arg0, s32 arg1, s32 arg2);
+typedef struct Unk_8005A258 {
+    u8 pad_00[0x178];
+    s32 unk178;
+    s32 unk17C;
+    s32 unk180;
+    s32 unk184;
+    s32 unk188;
+    s32 unk18C;
+    u8 pad_190[0x46C - 0x190];
+    s32 unk46C;
+    u8 pad_470[0x5D8 - 0x470];
+    u8 unk5D8;
+    u8 pad_5D9[0x5DF - 0x5D9];
+    u8 unk5DF;
+    u8 unk5E0[0x600 - 0x5E0];
+    s32 unk600[(0x678 - 0x600) / 4];
+    s32 unk678;
+    s32 unk67C;
+    s32 unk680;
+    u8 unk684[0x1F4];
+} Unk_8005A258;
+s32 func_8005C28C(void *arg0, s32 *arg1, void *arg2, s32 arg3);
+typedef struct Unk_8005A508_Vtbl {
+    u8 pad_00[0x104];
+    s32 (*unk104)(void *, s32);
+    u8 pad_108[0x1EC - 0x108];
+    void (*unk1EC)(void *, void *, s32);
+} Unk_8005A508_Vtbl;
+typedef struct Unk_8005A508 {
+    Unk_8005A508_Vtbl *unk0;
+    u8 pad_04[0x44 - 0x04];
+    s32 unk44;
+    u8 pad_48[0x164 - 0x48];
+    s32 unk164;
+    u8 pad_168[0x16C - 0x168];
+    u8 unk16C[1];
+    u8 pad_16D[0x180 - 0x16D];
+    s32 unk180;
+} Unk_8005A508;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -568,7 +610,22 @@ void func_8005A1F4(s32 arg0, S *arg1) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A258);
+void func_8005A258(Unk_8005A258 *arg0) {
+    arg0->unk178 = D_8008ABE0;
+    arg0->unk17C = 0;
+    arg0->unk180 = 0;
+    arg0->unk184 = 0;
+    arg0->unk188 = 0;
+    arg0->unk18C = 0;
+    arg0->unk46C = 0;
+    arg0->unk5DF = 0;
+    arg0->unk5D8 = 0;
+    arg0->unk678 = 1;
+    arg0->unk67C = 0;
+    arg0->unk680 = 0;
+    func_8005BA50(arg0->unk5E0, arg0->unk600);
+    memset(arg0->unk684, 0, 0x1F4);
+}
 
 void func_8005A2D0(Unk_8005A2D0 *arg0, s32 *arg1) {
     s32 temp_v1;
@@ -610,7 +667,15 @@ INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A41C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A4E8);
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005A508);
+void func_8005A508(Unk_8005A508 *arg0) {
+    s32 sp10;
+    s32 sp14;
+
+    arg0->unk0->unk1EC(arg0, &sp10, 1);
+    arg0->unk164 = func_8005C28C(arg0->unk16C, &sp14, &sp10, arg0->unk180);
+    sp14 = arg0->unk0->unk104(arg0, sp14);
+    arg0->unk44 = 0xB;
+}
 
 void func_8005A580(Unk_8005A580 *arg0) {
     if (arg0->unk44 == 0) {

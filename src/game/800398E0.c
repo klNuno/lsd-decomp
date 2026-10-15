@@ -50,8 +50,23 @@ typedef struct Unk_80039B90 {
     u8 pad_1C[0x4];
     s32 unk20;
 } Unk_80039B90;
+extern void *func_80017B34(s32 size);
+typedef struct Unk_800398E0Vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *, s32, s32, s32);
+} Unk_800398E0Vt;
+Unk_800398E0Vt *func_8003A04C(void);
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_800398E0);
+void *func_800398E0(s32 arg0, s32 arg1, s32 arg2) {
+    void *temp_v0;
+
+    temp_v0 = func_80017B34(0x24);
+    if (temp_v0 != NULL) {
+        func_8003A04C()->unk8(temp_v0, arg0, arg1, arg2);
+        return temp_v0;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003995C);
 

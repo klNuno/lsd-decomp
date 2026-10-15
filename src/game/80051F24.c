@@ -289,6 +289,20 @@ struct Unk_80052430 {
     u8 pad_2C[0x50 - 0x2C];
     s32 u50;
 };
+typedef struct Unk_800573CC_Vec3 {
+    s32 x;
+    s32 y;
+    s32 z;
+} Unk_800573CC_Vec3;
+typedef struct Unk_800573CC_Node {
+    s32 u0;
+    u8 pad_04[0x18 - 0x4];
+    Unk_800573CC_Vec3 u18;
+} Unk_800573CC_Node;
+typedef struct Unk_800573CC_Arg0 {
+    u8 pad_00[0x14];
+    Unk_800573CC_Node *u14;
+} Unk_800573CC_Arg0;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
@@ -846,7 +860,18 @@ void func_800573A8(void *arg0, s32 *arg1) {
     func_800573CC(arg0, 0, arg1);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80051F24", func_800573CC);
+void func_800573CC(void *arg0, s32 arg1, s32 *arg2) {
+    Unk_800573CC_Arg0 *obj = arg0;
+    Unk_800573CC_Node *temp = obj->u14;
+    if (arg1 != 0) {
+        temp->u18 = *(Unk_800573CC_Vec3 *)arg2;
+    } else {
+        temp->u18.x += arg2[0];
+        temp->u18.y += arg2[1];
+        temp->u18.z += arg2[2];
+    }
+    obj->u14->u0 = 0;
+}
 
 void func_80057444(Unk_80057444 **arg0, void *arg1) {
     s32 sp10[3];
