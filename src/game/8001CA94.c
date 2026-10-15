@@ -232,6 +232,12 @@ typedef struct Unk_8001CD60_Vt {
 typedef struct Unk_8001CD60 {
     Unk_8001CD60_Vt *vt;
 } Unk_8001CD60;
+typedef struct Unk_8001D950 {
+    Unk_8001E58C_Vt *vt;
+    u8 pad_04[0x8];
+    struct Unk_8001D950 *unkC;
+} Unk_8001D950;
+void MulMatrix2(s32 *arg0, s32 *arg1);
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -456,7 +462,21 @@ void func_8001D6B4(Unk_8001D6B4 *arg0, s32 arg1, s32 arg2) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D714);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001D950);
+void func_8001D950(Unk_8001D950 *arg0, s32 *arg1, s32 *arg2, s32 *arg3, s32 arg4) {
+    s32 sp10[8];
+    s32 sp30[8];
+    Unk_8001D950 *node;
+
+    arg0->vt->unk84(arg0, sp30, 1);
+    for (node = arg0->unkC; node != NULL; node = node->unkC) {
+        node->vt->unk84(node, sp10, 1);
+        MulMatrix2(sp10, sp30);
+    }
+    func_8001EE04(arg2, arg3, arg4, (s32)sp30);
+    if (arg1 != NULL) {
+        func_8001EE04(arg1, arg1, 1, (s32)sp30);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001DA28);
 

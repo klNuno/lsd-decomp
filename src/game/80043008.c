@@ -503,6 +503,23 @@ struct Unk_80044B88 {
     u8 pad_14[0x24];
     s32 unk38;
 };
+s32 func_80043E84(s32 arg0);
+struct Unk_800452FC_Vtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *self);
+};
+struct Unk_800452FC_Obj {
+    struct Unk_800452FC_Vtbl *unk0;
+};
+struct Unk_800452FC_Tbl {
+    u8 pad_00[0x4];
+    s32 unk4;
+    s32 unk8[1];
+};
+struct Unk_800452FC {
+    u8 pad_00[0x10];
+    struct Unk_800452FC_Tbl *unk10;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -1095,7 +1112,35 @@ void func_800452AC(struct Unk_80043B18 *arg0) {
     func_800441A4()->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800452FC);
+s32 func_800452FC(struct Unk_800452FC *arg0) {
+    struct Unk_80026CE8 sp10;
+    struct Unk_800452FC_Tbl *tbl;
+    struct Unk_800452FC_Obj *obj;
+    s32 i;
+    s32 *out;
+    s32 n;
+    s32 r;
+
+    func_80026CE8(&sp10, 0, 0, 1);
+    out = arg0->unk10->unk8;
+    n = arg0->unk10->unk4;
+    for (i = 0; i < n; i++, out++) {
+        tbl = arg0->unk10;
+        sp10.unk0 = (s32)tbl + tbl->unk8[i];
+        r = func_80043E84((s32)&sp10);
+        *out = r;
+        if (r == 0) {
+            while (i != 0) {
+                out--;
+                obj = (struct Unk_800452FC_Obj *)*out;
+                i--;
+                obj->unk0->unk4(obj);
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
 
 s32 func_800453DC(struct Unk_800453DC *arg0, s32 arg1, s32 arg2) {
     return arg0->unk0->unk7C(arg0, arg1, arg2, &arg0->unk10[arg0->unk10[1]] + 4) & 0xFF;

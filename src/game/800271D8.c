@@ -133,6 +133,21 @@ s32 D_8008A88C;
 s32 func_80018458(void);
 void func_8002858C(void);
 void func_800286E4(void);
+typedef struct Unk_80028A84_Vt {
+    u8 pad[0x48];
+    void (*unk48)(void *);
+} Unk_80028A84_Vt;
+typedef struct Unk_80028A84 {
+    Unk_80028A84_Vt *unk0;
+    u8 pad4[0x8];
+    s32 unkC;
+    u8 pad10[0x8];
+    u8 unk18[0x8];
+} Unk_80028A84;
+s32 CdControl(s32 com, u8 *param, s32 result);
+s32 CdRead(s32 sectors, void *buf, s32 mode);
+s32 CdReadSync(s32 mode, u8 *result);
+s32 CdSync(s32 mode, u8 *result);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -502,7 +517,42 @@ s32 func_80028A50(Unk_80028A50 *arg0) {
 void func_80028A7C(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80028A84);
+s32 func_80028A84(Unk_80028A84 *arg0, void *arg1, u32 arg2) {
+    u8 buf[0x800];
+    u8 result[0x10];
+    s32 status;
+    s32 ret;
+    s32 sectors;
+
+    if (arg0->unkC == 0) {
+        goto fallback;
+    }
+retry:
+    sectors = arg2 >> 11;
+    CdControl(2, arg0->unk18, 0);
+sync:
+    status = CdSync(0, result);
+    if (status == 0) {
+        goto sync;
+    }
+    if (status == 5) {
+        goto retry;
+    }
+    if (sectors == 0) {
+        return 0;
+    }
+    CdRead(sectors, arg1, 0x80);
+    do {
+        ret = CdReadSync(0, 0);
+    } while (ret > 0);
+    if (ret == -1) {
+        goto retry;
+    }
+    return 0;
+fallback:
+    arg0->unk0->unk48(arg0);
+    return 0;
+}
 
 void func_80028B64(void) {
 }
