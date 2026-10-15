@@ -85,7 +85,9 @@ struct Unk_80045DE0 {
     s32 unk44;
     s32 unk48;
     s32 unk4C;
-    u8 pad_50[0x10];
+    u8 pad_50[0x4];
+    s32 unk54;
+    u8 pad_58[0x8];
     struct Unk_800458B8_Sub *unk60;
     s32 unk64;
 };
@@ -332,10 +334,13 @@ struct Unk_800448F8 {
 extern void func_8004593C(void);
 struct Unk_80045DE0_Vtbl;
 struct Unk_800458B8_Sub;
+typedef void (*Unk_800458B8_Fn48)(void *self);
 typedef void (*Unk_800458B8_Fn58)(void *self);
 typedef void (*Unk_800458B8_Fn7C)(void *self, void (*cb)(void), void *ctx);
 struct Unk_800458B8_SubVtbl {
-    u8 pad_00[0x58];
+    u8 pad_00[0x48];
+    Unk_800458B8_Fn48 unk48;
+    u8 pad_4C[0xC];
     Unk_800458B8_Fn58 unk58;
     u8 pad_5C[0x20];
     Unk_800458B8_Fn7C unk7C;
@@ -967,7 +972,24 @@ INCLUDE_ASM("asm/nonmatchings/game/80043008", func_8004593C);
 
 INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045948);
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80045A38);
+void func_80045A38(void *arg0) {
+    struct Unk_80045DE0 *obj = D_8008A940;
+    struct Unk_800458B8_Sub *sub;
+
+    if (obj == arg0) {
+        sub = obj->unk60;
+        obj->unk48 = 1;
+        obj->unk54 = 0;
+        sub->unk0->unk48(sub);
+        obj->unk44 = 1;
+        if (obj->unk64 == 0) {
+            sub = obj->unk60;
+            sub->unk0->unk7C(sub, 0, 0);
+            obj->unk64 = 1;
+            obj->unk44 = 1;
+        }
+    }
+}
 
 void func_80045AC8(void) {
 }
