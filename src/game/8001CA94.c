@@ -178,6 +178,19 @@ typedef struct Unk_8001CBA4_Ret {
     u8 pad_00[0xC];
     void (*unkC)(void *);
 } Unk_8001CBA4_Ret;
+typedef struct Unk_8001ECFC {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 unk6;
+    s16 unk8;
+    s16 unkA;
+} Unk_8001ECFC;
+typedef struct Unk_8001ECFC_Pt {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+} Unk_8001ECFC_Pt;
 
 s32 func_8001CA94(void) {
     s32 temp_s0;
@@ -424,7 +437,27 @@ s32 func_8001EC84(Unk_8001EC84 *arg0) {
     return ((a / b) << 12) + (((a % b) << 12) / b);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001CA94", func_8001ECFC);
+s32 func_8001ECFC(Unk_8001ECFC *arg0, Unk_8001ECFC_Pt *arg1) {
+    s32 var_v1;
+
+    var_v1 = 0;
+    if (arg0->unk6 < arg1->unk0) {
+        var_v1 = 8;
+    } else if (arg1->unk0 < arg0->unk0) {
+        var_v1 = 4;
+    }
+    if (arg0->unk8 < arg1->unk2) {
+        var_v1 |= 2;
+    } else if (arg1->unk2 < arg0->unk2) {
+        var_v1 |= 1;
+    }
+    if (arg0->unkA < arg1->unk4) {
+        var_v1 |= 0x20;
+    } else if (arg1->unk4 < arg0->unk4) {
+        var_v1 |= 0x10;
+    }
+    return var_v1;
+}
 
 s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 i;

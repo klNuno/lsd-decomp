@@ -38,6 +38,11 @@ typedef struct Unk_80047574 Unk_80047574;
 typedef struct Unk_80047574Vt {
     u8 pad_00[0x4C];
     void (*unk4C)(Unk_80047574 *self, void *arg);
+    u8 pad_50[0x64 - 0x50];
+    void (*unk64)(Unk_80047574 *self);
+    u8 pad_68[0x74 - 0x68];
+    void (*unk74)(Unk_80047574 *self);
+    void (*unk78)(Unk_80047574 *self);
 } Unk_80047574Vt;
 struct Unk_80047574 {
     Unk_80047574Vt *unk0;
@@ -177,7 +182,16 @@ void func_80047388(u8 arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800473E4);
 
-INCLUDE_ASM("asm/nonmatchings/game/80046F0C", func_800474C8);
+void func_800474C8(Unk_80047574 *arg0) {
+    if (arg0->unk2C == 2 && D_8008A950 == arg0) {
+        arg0->unk0->unk64(arg0);
+        arg0->unk0->unk78(arg0);
+        arg0->unk0->unk74(arg0);
+        while (CdControl(9, 0, 0) == 0) {
+        }
+        arg0->unk2C = 4;
+    }
+}
 
 void func_80047574(Unk_80047574 *arg0) {
     if (arg0->unk2C == 4 && D_8008A950 == arg0) {

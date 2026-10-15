@@ -379,6 +379,32 @@ typedef struct Unk_80049A1C {
     u8 pad_10[0x38 - 0x10];
     Unk_80049A1C_Obj *unk38;
 } Unk_80049A1C;
+extern Unk_800861D4 D_800861D6[];
+typedef struct Unk_8004950C { u8 unk0; u8 unk1; } Unk_8004950C;
+typedef struct Unk_8004C0AC_Elem {
+    u8 pad_00[0x10];
+    u32 unk10;
+    u8 pad_14[0x18 - 0x14];
+    u32 unk18;
+    u8 pad_1C[0x20 - 0x1C];
+    u32 unk20;
+} Unk_8004C0AC_Elem;
+typedef struct Unk_8004C0AC_Obj Unk_8004C0AC_Obj;
+typedef struct Unk_8004C0AC_Vtbl {
+    u8 pad_00[0x7C];
+    void (*unk7C)(Unk_8004C0AC_Obj *);
+} Unk_8004C0AC_Vtbl;
+struct Unk_8004C0AC_Obj {
+    Unk_8004C0AC_Vtbl *unk0;
+    u8 pad_04[0x30 - 0x4];
+    s16 unk30;
+};
+typedef struct Unk_8004C0AC {
+    u8 pad_00[0x4];
+    Unk_8004C0AC_Obj *unk4;
+    u8 pad_08[0x10 - 0x8];
+    Unk_8004C0AC_Elem **unk10;
+} Unk_8004C0AC;
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_800494B4);
 
@@ -393,7 +419,31 @@ Unk_800861D4 *func_800494D8(s32 arg0) {
     return &func_800494BC(NULL)[arg0];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004950C);
+u32 func_8004950C(Unk_8004950C *arg0, s16 *arg1) {
+    u32 i;
+    s32 a2;
+    s32 a3;
+    s32 rows;
+    s32 cols;
+    s16 *p;
+
+    for (i = 0; i < 0xE; i++) {
+        p = D_80086590[i];
+        rows = D_800861D6[i].unk_0;
+        cols = D_800861D4[i].unk_0;
+        for (a3 = 0; a3 < rows; a3++) {
+            for (a2 = 0; a2 < cols; a2++) {
+                if (*arg1 == *p) {
+                    arg0->unk0 = a2;
+                    arg0->unk1 = a3;
+                    return i;
+                }
+                p++;
+            }
+        }
+    }
+    return -1;
+}
 
 s16 *func_800495B8(s32 arg0, s8 *arg1) {
     return D_80086590[arg0] + arg1[1] * D_800861D4[arg0].unk_0 + arg1[0];
@@ -689,7 +739,20 @@ INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004BD14);
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004BE54);
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004C0AC);
+void func_8004C0AC(s32 arg0, Unk_8004C0AC *arg1) {
+    Unk_8004C0AC_Elem **p;
+    Unk_8004C0AC_Elem **end;
+
+    if (arg1->unk4->unk30 >= 0) {
+        arg1->unk4->unk0->unk7C(arg1->unk4);
+        end = arg1->unk10 + 0x19A;
+        for (p = arg1->unk10; p < end; p++) {
+            (*p)->unk10 = (*p)->unk10 | 0x80000000;
+            (*p)->unk20 = 0;
+            (*p)->unk18 = 0;
+        }
+    }
+}
 
 void *func_8004C158(Unk_8004C158 *arg0, s32 arg1, s32 *arg2) {
     s32 temp_v1 = arg0->unk6C->unk14 + 0x18;

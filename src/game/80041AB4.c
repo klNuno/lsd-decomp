@@ -216,6 +216,11 @@ struct Unk_80041F88_mgr_vt {
     u8 pad_00[0x40];
     void (*unk40)(void *, s32, s32, s32, s32, s32);
 };
+struct Unk_8004283C {
+    u8 pad_00[0x50];
+    Unk_8004229C_Rgb unk50;
+};
+void GsSetAmbient(s32 r, s32 g, s32 b);
 
 void *func_80041AB4(s32 arg0, u8 arg1) {
     void *temp;
@@ -518,6 +523,17 @@ s32 func_80042828(struct Unk_80042828 *arg0, s32 arg1) {
     return arg0->unk44[arg1];
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_8004283C);
+void func_8004283C(struct Unk_8004283C *arg0, Unk_8004229C_Rgb *arg1, s32 arg2) {
+    Unk_8004229C_Rgb sp10;
+
+    if (arg2 != 0) {
+        sp10 = arg0->unk50;
+        arg0->unk50 = *arg1;
+        *arg1 = sp10;
+    } else {
+        arg0->unk50 = *arg1;
+    }
+    GsSetAmbient((u8)arg0->unk50.r * 0x10, (u8)arg0->unk50.g * 0x10, (u8)arg0->unk50.b * 0x10);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_800428E4);

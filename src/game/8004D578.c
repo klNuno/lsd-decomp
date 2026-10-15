@@ -273,6 +273,9 @@ typedef struct Unk_8004E230 {
 } Unk_8004E230;
 s32 read(s32 fd, s32 buf, s32 n);
 s32 strcpy(s32 dst, s32 src);
+typedef struct Unk_8004EADC_vt { u8 pad_00[0x54]; s32 (*unk54)(void *, s32, s8 *); } Unk_8004EADC_vt;
+typedef struct Unk_8004EADC_obj { Unk_8004EADC_vt *vt; } Unk_8004EADC_obj;
+s8 *strcat(s8 *dst, s8 *src);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -544,7 +547,17 @@ s32 func_8004EA38(s32 arg0, s32 arg1, u8 *arg2) {
     return 1;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004EADC);
+s8 *func_8004EADC(Unk_8004EADC_obj *arg0, s8 *arg1, s8 *arg2, s8 **arg3) {
+    while (*arg3 != NULL) {
+        strcpy(arg1, arg2);
+        strcat(arg1, *arg3);
+        if (arg0->vt->unk54(arg0, 0, arg1) == 0) {
+            return arg1;
+        }
+        arg3++;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004EB88);
 

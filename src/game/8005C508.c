@@ -652,6 +652,26 @@ typedef struct Unk_80065790 {
 typedef struct Unk_80065AE0_Vt { u8 pad[0x70]; void (*unk70)(void *, s32); } Unk_80065AE0_Vt;
 typedef struct Unk_80065AE0_Obj { Unk_80065AE0_Vt *unk0; } Unk_80065AE0_Obj;
 typedef struct Unk_80065AE0 { u8 pad_00[0x6C]; s32 unk6C; Unk_80065AE0_Obj **unk70; } Unk_80065AE0;
+extern void func_8001E600(void *arg0, void *arg1, void *arg2, s32 arg3);
+typedef struct Unk_8005CF34_Vtbl {
+    u8 pad[0x4C];
+    void (*unk4C)(void *self, void *arg1, s32 arg2, s32 arg3, void *arg4);
+    void (*unk50)(void *self);
+} Unk_8005CF34_Vtbl;
+typedef struct Unk_8005CF34_Obj {
+    Unk_8005CF34_Vtbl *vt;
+} Unk_8005CF34_Obj;
+typedef struct Unk_8005CF34 {
+    u8 pad[0x4];
+    Unk_8005CF34_Obj *unk4;
+    s32 unk8;
+} Unk_8005CF34;
+extern s16 D_80089C64[];
+extern s16 D_80089C70[];
+typedef struct Unk_func_800650F4_Obj {
+    u8 pad[0x44];
+    void (*unk44)(void *, s32, s16 *);
+} Unk_func_800650F4_Obj;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -800,7 +820,18 @@ s32 func_8005CDA8(s32 arg0, s32 arg1) {
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CDF8);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CF34);
+void func_8005CF34(Unk_8005CF34 *arg0) {
+    s32 sp18[4];
+    Unk_8005CF34_Obj *temp_a0;
+
+    temp_a0 = arg0->unk4;
+    if (temp_a0 != NULL) {
+        temp_a0->vt->unk50(temp_a0);
+        func_8001E600(D_8008AC00, sp18, &arg0->unk8, 0);
+        arg0->unk4->vt->unk4C(arg0->unk4, D_8008AC00, D_8008AC08, D_8008ABFC, sp18);
+        func_8001EACC(arg0->unk4, D_8008AC00, 1, 0, 0);
+    }
+}
 
 s32 func_8005CFDC(s32 arg0, s32 arg1, s32 arg2) {
     s32 temp_s0;
@@ -1389,7 +1420,19 @@ void func_800650D4(void) {
     func_80060D80();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_800650F4);
+void func_800650F4(Unk_func_800650F4_Obj **arg0) {
+    s16 *tbl;
+
+    if (rand() % 3 == 0) {
+        return;
+    }
+    if (rand() % 3 != 0) {
+        tbl = D_80089C64;
+    } else {
+        tbl = D_80089C70;
+    }
+    (*arg0)->unk44(arg0, 0, tbl);
+}
 
 void func_8006519C(Unk_8006519C *arg0) {
     arg0->vtbl->unk48(arg0, 1, &D_80089E38);
