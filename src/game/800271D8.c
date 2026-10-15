@@ -163,6 +163,7 @@ s32 CdControlF(s32 com, u8 *param);
 void func_80028888(s32 arg0);
 s32 D_8008A880;
 s32 D_8008A884;
+s32 func_80028A84(Unk_80028A84 *arg0, void *arg1, u32 arg2);
 
 s32 func_800271D8(void) {
     s32 temp_v0;
@@ -215,7 +216,38 @@ INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027528);
 void func_800276C8(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_800276D0);
+s32 func_800276D0(Unk_80027480 *arg0, s32 arg1, u32 arg2) {
+    s32 temp_v0;
+
+    if ((D_8008A85C == 0) && (D_8008A860 == 0)) {
+        func_80028A84((Unk_80028A84 *)arg0, (void *)arg1, arg2);
+        return 0;
+    }
+    func_800280D0();
+    if (arg0->unk28 != 0) {
+        if ((D_8008A864 == 0) && (arg0->unkC != 0)) {
+            func_80028844(3, 7);
+            if (D_8008A85C != 0) {
+                D_8008A880 = arg2 >> 11;
+                D_8008A884 = arg1;
+                D_8008A898 = 1;
+            } else {
+            retry:
+                CdRead(arg2 >> 11, (void *)arg1, 0x80);
+                while ((temp_v0 = CdReadSync(0, 0)) > 0) {
+                }
+                if (temp_v0 == -1) {
+                    goto retry;
+                }
+                func_80028864();
+            }
+        }
+    } else {
+        func_800282AC((Unk_800282AC *)arg0, 0, 5, arg1, arg2);
+    }
+    func_800280E0();
+    return 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800271D8", func_80027800);
 

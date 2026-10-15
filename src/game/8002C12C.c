@@ -210,6 +210,11 @@ void func_80032588(s32 arg0);
 s32 strlen(u8 *s);
 s8 *strcpy(s8 *dst, s8 *src);
 void func_8002FAC4(s32 arg0, s16 arg1, s16 arg2, u16 arg3, u16 arg4, u16 arg5);
+/* Only unk16 is used here: the asm stores the arg0 halfword at D_8008EA0C + 0x16. */
+typedef struct { s16 s0; u8 pad[0x34 - 2]; } Unk_8008D996;
+extern Unk_8008D996 D_8008D996[];
+extern u8 D_8008D7F0[];
+extern u8 D_8008D970[];
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -703,7 +708,35 @@ void func_800303C8(s16 arg0, s16 arg1, u16 arg2) {
 void func_800303FC(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_80030404);
+s16 func_80030404(s16 arg0, u16 arg1, u16 arg2, s16 arg3) {
+    Unk_800305F4 *t;
+    s32 m1;
+    s32 m2;
+    s16 i;
+
+    t = D_800902E8[arg0 & 0xFF];
+    D_8008EA0C.unk16 = arg0;
+    t[(arg0 & 0xFF00) >> 8].u74 = arg1;
+    t[(arg0 & 0xFF00) >> 8].u76 = arg2;
+    if ((u16) t[(arg0 & 0xFF00) >> 8].u74 >= 0x80) {
+        t[(arg0 & 0xFF00) >> 8].u74 = 0x7F;
+    }
+    if ((u16) t[(arg0 & 0xFF00) >> 8].u76 >= 0x80) {
+        t[(arg0 & 0xFF00) >> 8].u76 = 0x7F;
+    }
+    m1 = arg1 * 0x81;
+    m2 = arg2 * 0x81;
+    if (arg3 == 1) {
+        for (i = 0; i < D_8008E9D0; i++) {
+            if (D_8008D996[i].s0 == arg0) {
+                *(s16 *)(D_8008D7F0 + (s16)(i * 8) * 2) = m1;
+                *(s16 *)(D_8008D7F0 + (s16)(i * 8) * 2 + 2) = m2;
+                D_8008D970[i] |= 3;
+            }
+        }
+    }
+    return D_8008EA0C.unk16;
+}
 
 s32 func_80030584(s32 arg0, s16 *arg1, s16 *arg2) {
     Unk_800305F4 *t = D_800902E8[arg0 & 0xFF];
