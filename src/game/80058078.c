@@ -435,7 +435,7 @@ typedef struct Unk_8005A7A0 {
     s32 unk884;
     s32 unk888;
 } Unk_8005A7A0;
-s32 func_8005BE90(void *, s32, s32, s32);
+s32 func_8005BE90();
 s32 *func_8005BF48(void);
 typedef struct Unk_80058F18_Vtbl {
     u8 pad_00[0x1E8];
@@ -735,6 +735,12 @@ typedef struct Unk_8005B81C {
     u8 pad_168[0x180 - 0x168];
     s32 unk180;
 } Unk_8005B81C;
+s32 D_8008ABE8;
+typedef struct Unk_8005BE90 {
+    s32 unk0;
+    s16 unk4;
+    s16 unk6;
+} Unk_8005BE90;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1697,7 +1703,28 @@ s32 func_8005BE28(Unk_8005BE28 *arg0, u8 arg1) {
     return (u16)(var_a1 + 0x2C) < 0x59U;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_8005BE90);
+s32 func_8005BE90(void *arg0, s32 arg1, Unk_8005BE90 *arg2, s32 arg3) {
+    s32 ret;
+
+    if (arg1 != 3 && arg1 != 1 && arg1 != 5 && arg1 != 9 && arg1 != 12) {
+        return -1;
+    }
+    if (arg1 == 5) {
+        if (arg2->unk6 >= -0xFFF && arg2->unk0 != D_8008ABE8) {
+            return -1;
+        }
+    } else if (arg1 == 9) {
+        if (arg2->unk6 < 0x800) {
+            return -1;
+        }
+    }
+    if (arg3 & 1) {
+        arg1 = -12;
+    }
+    ret = func_8005BB30(arg0, arg1, arg3);
+    D_8008ACC4 = ret;
+    return ret;
+}
 
 s32 *func_8005BF48(void) {
     s32 *r = NULL;
