@@ -70,8 +70,22 @@ typedef struct Unk_8001F2B0 {
 void *func_80018390(void);
 s32 func_8001F384(void);
 void func_8001F394(void *arg0);
+struct Unk_8001F250 {
+    u8 pad_00[0x8];
+    void (*unk8)(void *, s32);
+};
+void *func_80017B34(s32 size);
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F250);
+void *func_8001F250(s32 arg0) {
+    void *temp;
+
+    temp = func_80017B34(0x24);
+    if (temp != 0) {
+        ((struct Unk_8001F250 *)func_8001F384())->unk8(temp, arg0);
+        return temp;
+    }
+    return 0;
+}
 
 void func_8001F2B0(Unk_8001F2B0 *arg0, s32 arg1) {
     s32 temp;
