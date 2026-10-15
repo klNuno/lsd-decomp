@@ -319,6 +319,7 @@ typedef struct Unk_800667B0 {
     u8 pad[0x94 - 0x4];
     struct Unk_800667B0 *unk94;
 } Unk_800667B0;
+extern s32 rand(void);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8005C508", D_8001186C);
 
@@ -785,7 +786,9 @@ INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80064928);
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80064AA4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80064B14);
+void func_80064B14(Unk_8005D9F4 *arg0) {
+    arg0->unk0->unk60(arg0, (rand() % 20) == 0);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_80064B80);
 

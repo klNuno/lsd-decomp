@@ -109,8 +109,23 @@ struct Unk_800425EC_vt {
     u8 pad_00[0x30];
     void (*unk30)(void *, s32);
 };
+typedef struct Unk_80041C3C {
+    u8 pad_00[0x8];
+    void (*unk8)(void *, s32, s32);
+} Unk_80041C3C;
+void *func_80017B34(s32 size);
+Unk_80041C3C *func_80041C3C(void);
 
-INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80041AB4);
+void *func_80041AB4(s32 arg0, u8 arg1) {
+    void *temp;
+
+    temp = func_80017B34(0xAC);
+    if (temp != NULL) {
+        func_80041C3C()->unk8(temp, arg0, arg1);
+        return temp;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80041AB4", func_80041B20);
 

@@ -99,12 +99,38 @@ typedef struct Unk_80040A88_vt {
 typedef struct Unk_80040A88 {
     Unk_80040A88_vt *unk0;
 } Unk_80040A88;
+typedef struct Unk_8003FED8 Unk_8003FED8;
+typedef struct Unk_8003FED8_vt {
+    u8 pad[0x60];
+    void (*unk60)(Unk_8003FED8 *, s32);
+    void (*unk64)(Unk_8003FED8 *, s32);
+} Unk_8003FED8_vt;
+struct Unk_8003FED8 {
+    Unk_8003FED8_vt *unk0;
+    u8 pad4[0x6C - 0x4];
+    s32 unk6C;
+    s32 unk70;
+    s32 unk74;
+    s32 unk78;
+    s32 unk7C;
+    u8 pad80[0x98 - 0x80];
+    s32 unk98;
+};
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FDB0);
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FE2C);
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FED8);
+void func_8003FED8(Unk_8003FED8 *arg0, s32 arg1) {
+    arg0->unk70 = arg1;
+    arg0->unk6C = 0;
+    arg0->unk74 = 0xA;
+    arg0->unk78 = 0;
+    arg0->unk7C = 0;
+    arg0->unk0->unk60(arg0, 0);
+    arg0->unk0->unk64(arg0, 0);
+    arg0->unk98 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_8003FF44);
 
