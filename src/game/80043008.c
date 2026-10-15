@@ -389,6 +389,23 @@ struct Unk_80044380_Src {
     s16 unk8;
     s16 unkA;
 };
+struct Unk_80044F90_Base_vt {
+    u8 pad_00[0x8];
+    void (*unk8)(void *arg0);
+};
+struct Unk_80044F90_vt {
+    u8 pad_00[0x64];
+    void (*unk64)(void *arg0);
+};
+struct Unk_80044F90 {
+    struct Unk_80044F90_vt *unk0;
+    u8 pad_04[0x26];
+    u16 unk2A;
+    u8 pad_2C[0x4];
+    u16 unk30;
+    u16 unk32;
+    s32 unk34;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -811,7 +828,19 @@ s32 func_80044F30(s32 arg0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_80044F90);
+void func_80044F90(struct Unk_80044F90 *arg0, s32 arg1) {
+    char sp10[0x20]; /* unused: same 0x20 buffer as func_8004232C's strcpy target */
+
+    ((struct Unk_80044F90_Base_vt *)func_80026CAC())->unk8(arg0);
+    arg0->unk0 = ((struct Unk_80044F90_vt *)func_800451A8());
+    arg0->unk34 = 0;
+    arg0->unk32 = 0;
+    if (arg1 == 0) {
+        arg0->unk30 = 1;
+        arg0->unk2A = 0;
+        arg0->unk0->unk64(arg0);
+    }
+}
 
 void func_8004500C(struct Unk_8004500C *arg0) {
     func_80017CFC(arg0->unk34);
