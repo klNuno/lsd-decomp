@@ -148,6 +148,8 @@ struct Unk_80048BC0 {
     u8 pad_2C[8];
     s32 unk34;
 };
+u8 *func_80048D64(void);
+s32 func_80049110(s32 *arg0);
 
 s32 func_80048894(void) {
     s32 temp_v0;
@@ -290,7 +292,20 @@ void *func_80048D48(s32 *arg0) {
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048D64);
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048D74);
+s32 func_80048D74(s32 arg0) {
+    s32 r;
+    u8 *p;
+    s32 ofs;
+
+    r = (u32)((s32 (*)(s32, s32))func_80048CFC)(0, arg0) % 7;
+    p = func_80048D64();
+    if (D_8008A964 != 0) {
+        ofs = (D_8008A964 - 1) * 4;
+    } else {
+        ofs = r * 4;
+    }
+    return *(s32 *)(p + ofs);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80048894", func_80048DF8);
 
@@ -370,7 +385,18 @@ s32 func_80049110(s32 *arg0) {
     return (s32)func_80048D48(NULL) + 0x3D40;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80048894", func_8004913C);
+s32 func_8004913C(s32 *arg0) {
+    s32 sp10;
+    s32 r;
+    s32 ret;
+
+    r = (u32)((s32 (*)(s32))func_80048CFC)(0) % 7;
+    ret = func_80049110(&sp10);
+    if (arg0 != NULL) {
+        *arg0 = r + sp10;
+    }
+    return ret + r * 0x1C;
+}
 
 s32 func_800491CC(s32 *arg0) {
     if (arg0 != NULL) {
