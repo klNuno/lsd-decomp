@@ -3,7 +3,14 @@
 typedef struct { u8 pad[0x74]; s16 u74; s16 u76; u8 pad2[0xAC - 0x78]; } Unk_800305F4;
 extern Unk_800305F4 *D_800902E8[];
 /* One bss record of 0x20 bytes (config/symbol_addrs.txt): bytes up to 0x15, then s16 fields. */
-typedef struct { u8 u0[0x16]; s16 u16; s16 u18; s16 u1A; s16 u1C; s16 u1E; } Unk_8008EA0C;
+typedef struct Unk_8008EA0C {
+    u8 unk0[0x16];
+    s16 unk16;
+    s16 unk18;
+    s16 unk1A;
+    s16 unk1C;
+    s16 unk1E;
+} Unk_8008EA0C;
 extern Unk_8008EA0C D_8008EA0C;
 typedef struct { u8 pad[0x60]; s32 unk60; } Unk_8002CBF4;
 s32 D_8008A8B0;
@@ -308,17 +315,26 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002EDD4);
 void func_8002F20C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s16 temp_v0;
 
-    D_8008EA0C.u0[0xF] = 0x7F;
+    D_8008EA0C.unk0[0xF] = 0x7F;
     temp_v0 = func_8002CF18(0xFF) & 0xFF;
-    D_8008EA0C.u1A = temp_v0;
+    D_8008EA0C.unk1A = temp_v0;
     if (temp_v0 < D_8008E9D0) {
-        func_8002DDBC((u8) D_8008EA0C.u1A, arg0 & 0xFFFF, arg1 & 0xFFFF, arg2 & 0xFFFF, arg3 & 0xFFFF);
+        func_8002DDBC((u8) D_8008EA0C.unk1A, arg0 & 0xFFFF, arg1 & 0xFFFF, arg2 & 0xFFFF, arg3 & 0xFFFF);
     }
 }
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F2A4);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F368);
+void func_8002F368(s32 arg0, s32 arg1) {
+    s32 temp;
+
+    D_8008EA0C.unk0[0xF] = 0x7F;
+    temp = func_8002CF18(0xFF) & 0xFF;
+    D_8008EA0C.unk1A = temp;
+    if (temp < D_8008E9D0) {
+        func_8002DDBC((u8) D_8008EA0C.unk1A, arg0 & 0xFFFF, arg1 & 0xFFFF, 0x80FF, 0x5FC8);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002F3E8);
 
@@ -343,7 +359,7 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_80030404);
 
 s32 func_80030584(s32 arg0, s16 *arg1, s16 *arg2) {
     Unk_800305F4 *t = D_800902E8[arg0 & 0xFF];
-    s16 *p = &D_8008EA0C.u16;
+    s16 *p = &D_8008EA0C.unk16;
     *p = arg0;
     *arg1 = t[(arg0 & 0xFF00) >> 8].u74;
     *arg2 = t[(arg0 & 0xFF00) >> 8].u76;
@@ -354,13 +370,13 @@ s32 func_800305F4(s32 arg0) {
     s32 lo = arg0 & 0xFF;
     s32 hi = (arg0 & 0xFF00) >> 8;
     Unk_800305F4 *p = &D_800902E8[lo][hi];
-    D_8008EA0C.u16 = lo;
+    D_8008EA0C.unk16 = lo;
     return p->u74;
 }
 
 s32 func_80030648(s32 arg0) {
     Unk_800305F4 *t = D_800902E8[arg0 & 0xFF];
-    D_8008EA0C.u16 = arg0;
+    D_8008EA0C.unk16 = arg0;
     return t[(arg0 & 0xFF00) >> 8].u76;
 }
 
