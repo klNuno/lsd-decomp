@@ -51,6 +51,27 @@ typedef struct Unk_80020A24 {
 } Unk_80020A24;
 void func_80020970(Unk_80020970 *arg0, Unk_80020970 *arg1);
 void MoveImage(Unk_80020A24 *rect, s32 x, s32 y);
+typedef struct Unk_80020784_Obj {
+    u8 pad_00[0x70];
+    void (*unk70)(void *, s32);
+    u8 pad_74[0xC];
+    void (*unk80)(void *, s32);
+} Unk_80020784_Obj;
+typedef struct Unk_80020784 {
+    /* 0x00 */ Unk_80020784_Obj *unk0;
+    /* 0x04 */ u8 pad_04[0xC];
+    /* 0x10 */ s32 unk10;
+    /* 0x14 */ u8 pad_14[0x1C];
+    /* 0x30 */ s32 unk30;
+} Unk_80020784;
+typedef struct Unk_80020AF4 {
+    /* 0x00 */ u8 pad_00[0xC];
+    /* 0x0C */ s32 unkC;
+    /* 0x10 */ u8 pad_10[0x10];
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+} Unk_80020AF4;
+Unk_80020AF4 *func_80020C5C(void);
 
 void *func_800206E0(void) {
     void *temp;
@@ -65,7 +86,12 @@ void *func_800206E0(void) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020730);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020784);
+void func_80020784(Unk_80020784 *arg0) {
+    arg0->unk10 = 0;
+    arg0->unk0->unk70(arg0, 3);
+    arg0->unk0->unk80(arg0, 1);
+    arg0->unk30 = 0;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_800207DC);
 
@@ -112,7 +138,15 @@ void func_80020A24(void *arg0, Unk_80020970 *arg1, s16 arg2, s16 arg3) {
 
 INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020A74);
 
-INCLUDE_ASM("asm/nonmatchings/game/800206E0", func_80020AF4);
+void func_80020AF4(void) {
+    Unk_80020AF4 *temp;
+
+    temp = func_80020C5C();
+    if (++temp->unk24 >= temp->unk20 && temp->unkC == 0) {
+        temp->unkC = 1;
+        temp->unk24 = 0;
+    }
+}
 
 void func_80020B4C(Unk_80020B4C *arg0, s32 arg1) {
     if (arg0->unk10 == 0) {

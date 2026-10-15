@@ -19,6 +19,25 @@ struct Unk_80039D68 {
     u8 pad_16[0x6];
     u16 unk1C;
 };
+extern void SsSeqStop(s16);
+extern void SsSeqClose(s16);
+typedef struct Unk_80039D14 {
+    u8 pad_00[0x14];
+    s16 unk14;
+    u8 pad_16[0x4];
+    s16 unk1A;
+    u8 pad_1C[0x2];
+    u16 unk1E;
+} Unk_80039D14;
+extern void SsSeqPlay(s16, s16, s16);
+typedef struct Unk_80039CBC {
+    u8 pad_00[0x14];
+    s16 unk14;
+    u8 pad_16[0x8];
+    u16 unk1E;
+} Unk_80039CBC;
+extern s32 func_8002CC28(void);
+extern void SsSeqSetCrescendo(s16, s16, s32);
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_800398E0);
 
@@ -34,9 +53,22 @@ INCLUDE_RODATA("asm/nonmatchings/game/800398E0", D_80010FEC);
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039C04);
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039CBC);
+void func_80039CBC(Unk_80039CBC *arg0) {
+    if (arg0->unk1E == 0) {
+        SsSeqSetVol(arg0->unk14, 0x34, 0x34);
+        SsSeqPlay(arg0->unk14, 1, 0);
+        arg0->unk1E = 1;
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039D14);
+void func_80039D14(Unk_80039D14 *arg0) {
+    if (arg0->unk1E != 0) {
+        SsSeqStop(arg0->unk14);
+        SsSeqClose(arg0->unk14);
+        arg0->unk1E = 0;
+        arg0->unk1A = 0;
+    }
+}
 
 void func_80039D68(struct Unk_80039D68 *arg0) {
     if (arg0->unk1C == 0) {
@@ -56,7 +88,9 @@ void func_80039DF4(struct Unk_80039DF4 *arg0, s16 arg1, s16 arg2) {
     SsSeqSetVol(arg0->unk14, arg1, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039E24);
+void func_80039E24(struct Unk_80039DF4 *arg0, s16 arg1, s32 arg2) {
+    SsSeqSetCrescendo(arg0->unk14, arg1, func_8002CC28() * arg2);
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039E7C);
 
