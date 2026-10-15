@@ -209,6 +209,7 @@ void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
 void func_80032588(s32 arg0);
 s32 strlen(u8 *s);
 s8 *strcpy(s8 *dst, s8 *src);
+void func_8002FAC4(s32 arg0, s16 arg1, s16 arg2, u16 arg3, u16 arg4, u16 arg5);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -686,7 +687,14 @@ INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002FAC4);
 
 INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_800300D0);
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_800302DC);
+void func_800302DC(s16 arg0, s16 arg1, u16 arg2, s32 arg3, u16 a, u16 b) {
+    u16 n;
+    u16 v;
+    if (a == b) { v = 0x40; n = a; }
+    else if (b < a) { n = a; v = (b << 6) / a; }
+    else { n = b; v = 0x7F - (a << 6) / b; }
+    func_8002FAC4(0x21, arg0, arg1, arg2, n, v);
+}
 
 void func_800303C8(s16 arg0, s16 arg1, u16 arg2) {
     func_800300D0(0x21, arg0, arg1, arg2);

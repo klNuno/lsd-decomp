@@ -635,6 +635,35 @@ void func_80045DE0(void);
 struct Unk_800454C4_Obj *func_80046F0C(void *arg0, s32 arg1, s32 arg2);
 s32 func_8004564C();
 s32 D_8008A93C;
+extern void *func_8001F250(s32 arg0);
+struct Unk_800439EC_Vtbl {
+    u8 pad_00[0x4];
+    void (*unk4)(void *self);
+    u8 pad_08[0x70];
+    void (*unk78)(void *self);
+};
+struct Unk_800439EC_Elem {
+    struct Unk_800439EC_Vtbl *unk0;
+};
+struct Unk_800439EC_Ent {
+    u8 pad_00[0x1C];
+};
+struct Unk_800439EC_Count {
+    u8 pad_00[0x8];
+    u32 unk8;
+    struct Unk_800439EC_Ent unkC[1];
+};
+struct Unk_800439EC_Mgr {
+    u8 pad_00[0x64];
+    void (*unk64)(void *arg0);
+};
+struct Unk_800439EC {
+    struct Unk_800439EC_Vtbl *unk0;
+    u8 pad_04[0xC];
+    struct Unk_800439EC_Count *unk10;
+    u8 pad_14[0x18];
+    struct Unk_800439EC_Elem **unk2C;
+};
 
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
@@ -755,7 +784,33 @@ void func_80043954(struct Unk_80043954 *arg0) {
     func_80026CAC()->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80043008", func_800439EC);
+s32 func_800439EC(struct Unk_800439EC *arg0) {
+    struct Unk_800439EC_Elem **q;
+    u32 i;
+
+    q = (struct Unk_800439EC_Elem **)func_80017B34((arg0->unk10->unk8 + 1) * 4);
+    if (q == NULL) {
+        return 1;
+    }
+    arg0->unk2C = q;
+    arg0->unk0->unk78(arg0);
+    for (i = 0; i < arg0->unk10->unk8; i++) {
+        *q = func_8001F250((s32)&arg0->unk10->unkC[i]);
+        if (*q == NULL) {
+            while (i != 0) {
+                q--;
+                (*q)->unk0->unk4(*q);
+                i--;
+            }
+            func_80017CFC((s32)q);
+            return 1;
+        }
+        q++;
+    }
+    *q = NULL;
+    ((struct Unk_800439EC_Mgr *)func_80026CAC())->unk64(arg0);
+    return 0;
+}
 
 void func_80043B18(struct Unk_80043B18 *arg0) {
     GsMapModelingData(arg0->unk10 + 1);

@@ -1215,6 +1215,18 @@ struct Unk_8003E280 {
     u8 pad_1C[0x24 - 0x1C];
     s32 unk24;
 };
+typedef struct Unk_8003E4B8_Vtbl {
+    u8 pad_00[0x30];
+    void (*unk30)(void *, s32);
+    u8 pad_34[0x64 - 0x34];
+    void (*unk64)(void *);
+    void (*unk68)(void *);
+} Unk_8003E4B8_Vtbl;
+struct Unk_8003E4B8 {
+    Unk_8003E4B8_Vtbl *unk0;
+    u8 pad_04[0x20 - 0x04];
+    s32 unk20;
+};
 
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
@@ -2127,7 +2139,17 @@ void func_8003E4A4(struct Unk_8003E4A4 *arg0) {
     arg0->unk1C++;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003B854", func_8003E4B8);
+void func_8003E4B8(struct Unk_8003E4B8 *arg0, s32 arg1) {
+    Unk_8003E4B8_Vtbl *vt = arg0->unk0;
+
+    arg0->unk20 = arg1;
+    vt->unk30(arg0, arg1);
+    if (arg1 == 2) {
+        vt->unk64(arg0);
+    } else if (arg1 == 3) {
+        vt->unk68(arg0);
+    }
+}
 
 void func_8003E538(struct Unk_8003E538 *arg0) {
     arg0->unk1C = 0;

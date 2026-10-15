@@ -33,7 +33,7 @@ typedef struct Unk_8004FF40_obj { Unk_8004FF40_vt *unk0; } Unk_8004FF40_obj;
 typedef struct Unk_8004FF40 { u8 pad[0x70]; Unk_8004FF40_obj *unk70; } Unk_8004FF40;
 s32 func_8004E7D0();
 s32 func_8004E890();
-typedef struct Unk_8004DABC_mgr { u8 pad[0x94]; void (*unk94)(void *); u8 pad_98[0xDC - 0x98]; void (*unkDC)(void *); void (*unkE0)(void *, s32); } Unk_8004DABC_mgr;
+typedef struct Unk_8004DABC_mgr { u8 pad[0x94]; void (*unk94)(void *); u8 pad_98[0xDC - 0x98]; void (*unkDC)(void *); void (*unkE0)(void *, s32); void (*unkE4)(void *, void *); } Unk_8004DABC_mgr;
 typedef struct Unk_8004DABC_vt { u8 pad[0x19C]; void (*unk19C)(void *, s32 *); } Unk_8004DABC_vt;
 typedef struct Unk_8004DABC_obj { Unk_8004DABC_vt *vt; } Unk_8004DABC_obj;
 typedef struct Unk_8004DABC_sub { u8 pad[0x14]; s32 unk14; } Unk_8004DABC_sub;
@@ -720,6 +720,12 @@ typedef struct Unk_8004DE08 {
     u8 pad_A8[0xB0 - 0xA8];
     Unk_8004DE08_obj *unkB0;
 } Unk_8004DE08;
+typedef struct Unk_8004DCD0_rgb { s8 r, g, b; } Unk_8004DCD0_rgb;
+typedef struct Unk_8004DCD0_vt { u8 pad_00[0xB8]; void (*unkB8)(void *, Unk_8004DCD0_rgb *); } Unk_8004DCD0_vt;
+typedef struct Unk_8004DCD0_obj { Unk_8004DCD0_vt *vt; } Unk_8004DCD0_obj;
+typedef struct Unk_8004DCD0 { u8 pad_00[0x3C]; s32 unk3C; u8 pad_40[0xB0 - 0x40]; Unk_8004DCD0_obj *unkB0; } Unk_8004DCD0;
+u8 D_8008AA28;
+s32 D_8008AA2C;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -882,7 +888,33 @@ void func_8004DC64(Unk_8004DC64 *arg0, s32 arg1) {
     obj->unk0->unk4C(obj, arg1, &D_8008A9B4);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004DCD0);
+void func_8004DCD0(Unk_8004DCD0 *arg0, Unk_8004DCD0_rgb *arg1) {
+    Unk_8004DCD0_rgb col;
+    u8 *p;
+
+    p = (u8 *)&col;
+    func_8003DFBC()->unkE4(arg0, arg1);
+    if (arg0->unk3C != 0) {
+        col.r = 0;
+        col.g = 0;
+        col.b = 0;
+        p[D_8008AA28] = 0x80;
+    } else {
+        col = *arg1;
+        if (D_8008AA2C < 0x80) {
+            p[0] += 0x80;
+        } else {
+            p[D_8008AA28] += 0x80;
+        }
+    }
+    if (++D_8008AA28 >= 3) {
+        D_8008AA28 = 0;
+    }
+    if (++D_8008AA2C >= 0x101) {
+        D_8008AA2C = 0;
+    }
+    arg0->unkB0->vt->unkB8(arg0->unkB0, &col);
+}
 
 void func_8004DE08(Unk_8004DE08 *arg0) {
     s32 sp10;

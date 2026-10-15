@@ -990,6 +990,24 @@ typedef struct Unk_800591B4 {
     s32 unk90C;
     s32 unk910;
 } Unk_800591B4;
+extern s32 D_80087E68[];
+extern s32 D_80087E74[];
+extern s16 D_80087E84[];
+void func_80059A1C(void *);
+typedef struct Unk_800598E8_Vtbl {
+    u8 pad0[0x44];
+    void (*unk44)(void *, s32, void *);
+} Unk_800598E8_Vtbl;
+typedef struct Unk_800598E8 {
+    Unk_800598E8_Vtbl *unk0;
+    u8 pad4[0x90 - 0x04];
+    s32 unk90;
+    s32 unk94;
+    u8 pad98[0xA0 - 0x98];
+    s32 unkA0;
+    u8 padA4[0xA8 - 0xA4];
+    s32 unkA8;
+} Unk_800598E8;
 
 void func_80058078(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
@@ -1453,7 +1471,31 @@ void func_80059814(Unk_80059814 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80058078", func_800598E8);
+void func_800598E8(Unk_800598E8 *arg0) {
+    s32 step;
+    s32 sum;
+    s32 lim;
+
+    arg0->unkA8 = arg0->unkA0 == 1;
+    if (arg0->unk90 != 0) {
+        step = D_80087E68[arg0->unk90];
+        sum = step + arg0->unk94;
+        lim = D_80087E74[arg0->unk90];
+        if ((sum < 0 ? ~sum + 1 : sum) < lim) {
+            D_80087E84[0] = step;
+            arg0->unk0->unk44(arg0, 0, &D_80087E84[-2]);
+            arg0->unk94 = sum;
+        }
+        arg0->unk90 = 0;
+        func_80059A1C(arg0);
+    } else if (arg0->unk94 != 0) {
+        step = arg0->unk94 < 0 ? 0x2D : -0x2D;
+        D_80087E84[0] = step;
+        arg0->unk0->unk44(arg0, 0, &D_80087E84[-2]);
+        arg0->unk94 += step;
+        func_80059A1C(arg0);
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80058078", func_80059A1C);
 
