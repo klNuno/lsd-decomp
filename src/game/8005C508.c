@@ -1914,6 +1914,13 @@ typedef struct Unk_8005DD18 {
     u8 pad_9C[0xF0 - 0x9C];
     s32 unkF0;
 } Unk_8005DD18;
+typedef struct Unk_8005CBC8 {
+    s8 unk0;
+    s8 unk1;
+} Unk_8005CBC8;
+s32 func_8005630C(void);
+s32 func_8005CD58(s32 arg0);
+s32 func_8005CDA8(s32 arg0, s32 arg1);
 
 void func_8005C508(void) {
     struct Unk_80026CE8 sp10;
@@ -2107,7 +2114,73 @@ s32 func_8005CAB4(s32 arg0, Unk_8005C9A4 *arg1, Unk_8005CAB4 *arg2, Unk_8005CAB4
     return 0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8005C508", func_8005CBC8);
+s32 func_8005CBC8(s32 arg0, Unk_8005CAB4 *arg1) {
+    Unk_8005CBC8 *p;
+    s8 temp_a0;
+    s32 n;
+    s32 r;
+
+    p = (Unk_8005CBC8 *)arg1;
+    temp_a0 = p->unk1;
+    if (temp_a0 == 1) {
+        p->unk0 = 1;
+        return 1;
+    }
+    if (temp_a0 < 0 && p->unk0 != 0) {
+        return 0;
+    }
+    n = temp_a0 < 0 ? ~temp_a0 + 1 : temp_a0;
+    switch (n) {
+        case 2:
+        case 3:
+        case 4:
+            r = func_8005CDA8(arg0, n - 1);
+            break;
+        case 5:
+            if (arg0 == (arg0 / 3) * 3) {
+                p->unk0 = 1;
+                return 1;
+            }
+            return 0;
+        case 6:
+            if (arg0 != (arg0 / 3) * 3) {
+                p->unk0 = 1;
+                return 1;
+            }
+            return 0;
+        case 7:
+            r = func_8005630C();
+            break;
+        case 8:
+        case 9:
+            if (arg0 % 3 == n - 7) {
+                p->unk0 = 1;
+                return 1;
+            }
+            return 0;
+        case 20:
+            if ((arg0 & 1) == 0) {
+                p->unk0 = 1;
+                return 1;
+            }
+            return 0;
+        case 21:
+            r = arg0 & 1;
+            break;
+        default:
+            if (n < 10) {
+                p->unk0 = 1;
+                return 1;
+            }
+            r = func_8005CD58(n);
+            break;
+    }
+    if (r != 0) {
+        p->unk0 = 1;
+        return 1;
+    }
+    return 0;
+}
 
 s32 func_8005CD58(s32 arg0) {
     s32 temp_s0;

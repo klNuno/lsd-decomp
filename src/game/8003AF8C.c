@@ -12,6 +12,13 @@ struct Unk_8003B02C {
 typedef struct Unk_8003AF8C_Vtbl {
     u8 pad_00[0x40];
     void (*unk40)(void *, void *, s32);
+    u8 pad_44[0xC];
+    void (*unk50)(void);
+    void (*unk54)(void *);
+    s32 (*unk58)(void *);
+    void (*unk5C)(void *);
+    s32 (*unk60)(void *);
+    void (*unk64)(void *);
 } Unk_8003AF8C_Vtbl;
 typedef struct Unk_8003AF8C {
     Unk_8003AF8C_Vtbl *unk0;
@@ -93,6 +100,30 @@ void func_8003B044(Unk_8003B044 *arg0, void **arg1, s32 arg2) {
 void func_8003B108(void) {
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003AF8C", func_8003B110);
+void func_8003B110(Unk_8003AF8C *arg0) {
+    s32 r;
+
+    if (arg0->unk18 != 0) {
+        arg0->unk0->unk50();
+        for (;;) {
+            arg0->unk0->unk54(arg0);
+            for (;;) {
+                r = arg0->unk0->unk58(arg0);
+                if (r == 1) {
+                    arg0->unk0->unk5C(arg0);
+                    continue;
+                }
+                if (r == 2) {
+                    if (arg0->unk0->unk60(arg0) != 0) {
+                        arg0->unk0->unk64(arg0);
+                    }
+                }
+                if (r == 0) {
+                    break;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/8003AF8C", func_8003B20C);
