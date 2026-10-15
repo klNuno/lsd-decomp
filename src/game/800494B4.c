@@ -14,7 +14,8 @@ typedef struct { s16 pad[3]; s16 u6; } T;
 typedef struct { u8 pad[0x1E0]; s32 u1E0; T *u1E4; } S;
 extern T D_8008699C, D_800869A8, D_800869B4, D_800869C0;
 typedef struct { u8 pad[0x54]; s32 u54[3]; u8 pad2[0x68 - 0x60]; Unk_800861D4 *u68; } Unk_8004B418;
-void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *arg4);
+typedef struct Unk_8004B44C { s8 a; s8 b; s8 c; s8 d; s16 e; s16 f; s16 g; } Unk_8004B44C;
+s32 func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, Unk_8004B44C *arg4);
 typedef struct Unk_8004BCE0_Slot {
     u16 unk0;
     u8 pad_02[0x1C - 0x2];
@@ -1170,7 +1171,39 @@ void func_8004B418(Unk_8004B418 *arg0, s32 *arg1, void *arg2) {
     func_8004B44C(arg1, sp18, arg0->u68, arg0->u54, arg2);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B44C);
+s32 func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, Unk_8004B44C *arg4) {
+    s32 t0;
+    s32 t1;
+    s32 t4;
+    s32 temp;
+    s32 x;
+    s32 k0;
+    s32 k2;
+
+    if (arg2->unk_4 == 0) {
+        t0 = arg4->b;
+        t1 = arg2->unk_2;
+        t4 = arg4->a + arg2->unk_0 * t0;
+    } else {
+        t1 = 1;
+        t0 = 0;
+        t4 = 0;
+    }
+    temp = (arg3[0] - arg2->unk_0 * 0x5000) + arg4->a * 0xA000;
+    x = arg3[2] - t1 * 0x5000;
+    arg1[0] = temp;
+    if (t0 & 1) {
+        arg1[0] = temp - 0x5000;
+    }
+    arg1[1] = arg3[1];
+    arg1[2] = x + t0 * 0xA000;
+    arg0[0] = (arg4->c << 11) + arg1[0] + (k0 = arg4->e + 0x400);
+    arg0[1] = arg4->f + arg1[1];
+    arg0[2] = (arg4->d << 11) + arg1[2] + (k2 = arg4->g + 0x400);
+    arg1[0] += 0x5000;
+    arg1[2] += 0x5000;
+    return t4;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/800494B4", func_8004B570);
 
