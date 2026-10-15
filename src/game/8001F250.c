@@ -183,6 +183,16 @@ typedef struct Unk_8001F3B0 {
     u8 pad_00[0x10];
     Unk_8001F3B0_Mesh *unk10;
 } Unk_8001F3B0;
+void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk_80020050_Vec *out, u32 *index);
+typedef struct Unk_8001F8B8_LVec { s32 x; s32 y; s32 z; s32 pad; } Unk_8001F8B8_LVec;
+typedef struct Unk_8001F8B8_SVec { s16 x; s16 y; s16 z; s16 pad; } Unk_8001F8B8_SVec;
+typedef struct Unk_8001F8B8_Frac { s32 num; s32 den; } Unk_8001F8B8_Frac;
+void OuterProduct0(Unk_8001F8B8_LVec *a, Unk_8001F8B8_LVec *b, Unk_8001F8B8_LVec *out);
+void Square0(Unk_8001F8B8_LVec *in, Unk_8001F8B8_LVec *out);
+s32 SquareRoot0(s32 a);
+#define ABS(x) ((x) < 0 ? ~(x) + 1 : (x))
+#define FIX_DIV(n, d) ((((n) / (d)) != 0 ? ((n) / (d)) << 16 : ((n) * (d)) & 0x80000000) | (ABS((n) % (d)) << 16) / ABS(d))
+
 
 void *func_8001F250(s32 arg0) {
     void *temp;
@@ -370,7 +380,142 @@ void func_8001F66C(struct Unk_8001F66C *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8001F250", func_8001F8B8);
+s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *heightOut,
+                  Unk_80020050_Vec *from, Unk_80020050_Vec *to) {
+    Unk_80020050_Vec v[4];
+    Unk_8001F8B8_LVec n;
+    Unk_80020050_Vec ray[2];
+    Unk_80020050_Vec hit;
+    s32 count;
+    u32 index;
+    Unk_80020050_Prim *prim;
+    s32 ret;
+    s32 fx, i;
+
+    index = 0;
+    *dist = 0x7FFFFFFF;
+    ray[0].x = from->x;
+    ray[0].y = from->y;
+    ray[0].z = from->z;
+    ray[1].x = to->x - from->x;
+    ray[1].y = to->y - from->y;
+    ray[1].z = to->z - from->z;
+    ret = 0;
+    while ((prim = func_80020050(arg0, prim, &count, v, &index)) != NULL) {
+        Unk_8001F8B8_LVec spare;
+        Unk_8001F8B8_SVec e1;
+        Unk_8001F8B8_SVec e2;
+        Unk_8001F8B8_LVec c;
+        Unk_8001F8B8_LVec a;
+        Unk_8001F8B8_LVec b;
+        Unk_8001F8B8_Frac fa;
+        Unk_8001F8B8_Frac ft;
+        s32 w[3];
+        Unk_8001F8B8_LVec d;
+        Unk_8001F8B8_LVec sq;
+        union {
+            Unk_8001F8B8_LVec sq;
+            Unk_80020050_Vec box[2];
+        } u;
+        s32 len[2];
+
+        e1.x = v[1].x - v[0].x;
+        e1.y = v[1].y - v[0].y;
+        e1.z = v[1].z - v[0].z;
+        e2.x = v[2].x - v[0].x;
+        e2.y = v[2].y - v[0].y;
+        e2.z = v[2].z - v[0].z;
+        a.x = e1.x; a.y = e1.y; a.z = e1.z;
+        b.x = e2.x; b.y = e2.y; b.z = e2.z;
+        OuterProduct0(&a, &b, &c);
+        n.x = c.x; n.y = c.y; n.z = c.z;
+        n.x /= 4096;
+        n.y /= 4096;
+        n.z /= 4096;
+        n.pad = -(v[0].x * n.x + v[0].y * n.y + v[0].z * n.z);
+        w[0] = ray[1].x * n.x + ray[1].y * n.y + ray[1].z * n.z;
+        if (ABS(w[0]) <= 0) {
+            w[1] = 2;
+        } else {
+            c.x = w[0];
+            c.y = 1;
+            w[2] = ray[0].x * n.x + ray[0].y * n.y + ray[0].z * n.z;
+            w[2] += n.pad;
+            fa.num = -w[2];
+            fa.den = 1;
+            ft.num = fa.num * c.y;
+            ft.den = fa.den * c.x;
+            if (ABS(ft.den) >= 0x1000) {
+                ft.num /= 4096;
+                ft.den /= 4096;
+            }
+            fx = FIX_DIV(ft.num, ft.den);
+            if (fx < 0) {
+                w[1] = 0;
+            } else {
+                d.x = ray[1].x; d.y = ray[1].y; d.z = ray[1].z;
+                b.x = (ray[1].x * fx) >> 16;
+                a.x = ray[0].x + b.x;
+                b.x = a.x - ray[0].x;
+                b.y = (ray[1].y * fx) >> 16;
+                a.y = ray[0].y + b.y;
+                b.y = a.y - ray[0].y;
+                b.z = (ray[1].z * fx) >> 16;
+                a.z = ray[0].z + b.z;
+                b.z = a.z - ray[0].z;
+                Square0(&d, &sq);
+                w[0] = sq.x + sq.y + sq.z;
+                w[0] = SquareRoot0(w[0]);
+                Square0(&b, &u.sq);
+                w[2] = u.sq.x + u.sq.y + u.sq.z;
+                w[2] = SquareRoot0(w[2]);
+                if (w[0] >= w[2]) {
+                    len[0] = w[2];
+                    w[1] = 1;
+                    hit.x = a.x;
+                    hit.y = a.y;
+                    hit.z = a.z;
+                } else {
+                    w[1] = 0;
+                }
+            }
+        }
+        if (w[1] == 1) {
+            Unk_80020050_Vec *p;
+            s16 *x0 = &u.box[0].x;
+            s16 *y0 = &u.box[0].y;
+            s16 *z0 = &u.box[0].z;
+            s16 *x1 = &u.box[1].x;
+            s16 *y1 = &u.box[1].y;
+            s16 *z1 = &u.box[1].z;
+
+            p = v;
+            u.box[0] = *p;
+            u.box[1] = u.box[0];
+            for (i = 0; i < count - 1; i++) {
+                p++;
+                if (p->x < *x0) *x0 = p->x;
+                if (p->y < *y0) *y0 = p->y;
+                if (p->z < *z0) *z0 = p->z;
+                if (*x1 < p->x) *x1 = p->x;
+                if (*y1 < p->y) *y1 = p->y;
+                if (*z1 < p->z) *z1 = p->z;
+            }
+            if (hit.x >= u.box[0].x - 24 && hit.y >= u.box[0].y - 24 && hit.z >= u.box[0].z - 24 &&
+                u.box[1].x + 24 >= hit.x && u.box[1].y + 24 >= hit.y && u.box[1].z + 24 >= hit.z) {
+                ret = 1;
+                if (len[0] < *dist) {
+                    *dist = len[0];
+                    *hitOut = hit;
+                    if (heightOut != NULL) {
+                        *heightOut = hit.y - u.box[0].y;
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
 
 void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk_80020050_Vec *out, u32 *index) {
     s32 idx[4];

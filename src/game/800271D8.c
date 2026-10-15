@@ -207,7 +207,7 @@ s32 CdPosToInt(u8 *pos);
 void CdIntToPos(s32 i, u8 *pos);
 extern s32 printf(const char *fmt, ...);
 s32 CdSearchFile(void *, s8 *);
-s8 *func_800289CC(s8 *arg0, s8 *arg1);
+s8 *func_800289CC();
 typedef struct Unk_80028920_Loc {
     u8 m, s, f, t;
 } Unk_80028920_Loc;
@@ -1051,7 +1051,7 @@ void func_80028920(Unk_80028920 *arg0) {
 
     var_s0 = 0;
     if (arg0->unkC == 0) {
-        ((s8 *(*)(s8 *))func_800289CC)(name);
+        func_800289CC(name);
     again:
         if (CdSearchFile(&file, name) != 0) {
             goto found;

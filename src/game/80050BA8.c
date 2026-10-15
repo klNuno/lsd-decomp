@@ -1,6 +1,6 @@
 #include "common.h"
 
-typedef struct Unk_80018390 { s32 unk0, unk4, unk8; void (*unkC)(); u8 pad_10[0x4]; void (*unk14)(void *, s32 **); void (*unk18)(void *); u8 pad_1C[0x38 - 0x1C]; void (*unk38)(void **, s32 **, s32); } Unk_80018390;
+typedef struct Unk_80018390 { s32 unk0, unk4; void (*unk8)(void *); void (*unkC)(); u8 pad_10[0x4]; void (*unk14)(void *, s32 **); void (*unk18)(void *); u8 pad_1C[0x38 - 0x1C]; void (*unk38)(void **, s32 **, s32); } Unk_80018390;
 extern void func_80017CFC(s32);
 extern Unk_80018390 *func_80018390(void);
 typedef struct { u8 pad[0x20]; s32 u20; u8 pad2[0x24]; s32 u48; } Unk_800517EC;
@@ -370,7 +370,7 @@ void func_80050C14(Unk_80050C14 *arg0, u8 *arg1, s32 arg2) {
     s32 count;
     s32 n;
 
-    ((void (*)(void *))func_80018390()->unk8)(arg0);
+    func_80018390()->unk8(arg0);
     arg0->unk0 = (Unk_80050C14_Vtbl *)func_80051A4C();
     n = strlen(arg1);
     arg0->unk10 = n;
@@ -764,7 +764,7 @@ void func_80051AC8(Unk_80051AC8 *arg0, s32 **arg1, s32 arg2) {
 
     i = 0;
     p = arg1;
-    ((void (*)(void *))func_80018390()->unk8)(arg0);
+    func_80018390()->unk8(arg0);
     arg0->unk0 = (Unk_80051AC8_Obj *)func_80052B60();
 
     while (*p++ != NULL) {

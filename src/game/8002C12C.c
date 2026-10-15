@@ -251,6 +251,21 @@ s16 SsUtGetProgAtr(s16 vabId, s16 progNum, u8 *progatr);
 s16 SsUtGetVagAtr(s16 vabId, s16 progNum, s16 toneNum, u8 *vagatr);
 void func_80032998(void);
 void SsSetMVol(s16 voll, s16 volr);
+typedef struct Unk_8002CA3C_Tone {
+    u8 pad_00[4];
+    u8 unk4;
+    u8 unk5;
+    u8 pad_06[0x1A];
+} Unk_8002CA3C_Tone;
+typedef struct Unk_8002CA3C {
+    u8 pad_00[0x50];
+    Unk_8002CA3C_Tone **unk50;
+    s16 unk54;
+    u8 pad_56[0xA];
+    u16 unk60;
+} Unk_8002CA3C;
+s16 SsUtKeyOn(s16 vabId, s16 prog, s16 tone, s16 note, s16 fine, s16 voll, s16 volr);
+s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
 
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
@@ -547,7 +562,24 @@ void func_8002C890(Unk_8002C890 *arg0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8002C12C", func_8002CA3C);
+s16 func_8002CA3C(Unk_8002CA3C *arg0, s32 arg1, s16 arg2, s16 arg3) {
+    s32 prog;
+    Unk_8002CA3C_Tone *t;
+    s16 vc;
+
+    if (arg1 < 0) {
+        return -1;
+    }
+    prog = arg1 >> 4;
+    t = arg0->unk50[prog];
+    t += arg1 - (prog << 4);
+    vc = SsUtKeyOn(arg0->unk54, prog, arg1 - (prog << 4), t->unk4 + arg0->unk60, t->unk5, arg2, arg2);
+    if (vc < 0) {
+        return -1;
+    }
+    SsUtAutoVol(vc, arg2, arg3, 2);
+    return vc;
+}
 
 s32 func_8002CB18(s32 arg0, s32 arg1) {
     if (arg1 < 0x18) {

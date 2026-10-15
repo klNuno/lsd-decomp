@@ -574,7 +574,7 @@ typedef struct Unk_8005CFDC_Vtbl {
 } Unk_8005CFDC_Vtbl;
 Unk_8005CFDC_Vtbl *func_8005E150(void);
 s32 func_80017B34(s32);
-void func_80017CFC(s32);
+void *func_80017CFC();
 typedef struct Unk_80066818_Vtbl_800659D0 {
     u8 pad[0x50];
     void (*unk50)(void *);
@@ -5914,8 +5914,8 @@ void func_80065F2C(Unk_80059394 *arg0) {
         }
         arg0->u68 = 0;
     }
-    arg0->u74 = ((void *(*)(void *))func_80017CFC)(arg0->u74);
-    arg0->u70 = ((void *(*)(void *))func_80017CFC)(arg0->u70);
+    arg0->u74 = func_80017CFC(arg0->u74);
+    arg0->u70 = func_80017CFC(arg0->u70);
 }
 
 void func_80065FD8(Unk_80065FD8 *arg0) {

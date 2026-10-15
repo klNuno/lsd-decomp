@@ -102,6 +102,11 @@ def rodata_diff(t, b, work, overrides):
     tb, bb = (x + bytes(-len(x) % 4) for x in (tb, bb))
     if tb == bb:
         return None
+    # A splat D_x.s can keep the zero pad word after its enddlabel (func_8004FBE4, func_80049684):
+    # a longer side that only adds zero bytes past the shorter one is alignment, not data.
+    short, long_ = sorted((tb, bb), key=len)
+    if long_.startswith(short) and len(long_) - len(short) <= 12 and not any(long_[len(short):]):
+        return None
     if len(tb) != len(bb):
         return f"target {len(tb)} bytes, yours {len(bb)} bytes"
     i = next(i for i in range(len(tb)) if tb[i] != bb[i])

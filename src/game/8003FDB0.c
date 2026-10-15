@@ -101,29 +101,34 @@ typedef struct Unk_80040A88 {
 } Unk_80040A88;
 typedef struct Unk_8003FED8 Unk_8003FED8;
 typedef struct Unk_8003FED8_vt {
-    u8 pad14[0x14];
+    u8 pad0[0x10];
+    void (*unk10)(Unk_8003FED8 *);
     void (*unk14)(Unk_8003FED8 *, s32);
     u8 pad18[0x30 - 0x18];
     void (*unk30)(Unk_8003FED8 *, s32);
     u8 pad34[0x60 - 0x34];
     void (*unk60)(Unk_8003FED8 *, s32);
     void (*unk64)(Unk_8003FED8 *, s32);
-    u8 pad68[0xB8 - 0x68];
+    void (*unk68)(Unk_8003FED8 *, s32);
+    u8 pad6C[0xB8 - 0x6C];
     void (*unkB8)(Unk_8003FED8 *, s32, u8 *);
     u8 padBC[0xDC - 0xBC];
     s32 (*unkDC)(Unk_8003FED8 *, s32, s32, s32);
 } Unk_8003FED8_vt;
 struct Unk_8003FED8 {
     Unk_8003FED8_vt *unk0;
-    u8 pad4[0x6C - 0x4];
+    u8 pad4[0x68 - 0x4];
+    s32 unk68;
     s32 unk6C;
     s32 unk70;
     s32 unk74;
     s32 unk78;
     s32 unk7C;
     s32 unk80;
-    u8 pad84[0x98 - 0x84];
+    s32 unk84;
+    u8 pad88[0x98 - 0x88];
     s32 unk98;
+    s32 unk9C;
 };
 typedef struct Unk_8003FDB0_tbl {
     u8 pad0[0x8];
@@ -422,7 +427,44 @@ void func_800400B0(Unk_8003FED8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8003FDB0", func_80040154);
+s32 func_80040154(Unk_8003FED8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
+    Unk_8003FED8_vt *temp_s2;
+    s32 var_s1;
+    s32 var_s3;
+    s32 temp_lo;
+
+    temp_s2 = arg0->unk0;
+    var_s1 = arg2;
+    if (var_s1 < 0) {
+        var_s1 = arg0->unk70;
+    } else {
+        arg0->unk70 = var_s1;
+    }
+    var_s3 = 1;
+    if (var_s1 != 0) {
+        arg0->unk78 = var_s1;
+    } else {
+        var_s3 = 2;
+        arg0->unk78 = 0xF;
+    }
+    arg0->unk78 = var_s1;
+    if (var_s1 == 0) {
+        arg0->unk78 = 0xF;
+    }
+    temp_lo = 0x100 / arg0->unk74;
+    arg0->unk7C = arg3;
+    arg0->unk80 = temp_lo;
+    if (arg0->unk98 != 0) {
+        arg0->unk80 = temp_lo - temp_lo / arg0->unk9C;
+    }
+    arg2 = arg0->unk68 / arg0->unk80;
+    arg0->unk84 = arg2;
+    temp_s2->unk10(arg0);
+    temp_s2->unk64(arg0, 1);
+    temp_s2->unk68(arg0, var_s3);
+    temp_s2->unk60(arg0, 1);
+    return var_s1;
+}
 
 void func_800402F0(Unk_8003FED8 *arg0, s32 arg1) {
     Unk_8003FED8_vt *vt = arg0->unk0;

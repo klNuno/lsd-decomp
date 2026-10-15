@@ -84,7 +84,7 @@ typedef struct Unk_80017F98 {
     u8 pad[0x20];
     void (*unk20)(void *, void *);
 } Unk_80017F98;
-void *func_80017B34(u32 size, Heap *arg1);
+void *func_80017B34();
 typedef struct Unk_800181AC {
     void *unk0;
     s32 unk4;
@@ -462,7 +462,7 @@ void func_80017AC8(Heap *arg0) {
     *(u32 *)end = 0x80000000;
 }
 
-void *func_80017B34(u32 size, Heap *arg1) {
+void *func_80017B34(size, arg1) u32 size; Heap *arg1; {
     Heap *heap;
     Block *blk;
     Block *rem;
@@ -621,7 +621,7 @@ void func_8001816C(Unk_8001816C *arg0, s32 *arg1, s32 *arg2) {
 s32 func_800181AC(void **arg0, s32 arg1) {
     Unk_800181AC *temp_v0;
 
-    temp_v0 = ((void *(*)(s32))func_80017B34)(8);
+    temp_v0 = func_80017B34(8);
     if (temp_v0 != NULL) {
         temp_v0->unk0 = *arg0;
         temp_v0->unk4 = arg1;
