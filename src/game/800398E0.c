@@ -56,6 +56,15 @@ typedef struct Unk_800398E0Vt {
     void (*unk8)(void *, s32, s32, s32);
 } Unk_800398E0Vt;
 Unk_800398E0Vt *func_8003A04C(void);
+extern void *func_80018390(void);
+typedef struct Unk_80039B04Vt {
+    u8 pad_00[0x38];
+    void (*unk38)(void **, s32 **, s32);
+} Unk_80039B04Vt;
+typedef struct Unk_80039B04 {
+    u8 pad_00[0x40];
+    void (*unk40)(void **, s32 **, s32);
+} Unk_80039B04;
 
 void *func_800398E0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp_v0;
@@ -72,7 +81,12 @@ INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_8003995C);
 
 INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039A34);
 
-INCLUDE_ASM("asm/nonmatchings/game/800398E0", func_80039B04);
+void func_80039B04(void **arg0, s32 **arg1, s32 arg2) {
+    ((Unk_80039B04Vt *)func_80018390())->unk38(arg0, arg1, arg2);
+    if ((**arg1 & 0xF) == 1) {
+        ((Unk_80039B04 *)*arg0)->unk40(arg0, arg1, arg2);
+    }
+}
 
 void func_80039B90(Unk_80039B90 *arg0, s32 arg1, s32 arg2) {
     if ((arg2 == 2) && (arg0->unk1A == 1) && (func_80039C04() != 0) && (arg0->unk20 != 0)) {

@@ -187,6 +187,17 @@ typedef struct Unk_8004D814 {
     u8 pad_38[0xA4 - 0x38];
     Unk_8004D814_Obj *unkA4;
 } Unk_8004D814;
+typedef struct Unk_8004D788_mgr {
+    u8 pad[0x38];
+    void (*unk38)(void *, void *, s32);
+} Unk_8004D788_mgr;
+typedef struct Unk_8004D788_vt {
+    u8 pad[0x138];
+    void (*unk138)(void *, void *, s32);
+} Unk_8004D788_vt;
+typedef struct Unk_8004D788_obj {
+    Unk_8004D788_vt *vt;
+} Unk_8004D788_obj;
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -227,7 +238,12 @@ void func_8004D704(Unk_8004D704 *arg0) {
     ((Unk_8004D704_mgr *)func_8003DFBC())->unkC(arg0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/8004D578", func_8004D788);
+void func_8004D788(Unk_8004D788_obj *arg0, s32 **arg1, s32 arg2) {
+    ((Unk_8004D788_mgr *)func_8003DFBC())->unk38(arg0, arg1, arg2);
+    if ((**arg1 & 0xF) == 0xB) {
+        arg0->vt->unk138(arg0, arg1, arg2);
+    }
+}
 
 void func_8004D814(Unk_8004D814 *arg0) {
     Unk_8004D814_Obj *temp_a0;

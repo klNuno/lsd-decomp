@@ -112,6 +112,13 @@ typedef struct Unk_80026D88 {
     s32 unk70;
     s32 unk74;
 } Unk_80026D88;
+s32 D_8008A850;
+void func_80027FD8(s32);
+void func_80027FE4(s32);
+s32 func_80027FF0(void);
+s32 func_80027FFC(s32, s32);
+void func_80026D88(Unk_80026D88 *arg0, Unk_80026D88 *arg1);
+extern s32 (*D_8006D4AC[])();
 
 s32 func_80025F7C(s32 arg0) {
     s32 p;
@@ -232,7 +239,26 @@ struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, s32 arg2
     return arg0;
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80026CFC);
+void func_80026CFC(s32 arg0) {
+    s32 (**var_s0)();
+    void *var_v0;
+    s32 var_a0;
+
+    var_s0 = D_8006D4AC;
+    D_8008A84C = arg0;
+    if (arg0 == 0x13) {
+        var_v0 = func_80027E68();
+    } else {
+        var_v0 = func_8002C438();
+    }
+    var_a0 = func_80026C9C();
+    func_80026D88((Unk_80026D88 *)var_a0, var_v0);
+    while (*var_s0 != NULL) {
+        var_a0 = (*var_s0)();
+        var_s0++;
+        func_80026D88((Unk_80026D88 *)var_a0, var_v0);
+    }
+}
 
 void func_80026D88(Unk_80026D88 *arg0, Unk_80026D88 *arg1) {
     arg0->unk40 = arg1->unk40;
@@ -313,7 +339,18 @@ s32 func_80026FE8(void) {
     return func_8002C478();
 }
 
-INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_80027024);
+s32 func_80027024(s32 arg0, s32 arg1) {
+    s32 temp_v0;
+
+    if (D_8008A84C == 0x13) {
+        D_8008A850 = 1;
+        func_80027FD8(arg0);
+        temp_v0 = func_80027FF0();
+        func_80027FE4(temp_v0 + arg1);
+        return func_80027FFC(arg0 + (temp_v0 * 0x1C), arg1);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("asm/nonmatchings/game/80025F7C", func_800270AC);
 
