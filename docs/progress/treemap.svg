@@ -5,7 +5,7 @@
 <rect width="1200" height="800" rx="16" fill="#1a1a19"/>
 <g font-family="system-ui, -apple-system, Segoe UI, sans-serif">
 <text x="28" y="44" font-size="25" font-weight="700" fill="#f0efec">LSD: Dream Emulator · decompilation</text>
-<text x="28" y="72" font-size="14" fill="#c3c2b7">Matching SLPS_015.56 verified · 7ae7b41 + edits · 1,458 game functions, 210,172 code bytes, all in C</text>
+<text x="28" y="72" font-size="14" fill="#c3c2b7">Matching SLPS_015.56 verified · e1605f4 · 1,458 game functions, 210,172 code bytes, all in C</text>
 <text x="1172" y="44" text-anchor="end" font-size="30" font-weight="700" fill="#f0efec">84.2% read</text>
 <text x="1172" y="72" text-anchor="end" font-size="14" fill="#c3c2b7">100% of game code in matching C · 1,300 of 1,458 functions use only our names</text>
 <rect x="28" y="92" width="12" height="12" rx="2" fill="#2f6f43"/>
