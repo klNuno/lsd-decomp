@@ -6,9 +6,13 @@ The goal is to understand how the game works: the dream graph, links, special da
 
 ## Status
 
-All 1,458 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 613 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: shared structs in `include/game/`, and 1,824 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 65 functions still named by address are empty vtable slots and setters nothing reads.
+All 1,458 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 613 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: shared structs in `include/game/`, and 1,879 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 19 functions still named by address are empty vtable slots and setters nothing reads.
 
-The findings page holds 42 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
+[![Progress map: one rectangle per function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
+
+Since every game byte already rebuilds from C, the map measures understanding: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. `tools/progress_map.py` redraws it after a green `make check` and writes the per-function data to `docs/progress/progress.json`.
+
+The findings page holds 54 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
 
 ## Requirements
 
