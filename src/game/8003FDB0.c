@@ -1,763 +1,688 @@
 #include "common.h"
 
-s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3);
+/*
+ * The 2D widgets drawn by the scene tree (src/game/80012064.c): Box, a filled rectangle; Fade, the
+ * Box that fades a color over the screen (the view's overlay, the Place fader, the entity effect);
+ * Label, a row of character glyphs. Plus the Shift-JIS text helpers.
+ */
+
+/* An (x, y) pair of s32 */
 typedef struct PosPair {
-    s32 unk_00;
-    s32 unk_04;
+    s32 x;
+    s32 y;
 } PosPair;
-typedef struct Unk_800407F8 {
-    u8 pad_00[0xC];
-    s32 unk_0C;
-    u8 pad_10[0x50 - 0x10];
-    PosPair unk_50;
-} Unk_800407F8;
-typedef struct Unk_80040824 {
-    u8 pad_00[0xC];
-    s32 unk_0C;
-    u8 pad_10[0x60 - 0x10];
-    u16 unk_60;
-    u16 unk_62;
-} Unk_80040824;
-extern u8 g_fadePalette[][3];
-extern u8 D_8006EAA8[3];
-typedef struct Unk_80040490 {
-    u8 pad_00[0x50];
-    PosPair unk_50;
-    u8 pad_58[0x60 - 0x58];
-    u16 unk_60;
-    u16 unk_62;
-    u8 pad_64[0x88 - 0x64];
-    u16 unk_88;
-    u8 pad_8A[0x8C - 0x8A];
-    u16 unk_8C;
-    u8 pad_8E[0x90 - 0x8E];
-    PosPair unk_90;
-} Unk_80040490;
-typedef struct Unk_80040EDC_obj Unk_80040EDC_obj;
-typedef struct Unk_80040EDC_vt {
-    u8 pad_00[0xC4];
-    void (*unk_C4)(Unk_80040EDC_obj *, u8, Unk_80040EDC_obj **);
-} Unk_80040EDC_vt;
-struct Unk_80040EDC_obj {
-    Unk_80040EDC_vt *unk_00;
-};
-typedef struct Unk_80040EDC {
-    u8 pad_00[0xB4];
-    Unk_80040EDC_obj **unk_B4;
-} Unk_80040EDC;
-typedef struct Unk_80040854_Vtbl {
-    u8 pad_00[0x4C];
-    void (*unk_4C)(void);
-} Unk_80040854_Vtbl;
-typedef struct Unk_80040854 {
-    Unk_80040854_Vtbl *unk_00;
-    u8 pad_04[0x44];
-    s32 unk_48;
-    s32 unk_4C;
-} Unk_80040854;
-typedef struct Unk_80040A30_obj {
-    u8 pad_00[0xC];
-    void (*unk_0C)(void *);
-} Unk_80040A30_obj;
-typedef struct Unk_80040A30 {
-    u8 pad_00[0xA9];
-    u8 unk_A9;
-    u8 pad_AA[0xB4 - 0xAA];
-    Unk_80040EDC_obj **unk_B4;
-} Unk_80040A30;
-void Object_DeleteArray(void *, s32);
-void *Heap_Free(void *);
-Unk_80040A30_obj *func_80041C3C(void);
-typedef struct Unk_8004042C {
-    u8 pad_00[0xC];
-    s32 unk_0C;
-    u8 pad_10[0x50 - 0x10];
-    PosPair unk_50;
-    u8 pad_58[0x60 - 0x58];
-    u16 unk_60;
-    u16 unk_62;
-    u8 pad_64[0x88 - 0x64];
-    s32 unk_88;
-    s32 unk_8C;
-    PosPair unk_90;
-} Unk_8004042C;
-typedef struct Unk_80040A88_vt {
-    u8 pad_00[0xCC];
-    void (*unk_CC)(void *, s32);
-    s32 unk_D0;
-    void (*unk_D4)(void *, s32);
-} Unk_80040A88_vt;
-typedef struct Unk_80040A88 {
-    Unk_80040A88_vt *unk_00;
-} Unk_80040A88;
-typedef struct FadeObj FadeObj;
-typedef struct FadeObjVtbl {
-    u8 pad_00[0x10];
-    void (*unk_10)(FadeObj *);
-    void (*unk_14)(FadeObj *, s32);
-    u8 pad_18[0x30 - 0x18];
-    void (*unk_30)(FadeObj *, s32);
-    u8 pad_34[0x60 - 0x34];
-    void (*unk_60)(FadeObj *, s32);
-    void (*unk_64)(FadeObj *, s32);
-    void (*unk_68)(FadeObj *, s32);
-    u8 pad_6C[0xB8 - 0x6C];
-    void (*unk_B8)(FadeObj *, s32, u8 *);
-    u8 pad_BC[0xDC - 0xBC];
-    s32 (*unk_DC)(FadeObj *, s32, s32, s32);
-} FadeObjVtbl;
-struct FadeObj {
-    FadeObjVtbl *unk_00;
-    u8 pad_04[0x68 - 0x4];
-    s32 unk_68;
-    s32 unk_6C;
-    s32 unk_70;
-    s32 unk_74;
-    s32 unk_78;
-    s32 unk_7C;
-    s32 unk_80;
-    s32 unk_84;
-    u8 pad_88[0x98 - 0x88];
-    s32 unk_98;
-    s32 unk_9C;
-};
-typedef struct EffectVtbl {
-    u8 pad_00[0x8];
-    void (*unk_08)(void *, s32, s32, s32);
-    u8 pad_0C[0x40 - 0xC];
-    void (*unk_40)(void *, s32);
-} EffectVtbl;
-void *Heap_Alloc(s32 size);
-EffectVtbl *Effect_GetVtbl(void);
-typedef struct Unk_800404D0 {
-    u8 pad_00[0x8];
-    void (*unk_08)(void *, s32, u8 *, s32);
-    u8 pad_0C[0x40 - 0xC];
-    void (*unk_40)(void *, s32, s32, s32);
-} Unk_800404D0;
-Unk_800404D0 *func_800408BC(void);
+
 typedef struct Rgb {
-    u8 unk_00;
-    u8 unk_01;
-    u8 unk_02;
+    u8 r;
+    u8 g;
+    u8 b;
 } Rgb;
 
-void Rgb_CopyOrAdd(void *arg0, Rgb *dst, Rgb *src, s32 copy);
-typedef struct Unk_80040664_vt {
-    u8 pad_00[0xBC];
-    void (*unk_BC)(void *, s32);
-} Unk_80040664_vt;
-typedef struct Unk_80040664 {
-    Unk_80040664_vt *unk_00;
-    u8 pad_04[0x8];
-    s32 unk_0C;
-} Unk_80040664;
-typedef struct Unk_80040664_mgr {
-    u8 pad_00[0x4C];
-    void (*unk_4C)(Unk_80040664 *, s32, s32);
-} Unk_80040664_mgr;
-Unk_80040664_mgr *func_8001E57C(void);
-typedef struct Unk_800405D0 Unk_800405D0;
-typedef struct Unk_800405D0_vt {
-    u8 pad_00[0xB8];
-    void (*unk_B8)(void *, s32, u8 *);
-    u8 pad_BC[0xCC - 0xBC];
-    void (*unk_CC)(void *, s32);
-} Unk_800405D0_vt;
-struct Unk_800405D0 {
-    Unk_800405D0_vt *unk_00;
-    u8 pad_04[0x44 - 0x4];
-    s32 unk_44;
-    s32 unk_48;
+/* A bit field setter of src/game/8001CA94.c: sets width bits at shift in *word, returns the old value */
+s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
+void *Heap_Alloc(s32 size);
+void *Heap_Free(void *);
+void Object_DeleteArray(void *, s32);
+
+/* The base scene node class (SceneNode_GetVtbl, src/game/8001CA94.c), as Box calls it */
+typedef struct BaseNodeVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *box);                  /* 0x08 */
+    u8 pad_0C[0x4C - 0xC];
+    void (*show)(void *box, s32 root, s32 position); /* 0x4C */
+} BaseNodeVtbl;
+BaseNodeVtbl *SceneNode_GetVtbl(void);
+
+/*
+ * Box (vtable g_boxVtbl at 0x8006EAC0, class word 0x64, 0x6C bytes): a scene node holding a PSY-Q
+ * GsBOXF at +0x58. The scene draw (Scene_DrawNode, kind 0x64) places it at +0x50, in percent of the
+ * half screen when +0x48 is set, and sorts it with GsSortBoxFill at the priority +0x44.
+ */
+typedef struct BoxVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *box, s32 size, u8 *color, s32 priority); /* 0x08 Box_Construct */
+    u8 pad_0C[0x40 - 0xC];
+    void (*reset)(void *box, s32 size, s32 color, s32 priority); /* 0x40 Box_Init */
+    u8 pad_44[0x4C - 0x44];
+    void (*show)();                           /* 0x4C Box_Show (box, root, position) */
+    u8 pad_50[0xB8 - 0x50];
+    void (*setColor)(void *box, s32 copy, u8 *color); /* 0xB8 */
+    void (*setPosition)(void *box, s32 position);    /* 0xBC */
+    u8 pad_C0[0xCC - 0xC0];
+    void (*setMask)(void *box, s32 bits);     /* 0xCC */
+} BoxVtbl;
+
+typedef struct Box {
+    BoxVtbl *vtbl;
+    u8 pad_04[0xC - 0x4];
+    s32 parent;             /* 0x0C SceneNode *, set while the box is shown */
+    u8 pad_10[0x44 - 0x10];
+    s32 priority;           /* 0x44 ordering table priority given to GsSortBoxFill */
+    s32 relative;           /* 0x48 position in percent of the half screen */
     s32 unk_4C;
-    u8 pad_50[0x58 - 0x50];
-    s32 unk_58;
-    u16 unk_5C;
-    u16 unk_5E;
-    u16 unk_60;
-    u16 unk_62;
-};
-extern u8 D_8008A924[];
-typedef struct Unk_8004054C_vt {
+    PosPair position;       /* 0x50 */
+    s32 attribute;          /* 0x58 GsBOXF: bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend mode */
+    u16 x;                  /* 0x5C GsBOXF, written by the draw from position */
+    u16 y;                  /* 0x5E */
+    u16 width;              /* 0x60 */
+    u16 height;             /* 0x62 */
+    Rgb color;              /* 0x64 */
+    u8 pad_67;
+    s32 mask;               /* 0x68 (1 << bits) - 1, 13 bits by default */
+} Box;
+
+extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
+BoxVtbl *Box_GetVtbl(void);
+void Rgb_CopyOrAdd(void *box, Rgb *dst, Rgb *src, s32 copy);
+
+/*
+ * Fade (vtable g_fadeVtbl at 0x8006E99C, class word 0x164, 0xA0 bytes): a Box that fades from or
+ * to a color. The color index is a 3-bit RGB channel mask (g_fadePalette: 1 blue, 2 green, 4 red,
+ * 7 white); 0 means black and stores the mask 0xF. Each tick of the watched object adds the step to
+ * the masked channels; at the end the fade notifies its watchers: 5 after a fade in, 6 after a fade out.
+ */
+typedef struct Fade Fade;
+typedef struct FadeVtbl {
     u8 pad_00[0x8];
-    void (*unk_08)(void *slot);
-} Unk_8004054C_vt;
-typedef struct Unk_800408CC_obj {
+    void (*init)(void *fade, s32 size, s32 channels, s32 priority); /* 0x08 Fade_Construct */
+    u8 pad_0C[0x10 - 0xC];
+    void (*watch)(Fade *fade);                /* 0x10 (fade, ticker) */
+    void (*unwatch)(Fade *fade, s32 ticker);  /* 0x14 */
+    u8 pad_18[0x30 - 0x18];
+    void (*notify)(Fade *fade, s32 message);  /* 0x30 */
+    u8 pad_34[0x40 - 0x34];
+    void (*reset)(void *fade, s32 channels);  /* 0x40 Fade_Init */
+    u8 pad_44[0x60 - 0x44];
+    void (*setVisible)(Fade *fade, s32 visible);   /* 0x60 */
+    void (*setSemiTrans)(Fade *fade, s32 on);      /* 0x64 */
+    void (*setBlendMode)(Fade *fade, s32 mode);    /* 0x68 */
+    u8 pad_6C[0xB8 - 0x6C];
+    void (*setColor)(Fade *fade, s32 copy, u8 *color); /* 0xB8 */
+    u8 pad_BC[0xDC - 0xBC];
+    s32 (*begin)(Fade *fade, s32 ticker, s32 channels, s32 arg3); /* 0xDC Fade_Begin */
+    void (*stop)(void *fade);                 /* 0xE0 Fade_Stop (fade, ticker) */
+} FadeVtbl;
+
+/* The step at +0x74 is an s32, read as its low byte by Fade_Step */
+typedef union FadeStep {
+    s32 value;
+    u8 low;
+} FadeStep;
+
+/* A size saved by Fade_SaveAndSetRect as an s32 and read back by Fade_RestoreRect as a u16 */
+typedef union FadeSaved {
+    s32 value;
+    u16 half;
+} FadeSaved;
+
+struct Fade {
+    FadeVtbl *vtbl;
+    u8 pad_04[0xC - 0x4];
+    s32 parent;             /* 0x0C */
+    u8 pad_10[0x50 - 0x10];
+    PosPair position;       /* 0x50 */
+    s32 attribute;          /* 0x58 */
+    u16 x;                  /* 0x5C */
+    u16 y;                  /* 0x5E */
+    u16 width;              /* 0x60 */
+    u16 height;             /* 0x62 */
+    Rgb color;              /* 0x64 */
+    u8 pad_67;
+    s32 mask;               /* 0x68 */
+    s32 state;              /* 0x6C 0 idle, 1 fading in, 2 fading out */
+    s32 defaultChannels;    /* 0x70 used when Fade_Begin gets a negative index */
+    FadeStep step;          /* 0x74 added to the channels each tick, 10 by default */
+    s32 channels;           /* 0x78 */
+    s32 unk_7C;             /* third argument of Fade_Begin: 9 holds the color */
+    s32 remaining;          /* 0x80 ticks left */
+    s32 unk_84;             /* mask / ticks */
+    FadeSaved savedWidth;   /* 0x88 */
+    FadeSaved savedHeight;  /* 0x8C */
+    PosPair savedPosition;  /* 0x90 */
+    s32 tint;               /* 0x98 set in flashbacks: the fade stops short and the color stays */
+    s32 tintDivisor;        /* 0x9C the fade runs ticks - ticks / tintDivisor */
+};
+
+extern u8 g_fadePalette[][3];
+extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */
+FadeVtbl *Fade_GetVtbl(void);
+
+/* A glyph (vtable g_glyphVtbl, src/game/80041AB4.c): one character sprite, and the base of Label */
+typedef struct Glyph Glyph;
+typedef struct GlyphVtbl {
     u8 pad_00[0x8];
-    void (*unk_08)(void *, s32, s32, s32);
-} Unk_800408CC_obj;
-Unk_800408CC_obj *func_80040FB0(void);
-typedef struct Unk_80040D74_obj Unk_80040D74_obj;
-typedef struct Unk_80040D74_vt {
-    u8 pad_00[0xB8];
-    void (*unk_B8)(void *, s32);
-} Unk_80040D74_vt;
-struct Unk_80040D74_obj {
-    Unk_80040D74_vt *unk_00;
+    void (*init)(void *glyph, s32 font, s32 c); /* 0x08 */
+    void (*destroy)(void *glyph);             /* 0x0C */
+    u8 pad_10[0x4C - 0x10];
+    void (*show)();                           /* 0x4C (glyph, root, position) */
+    void (*hide)(void *glyph);                /* 0x50 */
+    u8 pad_54[0x60 - 0x54];
+    s32 (*setVisible)(Glyph *glyph, void *visible, s32 previous); /* 0x60 */
+    u8 pad_64[0xB8 - 0x64];
+    void (*setColor)(void *glyph, s32 color); /* 0xB8 */
+    void (*setPosition)(void *glyph, void *position); /* 0xBC */
+    u8 pad_C0[0xC4 - 0xC0];
+    void (*setChar)(Glyph *glyph, u8 c, Glyph **slot); /* 0xC4 */
+} GlyphVtbl;
+
+struct Glyph {
+    GlyphVtbl *vtbl;
 };
-typedef struct Unk_80040D74 {
-    u8 pad_00[0xAB];
-    u8 unk_AB;
-    u8 unk_AC;
-    u8 pad_AD[0xB4 - 0xAD];
-    Unk_80040D74_obj **unk_B4;
-} Unk_80040D74;
-typedef struct Unk_80040CD0_obj Unk_80040CD0_obj;
-typedef struct Unk_80040CD0_vt {
-    u8 pad_00[0x60];
-    s32 (*unk_60)(Unk_80040CD0_obj *, void *, s32);
-} Unk_80040CD0_vt;
-struct Unk_80040CD0_obj {
-    Unk_80040CD0_vt *unk_00;
-};
-typedef struct Unk_80040CD0 {
-    u8 pad_00[0xAB];
-    u8 unk_AB;
-    u8 unk_AC;
-    u8 pad_AD[0xB4 - 0xAD];
-    Unk_80040CD0_obj **unk_B4;
-} Unk_80040CD0;
-typedef struct Unk_80040E14_vt {
-    u8 pad_00[0xBC];
-    void (*unk_BC)(void *, void *);
-} Unk_80040E14_vt;
-typedef struct Unk_80040E14_obj {
-    Unk_80040E14_vt *unk_00;
-} Unk_80040E14_obj;
-typedef struct Unk_80040E14 {
-    u8 pad_00[0xC];
-    s32 unk_0C;
+
+GlyphVtbl *Glyph_GetVtbl(void);
+void *Glyph_Create(s32, u8);
+
+/*
+ * Label (vtable g_labelVtbl, class word 0x11144, 0xB8 bytes): a glyph that owns a row of glyphs, one
+ * per character, laid out from its position with spacing pixels between them (MenuLabel in menu.h).
+ */
+typedef struct LabelVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *label, s32 font, s32 count, s32 text); /* 0x08 Label_Construct */
+    u8 pad_0C[0x40 - 0xC];
+    void (*reset)(void *label, s32 text);     /* 0x40 Label_Init */
+    u8 pad_44[0xCC - 0x44];
+    void (*setText)(void *label, s32 text);   /* 0xCC */
+    s32 unk_D0;
+    void (*setSpacing)(void *label, s32 spacing); /* 0xD4 */
+} LabelVtbl;
+
+typedef struct Label {
+    LabelVtbl *vtbl;
+    u8 pad_04[0xC - 0x4];
+    s32 parent;             /* 0x0C */
     u8 pad_10[0xA9 - 0x10];
-    u8 unk_A9;
-    u8 pad_AA[0xB0 - 0xAA];
-    s32 unk_B0;
-    Unk_80040E14_obj **unk_B4;
-} Unk_80040E14;
-typedef struct Unk_80040C00_obj Unk_80040C00_obj;
-typedef struct Unk_80040C00_vt {
-    u8 pad_00[0x50];
-    void (*unk_50)(Unk_80040C00_obj *);
-} Unk_80040C00_vt;
-struct Unk_80040C00_obj {
-    Unk_80040C00_vt *unk_00;
-};
-typedef struct Unk_80040C00_tbl {
-    u8 pad_00[0x50];
-    void (*unk_50)(void *);
-} Unk_80040C00_tbl;
-typedef struct Unk_80040C00 {
-    u8 pad_00[0xC];
-    s32 unk_0C;
-    u8 pad_10[0xAB - 0x10];
-    u8 unk_AB;
-    u8 unk_AC;
-    u8 pad_AD[0xB4 - 0xAD];
-    Unk_80040C00_obj **unk_B4;
-} Unk_80040C00;
-typedef struct RgbFadeObjVtbl {
-    u8 pad_00[0xE0];
-    void (*unk_E0)(void *);
-} RgbFadeObjVtbl;
-typedef struct RgbFadeObj {
-    RgbFadeObjVtbl *unk_00;
-    u8 pad_04[0x64 - 0x4];
-    u8 unk_64;
-    u8 unk_65;
-    u8 unk_66;
-    u8 pad_67[0x74 - 0x67];
-    u8 unk_74;
-    u8 pad_75[0x78 - 0x75];
-    s32 unk_78;
-    s32 unk_7C;
-    s32 unk_80;
-} RgbFadeObj;
-typedef struct Unk_80040A30_80040948 {
-    EffectVtbl *unk_00;
-    u8 pad_04[0xA9 - 0x4];
-    u8 unk_A9;
-    u8 unk_AA;
-    u8 unk_AB;
-    u8 unk_AC;
-    u8 pad_AD[0xB4 - 0xAD];
-    Unk_80040EDC_obj **unk_B4;
-} Unk_80040A30_80040948;
-typedef struct Unk_80040948_tbl {
-    u8 pad_00[0x8];
-    void (*unk_08)(void *, s32, s32);
-} Unk_80040948_tbl;
-void *func_80041AB4(s32, u8);
+    u8 count;               /* 0xA9 glyphs, the longest text */
+    u8 gapAt;               /* 0xAA when nonzero, 16 more pixels before this glyph */
+    u8 shownCount;          /* 0xAB */
+    u8 firstShown;          /* 0xAC */
+    u8 pad_AD[0xB0 - 0xAD];
+    s32 spacing;            /* 0xB0 */
+    Glyph **glyphs;         /* 0xB4 */
+} Label;
+
+LabelVtbl *Label_GetVtbl(void);
 s8 *itoa(s32 value);
 s8 *strcpy(s8 *dst, s8 *src);
 s32 strlen(u8 *s);
 void *memset(void *dst, s32 c, s32 n);
 s8 *Text_Encode(s8 *dst, u8 *src);
-typedef struct Unk_80040AE8_obj Unk_80040AE8_obj;
-typedef struct Unk_80040AE8_vt {
-    u8 pad_00[0x4C];
-    void (*unk_4C)(void *, void *, PosPair *);
-} Unk_80040AE8_vt;
-struct Unk_80040AE8_obj {
-    Unk_80040AE8_vt *unk_00;
-};
-typedef struct Unk_80040AE8_mgr {
-    u8 pad_00[0x4C];
-    void (*unk_4C)(void *, s32, PosPair *);
-} Unk_80040AE8_mgr;
-typedef struct Unk_80040AE8 {
-    u8 pad_00[0xC];
-    s32 unk_0C;
-    u8 pad_10[0xAA - 0x10];
-    u8 unk_AA;
-    u8 unk_AB;
-    u8 unk_AC;
-    u8 pad_AD[0xB0 - 0xAD];
-    s32 unk_B0;
-    Unk_80040AE8_obj **unk_B4;
-} Unk_80040AE8;
-extern u8 g_effectVtbl[];
-typedef struct Unk_800408A0 {
-    u8 pad_00[0x44];
-    s32 unk_44;
-} Unk_800408A0;
-extern u8 D_8006EAC0[];
-typedef struct Unk_80040FA8 {
-    u8 pad_00[0xB0];
-    s32 unk_B0;
-} Unk_80040FA8;
-extern u8 D_8006EB90[];
+extern u8 g_fadeVtbl[];
+extern u8 g_boxVtbl[];
+extern u8 g_labelVtbl[];
 
-void *Effect_Create(s32 arg0, s32 arg1, s32 arg2) {
-    void *obj;
+/* new Fade(size, channels, priority) */
+void *Fade_Create(s32 size, s32 channels, s32 priority) {
+    void *fade;
 
-    obj = Heap_Alloc(0xA0);
-    if (obj != NULL) {
-        Effect_GetVtbl()->unk_08(obj, arg0, arg1, arg2);
-        return obj;
+    fade = Heap_Alloc(0xA0);
+    if (fade != NULL) {
+        Fade_GetVtbl()->init(fade, size, channels, priority);
+        return fade;
     }
     return NULL;
 }
 
-void Effect_Spawn(void **slot, s32 arg1, s32 colorIndex, s32 arg3) {
-    Unk_800404D0 *mgr;
+/* Slot 0x08: builds the Box with the channels' color, then sets the Fade vtable and runs slot 0x40 */
+void Fade_Construct(void **fade, s32 size, s32 channels, s32 priority) {
+    BoxVtbl *boxVtbl;
     u8 *color;
-    EffectVtbl *obj;
+    FadeVtbl *vtbl;
 
-    mgr = func_800408BC();
-    if (colorIndex != 0) {
-        color = g_fadePalette[colorIndex];
+    boxVtbl = Box_GetVtbl();
+    if (channels != 0) {
+        color = g_fadePalette[channels];
     } else {
-        color = D_8006EAA8;
+        color = g_fadeBlackPalette;
     }
-    mgr->unk_08(slot, arg1, color, arg3);
-    obj = Effect_GetVtbl();
-    *slot = obj;
-    obj->unk_40(slot, colorIndex);
+    boxVtbl->init(fade, size, color, priority);
+    vtbl = Fade_GetVtbl();
+    *fade = vtbl;
+    vtbl->reset(fade, channels);
 }
 
-void Fade_Init(FadeObj *fade, s32 step) {
-    fade->unk_70 = step;
-    fade->unk_6C = 0;
-    fade->unk_74 = 0xA;
-    fade->unk_78 = 0;
+/* Slot 0x40: idle, step 10, hidden and opaque */
+void Fade_Init(Fade *fade, s32 channels) {
+    fade->defaultChannels = channels;
+    fade->state = 0;
+    fade->step.value = 0xA;
+    fade->channels = 0;
     fade->unk_7C = 0;
-    fade->unk_00->unk_60(fade, 0);
-    fade->unk_00->unk_64(fade, 0);
-    fade->unk_98 = 0;
+    fade->vtbl->setVisible(fade, 0);
+    fade->vtbl->setSemiTrans(fade, 0);
+    fade->tint = 0;
 }
 
-void RgbFade_Step(RgbFadeObj *fade, s32 arg1, s32 mode) {
-    if (mode == 2) {
-        if (fade->unk_80-- > 0) {
+/* Slot 0x98: on message 2 from the watched object, one step of the fade, or Fade_Stop at the end */
+void Fade_Step(Fade *fade, s32 ticker, s32 message) {
+    if (message == 2) {
+        if (fade->remaining-- > 0) {
             if (fade->unk_7C != 9) {
-                if (fade->unk_78 & 4) {
-                    fade->unk_64 += fade->unk_74;
+                if (fade->channels & 4) {
+                    fade->color.r += fade->step.low;
                 }
-                if (fade->unk_78 & 2) {
-                    fade->unk_65 += fade->unk_74;
+                if (fade->channels & 2) {
+                    fade->color.g += fade->step.low;
                 }
-                if (fade->unk_78 & 1) {
-                    fade->unk_66 += fade->unk_74;
+                if (fade->channels & 1) {
+                    fade->color.b += fade->step.low;
                 }
             }
         } else {
-            fade->unk_00->unk_E0(fade);
+            fade->vtbl->stop(fade);
         }
     }
 }
 
-void Fade_SetStep(FadeObj *fade, s32 step) {
-    fade->unk_74 = step;
+/* Slot 0xD0 */
+void Fade_SetStep(Fade *fade, s32 step) {
+    fade->step.value = step;
 }
 
-void Fade_Start(FadeObj *fade, s32 arg1, s32 arg2, s32 arg3) {
-    s32 idx;
-    if (fade->unk_6C == 0) {
-        idx = fade->unk_00->unk_DC(fade, arg1, arg2, arg3);
-        fade->unk_00->unk_B8(fade, 1, g_fadePalette[idx]);
-        fade->unk_6C = 1;
-        fade->unk_74 = -fade->unk_74;
+/* Slot 0xD4: fade in, from the full color down to nothing (Place calls it when a stage starts) */
+void Fade_StartIn(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+    s32 index;
+    if (fade->state == 0) {
+        index = fade->vtbl->begin(fade, ticker, channels, arg3);
+        fade->vtbl->setColor(fade, 1, g_fadePalette[index]);
+        fade->state = 1;
+        fade->step.value = -fade->step.value;
     }
 }
 
-void Fade_StartDirect(FadeObj *fade, s32 arg1, s32 arg2, s32 arg3) {
-    if (fade->unk_6C == 0) {
-        arg2 = fade->unk_00->unk_DC(fade, arg1, arg2, arg3);
-        if (fade->unk_98 != 0) {
-            fade->unk_80--;
+/* Slot 0xD8: fade out, from black up to the color (Place_StartFade) */
+void Fade_StartOut(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+    if (fade->state == 0) {
+        channels = fade->vtbl->begin(fade, ticker, channels, arg3);
+        if (fade->tint != 0) {
+            fade->remaining--;
         } else {
-            fade->unk_00->unk_B8(fade, 1, &D_8006EAA8[arg2 * 3]);
+            fade->vtbl->setColor(fade, 1, &g_fadeBlackPalette[channels * 3]);
         }
-        fade->unk_6C = 2;
+        fade->state = 2;
     }
 }
 
-s32 Fade_Update(FadeObj *fade, s32 arg1, s32 arg2, s32 arg3) {
-    FadeObjVtbl *vt;
-    s32 colorIndex;
+/*
+ * Slot 0xDC: watches the ticker, sets the channels (0: all, black through blend mode 2, else
+ * blend mode 1) and the tick count 0x100 / step, then shows the box semi-transparent.
+ */
+s32 Fade_Begin(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+    FadeVtbl *vtbl;
+    s32 index;
     s32 mode;
-    s32 steps;
+    s32 ticks;
 
-    vt = fade->unk_00;
-    colorIndex = arg2;
-    if (colorIndex < 0) {
-        colorIndex = fade->unk_70;
+    vtbl = fade->vtbl;
+    index = channels;
+    if (index < 0) {
+        index = fade->defaultChannels;
     } else {
-        fade->unk_70 = colorIndex;
+        fade->defaultChannels = index;
     }
     mode = 1;
-    if (colorIndex != 0) {
-        fade->unk_78 = colorIndex;
+    if (index != 0) {
+        fade->channels = index;
     } else {
         mode = 2;
-        fade->unk_78 = 0xF;
+        fade->channels = 0xF;
     }
-    fade->unk_78 = colorIndex;
-    if (colorIndex == 0) {
-        fade->unk_78 = 0xF;
+    fade->channels = index;
+    if (index == 0) {
+        fade->channels = 0xF;
     }
-    steps = 0x100 / fade->unk_74;
+    ticks = 0x100 / fade->step.value;
     fade->unk_7C = arg3;
-    fade->unk_80 = steps;
-    if (fade->unk_98 != 0) {
-        fade->unk_80 = steps - steps / fade->unk_9C;
+    fade->remaining = ticks;
+    if (fade->tint != 0) {
+        fade->remaining = ticks - ticks / fade->tintDivisor;
     }
-    arg2 = fade->unk_68 / fade->unk_80;
-    fade->unk_84 = arg2;
-    vt->unk_10(fade);
-    vt->unk_64(fade, 1);
-    vt->unk_68(fade, mode);
-    vt->unk_60(fade, 1);
-    return colorIndex;
+    channels = fade->mask / fade->remaining;
+    fade->unk_84 = channels;
+    vtbl->watch(fade);
+    vtbl->setSemiTrans(fade, 1);
+    vtbl->setBlendMode(fade, mode);
+    vtbl->setVisible(fade, 1);
+    return index;
 }
 
-void Fade_Stop(FadeObj *fade, s32 arg1) {
-    FadeObjVtbl *vt = fade->unk_00;
-    s32 sel;
+/* Slot 0xE0: stops watching the ticker and notifies 5 (fade in done) or 6 (fade out done) */
+void Fade_Stop(Fade *fade, s32 ticker) {
+    FadeVtbl *vtbl = fade->vtbl;
+    s32 message;
 
-    if (fade->unk_6C == 0) {
+    if (fade->state == 0) {
         return;
     }
-    if (fade->unk_6C == 1) {
-        sel = 5;
-        if (fade->unk_98 == 0) {
-            vt->unk_60(fade, 0);
-            vt->unk_64(fade, 0);
+    if (fade->state == 1) {
+        message = 5;
+        if (fade->tint == 0) {
+            vtbl->setVisible(fade, 0);
+            vtbl->setSemiTrans(fade, 0);
         }
     } else {
-        sel = 6;
-        if (fade->unk_98 != 0) {
-            if (fade->unk_78 == 0xF) {
-                vt->unk_B8(fade, 1, D_8006EAA8);
+        message = 6;
+        if (fade->tint != 0) {
+            if (fade->channels == 0xF) {
+                vtbl->setColor(fade, 1, g_fadeBlackPalette);
             }
-            vt->unk_64(fade, 0);
+            vtbl->setSemiTrans(fade, 0);
         }
     }
-    vt->unk_14(fade, arg1);
-    if (fade->unk_74 < 0) {
-        fade->unk_74 = -fade->unk_74;
+    vtbl->unwatch(fade, ticker);
+    if (fade->step.value < 0) {
+        fade->step.value = -fade->step.value;
     }
-    fade->unk_6C = 0;
-    vt->unk_30(fade, sel);
+    fade->state = 0;
+    vtbl->notify(fade, message);
 }
 
-u8 *Fade_GetColor(FadeObj *fade) {
-    s32 index = fade->unk_78;
+/* Slot 0xE4: the color of the current channels */
+u8 *Fade_GetColor(Fade *fade) {
+    s32 channels = fade->channels;
 
-    if (index == 0xF) {
-        return D_8006EAA8;
+    if (channels == 0xF) {
+        return g_fadeBlackPalette;
     }
-    return g_fadePalette[index];
+    return g_fadePalette[channels];
 }
 
-void Pos_SetSaved(Unk_8004042C *obj, u16 *pos16, PosPair *pos) {
-    if (obj->unk_0C != 0) {
-        obj->unk_88 = obj->unk_60;
-        obj->unk_8C = obj->unk_62;
-        obj->unk_90 = obj->unk_50;
-        obj->unk_60 = pos16[0];
-        obj->unk_62 = pos16[2];
-        obj->unk_50 = *pos;
+/* Slot 0xE8: saves the size and position, then sets new ones (size read as u16 halves) */
+void Fade_SaveAndSetRect(Fade *fade, u16 *size, PosPair *position) {
+    if (fade->parent != 0) {
+        fade->savedWidth.value = fade->width;
+        fade->savedHeight.value = fade->height;
+        fade->savedPosition = fade->position;
+        fade->width = size[0];
+        fade->height = size[2];
+        fade->position = *position;
     }
 }
 
-void Pos_Restore(Unk_80040490 *obj) {
-    obj->unk_50 = obj->unk_90;
-    obj->unk_60 = obj->unk_88;
-    obj->unk_62 = obj->unk_8C;
+/* Slot 0xEC */
+void Fade_RestoreRect(Fade *fade) {
+    fade->position = fade->savedPosition;
+    fade->width = fade->savedWidth.half;
+    fade->height = fade->savedHeight.half;
 }
 
-void Fade_SetFlag(FadeObj *fade, s32 flag, s32 divisor) {
-    fade->unk_98 = flag;
-    fade->unk_9C = divisor;
+/* Slot 0xF0 */
+void Fade_SetTint(Fade *fade, s32 tint, s32 tintDivisor) {
+    fade->tint = tint;
+    fade->tintDivisor = tintDivisor;
 }
 
-EffectVtbl *Effect_GetVtbl(void) {
-    return (EffectVtbl *)g_effectVtbl;
+FadeVtbl *Fade_GetVtbl(void) {
+    return (FadeVtbl *)g_fadeVtbl;
 }
 
-void *func_800404D0(s32 arg0, s32 arg1, s32 arg2) {
-    void *obj;
+/* new Box(size, color, priority) */
+void *Box_Create(s32 size, s32 color, s32 priority) {
+    void *box;
 
-    obj = Heap_Alloc(0x6C);
-    if (obj != NULL) {
-        func_800408BC()->unk_08(obj, arg0, arg1, arg2);
-        return obj;
+    box = Heap_Alloc(0x6C);
+    if (box != NULL) {
+        Box_GetVtbl()->init(box, size, color, priority);
+        return box;
     }
     return NULL;
 }
 
-void func_8004054C(void **slot, s32 arg1, s32 arg2, s32 arg3) {
-    Unk_800404D0 *obj;
+/* Slot 0x08: base scene node init, then the Box vtable and slot 0x40 */
+void Box_Construct(void **box, s32 size, s32 color, s32 priority) {
+    BoxVtbl *vtbl;
 
-    ((Unk_8004054C_vt *)func_8001E57C())->unk_08(slot);
-    obj = func_800408BC();
-    *slot = obj;
-    obj->unk_40(slot, arg1, arg2, arg3);
+    SceneNode_GetVtbl()->init(box);
+    vtbl = Box_GetVtbl();
+    *box = vtbl;
+    vtbl->reset(box, size, color, priority);
 }
 
-void func_800405D0(Unk_800405D0 *obj, u16 *pos16, u8 *data, s32 arg3) {
-    Unk_800405D0_vt *vt;
+/* Slot 0x40: relative position (0, 0), the size, the color or the default gray, mask of 13 bits */
+void Box_Init(Box *box, u16 *size, u8 *color, s32 priority) {
+    BoxVtbl *vtbl;
 
-    obj->unk_44 = arg3;
-    obj->unk_48 = 1;
-    obj->unk_4C = 0;
-    obj->unk_58 = 0;
-    obj->unk_5C = 0;
-    obj->unk_5E = 0;
-    obj->unk_60 = pos16[0];
-    obj->unk_62 = pos16[2];
-    vt = obj->unk_00;
-    if (data == NULL) {
-        data = D_8008A924;
+    box->priority = priority;
+    box->relative = 1;
+    box->unk_4C = 0;
+    box->attribute = 0;
+    box->x = 0;
+    box->y = 0;
+    box->width = size[0];
+    box->height = size[2];
+    vtbl = box->vtbl;
+    if (color == NULL) {
+        color = g_boxDefaultColor;
     }
-    vt->unk_B8(obj, 1, data);
-    obj->unk_00->unk_CC(obj, 0xD);
+    vtbl->setColor(box, 1, color);
+    box->vtbl->setMask(box, 0xD);
 }
 
-void func_80040664(Unk_80040664 *obj, s32 arg1, s32 arg2) {
-    if (obj->unk_0C == 0) {
-        func_8001E57C()->unk_4C(obj, arg1, 0);
-        obj->unk_00->unk_BC(obj, arg2);
+/* Slot 0x4C: attaches the box under root once, then places it */
+void Box_Show(Box *box, s32 root, s32 position) {
+    if (box->parent == 0) {
+        SceneNode_GetVtbl()->show(box, root, 0);
+        box->vtbl->setPosition(box, position);
     }
 }
 
-s32 func_800406E4(u8 *obj, s32 arg1) {
-    return func_8001EDAC((s32 *)(obj + 0x58), 0x1F, 1, arg1 == 0) == 0;
+/* Slot 0x60: shows or hides the box (GsBOXF bit 31), returns whether it was shown */
+s32 Box_SetVisible(Box *box, s32 visible) {
+    return Bits_SetField(&box->attribute, 0x1F, 1, visible == 0) == 0;
 }
 
-void func_80040714(u8 *obj, s32 arg1) {
-    func_8001EDAC((s32 *)(obj + 0x58), 0x1E, 1, arg1 != 0);
+/* Slot 0x64: semi-transparency on or off (GsBOXF bit 30) */
+void Box_SetSemiTrans(Box *box, s32 on) {
+    Bits_SetField(&box->attribute, 0x1E, 1, on != 0);
 }
 
-void func_80040740(u8 *obj, s32 arg1) {
-    func_8001EDAC((s32 *)(obj + 0x58), 0x1C, 2, arg1);
+/* Slot 0x68: the semi-transparency mode (GsBOXF bits 28-29: 1 adds, 2 subtracts) */
+void Box_SetBlendMode(Box *box, s32 mode) {
+    Bits_SetField(&box->attribute, 0x1C, 2, mode);
 }
 
-void Rgb_ApplyToObj(u8 *obj, s32 copy, u8 *src) {
-    Rgb_CopyOrAdd(obj, obj + 0x64, src, copy);
+/* Slot 0xB8: copies the color, or adds it when copy is 0 */
+void Box_SetColor(Box *box, s32 copy, u8 *color) {
+    Rgb_CopyOrAdd(box, &box->color, color, copy);
 }
 
-void Rgb_CopyOrAdd(void *arg0, Rgb *dst, Rgb *src, s32 copy) {
+void Rgb_CopyOrAdd(void *box, Rgb *dst, Rgb *src, s32 copy) {
     if (copy != 0) {
         *dst = *src;
         return;
     }
-    dst->unk_00 += src->unk_00;
-    dst->unk_01 += src->unk_01;
-    dst->unk_02 += src->unk_02;
+    dst->r += src->r;
+    dst->g += src->g;
+    dst->b += src->b;
 }
 
-void Pos_Set(Unk_800407F8 *obj, PosPair *pos) {
-    if (obj->unk_0C != 0) {
-        obj->unk_50 = *pos;
+/* Slot 0xBC: moves a shown box */
+void Box_SetPosition(Box *box, PosPair *position) {
+    if (box->parent != 0) {
+        box->position = *position;
     }
 }
 
-void Pos_Set16(Unk_80040824 *obj, u16 *pos16) {
-    if (obj->unk_0C != 0) {
-        obj->unk_60 = pos16[0];
-        obj->unk_62 = pos16[2];
+/* Slot 0xC0: resizes a shown box (size read as u16 halves) */
+void Box_SetSize(Box *box, u16 *size) {
+    if (box->parent != 0) {
+        box->width = size[0];
+        box->height = size[2];
     }
 }
 
-void func_80040854(Unk_80040854 *obj, s32 arg1, s32 arg2, s32 value) {
-    obj->unk_00->unk_4C();
-    obj->unk_48 = 0;
-    obj->unk_4C = value;
+/* Slot 0xC4: shows the box (root and position passed through), then clears the percent flag */
+void Box_ShowAbsolute(Box *box, s32 root, s32 position, s32 value) {
+    box->vtbl->show();
+    box->relative = 0;
+    box->unk_4C = value;
 }
 
-void func_800408A0(Unk_800408A0 *obj, s32 value) {
-    obj->unk_44 = value;
+/* Slot 0xC8 */
+void Box_SetPriority(Box *box, s32 priority) {
+    box->priority = priority;
 }
 
-void Fade_SetMask(FadeObj *fade, s32 bits) {
-    fade->unk_68 = (1 << bits) - 1;
+/* Slot 0xCC */
+void Box_SetMask(Box *box, s32 bits) {
+    box->mask = (1 << bits) - 1;
 }
 
-Unk_800404D0 *func_800408BC(void) {
-    return (Unk_800404D0 *)D_8006EAC0;
+BoxVtbl *Box_GetVtbl(void) {
+    return (BoxVtbl *)g_boxVtbl;
 }
 
-s32 func_800408CC(s32 arg0, s32 arg1, s32 arg2) {
-    s32 obj = Heap_Alloc(0xB8);
+/* new Label(font, count, text) */
+s32 Label_Create(s32 font, s32 count, s32 text) {
+    s32 label = Heap_Alloc(0xB8);
 
-    if (obj != 0) {
-        func_80040FB0()->unk_08((void *)obj, arg0, arg1, arg2);
-        return obj;
+    if (label != 0) {
+        Label_GetVtbl()->init((void *)label, font, count, text);
+        return label;
     }
     return 0;
 }
 
-void Object_InitArray(Unk_80040A30_80040948 *arr, s32 arg1, s32 count, s32 arg3) {
-    Unk_80040EDC_obj **items;
+/* Slot 0x08: a space glyph of font with count space glyphs under it, then slot 0x40 with the text */
+void Label_Construct(Label *label, s32 font, s32 count, s32 text) {
+    Glyph **glyphs;
     s32 i;
 
-    ((Unk_80040948_tbl *)((Unk_80040A30_obj *)func_80041C3C()))->unk_08(arr, arg1, 0x20);
-    arr->unk_00 = (EffectVtbl *)((Unk_800408CC_obj *)func_80040FB0());
-    arr->unk_A9 = count;
-    arr->unk_AB = count;
-    arr->unk_AC = 0;
-    arr->unk_AA = 0;
-    items = ((void *)Heap_Alloc(count * 4));
-    if (items != NULL) {
-        arr->unk_B4 = items;
+    Glyph_GetVtbl()->init(label, font, 0x20);
+    label->vtbl = Label_GetVtbl();
+    label->count = count;
+    label->shownCount = count;
+    label->firstShown = 0;
+    label->gapAt = 0;
+    glyphs = ((void *)Heap_Alloc(count * 4));
+    if (glyphs != NULL) {
+        label->glyphs = glyphs;
         for (i = 0; i < count; i++) {
-            *items = func_80041AB4(arg1, 0x20);
-            items += 1;
+            *glyphs = Glyph_Create(font, 0x20);
+            glyphs += 1;
         }
-        arr->unk_00->unk_40(arr, arg3);
+        label->vtbl->reset(label, text);
     }
 }
 
-void Object_DestroyArray(Unk_80040A30 *arr) {
-    Object_DeleteArray(arr->unk_B4, arr->unk_A9);
-    arr->unk_B4 = Heap_Free(arr->unk_B4);
-    func_80041C3C()->unk_0C(arr);
+/* Slot 0x0C */
+void Label_Destroy(Label *label) {
+    Object_DeleteArray(label->glyphs, label->count);
+    label->glyphs = Heap_Free(label->glyphs);
+    Glyph_GetVtbl()->destroy(label);
 }
 
-void func_80040A88(Unk_80040A88 *obj, s32 arg1) {
-    obj->unk_00->unk_D4(obj, 7);
-    obj->unk_00->unk_CC(obj, arg1);
+/* Slot 0x40: spacing 7, then the text */
+void Label_Init(Label *label, s32 text) {
+    label->vtbl->setSpacing(label, 7);
+    label->vtbl->setText(label, text);
 }
 
-void Object_PlaceArray(Unk_80040AE8 *arr, s32 arg1, PosPair *origin) {
+/* Slot 0x4C: shows the label and its shown glyphs side by side under root */
+void Label_Show(Label *label, s32 root, PosPair *origin) {
     PosPair pos;
-    Unk_80040AE8_obj **p;
+    Glyph **p;
     s32 i;
 
-    if (arr->unk_0C == 0) {
-        ((Unk_80040AE8_mgr *)func_80041C3C())->unk_4C(arr, arg1, origin);
+    if (label->parent == 0) {
+        Glyph_GetVtbl()->show(label, root, origin);
         pos = *origin;
-        p = &arr->unk_B4[arr->unk_AC];
-        for (i = arr->unk_AC; i < arr->unk_AC + arr->unk_AB; i++) {
-            if (arr->unk_AA != 0 && i == arr->unk_AA) {
-                pos.unk_00 += 0x10;
+        p = &label->glyphs[label->firstShown];
+        for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
+            if (label->gapAt != 0 && i == label->gapAt) {
+                pos.x += 0x10;
             }
-            (*p)->unk_00->unk_4C(*p, arr, &pos);
-            pos.unk_00 += arr->unk_B0;
+            (*p)->vtbl->show(*p, label, &pos);
+            pos.x += label->spacing;
             p++;
         }
     }
 }
 
-void func_80040C00(Unk_80040C00 *arr) {
+/* Slot 0x50: hides the shown glyphs, then the label */
+void Label_Hide(Label *label) {
     s32 i;
-    Unk_80040C00_obj **p;
-    Unk_80040C00_obj *obj;
+    Glyph **p;
+    Glyph *glyph;
 
-    if (arr->unk_0C != 0) {
-        if (arr->unk_B4 != NULL) {
-            p = &arr->unk_B4[arr->unk_AC];
-            for (i = arr->unk_AC; i < arr->unk_AC + arr->unk_AB; i++) {
-                obj = *p++;
-                obj->unk_00->unk_50(obj);
+    if (label->parent != 0) {
+        if (label->glyphs != NULL) {
+            p = &label->glyphs[label->firstShown];
+            for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
+                glyph = *p++;
+                glyph->vtbl->hide(glyph);
             }
         }
-        ((Unk_80040C00_tbl *)func_80041C3C())->unk_50(arr);
+        Glyph_GetVtbl()->hide(label);
     }
 }
 
-s32 Object_QueryArray(Unk_80040CD0 *arr, void *arg1, s32 arg2) {
+/* Slot 0x60: sets the visibility of the shown glyphs */
+s32 Label_SetVisible(Label *label, void *visible, s32 previous) {
     s32 i;
-    Unk_80040CD0_obj **p;
-    Unk_80040CD0_obj *obj;
+    Glyph **p;
+    Glyph *glyph;
 
-    p = &arr->unk_B4[arr->unk_AC];
-    for (i = arr->unk_AC; i < arr->unk_AC + arr->unk_AB; i++) {
-        obj = *p++;
-        arg2 = obj->unk_00->unk_60(obj, arg1, arg2);
+    p = &label->glyphs[label->firstShown];
+    for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
+        glyph = *p++;
+        previous = glyph->vtbl->setVisible(glyph, visible, previous);
     }
-    return arg2;
+    return previous;
 }
 
-void Object_SendArray(Unk_80040D74 *arr, s32 arg1) {
+/* Slot 0xB8: sets the color of the shown glyphs */
+void Label_SetColor(Label *label, s32 color) {
     s32 i;
-    Unk_80040D74_obj **p;
-    Unk_80040D74_obj *obj;
+    Glyph **p;
+    Glyph *glyph;
 
-    p = &arr->unk_B4[arr->unk_AC];
-    for (i = arr->unk_AC; i < arr->unk_AC + arr->unk_AB; i++) {
-        obj = *p++;
-        obj->unk_00->unk_B8(obj, arg1);
+    p = &label->glyphs[label->firstShown];
+    for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
+        glyph = *p++;
+        glyph->vtbl->setColor(glyph, color);
     }
 }
 
-void Object_PlaceAll(Unk_80040E14 *arr, PosPair *origin) {
+/* Slot 0xBC: moves a shown label and lays out every glyph from origin */
+void Label_SetPosition(Label *label, PosPair *origin) {
     PosPair pos;
-    Unk_80040E14_obj **p;
-    Unk_80040E14_obj *obj;
+    Glyph **p;
+    Glyph *glyph;
     s32 i;
 
-    if (arr->unk_0C != 0) {
-        ((Unk_80040E14_vt *)func_80041C3C())->unk_BC(arr, origin);
+    if (label->parent != 0) {
+        Glyph_GetVtbl()->setPosition(label, origin);
         pos = *origin;
-        p = arr->unk_B4;
-        for (i = 0; i < arr->unk_A9; p++, i++) {
-            obj = *p;
-            obj->unk_00->unk_BC(obj, &pos);
-            pos.unk_00 += arr->unk_B0;
+        p = label->glyphs;
+        for (i = 0; i < label->count; p++, i++) {
+            glyph = *p;
+            glyph->vtbl->setPosition(glyph, &pos);
+            pos.x += label->spacing;
         }
     }
 }
 
-void Object_SendAt(Unk_80040EDC *arr, s32 arg1, s32 index) {
-    Unk_80040EDC_obj **slot = &arr->unk_B4[index];
-    Unk_80040EDC_obj *obj = *slot;
+/* Slot 0xC4: the character of one glyph */
+void Label_SetChar(Label *label, s32 c, s32 index) {
+    Glyph **slot = &label->glyphs[index];
+    Glyph *glyph = *slot;
 
-    obj->unk_00->unk_C4(obj, arg1, slot);
+    glyph->vtbl->setChar(glyph, c, slot);
 }
 
 void func_80040F20(void) {
 }
 
-void Object_SendText(Unk_80040EDC *arr, u8 *text) {
-    Unk_80040EDC_obj **p = arr->unk_B4;
+/* Slot 0xCC: one character per glyph, up to the end of text */
+void Label_SetText(Label *label, u8 *text) {
+    Glyph **p = label->glyphs;
 
     if (text != NULL) {
         while (*text != 0) {
-            Unk_80040EDC_obj *obj = *p;
+            Glyph *glyph = *p;
 
-            ((void (*)(Unk_80040EDC_obj *, u8))obj->unk_00->unk_C4)(obj, *text++);
+            ((void (*)(Glyph *, u8))glyph->vtbl->setChar)(glyph, *text++);
             p++;
         }
     }
@@ -766,12 +691,13 @@ void Object_SendText(Unk_80040EDC *arr, u8 *text) {
 void func_80040FA0(void) {
 }
 
-void Object_SetSpacing(Unk_80040FA8 *obj, s32 spacing) {
-    obj->unk_B0 = spacing;
+/* Slot 0xD4 */
+void Label_SetSpacing(Label *label, s32 spacing) {
+    label->spacing = spacing;
 }
 
-Unk_800408CC_obj *func_80040FB0(void) {
-    return (Unk_800408CC_obj *)D_8006EB90;
+LabelVtbl *Label_GetVtbl(void) {
+    return (LabelVtbl *)g_labelVtbl;
 }
 
 s8 *Text_Decode(s8 *dst, u8 *src) {

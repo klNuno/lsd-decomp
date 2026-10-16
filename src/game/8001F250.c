@@ -32,38 +32,17 @@ typedef struct ModelObjectMapView {
 extern void GsMapModelingData(u32 *p);
 extern u8 g_modelBox[];
 void ModelObject_ComputeBox(void *modelObject, u8 *out);
-struct Unk_800204D0_Q {
-    u8 pad_00[0x6];
-    u16 unk6;
-};
-struct Unk_800204D0_P {
-    u8 pad_00[0x10];
-    struct Unk_800204D0_Q *unk10;
-};
-struct Unk_800204D0 {
-    u8 pad_00[0x10];
-    struct Unk_800204D0_P *unk10;
-};
-struct Unk_800204D0_Arg1 {
-    s32 unk0;
-    s32 unk4;
-};
-struct Unk_80020510_Sub {
-    u8 pad_00[0x6];
-    s16 unk6;
-};
-struct Unk_80020510_Mid {
-    u8 pad_00[0x10];
-    struct Unk_80020510_Sub *unk10;
-};
-struct Unk_80020510 {
-    u8 pad_00[0x10];
-    struct Unk_80020510_Mid *unk10;
-};
-struct Unk_80020510_Arg {
-    s16 unk0;
-    s16 unk2;
-};
+/* A CLUT offset in VRAM pixels, added to a primitive's CLUT by ModelObject_OffsetClut */
+typedef struct ClutOffset {
+    s32 x;
+    s32 y;
+} ClutOffset;
+
+/* A CLUT position in VRAM pixels, written into a primitive's CLUT by ModelObject_SetClut */
+typedef struct ClutPos {
+    s16 x;
+    s16 y;
+} ClutPos;
 
 void *Object_GetBaseVtbl(void);
 s32 ModelObject_GetVtbl(void);
@@ -115,7 +94,7 @@ typedef struct ModelPrim {
     u8 unk2;
     u8 unk3;
     u16 unk4;
-    u16 unk6;
+    u16 clut;   /* +0x06 CBA of a textured primitive: clut x / 16 + clut y * 64 */
     u16 unk8;
     u16 unkA;
     u16 unkC;
@@ -243,7 +222,7 @@ void ModelObject_SetReady(void *modelObject) {
     g_modelObjectReady = 1;
 }
 
-s32 ModelObject_IsReady(s32 arg0) {
+s32 ModelObject_IsReady(s32 modelObject) {
     return g_modelObjectReady;
 }
 
@@ -711,15 +690,17 @@ void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *c
     return (u8 *)prim + size;
 }
 
-void func_800204D0(struct Unk_800204D0 *arg0, struct Unk_800204D0_Arg1 *arg1) {
-    struct Unk_800204D0_Q *q = arg0->unk10->unk10;
-    q->unk6 += arg1->unk0 / 16;
-    q->unk6 += arg1->unk4 * 64;
+/* Moves the CLUT of the model's first primitive: CBA = clut x / 16 + clut y * 64 */
+void ModelObject_OffsetClut(ModelObjectView *modelObject, ClutOffset *offset) {
+    ModelPrim *prim = modelObject->entry->primitives;
+    prim->clut += offset->x / 16;
+    prim->clut += offset->y * 64;
 }
 
-void func_80020510(struct Unk_80020510 *arg0, struct Unk_80020510_Arg *arg1) {
-    struct Unk_80020510_Sub *sub = arg0->unk10->unk10;
+/* Sets the CLUT of the model's first primitive to the VRAM position pos */
+void ModelObject_SetClut(ModelObjectView *modelObject, ClutPos *pos) {
+    ModelPrim *prim = modelObject->entry->primitives;
 
-    sub->unk6 = arg1->unk0 / 16;
-    sub->unk6 += arg1->unk2 * 64;
+    prim->clut = pos->x / 16;
+    prim->clut += pos->y * 64;
 }

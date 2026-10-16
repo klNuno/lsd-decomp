@@ -1,136 +1,148 @@
 #include "common.h"
+#include "game/heap.h"
 
-typedef struct Unk_80025C84_Vtbl {
-    u8 pad[0x30];
-    void (*unk30)(void *, s32);
-    u8 pad34[0x50 - 0x34];
-    void (*unk50)(void *, s32);
-} Unk_80025C84_Vtbl;
-typedef struct Unk_80025C84 {
-    Unk_80025C84_Vtbl *unk0;
-    u8 pad4[0x8];
-    s16 unkC;
-    u8 padE[0x2];
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-} Unk_80025C84;
+/*
+ * The pad (vtable g_padVtbl, 0x20 bytes, made by Pad_New; main makes one for the scene):
+ * it reads PadRead once per frame and sends one event code per button through Object_Notify
+ * (sender type 2 of include/game/scene.h). Code = state + button index, the button order is the
+ * mask table g_padButtonMasks (docs/discoveries.md, the erase combo: 0 UP ... 15 START).
+ */
+
+/* The states of an event code. */
+#define PAD_HELD 2
+#define PAD_PRESSED 0x12  /* down this frame */
+#define PAD_RELEASED 0x22 /* up this frame */
+
+/* Every slot of g_padVtbl past Object's (0x00 to 0x3C). */
+typedef struct PadClassVtbl {
+    s32 tag;               /* 0x00 2 */
+    void *(*delete_)();    /* 0x04 Object_Delete */
+    void (*init)();        /* 0x08 Pad_Init (pad, padInitMode, padId) */
+    void (*destroy)();     /* 0x0C Pad_Destroy */
+    u8 pad_10[0x30 - 0x10];
+    void (*notify)();      /* 0x30 Object_Notify: sends one code */
+    u8 pad_34[0x40 - 0x34];
+    void (*reset)();       /* 0x40 Pad_Reset (pad, padId) */
+    void (*read)();        /* 0x44 Pad_Read */
+    void (*send)();        /* 0x48 Pad_SendEvents */
+    void (*unk4C)();       /* 0x4C func_80025E14, empty */
+    void (*initButtons)(); /* 0x50 Pad_InitButtons */
+    void (*unk54)();       /* 0x54 func_80025E94, empty */
+} PadClassVtbl;
+
+typedef struct PadObject {
+    PadClassVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s16 padId;   /* 0x0C PadRead's argument, 0 or 1 */
+    u8 pad_0E[0x10 - 0x0E];
+    s32 held;    /* 0x10 the last PadRead */
+    s32 released; /* 0x14 bits that went up this frame */
+    s32 pressed; /* 0x18 bits that went down this frame */
+} PadObject;
+
 extern s32 PadRead(u16);
-typedef struct Unk_80025C30 {
-    u8 pad0[0xC];
-    void (*unkC)(s32);
-} Unk_80025C30;
 void PadStop(void);
-void *Object_GetBaseVtbl(void);
-s32 D_8008A848;
-typedef struct Unk_80025B34 {
-    u8 pad0[0x8];
-    void (*unk8)(s32, s32, s32);
-} Unk_80025B34;
+ObjectVtbl *Object_GetBaseVtbl(void);
+s32 g_padCount;
 s32 Heap_Alloc(s32);
-Unk_80025B34 *func_80025E9C(void);
-extern s32 D_8008B388[16];
-typedef struct Unk_80025BA0_Base {
-    u8 pad0[0x8];
-    void (*unk8)(void *);
-} Unk_80025BA0_Base;
-typedef struct Unk_80025BA0_Vtbl {
-    u8 pad0[0x40];
-    void (*unk40)(void *, s32);
-} Unk_80025BA0_Vtbl;
+PadClassVtbl *Pad_GetVtbl(void);
+extern s32 g_padButtonMasks[16];
 void PadInit(s32);
-extern Unk_80025B34 D_8006D370;
+extern PadClassVtbl g_padVtbl;
 
-s32 func_80025B34(s32 arg0, s32 arg1) {
-    s32 temp_v0;
+s32 Pad_New(s32 padInitMode, s32 padId) {
+    s32 pad;
 
-    temp_v0 = Heap_Alloc(0x20);
-    if (temp_v0 != 0) {
-        func_80025E9C()->unk8(temp_v0, arg0, arg1);
-        return temp_v0;
+    pad = Heap_Alloc(0x20);
+    if (pad != 0) {
+        Pad_GetVtbl()->init(pad, padInitMode, padId);
+        return pad;
     }
     return 0;
 }
 
-void func_80025BA0(Unk_80025BA0_Vtbl **arg0, s32 arg1, s32 arg2) {
-    Unk_80025BA0_Vtbl *vt;
+/* The first pad made calls PadInit, the last one deleted PadStop (g_padCount counts them). */
+void Pad_Init(PadObject *pad, s32 padInitMode, s32 padId) {
+    PadClassVtbl *vtbl;
     s32 count;
 
-    ((Unk_80025BA0_Base *)Object_GetBaseVtbl())->unk8(arg0);
-    vt = (Unk_80025BA0_Vtbl *)func_80025E9C();
-    count = D_8008A848;
-    *arg0 = vt;
-    D_8008A848 = count + 1;
+    Object_GetBaseVtbl()->init(pad);
+    vtbl = Pad_GetVtbl();
+    count = g_padCount;
+    pad->vtbl = vtbl;
+    g_padCount = count + 1;
     if (count == 0) {
-        PadInit(arg1);
+        PadInit(padInitMode);
     }
-    (*arg0)->unk40(arg0, arg2);
+    pad->vtbl->reset(pad, padId);
 }
 
-void func_80025C30(s32 arg0) {
-    if (--D_8008A848 == 0) {
+void Pad_Destroy(PadObject *pad) {
+    if (--g_padCount == 0) {
         PadStop();
     }
-    ((Unk_80025C30 *)Object_GetBaseVtbl())->unkC(arg0);
+    Object_GetBaseVtbl()->destroy(pad);
 }
 
-void func_80025C84(Unk_80025C84 *arg0, s32 arg1) {
-    s32 temp = arg1 != 0;
-    arg0->unkC = temp;
-    arg0->unk10 = 0;
-    arg0->unk14 = 0;
-    arg0->unk18 = 0;
-    arg0->unk0->unk50(arg0, temp);
+void Pad_Reset(PadObject *pad, s32 padId) {
+    s32 id = padId != 0;
+    pad->padId = id;
+    pad->held = 0;
+    pad->released = 0;
+    pad->pressed = 0;
+    pad->vtbl->initButtons(pad, id);
 }
 
-void func_80025CC4(Unk_80025C84 *arg0) {
-    s32 cur;
-    s32 prev;
+void Pad_Read(PadObject *pad) {
+    s32 now;
+    s32 before;
     s32 changed;
 
-    cur = PadRead(arg0->unkC);
-    prev = arg0->unk10;
-    arg0->unk10 = cur;
-    changed = cur ^ prev;
-    arg0->unk14 = changed & prev;
-    arg0->unk18 = changed & cur;
+    now = PadRead(pad->padId);
+    before = pad->held;
+    pad->held = now;
+    changed = now ^ before;
+    pad->released = changed & before;
+    pad->pressed = changed & now;
 }
 
-void func_80025D10(Unk_80025C84 *arg0) {
-    void (*fn)(void *, s32);
-    s32 buf[16];
-    s32 *dst;
+/* One code per button: released wins over pressed, pressed over held; sent from button 15 down to 0. */
+void Pad_SendEvents(PadObject *pad) {
+    void (*notify)(void *, s32);
+    s32 codes[16];
+    s32 *out;
     s32 i;
-    s32 flag;
-    s32 v;
-    s32 bits10;
-    s32 bits14;
-    s32 bits18;
+    s32 state;
+    s32 mask;
+    s32 held;
+    s32 released;
+    s32 pressed;
 
-    bits10 = arg0->unk10;
-    bits14 = arg0->unk14;
-    bits18 = arg0->unk18;
-    if (bits10 != 0 || bits14 != 0 || bits18 != 0) {
-        dst = buf;
+    held = pad->held;
+    released = pad->released;
+    pressed = pad->pressed;
+    if (held != 0 || released != 0 || pressed != 0) {
+        out = codes;
         for (i = 0; i < 16; i++) {
-            v = D_8008B388[i];
-            flag = -1;
-            if (bits14 & v) {
-                flag = 0x22;
-            } else if (bits18 & v) {
-                flag = 0x12;
-            } else if (bits10 & v) {
-                flag = 2;
+            mask = g_padButtonMasks[i];
+            state = -1;
+            if (released & mask) {
+                state = PAD_RELEASED;
+            } else if (pressed & mask) {
+                state = PAD_PRESSED;
+            } else if (held & mask) {
+                state = PAD_HELD;
             }
-            if (flag >= 0) {
-                *dst++ = flag + i;
+            if (state >= 0) {
+                *out++ = state + i;
             }
         }
-        dst--;
-        fn = arg0->unk0->unk30;
-        while (dst >= buf) {
-            fn(arg0, *dst);
-            dst--;
+        out--;
+        notify = pad->vtbl->notify;
+        while (out >= codes) {
+            notify(pad, *out);
+            out--;
         }
     }
 }
@@ -138,24 +150,25 @@ void func_80025D10(Unk_80025C84 *arg0) {
 void func_80025E14(void) {
 }
 
-void func_80025E1C(void) {
-    s32 *dst = D_8008B388;
-    s32 local[16] = {
-        0x1000, 0x4000, 0x8000, 0x2000,
-        0x10, 0x40, 0x80, 0x20,
-        0x200, 0x400, 0x100, 0x8,
-        0x2, 0x4, 0x1, 0x800,
+/* The PadRead bit of each button index (docs/discoveries.md, the erase combo). */
+void Pad_InitButtons(void) {
+    s32 *dst = g_padButtonMasks;
+    s32 masks[16] = {
+        0x1000, 0x4000, 0x8000, 0x2000, /* UP, DOWN, LEFT, RIGHT */
+        0x10, 0x40, 0x80, 0x20,         /* TRIANGLE, CROSS, SQUARE, CIRCLE */
+        0x200, 0x400, 0x100, 0x8,       /* L3, R3, SELECT, R1 (PSY-Q pad bits) */
+        0x2, 0x4, 0x1, 0x800,           /* R2, L1, L2, START */
     };
     s32 i;
 
     for (i = 0; i < 16; i++) {
-        *dst++ = local[i];
+        *dst++ = masks[i];
     }
 }
 
 void func_80025E94(void) {
 }
 
-Unk_80025B34 *func_80025E9C(void) {
-    return &D_8006D370;
+PadClassVtbl *Pad_GetVtbl(void) {
+    return &g_padVtbl;
 }

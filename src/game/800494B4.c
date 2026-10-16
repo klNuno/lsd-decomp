@@ -35,7 +35,7 @@ typedef struct GteMatrix {
 } GteMatrix;
 extern GteMatrix D_8008E98C;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
 
-/* The actor base class (func_8001E57C, vtable 0x8006B5CC) and the map's base (func_800428E4): slots chained to here. */
+/* The actor base class (SceneNode_GetVtbl, vtable 0x8006B5CC) and the map's base (RootNode_GetVtbl): slots chained to here. */
 typedef struct ActorVtbl {
     u8 pad_00[0x08];
     void (*init)();             /* 0x08 */
@@ -48,7 +48,7 @@ typedef struct ActorVtbl {
     void (*unk9C)();            /* 0x9C */
 } ActorVtbl;
 
-/* What StageMap slot 0xB8 (func_80042828) returns. */
+/* What StageMap slot 0xB8 (RootNode_GetLight) returns. */
 typedef struct MapChildVtbl {
     u8 pad_00[0x44];
     void (*unk44)();
@@ -80,7 +80,7 @@ typedef struct MapBox {
     s32 y1;
 } MapBox;
 
-/* The 0xDC object of class 0x800869D8 (func_8004D254); slot 0xA0 is func_80012064, which draws scene nodes. */
+/* The 0xDC object of class 0x800869D8 (func_8004D254); slot 0xA0 is Scene_DrawNode, which draws scene nodes. */
 typedef struct RenderObjVtbl {
     u8 pad_00[0x08];
     void (*init)();             /* 0x08 */
@@ -147,27 +147,27 @@ TaskBaseVtbl *Screen_GetVtbl(void);
 TaskVtbl *Task_GetVtbl(void);
 DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 StageMapVtbl *StageMap_GetVtbl(void);
-ActorVtbl *func_8001E57C(void);
-ActorVtbl *func_800428E4(void);
+ActorVtbl *SceneNode_GetVtbl(void);
+ActorVtbl *RootNode_GetVtbl(void);
 RenderObjVtbl *View_GetVtbl(void);
 RenderObjVtbl *func_8004D37C(void);
 MapTileVtbl *MapTile_GetVtbl(void);
 extern MenuNewVtbl *Menu_GetVtbl(void);
 extern void *Place_New(void *sound, void *music, void *etcTim, void *dreamerModel, s32 stage);
 void *Sound_CreateBank(s32 bankName);
-void *func_80048D48(s32 *count);
-s32 func_80027024(s32, s32);
-s32 func_80048E08(s32);
+void *File_GetPathTable(s32 *count);
+s32 File_AddDirEntries(s32, s32);
+s32 Music_GetEffectsBank(s32);
 void Sym_LoadModels(void);
 void Sym_FreeModels(void);
-s32 func_8003B39C(s32 path);
+s32 Tim_New(s32 path);
 s32 Tmd_Create(s32 file);
 s32 Music_PickBank(s32);
-void *func_800398E0(s32, s32, s32);
-void func_80026F34(s32, s32, s32);
-void *func_80042400(void);
-extern void *func_80020C5C(void);
-extern void *func_80048894(void);
+void *Bgm_New(s32, s32, s32);
+void File_EnableWait(s32, s32, s32);
+void *Clock_Create(void);
+extern void *Display_GetCurrent(void);
+extern void *MapChunk_New(void);
 extern void *func_8002C12C(s32);
 void GsLinkObject4(s32 objp, void *packet, s32 id);
 void RotMatrix(void *, void *);
@@ -246,7 +246,7 @@ s16 *Stage_GetChunkMood(s32 stage, StagePlace *place) {
     return g_stageChunkMoods[stage] + place->row * g_stageGrids[stage].cols + place->col;
 }
 
-/* Called by func_80026698 for each dream with the scene's context and its DreamSys. */
+/* Called by Scene_RunDream for each dream with the scene's context and its DreamSys. */
 s32 DreamRunner_New(s32 context, s32 dreamSys, s32 arg2) {
     s32 runner;
 
@@ -265,11 +265,11 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     RunnerRes *tim;
     RunnerRes *res;
 
-    bankName = func_80048E08(0);
+    bankName = Music_GetEffectsBank(0);
     Task_GetVtbl()->init(runner, bankName, 0);
     runner->vtbl = DreamRunner_GetVtbl();
     Sym_LoadModels();
-    tim = (RunnerRes *)func_8003B39C((s32)"ETC\\ETC.TIM");
+    tim = (RunnerRes *)Tim_New((s32)"ETC\\ETC.TIM");
     runner->etcTim = tim;
     tim->vtbl->unk78(tim);
     res = runner->etcTim;
@@ -277,12 +277,12 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     modelFile.unk0 = 0;
     modelFile.path = (s32)"ETC\\DREAMER.TMD";
     runner->dreamerModel = (RunnerRes *)Tmd_Create((s32)&modelFile);
-    runner->music = func_800398E0(Music_PickBank(0), 0, 1);
+    runner->music = Bgm_New(Music_PickBank(0), 0, 1);
     func_8004A070(1);
-    func_80026F34(arg3 == 0, 1, 1);
+    File_EnableWait(arg3 == 0, 1, 1);
     runner->context = context;
     context->unk10 = (Object *)func_8004D254();
-    context->unk8 = func_80042400();
+    context->unk8 = Clock_Create();
     context->map = (StageMap *)StageMap_New(0, 1);
     runner->dreamSys = dreamSys;
     runner->vtbl->watch(runner, dreamSys);
@@ -323,7 +323,7 @@ void DreamRunner_ClearPhase(DreamRunner *runner) {
     runner->phase = RUNNER_IDLE;
 }
 
-/* DreamSys watches the context's objects, then the task loop runs; returns the result (func_80026698). */
+/* DreamSys watches the context's objects, then the task loop runs; returns the result (Scene_RunDream). */
 void DreamRunner_Run(DreamRunner *runner) {
     DreamSys *dreamSys;
 
@@ -486,7 +486,7 @@ void func_8004A070(s32 arg0) {
     s32 count;
     s32 files;
 
-    files = (s32)func_80048D48(&count);
+    files = (s32)File_GetPathTable(&count);
     switch (++D_8008A978) {
     case 1:
         if (arg0 != 0) {
@@ -503,7 +503,7 @@ void func_8004A070(s32 arg0) {
         break;
     }
     do {
-    } while (func_80027024(files, count) == 0);
+    } while (File_AddDirEntries(files, count) == 0);
 }
 
 s32 Task_New(s32 bankName, s32 sound) {
@@ -610,7 +610,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
     MapTile **end;
     s32 i;
 
-    func_800428E4()->init(map);
+    RootNode_GetVtbl()->init(map);
     map->vtbl = StageMap_GetVtbl();
     if (origin != NULL) {
         map->origin = *origin;
@@ -626,7 +626,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
     map->unk1E0 = 0;
     for (i = 0; i < 7; i++) {
         slot = &map->slots[i];
-        slot->chunk = func_80048894();
+        slot->chunk = MapChunk_New();
         slot->chunk->unk20 = (slot->chunk->data != 0);
         slot->chunk->id = i;
         chunk = slot->chunk;
@@ -662,7 +662,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
             tile->attribute = (s32)(tile->attribute | MAP_TILE_HIDDEN);
         }
     }
-    map->vtbl->watch(map, func_80020C5C());
+    map->vtbl->watch(map, Display_GetCurrent());
     map->vtbl->reset(map);
 }
 
@@ -673,7 +673,7 @@ void StageMap_Destroy(StageMap *map) {
     MapTile **end;
     s32 i;
 
-    map->vtbl->unwatch(map, func_80020C5C());
+    map->vtbl->unwatch(map, Display_GetCurrent());
     for (i = 0; i < 7; i++) {
         slot = &map->slots[i];
         map->vtbl->onSlotMessage(map, 6, slot, i);
@@ -698,11 +698,11 @@ void StageMap_Destroy(StageMap *map) {
         }
         Heap_Free(slot->tiles);
     }
-    func_800428E4()->destroy(map);
+    RootNode_GetVtbl()->destroy(map);
 }
 
 void StageMap_OnNotify(StageMap *map, s32 **sender, s32 message) {
-    func_8001E57C()->onNotify(map, sender, message);
+    SceneNode_GetVtbl()->onNotify(map, sender, message);
     if ((**sender & 0xF) == 1) {
         map->vtbl->unk100(map, sender, message);
     }
@@ -723,7 +723,7 @@ void StageMap_Reset(StageMap *map) {
 void StageMap_OnSlotMessage(StageMap *map, s32 message, MapSlot *slot) {
     Object *obj;
 
-    func_8001E57C()->onSlotMessage(map, message);
+    SceneNode_GetVtbl()->onSlotMessage(map, message);
     switch (message) {
     case 6:
         obj = slot->unk14;
@@ -1870,7 +1870,7 @@ s32 MapTile_New(void) {
 }
 
 void MapTile_Init(MapTile *tile) {
-    func_8001E57C()->init(tile);
+    SceneNode_GetVtbl()->init(tile);
     tile->vtbl = MapTile_GetVtbl();
     tile->unk34 = 0;
     tile->flags = 0;
@@ -1887,7 +1887,7 @@ void func_8004D434(MapTile *tile, u8 **message) {
 }
 
 void func_8004D47C(MapTile *tile, void *sender, s32 message) {
-    func_8001E57C()->unk9C(tile, sender, message);
+    SceneNode_GetVtbl()->unk9C(tile, sender, message);
     if (message < 9) {
         if (message >= 5) {
             tile->vtbl->unkA0(tile, sender, message);

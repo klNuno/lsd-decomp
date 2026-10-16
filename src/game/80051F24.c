@@ -7,7 +7,7 @@
 /*
  * The memory card file list window (vtable D_80086F88, returned by func_80052B60; its first
  * methods are in src/game/80050BA8.c): background CARD\SELECT.TIM, up to 4 visible rows of
- * 26 characters built by func_800408CC, the selected row in D_8008AB10 (0x80, 0x80, 0), the
+ * 26 characters built by Label_Create, the selected row in D_8008AB10 (0x80, 0x80, 0), the
  * others in D_8008AB0C (0x50, 0x50, 0x50). Slots 0x7C to 0x88 scroll it, 0x8C to 0x98 draw it.
  */
 typedef struct CardListVtbl {
@@ -40,7 +40,7 @@ typedef struct CardTextVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*unk4C)();      /* 0x4C (obj, parent, position) */
     u8 pad_50[0x78 - 0x50];
-    void (*unk78)();      /* 0x78 called on a file right after func_8003B39C */
+    void (*unk78)();      /* 0x78 called on a file right after Tim_New */
     u8 pad_7C[0xB8 - 0x7C];
     void (*setColor)();   /* 0xB8 D_8008AB10 or D_8008AB0C */
     u8 pad_BC[0xCC - 0xBC];
@@ -103,7 +103,7 @@ typedef struct PlaceTexLoader {
 typedef struct ActorVtbl {
     u8 pad_00[0x08];
     s32 (*construct)();   /* 0x08 func_80057044 */
-    void (*destruct)();   /* 0x0C func_8001CBA4 */
+    void (*destruct)();   /* 0x0C SceneNode_Destroy */
     u8 pad_10[0x40 - 0x10];
     void (*init)();       /* 0x40 func_800571E8 */
     u8 pad_44[0x88 - 0x44];
@@ -131,7 +131,7 @@ typedef struct ActorPos {
     Vec3 pos;
 } ActorPos;
 
-/* The vtable of the class func_8001E57C returns (src/game/8001CA94.c), base of Actor. */
+/* The vtable of the class SceneNode_GetVtbl returns (src/game/8001CA94.c), base of Actor. */
 typedef struct ActorBaseVtbl {
     u8 pad_00[0x08];
     s32 (*construct)();   /* 0x08 */
@@ -174,7 +174,7 @@ typedef struct GridEntry {
     s32 next;
 } GridEntry;
 
-/* The scenery part class D_800879C4 (0xA8 bytes, func_80057C94), built on the class of func_800422BC. */
+/* The scenery part class D_800879C4 (0xA8 bytes, func_80057C94), built on the class of SpriteNode_GetVtbl. */
 typedef struct TextPartVtbl {
     u8 pad_00[0x08];
     void (*construct)();  /* 0x08 func_80057D10 */
@@ -218,7 +218,7 @@ typedef struct PlaceOwner {
     PlaceOwnerObj *unkC;
 } PlaceOwner;
 
-/* The class func_800422BC returns, base of TextPart. */
+/* The class SpriteNode_GetVtbl returns, base of TextPart. */
 typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32, s32, void *, s32, s32); } TextPartBaseVtbl;
 
 /*
@@ -303,7 +303,7 @@ typedef struct Point {
     s32 y;
 } Point;
 
-/* The ambience band objects (func_800404D0): 18 in g_ambienceBands for family 0, one at D_8008AC94. */
+/* The ambience band objects (Box_Create): 18 in g_ambienceBands for family 0, one at D_8008AC94. */
 typedef struct AmbienceBandVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();   /* 0x04 Object_Delete */
@@ -490,25 +490,25 @@ s32 D_8008AB50;
 s32 g_sceneryCount;
 extern u8 g_scenery[];
 void func_8002CC84(void *, void *);
-extern s32 func_8001E7BC(void);
+extern s32 SceneNode_ProbeHeight(void);
 PlaceBaseVtbl *Task_GetVtbl();
 extern s16 D_8008ABA8[];
 void func_80057534(void *self, s16 *field, s32 value, s32 notify, s32 message);
 extern s16 D_8008ABA4[];
 extern u16 D_80087AA4[];
 extern u16 D_80087AA6[];
-void func_80049060(s32);
-void func_80049098(s32, s32, s32);
+void Stage_GetChunkPath(s32);
+void Stage_GetChunkPathAt(s32, s32, s32);
 void func_80056718();
 ActorVtbl *func_80057C84(void);
-ActorBaseVtbl *func_8001E57C(void);
+ActorBaseVtbl *SceneNode_GetVtbl(void);
 s32 D_8008AB54;
 AmbienceBand *D_8008AC94;
 s32 func_8005627C(SpotSlot *slot);
 s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found);
 void func_8002CD08(s32, s32);
 PlaceRefs *g_placeRefs;
-extern void func_8001E58C(void *, void *, void *);
+extern void SceneNode_RotateVector(void *, void *, void *);
 s32 func_80057668();
 extern u8 D_8008AB10[];
 void *Heap_Alloc(s32 size);
@@ -516,7 +516,7 @@ GraphCtorVtbl *Graph_GetVtable(void);
 void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch);
 extern u8 D_800872C4[];
 extern s32 D_8008730C[];
-extern void func_8003B624(s32 *arg0, s32 arg1, s32 *arg2);
+extern void Display_RotateRect(s32 *arg0, s32 arg1, s32 *arg2);
 extern s32 D_80087444[];
 extern s32 D_80087450[];
 extern s32 D_8008745C[];
@@ -538,7 +538,7 @@ extern s16 D_8008AB94[];
 PlaceObj *D_8008ACA4;
 void *D_8008ACA8;
 PlaceView *D_8008ACAC;
-void func_80020510(void *, void *);
+void ModelObject_SetClut(void *, void *);
 void func_80052E7C(Place *place, s32 result, s32 arg2, s32 arg3);
 PlaceVtbl *Place_GetVtbl(void);
 SceneryVtbl *Scenery_GetVtbl(void);
@@ -553,10 +553,10 @@ extern u8 D_80087204[];
 extern SceneryParams g_sceneryParams;
 s32 Sym_SpawnOrSpy(s32, void *, s32);
 extern u8 D_80087A8C[];
-TextPartBaseVtbl *func_800422BC(void);
+TextPartBaseVtbl *SpriteNode_GetVtbl(void);
 void func_80056054(void *slot, SpotState *state);
 extern AmbienceBand *g_ambienceBands[];
-extern void *func_800404D0(s32 arg0, s32 arg1, s32 arg2);
+extern void *Box_Create(s32 arg0, s32 arg1, s32 arg2);
 extern s32 D_8008AB58[];
 extern s32 D_8008AB60[];
 SpotRecord *func_80055620(void *pos, void *distance, s32 origin);
@@ -589,11 +589,11 @@ extern void func_80056DF0(void *scenery, Vec3 *origin);
 extern void func_80056E44(Scenery *scenery, Vec3 *origin);
 extern u8 D_8008AB0C[];
 void func_800567D4(void *self, s32 parent, Vec3 *pos, s32 arg3, s32 arg4);
-void func_8001E770(void *arg0, void *arg1);
+void SceneNode_LinkModel(void *arg0, void *arg1);
 void func_80056858(void *self, s32 move);
 void func_80056BBC(void *self, s32 arg1);
 void func_80056E1C(Scenery *scenery, s32 arg1);
-extern s32 func_800408CC(s32, s32, s32);
+extern s32 Label_Create(s32, s32, s32);
 extern u8 D_8008AB44[];
 extern s32 D_8008AB38[];
 extern s32 D_8008AB40[];
@@ -613,9 +613,9 @@ extern s32 D_80087880[];
 extern u8 D_80087874[];
 extern u8 D_8008785C[];
 void Actor_MovePos(void *actor, s32 *delta);
-extern s8 *func_800270C4(s8 *, s8 *, s8 *, s8 *);
-extern CardText *func_8003B39C(s32);
-extern CardText *func_80041C9C(CardText *, s32 *, s32);
+extern s8 *File_JoinPath(s8 *, s8 *, s8 *, s8 *);
+extern CardText *Tim_New(s32);
+extern CardText *ScreenSprite_Create(CardText *, s32 *, s32);
 extern s8 D_8008AB14[];
 extern s8 D_8008AB1C[];
 extern s8 D_8008AB24[];
@@ -653,7 +653,7 @@ Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 
 s32 Stage_PickTexturePath(s32, s32, s32);
 s32 Music_PickTrack(s32, s32);
 void *Tix_Create(s32 path);
-s32 func_8001EF60(s32);
+s32 SceneNode_SetRayHeightCheck(s32);
 void func_80057618(Actor *actor, void (*move)(void *, s32, s32), s32 arg2, s32 arg3);
 extern u8 D_8008721C[];
 void func_80055410(void);
@@ -674,13 +674,13 @@ void func_80051F24(CardList *list, s32 parent) {
     CardText *iconFile;
 
     if ((parent != 0) && (list->background == NULL)) {
-        file = func_8003B39C((s32)func_800270C4(path, D_8008AB14, D_8008AB1C, D_8008AB24));
+        file = Tim_New((s32)File_JoinPath(path, D_8008AB14, D_8008AB1C, D_8008AB24));
         file->vt->unk78(file);
-        list->background = func_80041C9C(file, D_80087028, 0);
+        list->background = ScreenSprite_Create(file, D_80087028, 0);
         file->vt->delete_(file);
         background = list->background;
         background->vt->unk4C(background, parent, D_8008AAF8);
-        iconFile = func_8003B39C((s32)func_800270C4(path, (s8 *)"FONTICON\0\0\0\0\0\0\0", D_8008AB1C, D_8008AB24));
+        iconFile = Tim_New((s32)File_JoinPath(path, (s8 *)"FONTICON\0\0\0\0\0\0\0", D_8008AB1C, D_8008AB24));
         iconFile->vt->unk78(iconFile);
         list->vt->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
         iconFile->vt->delete_(iconFile);
@@ -864,7 +864,7 @@ void func_80052644(CardList *list, s32 parent, s32 font, s32 top, s32 column, s3
         if (n > 0) {
             do {
                 func_8005292C(list, text, i, top, (u8 *)column);
-                created = (CardText *)func_800408CC(font, 0x1A, (s32)text);
+                created = (CardText *)Label_Create(font, 0x1A, (s32)text);
                 *row = created;
                 created->vt->unk4C(created, parent, pos);
                 obj = *row;
@@ -1057,9 +1057,9 @@ void func_80052DE8(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
 
 void func_80052E7C(Place *place, s32 result, s32 arg2, s32 arg3) {
     if (result >= 0) {
-        func_80049060(place->stage);
+        Stage_GetChunkPath(place->stage);
     } else {
-        func_80049098(place->stage, arg2, arg3);
+        Stage_GetChunkPathAt(place->stage, arg2, arg3);
     }
 }
 
@@ -1111,7 +1111,7 @@ void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
     if (arg1 == 0) {
         place->unk48 = 0xA000;
     }
-    func_8001EF60(mode);
+    SceneNode_SetRayHeightCheck(mode);
     place->dreamSys->vtbl->unkEC(place->dreamSys, D_80087118[place->stage]);
     place->state = 5;
 }
@@ -1543,7 +1543,7 @@ void Place_UpdatePause(Place *place) {
     s32 ticks = place->pauseOpen;
 
     if (ticks == 0) {
-        place->pauseText = (PlaceObj *)func_800408CC((s32)place->refs.font, 5, (s32)D_8008AB44);
+        place->pauseText = (PlaceObj *)Label_Create((s32)place->refs.font, 5, (s32)D_8008AB44);
         place->pauseText->vt->unk4C(place->pauseText, place->map, D_8008AB38);
         place->pauseText->vt->unkB8(place->pauseText, D_8008AB40);
         place->pauseOpen = 1;
@@ -1631,7 +1631,7 @@ void func_80054660(void) {
     PlaceView *view;
 
     if (D_8008AB54 != 0) {
-        band = func_800404D0((s32)D_8008AB60, D_8008AB54, 0);
+        band = Box_Create((s32)D_8008AB60, D_8008AB54, 0);
         D_8008AC94 = band;
         band->vt->unk64(band, 1);
         D_8008AC94->vt->unk68(D_8008AC94, 0);
@@ -1694,9 +1694,9 @@ void func_80054850(void) {
             layout[0].y += 0x1E;
         }
         layout[1] = D_8008AB70;
-        g_ambienceBands[0] = func_800404D0((s32)&layout[1], (s32)D_8008AC8C, 0x1FFF);
+        g_ambienceBands[0] = Box_Create((s32)&layout[1], (s32)D_8008AC8C, 0x1FFF);
         for (i = 1; i < 0x12; i++) {
-            band = func_800404D0((s32)&layout[1], (s32)D_8008AC8C + i * 3, 0x1FFF);
+            band = Box_Create((s32)&layout[1], (s32)D_8008AC8C + i * 3, 0x1FFF);
             g_ambienceBands[i] = band;
             band->vt->attach(band, (s32)g_ambienceBands[0], layout);
             layout[0].y += 3;
@@ -2065,9 +2065,9 @@ s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found) {
 
 void func_80055A24(void) {
     if (g_placeStage == 2) {
-        func_8003B624(D_80087444, 1, D_80087450);
+        Display_RotateRect(D_80087444, 1, D_80087450);
     } else if (g_placeStage >= 3 && g_placeStage < 6) {
-        func_8003B624(D_8008745C, 1, D_80087468);
+        Display_RotateRect(D_8008745C, 1, D_80087468);
     }
 }
 
@@ -2371,7 +2371,7 @@ void func_80056520(void *self, s32 map, s32 origin) {
     func_800567D4(self, map, &pos, scenery->unk64, (s32)scenery->unk68);
     kind = scenery->kind;
     if (kind < 2) {
-        func_8001E770(self, D_8008ACA4->vt->unk80(D_8008ACA4, D_8008AB98[kind]));
+        SceneNode_LinkModel(self, D_8008ACA4->vt->unk80(D_8008ACA4, D_8008AB98[kind]));
     }
     switch (scenery->kind) {
     case 0:
@@ -2459,7 +2459,7 @@ void func_80056858(void *self, s32 move) {
                 obj->vt->unkB8(obj, &pos);
             } else {
                 *part = func_80056FE4();
-                func_8001E770(*part, scenery->model);
+                SceneNode_LinkModel(*part, scenery->model);
                 func_800567D4(*part, (s32)scenery, &pos, scenery->unk64, (s32)scenery->unk68);
             }
             part++;
@@ -2620,7 +2620,7 @@ void func_80056F5C(s32 family, PlaceObj *models, void *font, PlaceView *view) {
     D_8008ACA8 = font;
     D_8008ACAC = view;
     for (i = 0; i < 2; i++) {
-        func_80020510(models->vt->unk80(models, D_8008AB98[i]), D_8008AB94);
+        ModelObject_SetClut(models->vt->unk80(models, D_8008AB98[i]), D_8008AB94);
     }
 }
 
@@ -2641,7 +2641,7 @@ void *func_80056FE4(void) {
 
 /* Slot 0x08 of the base class D_800878D4 */
 void *func_80057044(Actor *actor) {
-    if (func_8001E57C()->construct(actor) != 0) {
+    if (SceneNode_GetVtbl()->construct(actor) != 0) {
         actor->vt = func_80057C84();
         actor->unk44 = 0;
         actor->map = 0;
@@ -2656,7 +2656,7 @@ void *func_80057044(Actor *actor) {
 void func_800570B4(Actor *actor, s32 **other) {
     s32 classId;
 
-    func_8001E57C()->watch(actor, other);
+    SceneNode_GetVtbl()->watch(actor, other);
     classId = **other;
     if ((classId & 0xFFF) == 0x114) {
         actor->map = (s32)other;
@@ -2677,14 +2677,14 @@ void func_80057130(Actor *actor, s32 **other) {
     } else if ((classId & 0xF) == 5) {
         actor->unk50 = 0;
     }
-    func_8001E57C()->unwatch(actor, other);
+    SceneNode_GetVtbl()->unwatch(actor, other);
 }
 
 /* Slot 0x18, unwatch all */
 void func_800571A8(Actor *actor) {
     actor->map = 0;
     actor->unk50 = 0;
-    func_8001E57C()->unwatchAll(actor);
+    SceneNode_GetVtbl()->unwatchAll(actor);
 }
 
 /* Slot 0x40 */
@@ -2698,7 +2698,7 @@ void func_800571F8(Actor *actor, s32 message) {
     s32 *buf[14];
     Actor *contact;
 
-    func_8001E57C()->unk88(actor, message);
+    SceneNode_GetVtbl()->unk88(actor, message);
     if (message < 9) {
         if (message >= 5) {
             if ((actor->unk20 != 0) && (ModelObject_IsReady(actor->unk20) != 0)) {
@@ -2757,7 +2757,7 @@ void func_800573CC(void *self, s32 set, s32 *vec) {
 void func_80057444(Actor *actor, void *arg1) {
     s32 delta[3];
 
-    func_8001E58C(actor, delta, arg1);
+    SceneNode_RotateVector(actor, delta, arg1);
     actor->vt->movePos(actor, delta);
 }
 
@@ -2962,7 +2962,7 @@ s32 func_80057A18(s32 actor, s32 delta, s32 pos, s32 rect, void *cell) {
 }
 
 s32 func_80057B54(s32 entry) {
-    if (entry != 0 && func_8001E7BC() != 0) {
+    if (entry != 0 && SceneNode_ProbeHeight() != 0) {
         return entry;
     }
     return 0;
@@ -2970,7 +2970,7 @@ s32 func_80057B54(s32 entry) {
 
 /* Slot 0xDC: the base slot 0x9C, then slot 0xA0 for messages 5 to 8. */
 void func_80057B90(Actor *actor, void *arg1, s32 message) {
-    func_8001E57C()->unk9C(actor, arg1, message);
+    SceneNode_GetVtbl()->unk9C(actor, arg1, message);
     if (message < 9) {
         if (message >= 5) {
             actor->vt->unkA0(actor, arg1, message);
@@ -2980,7 +2980,7 @@ void func_80057B90(Actor *actor, void *arg1, s32 message) {
 
 /* Slot 0xE0 */
 void func_80057C14(s32 actor, s32 arg1, s32 message) {
-    func_8001E57C()->unk9C(actor, arg1, message);
+    SceneNode_GetVtbl()->unk9C(actor, arg1, message);
 }
 
 /* Slot 0xE4 */
@@ -3014,7 +3014,7 @@ void *func_80057C94(s32 index, s32 arg1, s32 font) {
 
 /* Slot 0x08 of D_800879C4: base construct with the font and the 12-byte entry D_80087A8C[index]. */
 void func_80057D10(TextPart *part, s32 index, s32 arg2, s32 font) {
-    func_800422BC()->construct(part, font, 0, D_80087A8C + index * 0xC, arg2, 0);
+    SpriteNode_GetVtbl()->construct(part, font, 0, D_80087A8C + index * 0xC, arg2, 0);
     part->vt = func_80057F58();
     part->unkA4 = 0;
     part->vt->init(part, index);

@@ -1,58 +1,63 @@
 #include "common.h"
 
-void func_8003221C(s32 arg0);
+void Spu_Reset(s32 hot);
 extern void ResetCallback(void);
 extern void SpuInit(void);
 extern void SpuInitHot(void);
 extern void SpuVmInit(s32);
 extern s32 GetVideoMode(void);
-extern u16 D_8006DC5C[];
-extern u16 D_8006DC6C[];
-extern s32 D_8006DC8C;
-extern s32 D_8006DC90;
-extern s32 D_8006DC94;
-extern s32 D_8006DC98;
-extern void (*D_8006DC9C)(void);
+extern u16 g_spuVoiceInit[];
+extern u16 g_spuControlInit[];
+extern s32 g_seqVsyncCount;
+extern s32 g_seqIrq;
+extern s32 g_seqHalfRate;
+extern s32 g_videoMode;
+extern void (*g_seqPrevHandler)(void);
 extern s32 D_8008E934;
 extern s32 D_8008EA00;
 extern s32 D_8009024C;
 extern s32 D_80090368[][16];
 
-void func_8003221C(s32 arg0) {
+/*
+ * Resets the SPU: loads the 24 voice registers (0x1F801C00) and the 16 control registers
+ * (0x1F801D80) from their tables, clears the voice table and the sound state, and reads the video mode.
+ * hot 0 runs the cold SpuInit, hot 1 runs SpuInitHot.
+ */
+void Spu_Reset(s32 hot) {
     s32 i;
     s32 j;
-    u16 *p;
+    u16 *spuReg;
     u16 *src;
-    u16 *base;
-    u16 tmp;
+    u16 *voiceTable;
+    u16 value;
 
     ResetCallback();
-    if (arg0 == 0) {
+    if (hot == 0) {
         SpuInit();
     } else {
         SpuInitHot();
     }
-    p = (u16 *)0x1F801C00;
+    spuReg = (u16 *)0x1F801C00;
     i = 0;
-    base = D_8006DC5C;
+    voiceTable = g_spuVoiceInit;
     for (; i < 0x18; i++) {
         j = 0;
-        src = base;
+        src = voiceTable;
         for (; j < 8; j++) {
-            tmp = *src;
+            value = *src;
             src++;
-            *p = tmp;
-            p++;
+            *spuReg = value;
+            spuReg++;
         }
     }
-    p = (u16 *)0x1F801D80;
+    spuReg = (u16 *)0x1F801D80;
     i = 0;
-    src = D_8006DC6C;
+    src = g_spuControlInit;
     for (; i < 0x10; i++) {
-        tmp = *src;
+        value = *src;
         src++;
-        *p = tmp;
-        p++;
+        *spuReg = value;
+        spuReg++;
     }
     SpuVmInit(0x18);
     for (j = 0; j < 0x20; j++) {
@@ -62,18 +67,20 @@ void func_8003221C(s32 arg0) {
     }
     D_8009024C = 0x3C;
     D_8008EA00 = 0;
-    D_8006DC8C = 0;
-    D_8006DC90 = -1;
-    D_8006DC94 = 0;
-    D_8006DC9C = 0;
-    D_8006DC98 = GetVideoMode();
+    g_seqVsyncCount = 0;
+    g_seqIrq = -1;
+    g_seqHalfRate = 0;
+    g_seqPrevHandler = 0;
+    g_videoMode = GetVideoMode();
     D_8008E934 = 0;
 }
 
-void func_80032368(void) {
-    func_8003221C(0);
+/* Cold SPU reset. */
+void Spu_ResetCold(void) {
+    Spu_Reset(0);
 }
 
-void func_80032388(void) {
-    func_8003221C(1);
+/* Hot SPU reset. */
+void Spu_ResetHot(void) {
+    Spu_Reset(1);
 }

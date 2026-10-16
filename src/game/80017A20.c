@@ -21,7 +21,7 @@ extern void *malloc(u32);
 extern s32 printf(const char *fmt, ...);
 
 /*
- * The model renderer (Render_SortModel to the end): func_80012064 calls Render_SortModel for each
+ * The model renderer (Render_SortModel to the end): Scene_DrawNode calls Render_SortModel for each
  * scene node with its ordering table, an OT shift and the scratchpad at 0x1F800000 as work
  * area (TmdCtx). It walks the model's primitive groups (u16 count, u16 type), projects each
  * face with the GTE, culls it, writes one GPU packet per face and links it into the ordering
@@ -194,7 +194,7 @@ typedef struct PolyGT4 {
 } PolyGT4;
 
 /* The scene node's model reference: same layout as the coordinate system that
-   func_80012064 passes to GsGetLs, and the model's vertex, normal and primitive tables */
+   Scene_DrawNode passes to GsGetLs, and the model's vertex, normal and primitive tables */
 typedef struct TmdCoord {
     s32 flg;
     TmdMatrix coord;
@@ -680,7 +680,7 @@ s32 Heap_IsBusy(void) {
     return g_heapBusy;
 }
 
-/* Sorts one model into the ordering table (called by func_80012064 for each scene node) */
+/* Sorts one model into the ordering table (called by Scene_DrawNode for each scene node) */
 void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) {
     TmdCtx *ctx;
     u8 *prim;

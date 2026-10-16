@@ -1,708 +1,683 @@
 #include "common.h"
+#include "game/heap.h"
+#include "game/loader.h"
+#include "game/scene.h"
 
-typedef struct { u8 pad[0xA8]; u8 unkA8; } Unk_80041C28;
-struct Unk_800425D8 {
-    struct Unk_800425EC_vt *unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-};
-struct Unk_80042828 {
-    u8 pad_00[0x44];
-    s32 unk44[1];
-};
-struct Unk_80041E2C {
-    s32 unk0;
-    s32 unk4;
-};
-struct Unk_80041E2C_obj {
-    u8 pad_00[0xC];
-    s32 unkC;
-    u8 pad_10[0x90];
-    struct Unk_80041E2C unkA0;
-};
-s32 func_8001EDAC(s32 *arg0, s32 arg1, s32 arg2, s32 arg3);
-struct Unk_80041BAC;
-struct Unk_80041BAC_vtbl {
-    u8 pad_00[0xC4];
-    void (*unkC4)(struct Unk_80041BAC *, u8);
-};
-struct Unk_80041BAC {
-    struct Unk_80041BAC_vtbl *unk0;
-};
-typedef struct {
-    u8 pad[0xC];
-    s32 uC;
-    u8 pad2[0x6C - 0x10];
-    u16 u6C;
-    u16 u6E;
-    u8 pad3[0x7C - 0x70];
-    u16 u7C;
-    u16 u7E;
-} Unk_80041E58;
-typedef struct Unk_8004229C_Rgb {
-    s8 r;
-    s8 g;
-    s8 b;
-} Unk_8004229C_Rgb;
-struct Unk_8004229C {
-    u8 pad_00[0x78];
-    Unk_8004229C_Rgb unk78;
-};
-struct Unk_800423A8;
-struct Unk_800423A8_vt {
-    u8 pad_00[0xC];
-    void (*unkC)(struct Unk_800423A8 *);
-};
-struct Unk_800423A8 {
-    u8 pad_00[0x2C];
-    s32 unk2C;
-};
-struct Unk_800423A8_vt *func_80026CAC(void);
-struct Unk_800424A8 {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-    void (*unkC)(s32);
-    u8 pad_10[0x14];
-    void (*unk24)(void *, s32);
-};
-struct Unk_800424A8 *Object_GetBaseVtbl(void);
-struct Unk_80041BDC {
-    u8 pad_00[0x72];
-    u8 unk72;
-    u8 unk73;
-    u8 pad_74[0xA8 - 0x74];
-    u8 unkA8;
-};
-void func_80041C4C();
-struct Unk_80042400_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-    u8 pad_0C[0x34];
-    void (*unk40)(void *, s32);
-};
-void *Heap_Alloc(s32 arg0);
-struct Unk_80042400_vt *func_80042684(void);
-struct Unk_80042694_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-};
-struct Unk_80042694_vt *func_800428E4(void);
-typedef struct {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-} Unk_8004202C_Src;
-struct Unk_8004202C {
-    u8 pad_00[0x48];
-    s32 unk48;
-    Unk_8004202C_Src unk4C;
-    s32 unk58;
-    u8 pad_5C[0x64 - 0x5C];
-    u8 unk64[1];
-};
-void func_8004208C();
-struct Unk_800422CC_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32);
-};
-struct Unk_800422CC_vt *func_800423F0(void);
-struct Unk_800425EC_vt {
-    u8 pad_00[0x30];
-    void (*unk30)(void *, s32);
-};
-typedef struct Unk_80041C3C {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32);
-    u8 pad_0C[0x34];
-    void (*unk40)(void *, s32);
-} Unk_80041C3C;
-void *Heap_Alloc(s32 size);
-Unk_80041C3C *func_80041C3C(void);
-struct Unk_80041C4C {
-    u16 unk0;
-    u16 unk2;
-    s32 unk4;
-    s32 unk8;
-};
-extern struct Unk_80041C4C D_8006ED40;
-struct Unk_800424E0_Node {
-    struct Unk_800424E0_Node *unk0;
-    s32 unk4;
-};
-struct Unk_800424E0 {
-    u8 pad_00[0x18];
-    struct Unk_800424E0_Node *unk18;
-};
-struct Unk_80041ED8_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32);
-};
-struct Unk_80041ED8_vt *func_80041ED8(void);
-struct Unk_80041DAC_vt;
-struct Unk_80041DAC {
-    struct Unk_80041DAC_vt *unk0;
-    u8 pad_04[0x8];
-    s32 unkC;
-};
-struct Unk_80041DAC_vt {
-    u8 pad_00[0xBC];
-    void (*unkBC)(struct Unk_80041DAC *, s32);
-};
-struct Unk_80041DAC_mgr_vt {
-    u8 pad_00[0x4C];
-    void (*unk4C)(struct Unk_80041DAC *, s32, void *);
-};
-struct Unk_80041DAC_mgr_vt *func_800422BC(void);
-extern s32 D_8006EE10[3];
-typedef struct Unk_80042790_vt {
-    u8 pad_00[0x4];
-    void (*unk4)(void *);
-    u8 pad_08[0xB8 - 0x8];
-    void **(*unkB8)(void *, s32);
-} Unk_80042790_vt;
-typedef struct Unk_80042790_ret_vt {
-    u8 pad_00[0xC];
-    void (*unkC)(void *);
-} Unk_80042790_ret_vt;
-Unk_80042790_ret_vt *func_8001E57C(void);
-void func_80041C4C(struct Unk_80041C4C *arg0, u32 arg1);
-struct Unk_80041D18;
-struct Unk_80041D18_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32);
-    u8 pad_0C[0x34];
-    void (*unk40)(void *);
-};
-struct Unk_80041D18 {
-    struct Unk_80041D18_vt *unk0;
-};
-struct Unk_80041D18_mgr_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32, s32, s32);
-};
-struct Unk_80041DAC;
-struct Unk_80042170 {
-    u8 pad_00[0x84];
-    s32 unk84;
-};
-struct Unk_80042170_src {
-    u8 pad_00[0x8];
-    s16 unk8;
-    s16 unkA;
-};
-struct Unk_8004232C_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-};
-struct Unk_8004232C_unk0_vt {
-    u8 pad_00[0x6C];
-    void (*unk6C)(void *, s8 *);
-};
-struct Unk_8004232C {
-    struct Unk_8004232C_unk0_vt *unk0;
-    u8 pad_04[0x28];
-    s32 unk2C;
-};
-s8 *strcpy(s8 *dst, s8 *src);
-struct Unk_80041F88_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-};
-struct Unk_80041F88_mgr_vt {
-    u8 pad_00[0x40];
-    void (*unk40)(void *, s32, s32, s32, s32, s32);
-};
-struct Unk_8004283C {
-    u8 pad_00[0x50];
-    Unk_8004229C_Rgb unk50;
-};
-void GsSetAmbient(s32 r, s32 g, s32 b);
-typedef struct Unk_8004208C_Src {
-    u8 unk0;
-    u8 pad_01;
-    u8 unk2;
-    u8 pad_03;
-    u16 unk4;
-    u16 pad_06;
-    u16 unk8;
-} Unk_8004208C_Src;
-typedef struct Unk_8004208C_Cfg {
-    s32 unk0;
-    s16 unk4;
-    s16 unk6;
-    u8 pad_08[0x8];
-    u16 unk10;
-    u16 unk12;
-} Unk_8004208C_Cfg;
-typedef struct Unk_8004208C {
-    s32 unk0;
-    u16 unk4;
-    u16 unk6;
-    u16 unk8;
-    u16 unkA;
-    u16 unkC;
-    u8 unkE;
-    u8 unkF;
-    u16 unk10;
-    u16 unk12;
-    u8 unk14;
-    u8 unk15;
-    u8 unk16;
+/*
+ * Six classes. The first three are scene nodes (base SceneNode_GetVtbl, vtable 0x8006B5CC, tag 4)
+ * that draw a libgs GsSPRITE cut from a TIM image; their slots 0x60 to 0x68 work on the
+ * sprite's attribute word instead of the node's.
+ *
+ *   SpriteNode    vtable g_spriteNodeVtbl 0x8006EE1C (tag 0x44), 0xA0 bytes, SpriteNode_Create.
+ *   ScreenSprite  vtable g_screenSpriteVtbl 0x8006ED4C (tag 0x144), 0xA8 bytes, ScreenSprite_Create:
+ *                 a SpriteNode attached with a 2D position (slot 0x4C) and a pivot (slot 0xC0). The
+ *                 comment keyboard's input box, the card menu's message and the list backgrounds.
+ *   Glyph         vtable g_glyphVtbl 0x8006EC74 (tag 0x1144), 0xAC bytes, Glyph_Create: a ScreenSprite
+ *                 showing one 8x8 character of a font image laid out 32 characters per row.
+ *   SeqFile       vtable g_seqFileVtbl 0x8006EED8 (tag 0xB03), 0x30 bytes, SeqFile_Create: a file
+ *                 class (loader.h) loaded with loadAsync; the music player (src/game/800398E0.c)
+ *                 hands its data to SsSeqOpen once +0x2C is set.
+ *   Clock         vtable g_clockVtbl 0x8006EF50 (tag 5), 0x1C bytes, Clock_Create: each step adds a
+ *                 tick and tells every watcher 2, or 3 when paused, 4 when stopped (scene.h).
+ *   RootNode      vtable g_rootNodeVtbl 0x8006EFAC (tag 0x14), 0x54 bytes, RootNode_Create: a scene
+ *                 node holding 3 lights (FlatLight_New) and the ambient color; the default root of a
+ *                 screen (scene.h ScreenEnv) and the base class of StageMap.
+ */
+
+/* libgs GsSPRITE */
+typedef struct Sprite {
+    s32 attribute;  /* 0x00 bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend rate, 24-25 color mode */
+    u16 x;          /* 0x04 */
+    u16 y;          /* 0x06 */
+    u16 w;          /* 0x08 */
+    u16 h;          /* 0x0A */
+    u16 tpage;      /* 0x0C */
+    u8 u;           /* 0x0E */
+    u8 v;           /* 0x0F */
+    u16 cx;         /* 0x10 CLUT */
+    u16 cy;         /* 0x12 */
+    Color3 color;   /* 0x14 0x80 neutral */
     u8 pad_17;
-    s16 unk18;
-    s16 unk1A;
-    u16 unk1C;
-    u16 unk1E;
-    s32 unk20;
-} Unk_8004208C;
+    s16 mx;         /* 0x18 rotation and scaling center */
+    s16 my;         /* 0x1A */
+    u16 scaleX;     /* 0x1C 0x1000 = 1 */
+    u16 scaleY;     /* 0x1E */
+    s32 rotate;     /* 0x20 degrees, 20.12 */
+} Sprite;
+
+/* The part of a TIM image cut into a sprite: copied whole. */
+typedef struct SpriteRect {
+    u16 u;
+    u16 v;
+    s32 w;
+    s32 h;
+} SpriteRect;
+
+/* SpriteRect as SpriteNode_FillSprite reads it: bytes for u and v, halves for w and h. */
+typedef struct SpriteRectBytes {
+    u8 u;
+    u8 pad_01;
+    u8 v;
+    u8 pad_03;
+    u16 w;
+    u16 pad_06;
+    u16 h;
+} SpriteRectBytes;
+
+/* The start of the GsIMAGE of a TIM image object (at +0x2C), as SpriteNode_FillSprite reads it. */
+typedef struct SpriteTim {
+    s32 pmode;      /* 0x00 the low 2 bits are the color mode */
+    s16 px;         /* 0x04 VRAM position of the pixels */
+    s16 py;
+    u8 pad_08[0x10 - 0x08];
+    u16 cx;         /* 0x10 VRAM position of the CLUT */
+    u16 cy;
+} SpriteTim;
+
+/* The rotation a scene node takes (base slot 0x44): 3 angles in degrees, each a fraction. */
+typedef struct Fraction {
+    s16 num;
+    s16 den;
+} Fraction;
+
+typedef struct NodeAngles {
+    Fraction x;
+    Fraction y;
+    Fraction z;
+} NodeAngles;
+
+struct SpriteNode;
+
+/* Slots of g_spriteNodeVtbl this unit calls, with the arguments it passes. */
+typedef struct SpriteNodeVtbl {
+    u8 pad_00[0x08];
+    void (*init)(void *, s32, s32, s32, s32, s32);     /* 0x08 SpriteNode_Init */
+    u8 pad_0C[0x40 - 0x0C];
+    void (*setImage)(void *, s32, s32, s32, s32, s32); /* 0x40 SpriteNode_SetImage */
+    u8 pad_44[0x4C - 0x44];
+    void (*attach)(void *, s32, void *);               /* 0x4C SceneNode_Attach (node, parent, Vec3 position) */
+} SpriteNodeVtbl;
+
+/* The first 0x18 bytes are the scene node's (scene.h SceneNode). */
+typedef struct SpriteNode {
+    SpriteNodeVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s32 parent;             /* 0x0C SceneNode *, 0 until attached */
+    u8 pad_10[0x48 - 0x10];
+    s32 tim;                /* 0x48 SpriteTim *, the GsIMAGE inside the image object */
+    SpriteRect rect;        /* 0x4C */
+    s32 unk58;              /* 0x58 0 */
+    u8 pad_5C[0x64 - 0x5C];
+    Sprite sprite;          /* 0x64 */
+    u8 pad_88[0xA0 - 0x88];
+} SpriteNode;
+
+struct ScreenSprite;
+
+typedef struct ScreenSpriteVtbl {
+    u8 pad_00[0x08];
+    void (*init)(void *, s32, SpriteRect *, s32);         /* 0x08 ScreenSprite_Init */
+    u8 pad_0C[0x40 - 0x0C];
+    void (*setup)(void *);                                /* 0x40 ScreenSprite_Setup, empty */
+    u8 pad_44[0xBC - 0x44];
+    void (*setPosition)(struct ScreenSprite *, ScreenPoint *); /* 0xBC ScreenSprite_SetPosition */
+} ScreenSpriteVtbl;
+
+typedef struct ScreenSprite {
+    ScreenSpriteVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s32 parent;             /* 0x0C */
+    u8 pad_10[0x64 - 0x10];
+    Sprite sprite;          /* 0x64 */
+    u8 pad_88[0xA0 - 0x88];
+    ScreenPoint position;   /* 0xA0 set once attached */
+} ScreenSprite;
+
+struct Glyph;
+
+typedef struct GlyphVtbl {
+    u8 pad_00[0x08];
+    void (*init)(void *, s32, s32);           /* 0x08 Glyph_Init (glyph, font, code) */
+    u8 pad_0C[0x40 - 0x0C];
+    void (*setup)(void *, s32);               /* 0x40 Glyph_Setup (glyph, code) */
+    u8 pad_44[0xC4 - 0x44];
+    void (*setCode)(struct Glyph *, u8);      /* 0xC4 Glyph_SetCode */
+} GlyphVtbl;
+
+typedef struct Glyph {
+    GlyphVtbl *vtbl;
+    u8 pad_04[0x64 - 0x04];
+    Sprite sprite;          /* 0x64 */
+    u8 pad_88[0xA8 - 0x88];
+    u8 code;                /* 0xA8 the character shown */
+} Glyph;
+
+/* A file object (loader.h) whose data is a SEQ file. */
+typedef struct SeqFile {
+    FileVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    u8 pad_0C[0x10 - 0x0C];
+    s32 data;               /* 0x10 the SEQ, given to SsSeqOpen */
+    s32 size;               /* 0x14 */
+    u8 pad_18[0x2C - 0x18];
+    s32 loaded;             /* 0x2C set by SeqFile_OnLoaded */
+} SeqFile;
+
+/* The messages a clock step sends to its watchers. */
+#define CLOCK_MSG_TICK 2
+#define CLOCK_MSG_PAUSED 3
+#define CLOCK_MSG_STOPPED 4
+
+struct ClockObject;
+
+/* scene.h Clock with all its slots and fields (see work/readable/X1-report.md, header requests). */
+typedef struct ClockObjectVtbl {
+    u8 pad_00[0x08];
+    void (*init)(void *);                     /* 0x08 Clock_Init */
+    u8 pad_0C[0x30 - 0x0C];
+    void (*notify)(void *, s32);              /* 0x30 Clock_Notify */
+    u8 pad_34[0x40 - 0x34];
+    void (*reset)(void *, s32);               /* 0x40 Clock_Reset */
+} ClockObjectVtbl;
+
+typedef struct ClockObject {
+    ClockObjectVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s32 ticks;              /* 0x0C steps counted while running */
+    s32 paused;             /* 0x10 */
+    s32 stopped;            /* 0x14 */
+    ListNode *notifyIter;   /* 0x18 the watcher list cursor while Clock_Notify runs */
+} ClockObject;
+
+typedef struct RootNodeVtbl {
+    u8 pad_00[0x08];
+    void (*init)(void *);                     /* 0x08 RootNode_Init */
+    u8 pad_0C[0x10 - 0x0C];
+    void (*watch)(void *, s32);               /* 0x10 SceneNode_Watch */
+    u8 pad_14[0x40 - 0x14];
+    void (*setup)(void *);                    /* 0x40 RootNode_Setup */
+    u8 pad_44[0xB8 - 0x44];
+    Object *(*getLight)(void *, s32);         /* 0xB8 RootNode_GetLight */
+} RootNodeVtbl;
+
+typedef struct RootNode {
+    RootNodeVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s32 parent;             /* 0x0C */
+    s32 unk10;
+    s32 *coord;             /* 0x14 its GsCOORDINATE2, the first word is flg */
+    u8 pad_18[0x44 - 0x18];
+    s32 lights[3];          /* 0x44 FlatLight_New(0 to 2), watched by the node */
+    Color3 ambient;         /* 0x50 GsSetAmbient takes it times 16 */
+} RootNode;
+
+void *Heap_Alloc(s32 size);
+ObjectVtbl *Object_GetBaseVtbl(void);
+ObjectVtbl *SceneNode_GetVtbl(void);
+FileVtbl *File_GetBackendVtbl(void);
+void List_Next(s32 *value, ListNode **iter);
+s32 Bits_SetField(s32 *word, s32 shift, s32 bits, s32 value);
+s32 FlatLight_New(s32);
 u16 GetTPage(s32 tp, s32 abr, s16 x, s16 y);
-s32 func_8004291C(s32);
-struct Unk_800426E4_ret_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-};
-struct Unk_800426E4_vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-    u8 pad_14[0x2C];
-    void (*unk40)(void *);
-};
-struct Unk_800426E4 {
-    void *unk0;
-    u8 pad_04[0x40];
-    s32 unk44[3];
-};
-struct Unk_800425EC_vt;
-struct Unk_80042550;
-struct Unk_80042550_vt {
-    u8 pad_00[0x38];
-    void (*unk38)(struct Unk_80042550 *, struct Unk_800425D8 *, s32);
-};
-struct Unk_80042550 {
-    struct Unk_80042550_vt *unk0;
-};
-typedef struct Unk_800183A0 {
-    struct Unk_800183A0 *unk0;
-    s32 unk4;
-} Unk_800183A0;
-void List_Next(s32 *arg0, Unk_800183A0 **arg1);
-extern Unk_80041C3C D_8006EC74;
-extern struct Unk_80041ED8_vt D_8006ED4C;
-extern struct Unk_80041DAC_mgr_vt D_8006EE1C;
-extern struct Unk_800422CC_vt D_8006EED8;
-typedef struct Unk_8004264C {
-    u8 pad_00[0xC];
-    s32 unkC;
-} Unk_8004264C;
-typedef struct Unk_80042658 {
-    u8 pad_00[0x10];
-    s32 unk10;
-} Unk_80042658;
-typedef struct Unk_80042664 {
-    u8 pad_00[0x10];
-    s32 unk10;
-} Unk_80042664;
-typedef struct Unk_8004266C {
-    u8 pad_00[0x10];
-    s32 unk10;
-} Unk_8004266C;
-typedef struct Unk_80042678 {
-    u8 pad_00[0x14];
-    s32 unk14;
-} Unk_80042678;
-extern struct Unk_80042400_vt D_8006EF50;
-typedef struct Unk_80042814 {
-    u8 pad_00[0x14];
-    s32 *unk14;
-} Unk_80042814;
-extern struct Unk_80042694_vt D_8006EFAC;
+void GsSetAmbient(s32 r, s32 g, s32 b);
+s8 *strcpy(s8 *dst, s8 *src);
 
-void *func_80041AB4(s32 arg0, u8 arg1) {
-    void *temp;
+GlyphVtbl *Glyph_GetVtbl(void);
+void Glyph_GetRect(SpriteRect *rect, u32 code);
+ScreenSpriteVtbl *ScreenSprite_GetVtbl(void);
+void SpriteNode_FillSprite();
+SpriteNodeVtbl *SpriteNode_GetVtbl(void);
+FileVtbl *SeqFile_GetVtbl(void);
+ClockObjectVtbl *Clock_GetVtbl(void);
+RootNodeVtbl *RootNode_GetVtbl(void);
 
-    temp = Heap_Alloc(0xAC);
-    if (temp != NULL) {
-        func_80041C3C()->unk8(temp, arg0, arg1);
-        return temp;
+extern GlyphVtbl g_glyphVtbl;
+extern SpriteRect g_glyphCellRect;      /* {0, 0, 8, 8}: the cell of character 0 */
+extern ScreenSpriteVtbl g_screenSpriteVtbl;
+extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
+extern SpriteNodeVtbl g_spriteNodeVtbl;
+extern FileVtbl g_seqFileVtbl;
+extern ClockObjectVtbl g_clockVtbl;
+extern RootNodeVtbl g_rootNodeVtbl;
+
+/* Glyph */
+
+void *Glyph_Create(s32 font, u8 code) {
+    void *glyph;
+
+    glyph = Heap_Alloc(0xAC);
+    if (glyph != NULL) {
+        Glyph_GetVtbl()->init(glyph, font, code);
+        return glyph;
     }
     return NULL;
 }
 
-void func_80041B20(void **arg0, s32 arg1, u8 arg2) {
-    struct Unk_80041C4C sp10;
-    Unk_80041C3C *vt;
+/* Slot 0x08: a screen sprite on the cell of a space (0x20), then the code. */
+void Glyph_Init(Glyph *glyph, s32 font, u8 code) {
+    SpriteRect rect;
+    GlyphVtbl *vtbl;
 
-    func_80041C4C(&sp10, 0x20);
-    func_80041ED8()->unk8(arg0, arg1, (s32)&sp10, 0);
-    vt = func_80041C3C();
-    *arg0 = vt;
-    vt->unk40(arg0, arg2);
+    Glyph_GetRect(&rect, 0x20);
+    ScreenSprite_GetVtbl()->init(glyph, font, &rect, 0);
+    vtbl = Glyph_GetVtbl();
+    glyph->vtbl = vtbl;
+    vtbl->setup(glyph, code);
 }
 
-void func_80041BAC(struct Unk_80041BAC *arg0, u8 arg1) {
-    arg0->unk0->unkC4(arg0, arg1);
+/* Slot 0x40 */
+void Glyph_Setup(Glyph *glyph, u8 code) {
+    glyph->vtbl->setCode(glyph, code);
 }
 
-void func_80041BDC(struct Unk_80041BDC *arg0, u8 arg1) {
-    u8 sp10[12];
+/* Slot 0xC4: moves the sprite to the character's cell. */
+void Glyph_SetCode(Glyph *glyph, u8 code) {
+    u8 rect[12];
 
-    arg0->unkA8 = arg1;
-    func_80041C4C(sp10, arg1);
-    arg0->unk72 = sp10[0];
-    arg0->unk73 = sp10[2];
+    glyph->code = code;
+    Glyph_GetRect((SpriteRect *)rect, code);
+    glyph->sprite.u = rect[0];
+    glyph->sprite.v = rect[2];
 }
 
-u8 func_80041C28(Unk_80041C28 *arg0) {
-    s32 buf[4];
-    return arg0->unkA8;
+/* Slot 0xC8 */
+u8 Glyph_GetCode(Glyph *glyph) {
+    s32 unused[4];
+    return glyph->code;
 }
 
-Unk_80041C3C *func_80041C3C(void) {
-    return &D_8006EC74;
+GlyphVtbl *Glyph_GetVtbl(void) {
+    return &g_glyphVtbl;
 }
 
-void func_80041C4C(struct Unk_80041C4C *arg0, u32 arg1) {
-    *arg0 = D_8006ED40;
-    arg1 = arg1 & 0xFF;
-    arg0->unk0 = arg0->unk0 + ((arg1 & 0x1F) * 8);
-    arg0->unk2 = arg0->unk2 + ((arg1 >> 5) * 8);
+/* The 8x8 cell of a character: 32 per row. */
+void Glyph_GetRect(SpriteRect *rect, u32 code) {
+    *rect = g_glyphCellRect;
+    code = code & 0xFF;
+    rect->u = rect->u + ((code & 0x1F) * 8);
+    rect->v = rect->v + ((code >> 5) * 8);
 }
 
-void *func_80041C9C(s32 arg0, s32 arg1, s32 arg2) {
-    void *temp;
+/* ScreenSprite */
 
-    temp = Heap_Alloc(0xA8);
-    if (temp != 0) {
-        func_80041ED8()->unk8(temp, arg0, arg1, arg2);
-        return temp;
+void *ScreenSprite_Create(s32 image, SpriteRect *rect, s32 arg2) {
+    void *sprite;
+
+    sprite = Heap_Alloc(0xA8);
+    if (sprite != 0) {
+        ScreenSprite_GetVtbl()->init(sprite, image, rect, arg2);
+        return sprite;
     }
     return 0;
 }
 
-void func_80041D18(struct Unk_80041D18 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    ((struct Unk_80041D18_mgr_vt *)func_800422BC())->unk8(arg0, arg1, 0, arg2, 0, arg3);
-    arg0->unk0 = (struct Unk_80041D18_vt *)func_80041ED8();
-    arg0->unk0->unk40(arg0);
+/* Slot 0x08 */
+void ScreenSprite_Init(ScreenSprite *sprite, s32 image, s32 rect, s32 arg3) {
+    SpriteNode_GetVtbl()->init(sprite, image, 0, rect, 0, arg3);
+    sprite->vtbl = ScreenSprite_GetVtbl();
+    sprite->vtbl->setup(sprite);
 }
 
-void func_80041DA4(void) {
+/* Slot 0x40 */
+void ScreenSprite_Setup(void) {
 }
 
-void func_80041DAC(struct Unk_80041DAC *arg0, s32 arg1, s32 arg2) {
-    if (arg0->unkC == 0) {
-        func_800422BC()->unk4C(arg0, arg1, D_8006EE10);
-        arg0->unk0->unkBC(arg0, arg2);
+/* Slot 0x4C: attach to the parent node at the origin, then set the 2D position. */
+void ScreenSprite_Attach(ScreenSprite *sprite, s32 parent, ScreenPoint *position) {
+    if (sprite->parent == 0) {
+        SpriteNode_GetVtbl()->attach(sprite, parent, g_screenSpriteOrigin);
+        sprite->vtbl->setPosition(sprite, position);
     }
 }
 
-void func_80041E2C(struct Unk_80041E2C_obj *arg0, struct Unk_80041E2C *arg1) {
-    if (arg0->unkC != 0) {
-        arg0->unkA0 = *arg1;
+/* Slot 0xBC */
+void ScreenSprite_SetPosition(ScreenSprite *sprite, ScreenPoint *position) {
+    if (sprite->parent != 0) {
+        sprite->position = *position;
     }
 }
 
-void func_80041E58(Unk_80041E58 *arg0, s32 arg1) {
-    if (arg0->uC != 0) {
-        switch (arg1) {
+/* Slot 0xC0: the rotation and scaling center, 0 middle, 1 left, 2 right, 3 top, 4 bottom. */
+void ScreenSprite_SetPivot(ScreenSprite *sprite, s32 pivot) {
+    if (sprite->parent != 0) {
+        switch (pivot) {
         case 0:
-            arg0->u7C = arg0->u6C >> 1;
-            arg0->u7E = arg0->u6E >> 1;
+            sprite->sprite.mx = sprite->sprite.w >> 1;
+            sprite->sprite.my = sprite->sprite.h >> 1;
             break;
         case 1:
-            arg0->u7C = 0;
+            sprite->sprite.mx = 0;
             break;
         case 2:
-            arg0->u7C = arg0->u6C;
+            sprite->sprite.mx = sprite->sprite.w;
             break;
         case 3:
-            arg0->u7E = 0;
+            sprite->sprite.my = 0;
             break;
         case 4:
-            arg0->u7E = arg0->u6E;
+            sprite->sprite.my = sprite->sprite.h;
             break;
         }
     }
 }
 
-struct Unk_80041ED8_vt *func_80041ED8(void) {
-    return &D_8006ED4C;
+ScreenSpriteVtbl *ScreenSprite_GetVtbl(void) {
+    return &g_screenSpriteVtbl;
 }
 
-void *func_80041EE8(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    void *temp;
+/* SpriteNode */
 
-    temp = Heap_Alloc(0xA0);
-    if (temp != 0) {
-        ((struct Unk_80041D18_mgr_vt *)func_800422BC())->unk8(temp, arg0, arg1, arg2, arg3, arg4);
-        return temp;
+void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 arg3, s32 arg4) {
+    void *node;
+
+    node = Heap_Alloc(0xA0);
+    if (node != 0) {
+        SpriteNode_GetVtbl()->init(node, image, blendRate, rect, arg3, arg4);
+        return node;
     }
     return 0;
 }
 
-void func_80041F88(void **arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    void *temp;
+/* Slot 0x08 */
+void SpriteNode_Init(SpriteNode *node, s32 image, s32 blendRate, s32 rect, s32 arg4, s32 arg5) {
+    SpriteNodeVtbl *vtbl;
 
-    ((struct Unk_80041F88_vt *)func_8001E57C())->unk8(arg0);
-    temp = func_800422BC();
-    *arg0 = temp;
-    ((struct Unk_80041F88_mgr_vt *)temp)->unk40(arg0, arg1, arg2, arg3, arg4, arg5);
+    SceneNode_GetVtbl()->init(node);
+    vtbl = SpriteNode_GetVtbl();
+    node->vtbl = vtbl;
+    vtbl->setImage(node, image, blendRate, rect, arg4, arg5);
 }
 
-void func_8004202C(struct Unk_8004202C *arg0, s32 arg1, s32 arg2, Unk_8004202C_Src *arg3) {
-    arg0->unk48 = arg1 + 0x2C;
-    arg0->unk4C = *arg3;
-    func_8004208C(arg0->unk64, arg2, arg3, arg0->unk48);
-    arg0->unk58 = 0;
+/* Slot 0x40 (node, image object, blend rate, rect) */
+void SpriteNode_SetImage(SpriteNode *node, s32 image, s32 blendRate, SpriteRect *rect) {
+    node->tim = image + 0x2C;
+    node->rect = *rect;
+    SpriteNode_FillSprite(&node->sprite, blendRate, rect, node->tim);
+    node->unk58 = 0;
 }
 
-void func_8004208C(Unk_8004208C *dst, s32 arg1, Unk_8004208C_Src *src, Unk_8004208C_Cfg *cfg) {
-    s32 temp_a0;
+/* Fills the sprite for the rect of the TIM: centered pivot, white, scale 1, no rotation. */
+void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes *rect, SpriteTim *tim) {
+    s32 colorMode;
 
-    temp_a0 = cfg->unk0;
-    dst->unk4 = 0;
-    dst->unk6 = 0;
-    temp_a0 &= 3;
-    dst->unk0 = temp_a0 << 0x18;
-    dst->unk8 = src->unk4;
-    dst->unkA = src->unk8;
-    dst->unk18 = dst->unk8 >> 1;
-    dst->unk1A = dst->unkA >> 1;
-    dst->unkC = GetTPage(temp_a0, arg1, cfg->unk4, cfg->unk6);
-    dst->unkE = src->unk0;
-    dst->unkF = src->unk2;
-    dst->unk10 = cfg->unk10;
-    dst->unk12 = cfg->unk12;
-    dst->unk16 = 0x80;
-    dst->unk15 = 0x80;
-    dst->unk14 = 0x80;
-    dst->unk20 = 0;
-    dst->unk1C = 0x1000;
-    dst->unk1E = 0x1000;
+    colorMode = tim->pmode;
+    sprite->x = 0;
+    sprite->y = 0;
+    colorMode &= 3;
+    sprite->attribute = colorMode << 0x18;
+    sprite->w = rect->w;
+    sprite->h = rect->h;
+    sprite->mx = sprite->w >> 1;
+    sprite->my = sprite->h >> 1;
+    sprite->tpage = GetTPage(colorMode, blendRate, tim->px, tim->py);
+    sprite->u = rect->u;
+    sprite->v = rect->v;
+    sprite->cx = tim->cx;
+    sprite->cy = tim->cy;
+    sprite->color.b = 0x80;
+    sprite->color.g = 0x80;
+    sprite->color.r = 0x80;
+    sprite->rotate = 0;
+    sprite->scaleX = 0x1000;
+    sprite->scaleY = 0x1000;
 }
 
-void func_80042170(struct Unk_80042170 *arg0, s32 arg1, struct Unk_80042170_src *arg2) {
-    s32 temp_a0_2;
+/* Slot 0x44: a sprite only turns around z; assign 0 adds to the current angle. */
+void SpriteNode_SetRotation(SpriteNode *node, s32 assign, NodeAngles *angles) {
+    s32 rotate;
 
-    temp_a0_2 = ((arg2->unk8 / arg2->unkA) << 12) + (((arg2->unk8 % arg2->unkA) << 12) / arg2->unkA);
-    if (arg1 != 0) {
-        arg0->unk84 = temp_a0_2;
+    rotate = ((angles->z.num / angles->z.den) << 12) + (((angles->z.num % angles->z.den) << 12) / angles->z.den);
+    if (assign != 0) {
+        node->sprite.rotate = rotate;
         return;
     }
-    arg0->unk84 = temp_a0_2 + arg0->unk84;
+    node->sprite.rotate = rotate + node->sprite.rotate;
 }
 
-s32 func_8004220C(u8 *arg0, s32 arg1) {
-    return func_8001EDAC((s32 *)(arg0 + 0x64), 0x1F, 1, arg1 == 0) == 0;
+/* Slot 0x60: returns whether it was visible. */
+s32 SpriteNode_SetVisible(SpriteNode *node, s32 visible) {
+    return Bits_SetField(&node->sprite.attribute, 0x1F, 1, visible == 0) == 0;
 }
 
-void func_8004223C(u8 *arg0, s32 arg1) {
-    func_8001EDAC((s32 *)(arg0 + 0x64), 0x1E, 1, arg1 != 0);
+/* Slot 0x64 */
+void SpriteNode_SetSemiTrans(SpriteNode *node, s32 semiTrans) {
+    Bits_SetField(&node->sprite.attribute, 0x1E, 1, semiTrans != 0);
 }
 
-void func_80042268(u8 *arg0, s32 arg1) {
-    func_8001EDAC((s32 *)(arg0 + 0x64), 0x1C, 2, arg1);
+/* Slot 0x68 */
+void SpriteNode_SetBlendRate(SpriteNode *node, s32 blendRate) {
+    Bits_SetField(&node->sprite.attribute, 0x1C, 2, blendRate);
 }
 
+/* Slot 0x98, empty as in the base */
 void func_80042294(void) {
 }
 
-void func_8004229C(struct Unk_8004229C *arg0, Unk_8004229C_Rgb *arg1) {
-    arg0->unk78 = *arg1;
+/* Slot 0xB8 */
+void SpriteNode_SetColor(SpriteNode *node, Color3 *color) {
+    node->sprite.color = *color;
 }
 
-struct Unk_80041DAC_mgr_vt *func_800422BC(void) {
-    return &D_8006EE1C;
+SpriteNodeVtbl *SpriteNode_GetVtbl(void) {
+    return &g_spriteNodeVtbl;
 }
 
-s32 func_800422CC(s32 arg0) {
-    void *temp;
+/* SeqFile */
 
-    temp = Heap_Alloc(0x30);
-    if (temp != 0) {
-        func_800423F0()->unk8(temp, arg0);
-        return (s32)temp;
+s32 SeqFile_Create(s32 path) {
+    void *file;
+
+    file = Heap_Alloc(0x30);
+    if (file != 0) {
+        SeqFile_GetVtbl()->init(file, path);
+        return (s32)file;
     }
     return 0;
 }
 
-void func_8004232C(struct Unk_8004232C *arg0, s8 *arg1) {
-    char sp10[0x20];
+/* Slot 0x08: starts loading the path, copied first. */
+void SeqFile_Init(SeqFile *file, s8 *path) {
+    char name[0x20];
 
-    ((struct Unk_8004232C_vt *)func_80026CAC())->unk8(arg0);
-    arg0->unk0 = ((struct Unk_8004232C_unk0_vt *)func_800423F0());
-    arg0->unk2C = 0;
-    if (arg1 != NULL) {
-        strcpy(sp10, arg1);
-        arg0->unk0->unk6C(arg0, sp10);
+    File_GetBackendVtbl()->init(file);
+    file->vtbl = SeqFile_GetVtbl();
+    file->loaded = 0;
+    if (path != NULL) {
+        strcpy(name, path);
+        file->vtbl->loadAsync(file, name);
     }
 }
 
-void func_800423A8(struct Unk_800423A8 *arg0) {
-    arg0->unk2C = 0;
-    func_80026CAC()->unkC(arg0);
+/* Slot 0x0C */
+void SeqFile_Destroy(SeqFile *file) {
+    file->loaded = 0;
+    File_GetBackendVtbl()->destroy(file);
 }
 
-void func_800423E4(struct Unk_800423A8 *arg0) {
-    arg0->unk2C = 1;
+/* Slot 0x64 */
+void SeqFile_OnLoaded(SeqFile *file) {
+    file->loaded = 1;
 }
 
-struct Unk_800422CC_vt *func_800423F0(void) {
-    return &D_8006EED8;
+FileVtbl *SeqFile_GetVtbl(void) {
+    return &g_seqFileVtbl;
 }
 
-void *func_80042400(void) {
-    void *temp;
+/* Clock */
 
-    temp = Heap_Alloc(0x1C);
-    if (temp != 0) {
-        func_80042684()->unk8(temp);
-        return temp;
+void *Clock_Create(void) {
+    void *clock;
+
+    clock = Heap_Alloc(0x1C);
+    if (clock != 0) {
+        Clock_GetVtbl()->init(clock);
+        return clock;
     }
     return 0;
 }
 
-void func_80042450(void **arg0) {
-    struct Unk_80042400_vt *temp_v0;
+/* Slot 0x08 */
+void Clock_Init(ClockObject *clock) {
+    ClockObjectVtbl *vtbl;
 
-    Object_GetBaseVtbl()->unk8(arg0);
-    temp_v0 = func_80042684();
-    *arg0 = temp_v0;
-    temp_v0->unk40(arg0, 0);
+    Object_GetBaseVtbl()->init(clock);
+    vtbl = Clock_GetVtbl();
+    clock->vtbl = vtbl;
+    vtbl->reset(clock, 0);
 }
 
-void func_800424A8(s32 arg0) {
-    Object_GetBaseVtbl()->unkC(arg0);
+/* Slot 0x0C */
+void Clock_Destroy(ClockObject *clock) {
+    Object_GetBaseVtbl()->destroy(clock);
 }
 
-void func_800424E0(struct Unk_800424E0 *arg0, s32 arg1) {
-    struct Unk_800424E0_Node *node;
+/* Slot 0x24: a watcher removed while Clock_Notify runs moves its cursor past it. */
+void Clock_RemoveWatcher(ClockObject *clock, s32 watcher) {
+    ListNode *node;
 
-    node = arg0->unk18;
-    if (node != NULL && arg1 == node->unk4) {
-        arg0->unk18 = node->unk0;
+    node = clock->notifyIter;
+    if (node != NULL && watcher == node->value) {
+        clock->notifyIter = node->next;
     }
-    Object_GetBaseVtbl()->unk24(arg0, arg1);
+    Object_GetBaseVtbl()->removeWatcher(clock, watcher);
 }
 
-void func_80042550(struct Unk_800425D8 *arg0, s32 arg1) {
-    struct Unk_80042550 *sp10;
+/* Slot 0x30: Object_Notify with its cursor in the clock. */
+void Clock_Notify(ClockObject *clock, s32 message) {
+    Object *watcher;
 
-    arg0->unk18 = arg0->unk8;
-    List_Next((s32 *)&sp10, (Unk_800183A0 **)&arg0->unk18);
-    while (sp10 != NULL) {
-        sp10->unk0->unk38(sp10, arg0, arg1);
-        List_Next((s32 *)&sp10, (Unk_800183A0 **)&arg0->unk18);
+    clock->notifyIter = clock->watchers;
+    List_Next((s32 *)&watcher, &clock->notifyIter);
+    while (watcher != NULL) {
+        watcher->vtbl->onNotify(watcher, clock, message);
+        List_Next((s32 *)&watcher, &clock->notifyIter);
     }
-    arg0->unk18 = 0;
+    clock->notifyIter = 0;
 }
 
-void func_800425D8(struct Unk_800425D8 *arg0, s32 arg1) {
-    arg0->unkC = arg1;
-    arg0->unk14 = 0;
-    arg0->unk10 = 0;
-    arg0->unk18 = 0;
+/* Slot 0x40 */
+void Clock_Reset(ClockObject *clock, s32 ticks) {
+    clock->ticks = ticks;
+    clock->stopped = 0;
+    clock->paused = 0;
+    clock->notifyIter = 0;
 }
 
-void func_800425EC(struct Unk_800425D8 *arg0) {
-    s32 var_a1 = 4;
+/* Slot 0x44 */
+void Clock_Step(ClockObject *clock) {
+    s32 message = CLOCK_MSG_STOPPED;
 
-    if (arg0->unk14 == 0) {
-        var_a1 = 3;
-        if (arg0->unk10 == 0) {
-            var_a1 = 2;
-            arg0->unkC++;
+    if (clock->stopped == 0) {
+        message = CLOCK_MSG_PAUSED;
+        if (clock->paused == 0) {
+            message = CLOCK_MSG_TICK;
+            clock->ticks++;
         }
     }
-    arg0->unk0->unk30(arg0, var_a1);
+    clock->vtbl->notify(clock, message);
 }
 
-s32 func_8004264C(Unk_8004264C *arg0) {
-    return arg0->unkC;
+/* Slot 0x48 */
+s32 Clock_GetTicks(ClockObject *clock) {
+    return clock->ticks;
 }
 
-void func_80042658(Unk_80042658 *arg0) {
-    arg0->unk10 = 1;
+/* Slot 0x4C */
+void Clock_Pause(ClockObject *clock) {
+    clock->paused = 1;
 }
 
-void func_80042664(Unk_80042664 *arg0) {
-    arg0->unk10 = 0;
+/* Slot 0x50 */
+void Clock_Resume(ClockObject *clock) {
+    clock->paused = 0;
 }
 
-s32 func_8004266C(Unk_8004266C *arg0) {
-    return arg0->unk10;
+/* Slot 0x54 */
+s32 Clock_IsPaused(ClockObject *clock) {
+    return clock->paused;
 }
 
-void func_80042678(Unk_80042678 *arg0) {
-    arg0->unk14 = 1;
+/* Slot 0x58 */
+void Clock_Stop(ClockObject *clock) {
+    clock->stopped = 1;
 }
 
-struct Unk_80042400_vt *func_80042684(void) {
-    return &D_8006EF50;
+ClockObjectVtbl *Clock_GetVtbl(void) {
+    return &g_clockVtbl;
 }
 
-void *func_80042694(void) {
-    void *temp;
+/* RootNode */
 
-    temp = Heap_Alloc(0x54);
-    if (temp != 0) {
-        func_800428E4()->unk8(temp);
-        return temp;
+void *RootNode_Create(void) {
+    void *root;
+
+    root = Heap_Alloc(0x54);
+    if (root != 0) {
+        RootNode_GetVtbl()->init(root);
+        return root;
     }
     return 0;
 }
 
-void func_800426E4(struct Unk_800426E4 *arg0) {
+/* Slot 0x08: makes and watches its 3 lights. */
+void RootNode_Init(RootNode *root) {
     s32 i;
-    s32 *p;
+    s32 *light;
 
-    ((struct Unk_800426E4_ret_vt *)func_8001E57C())->unk8(arg0);
-    arg0->unk0 = func_800428E4();
-    for (i = 0, p = arg0->unk44; i < 3; i++, p++) {
-        *p = func_8004291C(i);
-        ((struct Unk_800426E4_vt *)arg0->unk0)->unk10(arg0, *p);
+    SceneNode_GetVtbl()->init(root);
+    root->vtbl = RootNode_GetVtbl();
+    for (i = 0, light = root->lights; i < 3; i++, light++) {
+        *light = FlatLight_New(i);
+        root->vtbl->watch(root, *light);
     }
-    ((struct Unk_800426E4_vt *)arg0->unk0)->unk40(arg0);
+    root->vtbl->setup(root);
 }
 
-void func_80042790(void **arg0) {
+/* Slot 0x0C: deletes its lights. */
+void RootNode_Destroy(RootNode *root) {
     s32 i;
-    void **child;
+    Object *light;
 
     for (i = 0; i < 3; i++) {
-        child = ((Unk_80042790_vt *)*arg0)->unkB8(arg0, i);
-        ((Unk_80042790_vt *)*child)->unk4(child);
+        light = root->vtbl->getLight(root, i);
+        light->vtbl->delete_(light);
     }
-    func_8001E57C()->unkC(arg0);
+    SceneNode_GetVtbl()->destroy(root);
 }
 
-void func_80042814(Unk_80042814 *arg0) {
-    *arg0->unk14 = 0;
+/* Slot 0x40: only clears the flg word of its GsCOORDINATE2 (the base SceneNode_Reset resets the node). */
+void RootNode_Setup(RootNode *root) {
+    *root->coord = 0;
 }
 
+/* Slot 0x9C, empty */
 void func_80042820(void) {
 }
 
-s32 func_80042828(struct Unk_80042828 *arg0, s32 arg1) {
-    return arg0->unk44[arg1];
+/* Slot 0xB8 */
+s32 RootNode_GetLight(RootNode *root, s32 index) {
+    return root->lights[index];
 }
 
-void func_8004283C(struct Unk_8004283C *arg0, Unk_8004229C_Rgb *arg1, s32 arg2) {
-    Unk_8004229C_Rgb sp10;
+/* Slot 0xBC: swap != 0 returns the previous color in *color. */
+void RootNode_SetAmbient(RootNode *root, Color3 *color, s32 swap) {
+    Color3 previous;
 
-    if (arg2 != 0) {
-        sp10 = arg0->unk50;
-        arg0->unk50 = *arg1;
-        *arg1 = sp10;
+    if (swap != 0) {
+        previous = root->ambient;
+        root->ambient = *color;
+        *color = previous;
     } else {
-        arg0->unk50 = *arg1;
+        root->ambient = *color;
     }
-    GsSetAmbient((u8)arg0->unk50.r * 0x10, (u8)arg0->unk50.g * 0x10, (u8)arg0->unk50.b * 0x10);
+    GsSetAmbient((u8)root->ambient.r * 0x10, (u8)root->ambient.g * 0x10, (u8)root->ambient.b * 0x10);
 }
 
-struct Unk_80042694_vt *func_800428E4(void) {
-    return &D_8006EFAC;
+RootNodeVtbl *RootNode_GetVtbl(void) {
+    return &g_rootNodeVtbl;
 }

@@ -146,7 +146,7 @@ s32 *func_8005BF48(void);
 extern s32 D_80087EA4[];
 extern void func_8002CD08(s32, void *);
 extern s8 g_moodColors[][3];
-void func_8001E6F8(DreamSys *dreamSys, s32 *arg1);
+void SceneNode_GetRotation(DreamSys *dreamSys, s32 *arg1);
 s32 func_8005BCF8(void *arg0, s16 *arg1, s32 arg2);
 s32 func_8005BD3C(u8 **arg0, u8 **arg1, Unk_8005BE28 *arg2);
 s32 Day_FindSpecial(void *arg0, s32 arg1);
@@ -180,7 +180,7 @@ extern u8 D_80087EFC[];
 void func_8005AF64(DreamSys *, s16 *, s16 *);
 extern u8 D_8008ABAC[];
 extern s32 D_8008ABB4[];
-void *func_800404D0(s32 arg0, s32 arg1, s32 arg2);
+void *Box_Create(s32 arg0, s32 arg1, s32 arg2);
 typedef struct Unk_80058228 {
     u8 pad_00[0xA8];
     void *unkA8[100];
@@ -197,7 +197,7 @@ typedef struct Unk_8005942C_Vec {
     s32 z;
 } Unk_8005942C_Vec;
 extern s32 D_80087EE8[];
-extern void func_8001E600(void *arg0, void *arg1, void *arg2, s32 arg3);
+extern void SceneNode_LocalToWorld(void *arg0, void *arg1, void *arg2, s32 arg3);
 s32 Entity_IsWithinBox(s32 *arg0, s32 arg1, s32 *arg2);
 s32 func_8005950C(Unk_8005B5A4 *arg0, Unk_8005B5A4 *arg1, s32 arg2);
 typedef struct Unk_800580E0_Vt {
@@ -398,11 +398,11 @@ void Graph_CreateSprites(Unk_80058228 *arg0) {
     s32 i;
     s32 step;
 
-    arg0->unkA8[0] = func_800404D0((s32)D_8008ABAC, (s32)D_8008ABB4, 0);
+    arg0->unkA8[0] = Box_Create((s32)D_8008ABAC, (s32)D_8008ABB4, 0);
     sp = D_8008ABB8;
     i = 1;
     do {
-        arg0->unkA8[i] = func_800404D0((s32)D_8008ABAC, (s32)&sp, 0);
+        arg0->unkA8[i] = Box_Create((s32)D_8008ABAC, (s32)&sp, 0);
         step = (i < 7) ? 0x14 : 1;
         i++;
         sp.c[0] -= step;
@@ -799,7 +799,7 @@ void func_800591B4(DreamSys *dreamSys, s32 arg1, s32 arg2) {
     dreamSys->unk90C = 0;
     dreamSys->linkStep = 0;
     dreamSys->unk78 = 0;
-    func_8001E6F8(dreamSys, (s32 *)&sp18);
+    SceneNode_GetRotation(dreamSys, (s32 *)&sp18);
     sp18.unk8 = 0;
     sp18.unkA = 1;
     dreamSys->vtbl->unk44(dreamSys, 1, &sp18);
@@ -865,7 +865,7 @@ s32 func_8005942C(DreamSys *dreamSys, Unk_8005942C_Vec *arg1, s32 arg2, s32 *arg
     s32 *temp;
 
     D_80087EE8[0] = arg2;
-    func_8001E600(dreamSys, &sp10, &D_80087EE8[-2], 0);
+    SceneNode_LocalToWorld(dreamSys, &sp10, &D_80087EE8[-2], 0);
     temp_v0 = func_8005950C((Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x14), (Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x20), arg2);
     if (dreamSys->unkC != 0) {
         temp = (s32 *)(dreamSys->unk14.bytes + 0x38);
@@ -1426,7 +1426,7 @@ s32 func_8005A700(DreamSys *dreamSys, s16 *arg1) {
     if (temp < 0) {
         return 0;
     }
-    func_8001E6F8(dreamSys, sp10);
+    SceneNode_GetRotation(dreamSys, sp10);
     if (func_8005BD3C(&dreamSys->unk888, &dreamSys->unk884, sp10) == 0) {
         return 0;
     }
@@ -1508,7 +1508,7 @@ s32 func_8005A9CC(DreamSys *dreamSys, DreamPlace *target) {
             return 0;
         }
         if (func_8005BFDC(&dreamSys->place, target, dreamSys->stage) >= 0) {
-            func_8001E6F8(dreamSys, sp10);
+            SceneNode_GetRotation(dreamSys, sp10);
             if (func_8005C02C((u8 **)&dreamSys->unk888, (u8 **)&dreamSys->unk884, (Unk_8005BE28 *)sp10) != 0 && dreamSys->unkA8 != 0) {
                 dreamSys->linkTarget = *target;
                 dreamSys->unk908 = 1;
@@ -1876,7 +1876,7 @@ void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
         if (rand() % 3 == 0) {
             player = dreamSys->player;
             place = player->vt->unk10C(player, 0, 0);
-            func_8001E6F8(dreamSys, rotation);
+            SceneNode_GetRotation(dreamSys, rotation);
             dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, place, rotation, arg1, length, dreamSys->day);
         }
     }

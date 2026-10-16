@@ -27,7 +27,7 @@ typedef struct SoundBank {
     SoundBankVtbl *vtbl;
 } SoundBank;
 
-/* An image loaded from a TIM (func_8003B39C, src/game/8003B39C.c): a screen's picture or a menu font. */
+/* An image loaded from a TIM (Tim_New, src/game/8003B39C.c): a screen's picture or a menu font. */
 typedef struct ImageVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();
@@ -96,14 +96,14 @@ void SetFarColor(u8, u8, u8);
 void SetFogNear(s32, s32);
 void func_8003FB0C(s32);
 void func_8003FBE4(void *packets);
-SceneNode *func_8001CA94(void);
-void *func_80042400(void);
-void *func_80042694(void);
+SceneNode *SceneNode_New(void);
+void *Clock_Create(void);
+void *RootNode_Create(void);
 SoundBank *Sound_CreateBank(char *path);
-Image *func_8003B39C(char *path);
-void *Effect_Create(s32, s32, s32);
-extern void *func_800404D0(s32, s32, s32);
-Widget *func_800408CC(Image *font, s32 length, u8 *text);
+Image *Tim_New(char *path);
+void *Fade_Create(s32, s32, s32);
+extern void *Box_Create(s32, s32, s32);
+Widget *Label_Create(Image *font, s32 length, u8 *text);
 ScreenBg *Bg_Create(ScreenBg *, s32);
 ScreenBg *BgMap_Create(s32, ScreenBg *);
 ScreenBg *BgCells_Create(s32);
@@ -705,7 +705,7 @@ void MenuScreen_SetPicture(MenuScreen *screen, char *path, Image *image) {
             picture = screen->picture;
             picture->vtbl->delete_(picture);
         }
-        loaded = func_8003B39C(path);
+        loaded = Tim_New(path);
         screen->picture = loaded;
         loaded->vtbl->unk78(loaded);
         picture = screen->picture;
@@ -741,7 +741,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
         screen->options = Heap_Alloc(size);
         screen->itemCount = count;
         if (menu->fontPath != 0) {
-            font = func_8003B39C(menu->fontPath);
+            font = Tim_New(menu->fontPath);
             font->vtbl->unk78(font);
             font->vtbl->unk5C(font);
         } else {
@@ -752,7 +752,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
         if (*text != 0) {
             do {
                 options = menu->options[i];
-                *items = func_800408CC(font, strlen(*text), *text);
+                *items = Label_Create(font, strlen(*text), *text);
                 items++;
                 if (options != 0) {
                     screen->selected = i;
@@ -762,7 +762,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
                 i++;
             } while (*text != 0);
         }
-        screen->optionBox = func_800404D0((s32)D_8008A8E8, (s32)D_8008A8F0, 0);
+        screen->optionBox = Box_Create((s32)D_8008A8E8, (s32)D_8008A8F0, 0);
         menu->font = font;
     }
 }
@@ -921,7 +921,7 @@ void MenuScreen_MakeOptions(MenuScreen *screen, OptionListDef *list, Image *font
     text = list->texts;
     while (*text != 0) {
         length = strlen(*text);
-        *texts++ = func_800408CC(font, length, *text);
+        *texts++ = Label_Create(font, length, *text);
         text++;
     }
 }
@@ -1174,12 +1174,12 @@ void Screen_Run(Screen *screen, ScreenEnv *env, s32 noLoop) {
     vtbl = screen->vtbl;
     object = (s32)env->clock;
     if (object == 0) {
-        object = (s32)func_80042400();
+        object = (s32)Clock_Create();
     }
     screen->clock = (Clock *)object;
     object = (s32)env->root;
     if (object == 0) {
-        object = (s32)func_80042694();
+        object = (s32)RootNode_Create();
     }
     screen->root = (SceneNode *)object;
     object = (s32)env->view;
@@ -1304,8 +1304,8 @@ void View_Init(View *view) {
     view->vtbl = View_GetVtbl();
     view->display = 0;
     view->node = 0;
-    view->root = func_8001CA94();
-    overlay = Effect_Create((s32)&D_8008A90C, 0, 0);
+    view->root = SceneNode_New();
+    overlay = Fade_Create((s32)&D_8008A90C, 0, 0);
     view->overlay = overlay;
     overlay->vtbl->show(overlay, view->root, &D_8008A904);
     view->vtbl->reset(view);

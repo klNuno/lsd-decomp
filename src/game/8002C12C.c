@@ -9,7 +9,7 @@
 /* Heap and root object services. */
 void *Heap_Alloc(s32 size);
 void Heap_Free(s32 block);
-void *func_80026CAC(void);
+void *File_GetBackendVtbl(void);
 
 /* The object that func_8002C238 marks: only 0x30 is used here. */
 typedef struct RootObject {
@@ -17,7 +17,7 @@ typedef struct RootObject {
     s32 unk_30;
 } RootObject;
 
-/* Vtable of the root object class returned by func_80026CAC (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
+/* Vtable of the root object class returned by File_GetBackendVtbl (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
 typedef struct ObjectRootVtbl {
     u8 pad_00[0x8];
     void (*init)(void *object);     /* 0x08 */
@@ -213,14 +213,14 @@ s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
 void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
 
 /* Other functions of the game code used here. */
-s8 *func_800270C4(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
-s32 func_8003A05C(void);
-void func_800329D8(void);
-void func_80032A7C(void);
-void func_80032368(void);
-s32 func_8003A068(void);
-void func_80032588(s32 arg0);
-void func_80032998(void);
+s8 *File_JoinPath(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
+s32 Bgm_IsActive(void);
+void Seq_StopTimer(void);
+void Spu_Quit(void);
+void Spu_ResetCold(void);
+s32 Bgm_GetSeqTable(void);
+void Seq_SetRate(s32 arg0);
+void Seq_StartTimer(void);
 s32 strlen(u8 *s);
 s8 *strcpy(s8 *dst, s8 *src);
 s32 func_8002C12C(s32 initParam) {
@@ -235,7 +235,7 @@ s32 func_8002C12C(s32 initParam) {
 }
 
 void func_8002C18C(ModelSet *modelSet, s32 initParam) {
-    ((ObjectRootVtbl *)func_80026CAC())->init(modelSet);
+    ((ObjectRootVtbl *)File_GetBackendVtbl())->init(modelSet);
     modelSet->vt = func_8002C3A8();
     modelSet->unk_2C = 0;
     modelSet->unk_30 = 0;
@@ -245,12 +245,12 @@ void func_8002C18C(ModelSet *modelSet, s32 initParam) {
 }
 
 void func_8002C200(s32 object) {
-    ((ObjectRootVtbl *)func_80026CAC())->destroy(object);
+    ((ObjectRootVtbl *)File_GetBackendVtbl())->destroy(object);
 }
 
 void func_8002C238(RootObject *object) {
     object->unk_30 = 1;
-    ((ObjectRootVtbl *)func_80026CAC())->unk_64(object);
+    ((ObjectRootVtbl *)File_GetBackendVtbl())->unk_64(object);
 }
 
 s32 func_8002C278(GridContext *context, GridItem *item, s32 cellIndex) {
@@ -374,7 +374,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     s8 fullPath[0x20];
     s8 *pathCopy;
 
-    ((ObjectRootVtbl *)func_80026CAC())->init(bank);
+    ((ObjectRootVtbl *)File_GetBackendVtbl())->init(bank);
     bank->vt = Sound_GetBankClass();
     bank->toneData = 0;
     bank->programTones = 0;
@@ -385,13 +385,13 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     bank->transferring = 0;
     bank->path = 0;
     if (D_8008A8B8 == 0) {
-        func_80032368();
+        Spu_ResetCold();
         D_8008A8B8 = 1;
-        SsSetTableSize((s8 *)func_8003A068(), 2, 1);
+        SsSetTableSize((s8 *)Bgm_GetSeqTable(), 2, 1);
     }
     if (D_8008A8BC == 0) {
         D_8008A8CC = 0x3C;
-        func_80032588(1);
+        Seq_SetRate(1);
         D_8008A8BC = 1;
     }
     g_bankCount += 1;
@@ -400,7 +400,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
         if (pathCopy != NULL) {
             bank->path = (s32)pathCopy;
             strcpy(pathCopy, path);
-            func_800270C4(fullPath, pathCopy, (s8 *)0, D_8008A8D0);
+            File_JoinPath(fullPath, pathCopy, (s8 *)0, D_8008A8D0);
             bank->state = 1;
             bank->vt->unk_6C(bank, fullPath);
         }
@@ -412,17 +412,17 @@ void Sound_DestroyBank(SoundBank *bank) {
     if (--g_bankCount < 0) {
         g_bankCount = 0;
     }
-    if (g_bankCount == 0 && func_8003A05C() == 0) {
+    if (g_bankCount == 0 && Bgm_IsActive() == 0) {
         D_8008A8B8 = 0;
         D_8008A8C0 = 0;
         D_8008A8BC = 0;
-        func_800329D8();
-        func_80032A7C();
+        Seq_StopTimer();
+        Spu_Quit();
     }
     Heap_Free(bank->toneData);
     Heap_Free(bank->programTones);
     Heap_Free(bank->path);
-    ((ObjectRootVtbl *)func_80026CAC())->destroy((s32)bank);
+    ((ObjectRootVtbl *)File_GetBackendVtbl())->destroy((s32)bank);
 }
 
 void Sound_UpdateBank(SoundBank *bank) {
@@ -436,7 +436,7 @@ void Sound_UpdateBank(SoundBank *bank) {
         case 1:
             if (bank->unk_24 & 0x200) {
                 bank->vabId = SsVabOpenHead((void *)bank->vabBuffer, -1);
-                func_800270C4((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, D_8008A8D4);
+                File_JoinPath((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, D_8008A8D4);
                 bank->state = 6;
                 oldVabBuffer = bank->vabBuffer;
                 bank->vabBuffer = 0;
@@ -512,7 +512,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
         }
     }
     if (D_8008A8C0 == 0) {
-        func_80032998();
+        Seq_StartTimer();
         SsSetMVol(0x78, 0x78);
         D_8008A8C0 = 1;
     }
@@ -581,7 +581,7 @@ s32 Sound_GetBankCount(void) {
     return g_bankCount;
 }
 
-s32 func_8002CC28(void) {
+s32 Sound_GetTickRate(void) {
     return D_8008A8CC;
 }
 

@@ -1,35 +1,40 @@
 #include "common.h"
 
 struct Heap;
-typedef struct Unk_800118DC_Vtbl {
-    u8 pad0[0x44];
-    void (*unk44)(void *, void *, s32);
-    u8 pad1[0x4];
-    void (*unk4C)(void *);
-} Unk_800118DC_Vtbl;
-typedef struct Unk_800118DC_Obj {
-    Unk_800118DC_Vtbl *vt;
-} Unk_800118DC_Obj;
+struct Display;
+
+/* The scene vtable (g_sceneVtbl, src/game/80025F7C.c). Only the two slots main calls are named. */
+typedef struct SceneVtbl {
+    u8 pad_00[0x44];
+    void (*unk_44)(void *, void *, s32); /* 0x44 called with the scene, the display and Pad_New(0, 0) */
+    u8 pad_48[0x4];
+    void (*unk_4C)(void *);              /* 0x4C called with the scene alone */
+} SceneVtbl;
+
+/* The scene as main sees it: only the vtable pointer at 0x00 (the full layout is in src/game/80025F7C.c). */
+typedef struct Scene {
+    SceneVtbl *vtbl;
+} Scene;
+
 struct Heap *g_mainHeap;
-Unk_800118DC_Obj *D_8008AC20;
-extern s32 D_80066828[];
-void __main(void);
+Scene *g_scene;
+extern s32 g_sceneSettings[];
 void SetMem(s32);
 struct Heap *Heap_Create(u32, s32);
 void Heap_SetCurrent(struct Heap *);
-s32 func_80025F7C(s32);
-void *func_800206E0(void);
-s32 func_80025B34(s32, s32);
+s32 Scene_New(s32);
+struct Display *Display_New(void);
+s32 Pad_New(s32, s32);
 
-void func_800118DC(void) {
-    void *temp_s0;
+/* The boot entry. gcc inserts the __main() call (constructors) itself at the top of main. Makes the boot heap and the scene, then calls the scene's slots 0x44 and 0x4C. */
+void main(void) {
+    struct Display *display;
 
-    __main();
     SetMem(2);
     g_mainHeap = Heap_Create(0x166C00, 0);
     Heap_SetCurrent(g_mainHeap);
-    D_8008AC20 = (Unk_800118DC_Obj *)func_80025F7C((s32)D_80066828);
-    temp_s0 = func_800206E0();
-    D_8008AC20->vt->unk44(D_8008AC20, temp_s0, func_80025B34(0, 0));
-    D_8008AC20->vt->unk4C(D_8008AC20);
+    g_scene = (Scene *)Scene_New((s32)g_sceneSettings);
+    display = Display_New();
+    g_scene->vtbl->unk_44(g_scene, display, Pad_New(0, 0));
+    g_scene->vtbl->unk_4C(g_scene);
 }

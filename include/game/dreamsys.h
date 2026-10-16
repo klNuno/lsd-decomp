@@ -131,7 +131,7 @@ typedef struct DreamSysVtbl {
     s32 unk0;                                                        /* 0x1F34 */
     void (*unk4)();                                                  /* 0x004 Object_Delete */
     void (*init)(struct DreamSys *, void **, s32, s32);              /* 0x008 DreamSys_Init */
-    void (*unkC)();                                                  /* 0x00C func_8001CBA4 */
+    void (*unkC)();                                                  /* 0x00C SceneNode_Destroy */
     void (*unk10)(struct DreamSys *, void *);                        /* 0x010 func_800570B4 */
     void (*unk14)(struct DreamSys *, void *);                        /* 0x014 func_80057130 */
     void (*unk18)();                                                 /* 0x018 func_800571A8 */
@@ -142,36 +142,36 @@ typedef struct DreamSysVtbl {
     void (*unk2C)();                                                 /* 0x02C Object_NextWatcher */
     void (*unk30)(struct DreamSys *, s32);                           /* 0x030 Object_Notify */
     void (*unk34)();                                                 /* 0x034 func_80018350 */
-    void (*unk38)();                                                 /* 0x038 func_8001CD60 */
+    void (*unk38)();                                                 /* 0x038 SceneNode_OnNotify */
     void (*unk3C)();                                                 /* 0x03C 0x00000000 */
     void (*unk40)(struct DreamSys *);                                /* 0x040 func_800588EC */
-    void (*unk44)(struct DreamSys *, s32, void *);                   /* 0x044 func_8001CEB4 */
-    void (*unk48)();                                                 /* 0x048 func_8001D008 */
+    void (*unk44)(struct DreamSys *, s32, void *);                   /* 0x044 SceneNode_SetRotation */
+    void (*unk48)();                                                 /* 0x048 SceneNode_SetScale */
     void (*unk4C)();                                                 /* 0x04C func_80058968 */
     void (*unk50)();                                                 /* 0x050 func_80058A94 */
-    void (*unk54)();                                                 /* 0x054 func_8001D204 */
-    void (*unk58)();                                                 /* 0x058 func_8001D280 */
+    void (*unk54)();                                                 /* 0x054 SceneNode_DetachChildren */
+    void (*unk58)();                                                 /* 0x058 SceneNode_NextChild */
     void (*unk5C)();                                                 /* 0x05C func_8001D33C */
-    void (*unk60)(struct DreamSys *, s32);                           /* 0x060 func_8001D344 */
-    void (*unk64)();                                                 /* 0x064 func_8001D374 */
-    void (*unk68)();                                                 /* 0x068 func_8001D3A0 */
-    void (*unk6C)(struct DreamSys *, s32);                           /* 0x06C func_8001D3CC */
-    void (*unk70)();                                                 /* 0x070 func_8001D3F8 */
-    void (*unk74)();                                                 /* 0x074 func_8001D424 */
-    void (*unk78)();                                                 /* 0x078 func_8001D450 */
-    void (*unk7C)();                                                 /* 0x07C func_8001D480 */
-    void (*unk80)();                                                 /* 0x080 func_8001D4AC */
-    void (*unk84)();                                                 /* 0x084 func_8001D4DC */
+    void (*unk60)(struct DreamSys *, s32);                           /* 0x060 SceneNode_SetVisible */
+    void (*unk64)();                                                 /* 0x064 SceneNode_SetSemiTrans */
+    void (*unk68)();                                                 /* 0x068 SceneNode_SetBlendRate */
+    void (*unk6C)(struct DreamSys *, s32);                           /* 0x06C SceneNode_SetLit */
+    void (*unk70)();                                                 /* 0x070 SceneNode_SetLightFlags */
+    void (*unk74)();                                                 /* 0x074 SceneNode_SetDim */
+    void (*unk78)();                                                 /* 0x078 SceneNode_SetZSort */
+    void (*unk7C)();                                                 /* 0x07C SceneNode_SetDivision */
+    void (*unk80)();                                                 /* 0x080 SceneNode_SetBackfaceClip */
+    void (*unk84)();                                                 /* 0x084 SceneNode_GetRotMatrix */
     void (*unk88)();                                                 /* 0x088 func_80058B08 */
-    void (*unk8C)();                                                 /* 0x08C func_8001D600 */
-    void (*unk90)();                                                 /* 0x090 func_8001D624 */
+    void (*unk8C)();                                                 /* 0x08C SceneNode_GetBoxList */
+    void (*unk90)();                                                 /* 0x090 SceneNode_SendShape */
     void (*unk94)();                                                 /* 0x094 func_80058C58 */
     void (*tickTimer)(struct DreamSys *, s32, s32);                  /* 0x098 DreamSys_TickTimer */
     void (*unk9C)();                                                 /* 0x09C func_80058E8C */
-    void (*unkA0)();                                                 /* 0x0A0 func_8001D714 */
-    void (*unkA4)();                                                 /* 0x0A4 func_8001D950 */
-    void (*unkA8)();                                                 /* 0x0A8 func_8001DA28 */
-    void (*unkAC)();                                                 /* 0x0AC func_8001DDF4 */
+    void (*unkA0)();                                                 /* 0x0A0 SceneNode_CheckContact */
+    void (*unkA4)();                                                 /* 0x0A4 SceneNode_WorldToLocal */
+    void (*unkA8)();                                                 /* 0x0A8 SceneNode_BoxesOverlap */
+    void (*unkAC)();                                                 /* 0x0AC SceneNode_RayTestBoxes */
     void (*unkB0)();                                                 /* 0x0B0 0x00000000 */
     void (*unkB4)();                                                 /* 0x0B4 func_8001E4A4 */
     void (*unkB8)(struct DreamSys *, void *);                        /* 0x0B8 Actor_SetPos */

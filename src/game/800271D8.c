@@ -28,7 +28,7 @@ typedef struct ObjectClassTable {
     void (*unk8)(void *);
     void (*unkC)(s32);
 } ObjectClassTable;
-ObjectClassTable *Object_GetClassTable(void);
+ObjectClassTable *File_GetBaseVtbl(void);
 void *File_GetVtable(void);
 void File_InitCd(void);
 typedef struct FileInitObject {
@@ -68,7 +68,7 @@ s32 g_fileVSyncHooked;
 s32 g_fileVSyncMode;
 s32 File_OnVSync(void);
 void VSyncCallback(void (*func)(void));
-s8 *func_800270B8(void);
+s8 *File_GetPathPrefix(void);
 s8 *strcpy(s8 *dst, s8 *src);
 s8 *strcat(s8 *dst, s8 *src);
 extern s8 g_fileVersionSuffix[]; /* ";1" in .sdata */
@@ -144,7 +144,7 @@ typedef struct VSyncObject {
     /* 0x20 */ s32 unk20;
     /* 0x24 */ s32 unk24;
 } VSyncObject;
-VSyncObject *func_80020C5C(void);
+VSyncObject *Display_GetCurrent(void);
 typedef struct VSyncHookVt {
     u8 pad[0x84];
     void (*unk84)(void *, void (*)(void));
@@ -274,7 +274,7 @@ typedef struct DirEntrySize {
     u8 pad[0x18];
     u32 unk18;
 } DirEntrySize;
-void func_80026B08();
+void File_LoadWhole();
 
 s32 File_Create(void) {
     s32 obj;
@@ -288,7 +288,7 @@ s32 File_Create(void) {
 }
 
 void File_InitObject(FileInitObject *obj) {
-    ((FileInitClassTable *)Object_GetClassTable())->unk8(obj);
+    ((FileInitClassTable *)File_GetBaseVtbl())->unk8(obj);
     obj->unk0 = File_GetVtable();
     obj->unk28 = 0;
     File_InitCd();
@@ -458,7 +458,7 @@ void File_Open(FileOpenObject *obj, char *name) {
     u32 sectors;
 
     if (g_fileEnabled == 0 && g_fileOption == 0) {
-        func_80026B08();
+        File_LoadWhole();
         obj->unk24 |= 0x200;
         obj->unk0->unk64(obj);
         return;
@@ -680,7 +680,7 @@ s32 File_Enable(s32 enabled, s32 param1, s32 mode) {
 
     if (g_fileBusy == 0) {
         if (mode == 0) {
-            temp = (VSyncHook *)func_80020C5C();
+            temp = (VSyncHook *)Display_GetCurrent();
             if (g_fileEnabled == 0) {
                 if (enabled != 0) {
                     temp->vt->unk84(temp, File_OnVSync);
@@ -1032,13 +1032,13 @@ void File_SetState(s32 state) {
 }
 
 void File_InitRecord(FileInitRecord *obj) {
-    Object_GetClassTable()->unk8(obj);
+    File_GetBaseVtbl()->unk8(obj);
     obj->unk0 = File_GetVtable();
     obj->unkC = 0;
 }
 
 void File_Destroy(s32 handle) {
-    Object_GetClassTable()->unkC(handle);
+    File_GetBaseVtbl()->unkC(handle);
 }
 
 void func_80028918(void) {
@@ -1070,7 +1070,7 @@ void File_Locate(FileLoadState *obj) {
 
 s8 *File_BuildPath(s8 *path, s8 *name) {
     *path = 0x5C;
-    strcpy(path + 1, func_800270B8());
+    strcpy(path + 1, File_GetPathPrefix());
     strcat(path, name);
     strcat(path, g_fileVersionSuffix);
     return path;

@@ -150,11 +150,11 @@ void CommentObject_ClearSenders(CommentObject *obj);
 extern s32 strlen(u8 *);
 extern u8 g_commentVtbl[];
 void StringList_ClearSenders(StringList *list);
-extern s8 *func_800270C4(s8 *, s8 *, s8 *, s8 *);
-extern CommentWidget *func_8003B39C(s32);
-extern CommentWidget *func_80041C9C(CommentWidget *, s32 *, s32);
-extern s32 func_800408CC(s32, s32, s32);
-extern void *func_80041AB4(s32, u8);
+extern s8 *File_JoinPath(s8 *, s8 *, s8 *, s8 *);
+extern CommentWidget *Tim_New(s32);
+extern CommentWidget *ScreenSprite_Create(CommentWidget *, s32 *, s32);
+extern s32 Label_Create(s32, s32, s32);
+extern void *Glyph_Create(s32, u8);
 extern s8 g_widgetPrefix[];
 extern s8 g_widgetSuffix[];
 extern s32 g_glyphColor[];
@@ -279,16 +279,16 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
     CommentWidget *fontWidget;
 
     if ((enable != 0) && (obj->unk_48 == NULL)) {
-        inputWidget = func_8003B39C((s32)func_800270C4(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
+        inputWidget = Tim_New((s32)File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
         inputWidget->vtbl->unk_78(inputWidget);
-        obj->unk_48 = func_80041C9C(inputWidget, g_inputBoxRect, 0);
+        obj->unk_48 = ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
         inputWidget->vtbl->delete_(inputWidget);
         widget = obj->unk_48;
         widget->vtbl->show(widget, enable, g_inputShowArg);
-        fontWidget = func_8003B39C((s32)func_800270C4(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
+        fontWidget = Tim_New((s32)File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->unk_78(fontWidget);
-        obj->unk_44 = (CommentWidget *)func_800408CC((s32)fontWidget, obj->textLength, (s32)obj->textBuf);
-        obj->unk_40 = func_80041AB4((s32)fontWidget, 0x5F);
+        obj->unk_44 = (CommentWidget *)Label_Create((s32)fontWidget, obj->textLength, (s32)obj->textBuf);
+        obj->unk_40 = Glyph_Create((s32)fontWidget, 0x5F);
         fontWidget->vtbl->delete_(fontWidget);
         widget = obj->unk_44;
         widget->vtbl->show(widget, enable, g_fontShowArg);

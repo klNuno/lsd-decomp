@@ -53,11 +53,11 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Sym | Entities loaded from `ETC\SYM*.MOM`; only `SYMSPY.MOM` is loaded | code: discoveries 2026-10-15 |
 | Nav | Navigation flags and score: 30 flags at DreamSys +0x5E0 and the dynamic link count at +0x600 that make the navigation score | code: discoveries 2026-10-15 (`Nav_CalcScore` @0x8005BA7C) |
 | Cine | Special-day and entity-event cinematics: the {category, variant} to path and video id tables | code: discoveries 2026-10-15 (`Cine_GetPath` @0x80049334) |
-| Scene | The scene class that `func_80025FDC` builds with `ETC\DREAME5.TMD` and a new DreamSys, and the code of its unit `game/80025F7C` (random seed, special-day cinematic) | code: discoveries 2026-10-15 (`Scene_PlayCinematic` @0x8002677C) |
+| Scene | The scene class that `Scene_Init` builds with `ETC\DREAME5.TMD` and a new DreamSys, and the code of its unit `game/80025F7C` (random seed, special-day cinematic) | code: discoveries 2026-10-15 (`Scene_PlayCinematic` @0x8002677C) |
 | Menu | The main menu object, the screen with the day number and the Flashback item, and its items | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678) |
 | SaveMenu | The memory card menu object: card file name, title with the day number, save and load of the 0x700-byte block | code: discoveries 2026-10-15 (`SaveMenu_Save` @0x8004E0E4) |
 | Rand | The game's wrapper around PSY-Q `srand` and `rand` | code: discoveries 2026-10-15 (`Rand_SeedAndNext` @0x80048CFC) |
-| Music | The dream's sound bank (one of 7, `D_800819CC`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
+| Music | The dream's sound bank (one of 7, `g_musicBanks`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
 | Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: work/hunt6/F-findings.md, `include/game/heap.h` |
 | List | A singly linked list of values, one 8-byte node per value | code: `include/game/heap.h` (`ListNode`) |
 | Object | The root class (vtable 0x8006B58C) every game object derives from: init, destroy, and lists of the objects it watches and of its watchers, told with message 1 when it goes away | code: `include/game/heap.h` (`Object`, `ObjectVtbl`) |
@@ -93,14 +93,33 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Movie | The MDEC movie player | code: `include/game/loader.h` |
 | Card | The memory card object (vtable 0x80086DC4, 0x84 bytes): card events, bu00 and bu10 file access, the save format, the save and load dialogs | code: `include/game/menu.h` |
 | Sound | A model's sound bank (0x64 bytes): loads a VAB, builds its tone tables, starts and stops voices | code: src/game/8002C12C.c |
-| Fade | A color fade object and its steps; RgbFade fades one RGB triple | code: src/game/8003FDB0.c |
+| Fade | A Box that fades its color (vtable 0x8006E99C): the 320x240 layer of the view, the place fader, the Grey Man white flash; RgbFade fades one RGB triple | code: src/game/8003FDB0.c |
 | RgbFade | See Fade | code: src/game/8003FDB0.c |
 | Rgb | Color byte helpers | code: src/game/8003FDB0.c |
-| Effect | An effect object of 0xA0 bytes and its vtable table | code: src/game/8003FDB0.c |
 | Pos | Position pair helpers: set, save, restore | code: src/game/8003FDB0.c |
 | Text | Shift-JIS fullwidth text: encode, decode, format a number | code: src/game/8003FDB0.c |
 | CommentObject | The on-screen keyboard object (0x4C bytes, vtable 0x80086ED0): text buffer, alphabet, caret | code: src/game/80050BA8.c |
 | StringList | A list of strings with their lengths and a maximum length | code: src/game/80050BA8.c |
+| App | The base class of Scene (vtable 0x8006E4F0): CD init, 320x240 screen, display and pad, the main loop | code: src/game/8003AF8C.c |
+| Display | The display object (vtable 0x8006C070): frame loop and VRAM transfers | code: src/game/800206E0.c |
+| Bgm | The music player ("WBgm" in its error message): a sound bank and a SEQ file played by libsnd | code: src/game/800398E0.c |
+| Tim | A TIM image object (vtable 0x8006E558); one helper rotates a VRAM area, the palette cycling of stages 2 to 5 | code: src/game/8003B39C.c |
+| Pad | The controller object | code: src/game/80025B34.c |
+| Stream | The CD stream class (vtable 0x800817E0) that feeds the movie player | code: src/game/80046F0C.c |
+| MapChunk | One stage chunk file (STGxx\Mxxx.LBD) and its entity part, plus the path table accessors (stage files, music, videos) | code: src/game/80048894.c |
+| SpriteNode | A scene node that draws a GsSPRITE cut from a TIM (vtable 0x8006EE1C) | code: src/game/80041AB4.c |
+| ScreenSprite | A SpriteNode placed by a 2D position and a pivot (vtable 0x8006ED4C) | code: src/game/80041AB4.c |
+| Glyph | A ScreenSprite that shows one 8x8 character of a font (vtable 0x8006EC74) | code: src/game/80041AB4.c |
+| SeqFile | A SEQ music file loaded asynchronously and opened with SsSeqOpen (vtable 0x8006EED8) | code: src/game/80041AB4.c |
+| Clock | A tick counter that tells its watchers 2, 3 when paused, 4 when stopped (vtable 0x8006EF50) | code: src/game/80041AB4.c |
+| RootNode | The root scene node with 3 lights and the ambient color, base of StageMap (vtable 0x8006EFAC) | code: src/game/80041AB4.c |
+| FlatLight | The flat light helpers of RootNode | code: src/game/80041AB4.c |
+| Box | A filled 2D rectangle widget, a GsBOXF at +0x58 (vtable 0x8006EAC0) | code: src/game/8003FDB0.c |
+| Label | A row of glyphs that shows a text (vtable 0x8006EB90) | code: src/game/8003FDB0.c |
+| Spu | SPU hardware init and reset | code: src/game/8003221C.c |
+| Seq | The root counter timer that drives the sequencer | code: src/game/80032588.c |
+| Fraction | A {numerator, denominator} pair used for scales | code: src/game/8001CA94.c |
+| Bits | Bit flag helpers of the scene nodes (GsDOBJ2 attribute bits) | code: src/game/8001CA94.c |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |
 
 Rows sourced to community knowledge are working terms, not verified facts; rows sourced to code cite their discoveries entry.

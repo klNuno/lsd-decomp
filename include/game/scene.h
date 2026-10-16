@@ -20,8 +20,8 @@
  *                two ordering tables with their packet areas, fog, light mode and clear color.
  *
  * The low 4 bits of a vtable's first word give the sender type Screen_OnNotify and View_OnNotify
- * dispatch on: 1 display (func_80020C4C class), 2 pad (vtable 0x8006D370), 4 scene node
- * (the func_8001CA94 class and its children), 5 clock (vtable 0x8006EF50).
+ * dispatch on: 1 display (Display_GetVtbl class), 2 pad (vtable 0x8006D370), 4 scene node
+ * (the SceneNode_New class and its children), 5 clock (vtable 0x8006EF50).
  * Slots are left unprototyped, as in heap.h: the code calls some with fewer arguments.
  */
 
@@ -90,8 +90,8 @@ typedef struct Display {
 /* The pad (src/game/80025B34.c, sender type 2): docs/discoveries.md, pad codes. */
 typedef struct PadVtbl {
     u8 pad_00[0x44];
-    void (*read)();    /* 0x44 func_80025CC4: PadRead */
-    void (*send)();    /* 0x48 func_80025D10: sends the button codes */
+    void (*read)();    /* 0x44 Pad_Read: PadRead */
+    void (*send)();    /* 0x48 Pad_SendEvents: sends the button codes */
 } PadVtbl;
 
 typedef struct Pad {
@@ -103,14 +103,14 @@ typedef struct ClockVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();  /* 0x04 Object_Delete */
     u8 pad_08[0x44 - 0x08];
-    void (*step)();      /* 0x44 func_800425EC */
+    void (*step)();      /* 0x44 Clock_Step */
 } ClockVtbl;
 
 typedef struct Clock {
     ClockVtbl *vtbl;
 } Clock;
 
-/* A scene node (sender type 4): func_80012064 draws a tree of them. */
+/* A scene node (sender type 4): Scene_DrawNode draws a tree of them. */
 typedef struct SceneNode {
     ObjectVtbl *vtbl;
     ListNode *watched;
@@ -121,15 +121,15 @@ typedef struct SceneNode {
 } SceneNode;
 
 /*
- * What every screen runs with: the scene keeps it at +0x1C (func_8003B044 in src/game/8003AF8C.c
+ * What every screen runs with: the scene keeps it at +0x1C (App_Start in src/game/8003AF8C.c
  * builds it with the display and the pad, the other three 0). A NULL clock, root or view makes the screen create
  * its own for the run and delete it after.
  */
 typedef struct ScreenEnv {
     Display *display;
     Pad *pad;
-    Clock *clock;            /* default func_80042400 */
-    SceneNode *root;         /* default func_80042694: a node with 3 lights and an ambient color */
+    Clock *clock;            /* default Clock_Create */
+    SceneNode *root;         /* default RootNode_Create: a node with 3 lights and an ambient color */
     struct View *view;       /* default View_New, a new View */
 } ScreenEnv;
 
@@ -442,7 +442,7 @@ typedef struct ViewVtbl {
     void (*onClock)();          /* 0x94 sender type 5 */
     void (*onDisplay)();        /* 0x98 sender type 1 */
     void (*render)();           /* 0x9C */
-    void (*drawNode)();         /* 0xA0 func_80012064 */
+    void (*drawNode)();         /* 0xA0 Scene_DrawNode */
     void (*present)();          /* 0xA4 */
     void (*setOverlay)();       /* 0xA8 */
     struct Widget *(*getOverlay)(); /* 0xAC */
@@ -483,7 +483,7 @@ typedef struct View {
     u8 pad_94[0x98 - 0x94];
     s32 unk98;              /* 0x98 */
     u8 pad_9C[0xAC - 0x9C];
-    SceneNode *root;        /* 0xAC func_8001CA94, drawn every frame; the overlay hangs from it */
+    SceneNode *root;        /* 0xAC SceneNode_New, drawn every frame; the overlay hangs from it */
     Widget *overlay;        /* 0xB0 a 320 x 240 object at (-100, -100); Place uses it as its fader (place.h) */
     s32 unkB4;              /* 0xB4 when set, present swaps buffers once more on buffer 0 */
     s32 unkB8;              /* 0xB8 present draws only when set, 1 */

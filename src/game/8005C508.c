@@ -90,7 +90,7 @@ typedef union BehaviorPos {
  */
 typedef struct BehaviorDreamSysVtbl {
     u8 pad_00[0x44];
-    void (*rotate)(void *self, s32 absolute, void *angles); /* 0x44 func_8001CEB4 */
+    void (*rotate)(void *self, s32 absolute, void *angles); /* 0x44 SceneNode_SetRotation */
     u8 pad_48[0x94 - 0x48];
     void (*unk94)(void *self, s32 arg1, s32 arg2);          /* 0x94 func_80058C58 */
     u8 pad_98[0xB8 - 0x98];
@@ -128,8 +128,8 @@ typedef struct BehaviorEntityVtbl {
     u8 pad_00[0x30];
     void (*postEvent)(void *self, s32 event);                /* 0x30 entity event: 10 link, 11 video end, 12 end */
     u8 pad_34[0x44 - 0x34];
-    void (*rotate)(void *self, s32 absolute, void *angles);  /* 0x44 func_8001CEB4: degrees as {num, den} s16 pairs */
-    void (*scale)(void *self, s32 absolute, void *factors);  /* 0x48 func_8001D008: {num, den} s16 pairs */
+    void (*rotate)(void *self, s32 absolute, void *angles);  /* 0x44 SceneNode_SetRotation: degrees as {num, den} s16 pairs */
+    void (*scale)(void *self, s32 absolute, void *factors);  /* 0x48 SceneNode_SetScale: {num, den} s16 pairs */
     u8 pad_4C[0x60 - 0x4C];
     void (*unk60)(void *self, s32 arg1);                     /* 0x60 func_80065A5C, 1 on wake, 0 on sleep */
     u8 pad_64[0xB8 - 0x64];
@@ -460,7 +460,7 @@ typedef struct Unk_80065C5C {
 } Unk_80065C5C;
 extern Unk_80065CEC_Obj *Mom_Create(Unk_80065C5C *arg0);
 s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
-extern void func_8001E600(void *arg0, void *arg1, void *arg2, s32 arg3);
+extern void SceneNode_LocalToWorld(void *arg0, void *arg1, void *arg2, s32 arg3);
 extern s16 D_80089C64[];
 extern s16 D_80089C70[];
 extern s32 D_80089D54[];
@@ -485,7 +485,7 @@ extern s32 D_80089E50;
 extern s16 D_80089E8C[];
 extern s32 D_80089DC0[];
 extern s32 D_80089CA0[];
-void func_8001E770(void *, s32);
+void SceneNode_LinkModel(void *, s32);
 extern s32 D_80089D00[];
 extern s32 D_80089E44[];
 extern s8 D_80089C58[];
@@ -501,9 +501,9 @@ struct Unk_80026CE8 {
     char *unk4;
     s32 unk8;
 };
-struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, char *arg2, s32 arg3);
+struct Unk_80026CE8 *File_MakeSource(struct Unk_80026CE8 *arg0, s32 arg1, char *arg2, s32 arg3);
 extern s8 g_spawnGroupCounts[];
-void *Effect_Create(void *arg0, s32 arg1, s32 arg2);
+void *Fade_Create(void *arg0, s32 arg1, s32 arg2);
 extern s32 D_8008AC0C[];
 extern s32 D_8008AC14[];
 extern s8 D_80089EA7[];
@@ -598,7 +598,7 @@ void Sym_LoadModels(void) {
             ((u8 *)g_spawnGroups[i])[j * 8] = 0;
         }
     }
-    func_80026CE8(&file, 0, "ETC\\SYMSPY.MOM", 1);
+    File_MakeSource(&file, 0, "ETC\\SYMSPY.MOM", 1);
     /* one pass: SYMDOG.MOM would be the second model, the loop never reaches it */
     for (i = 0; i < 1; i++) {
         g_spyModel[i].model = (Unk_8005C5E8_Obj *)Mom_Create((Unk_80065C5C *)&file);
@@ -905,7 +905,7 @@ void Sym_SpawnSpy(SpyModel *spyModel) {
     spy = spyModel->spy;
     if (spy != NULL) {
         spy->vt->detach(spy);
-        func_8001E600(D_8008AC00, placement, &spyModel->unk8, 0);
+        SceneNode_LocalToWorld(D_8008AC00, placement, &spyModel->unk8, 0);
         spyModel->spy->vt->attach(spyModel->spy, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
         Entity_FaceDreamer(spyModel->spy, D_8008AC00, 1, 0, 0);
     }
@@ -945,7 +945,7 @@ s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg
         if (arg1 == NULL) {
             arg1 = D_8008AC14;
         }
-        effect = Effect_Create(arg1, 0, arg4);
+        effect = Fade_Create(arg1, 0, arg4);
         if (effect == NULL) {
             return 0;
         }
@@ -3630,7 +3630,7 @@ void Model_Init(Model *model) {
     model->vt->setAnimation(model, 0);
     part = model->part;
     if (part != NULL) {
-        func_8001E770(model, part->unk20);
+        SceneNode_LinkModel(model, part->unk20);
     }
 }
 
@@ -4002,7 +4002,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
             break;
         case 2:
             if (*(u16 *)data != 0 && part->unk20 == 0) {
-                func_8001E770(part, model->file->textures->vt->unk80(model->file->textures, *(u16 *)data - 1));
+                SceneNode_LinkModel(part, model->file->textures->vt->unk80(model->file->textures, *(u16 *)data - 1));
             }
             break;
         case 3:

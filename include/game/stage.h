@@ -11,7 +11,7 @@
  * - the per-stage chunk grids (StageGrid, g_stageChunkMoods at g_stageChunkMoods),
  * - Task, the class with a timeout and a result (vtable 0x80086668, class id 0x230) that the
  *   dream runner and the dream stage (include/game/place.h) derive from,
- * - DreamRunner (vtable 0x800865C8, class id 0x1F230, 0x50 bytes): built by func_80026698 for
+ * - DreamRunner (vtable 0x800865C8, class id 0x1F230, 0x50 bytes): built by Scene_RunDream for
  *   each dream, it loads the dreamer model and the music bank, creates the dream stage for the
  *   stage DreamSys_StartDay returns, rebuilds it on a link and ends the day,
  * - StageMap (vtable 0x800866E8, 0x1E8 bytes): the 7 chunks loaded around the dreamer, each a
@@ -176,7 +176,7 @@ typedef struct RunnerContextHead {
 typedef struct RunnerContext {
     RunnerContextHead *unk0;
     s32 unk4;               /* watched by DreamSys while the runner runs */
-    Object *unk8;           /* func_80042400() */
+    Object *unk8;           /* Clock_Create() */
     struct StageMap *map;   /* 0x0C StageMap_New(0, 1) */
     Object *unk10;          /* func_8004D254(), class 0x800869D8 */
 } RunnerContext;
@@ -246,12 +246,12 @@ typedef struct DreamRunner {
     RunnerView *view;       /* 0x18 */
     u32 ticks;              /* 0x1C */
     u8 pad_20[0x28 - 0x20];
-    s32 result;             /* 0x28 1 nothing to play, 2 play DreamSys's cinematic (func_80026698), 3 flashback mode, end or erase */
+    s32 result;             /* 0x28 1 nothing to play, 2 play DreamSys's cinematic (Scene_RunDream), 3 flashback mode, end or erase */
     u8 pad_2C[0x34 - 0x2C];
     SoundBank *sound;       /* 0x34 */
     DreamSys *dreamSys;     /* 0x38 */
     s32 phase;              /* 0x3C RUNNER_* */
-    Object *music;          /* 0x40 func_800398E0(Music_PickBank(0), 0, 1) */
+    Object *music;          /* 0x40 Bgm_New(Music_PickBank(0), 0, 1) */
     RunnerRes *etcTim;      /* 0x44 ETC\ETC.TIM */
     RunnerRes *dreamerModel; /* 0x48 ETC\DREAMER.TMD */
     RunnerStage *stage;     /* 0x4C the dream stage, Place_New */
@@ -273,7 +273,7 @@ typedef struct MapTileVtbl {
     u8 pad_50[0x70 - 0x50];
     void (*unk70)();
     u8 pad_74[0xA0 - 0x74];
-    void (*unkA0)();        /* 0xA0 func_8001D714 */
+    void (*unkA0)();        /* 0xA0 SceneNode_CheckContact */
     u8 pad_A4[0xB8 - 0xA4];
     void (*unkB8)();        /* 0xB8 func_8004D47C */
 } MapTileVtbl;
@@ -300,7 +300,7 @@ typedef struct MapTile {
 #define MAP_TILE_HIDDEN 0x80000000
 #define MAP_SLOT_TILES 410      /* 20 x 20 squares and 10 extra tiles */
 
-/* The chunk object of a slot (func_80048894, 0x3C bytes): receives the chunk data, knows its index. */
+/* The chunk object of a slot (MapChunk_New, 0x3C bytes): receives the chunk data, knows its index. */
 typedef struct MapChunkVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();     /* 0x04 */
@@ -439,7 +439,7 @@ typedef struct StageMapVtbl {
     u8 pad_44[0x88 - 0x44];
     void (*onSlotMessage)(); /* 0x88 StageMap_OnSlotMessage (map, 6 or 7, slot, index) */
     u8 pad_8C[0xB8 - 0x8C];
-    void *(*unkB8)();       /* 0xB8 func_80042828 */
+    void *(*unkB8)();       /* 0xB8 RootNode_GetLight */
     u8 pad_BC[0xC0 - 0xBC];
     void (*clearSlots)();   /* 0xC0 StageMap_ClearSlots */
     void (*unkC4)();        /* 0xC4 func_8004ACF8 */

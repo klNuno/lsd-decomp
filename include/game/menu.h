@@ -146,7 +146,7 @@ typedef struct MenuSound {
     MenuSoundVtbl *vt;
 } MenuSound;
 
-/* A text label made by func_800408CC: the save title shown on the menu (menu +0xB0). */
+/* A text label made by Label_Create: the save title shown on the menu (menu +0xB0). */
 typedef struct MenuLabelVtbl {
     u8 pad_00[0x4];
     void (*delete_)(void *self);
@@ -167,7 +167,7 @@ typedef struct MenuLabel {
     u8 unkAC;
 } MenuLabel;
 
-/* A picture object (func_8003B39C); slot 0x4 deletes it. */
+/* A picture object (Tim_New); slot 0x4 deletes it. */
 typedef struct MenuPictureVtbl {
     u8 pad_00[0x4];
     void (*delete_)(void *self);

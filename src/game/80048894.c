@@ -1,284 +1,247 @@
 #include "common.h"
+#include "game/loader.h"
+#include "game/stage.h"
 
-extern u8 D_80081A04[];
-extern s16 g_videoTable[];
-s32 D_8008A964;
-s32 D_8008A968;
-u8 *Stage_GetPathBase(s32 arg0);
-s32 *func_80048DF8(void);
+/*
+ * Two things live in this unit.
+ *
+ * The map chunk file class (vtable g_mapChunkVtbl, 0x3C bytes, created by MapChunk_New for each
+ * StageMap slot): a file object of src/game/80025F7C.c with a 0xB358-byte buffer that receives a
+ * stage's STGxx\Mxxx.LBD chunk file (slot 0x78), then, when the header says so, a second read of
+ * the chunk's entity part into its own heap block (slot 0x80). include/game/stage.h holds the
+ * part of it StageMap reads (MapChunk); MapChunkFile below is the whole object.
+ *
+ * The path table g_pathTable: 0x1C-byte path entries, 560 counted by File_GetPathTable (sound banks, then per stage
+ * TEXA to TEXD.TIX, BGA to BGE.SEQ and the Mxxx.LBD chunks from g_stageFirstPath[stage]), then the
+ * opening, ending, event and special-day videos. The getters below hand out pieces of it, with
+ * the video id (index into g_videoTable) through their out parameter.
+ */
+
+extern u8 g_pathTable[];      /* the path table, 0x1C bytes per path */
+extern s16 g_videoTable[];   /* frame count of each video, by video id */
+s32 g_musicBankOverride;              /* forced music bank + 1, 0 = random (Music_SetOverride) */
+s32 g_musicTrackOverride;              /* forced track + 1, 0 = random (Music_SetOverride) */
+u8 *Stage_GetPathBase(s32 stage);
+s32 *Music_GetEffectsBankPtr(void);
 extern void srand(u32 seed);
 extern s32 rand(void);
-void *func_80048D48(s32 *arg0);
+void *File_GetPathTable(s32 *count);
 s32 Heap_Free(s32);
-typedef struct Unk_80048C98 {
-    u8 pad_00[0x2E];
-    s16 unk2E;
-    u8 pad_30[4];
-    s32 unk34;
-} Unk_80048C98;
-u8 *func_8004903C(s32 arg0);
-typedef struct Unk_80048A68 {
-    u8 pad_00[0x2A];
-    s16 unk2A;
-    s16 unk2C;
-    s16 unk2E;
-} Unk_80048A68;
-typedef struct Unk_80048A68_Vtbl {
-    u8 pad_00[0xC];
-    void (*unkC)(void *);
-    u8 pad_10[0x64];
-    void (*unk74)(Unk_80048A68 *);
-} Unk_80048A68_Vtbl;
-Unk_80048A68_Vtbl *func_80026CAC(void);
-s32 func_800491CC(s32 *arg0);
-struct Unk_80048B78_Vtbl {
-    u8 pad_00[0x5C];
-    void (*unk5C)(void);
-};
-struct Unk_80048B78 {
-    struct Unk_80048B78_Vtbl *unk0;
-    u8 pad_04[0x28];
-    s16 unk2C;
-    u8 pad_2E[2];
-    s16 unk30;
-};
-typedef struct Unk_80048894 {
-    u8 pad_00[8];
-    void (*unk8)(s32);
-} Unk_80048894;
-Unk_80048894 *func_80048CE0(void);
-s32 Heap_Alloc(s32 arg0);
-extern s16 D_800819E8[];
-typedef struct { s16 unk_0; s16 unk_2; s32 unk_4; } Unk_800861D4;
-Unk_800861D4 *Stage_GetGrid(s32 arg0);
-u8 *func_80049060(s32 arg0, s32 arg1);
-u8 *func_80049240(s32 *arg0);
-typedef struct Unk_80048960 Unk_80048960;
-typedef struct Unk_80048960_Vtbl {
-    u8 pad_00[0x84];
-    void (*unk84)(Unk_80048960 *);
-} Unk_80048960_Vtbl;
-struct Unk_80048960 {
-    Unk_80048960_Vtbl *vt;
-};
-u8 *Cine_GetEventPath(s32 *arg0, s32 arg1);
-s32 Cine_GetSpecialDayPaths(s32 *arg0, s32 arg1);
-typedef struct Unk_80049334 {
-    s16 unk0;
-    s16 unk2;
-} Unk_80049334;
-typedef struct Unk_800488E4_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-} Unk_800488E4_vt;
-typedef struct Unk_800488E4 {
-    Unk_800488E4_vt *unk0;
-    u8 pad_04[0xC];
-    void *unk10;
-    s32 unk14;
-    u8 pad_18[0x14];
-    s16 unk2C;
-    s16 unk2E;
-    s16 unk30;
-    s16 unk32;
-    s32 unk34;
-    s32 unk38;
-} Unk_800488E4;
-typedef struct Unk_800489B4_Vtbl {
-    u8 pad_00[0x80];
-    void (*unk80)(void);
-} Unk_800489B4_Vtbl;
-typedef struct Unk_800489B4_GVtbl {
-    u8 pad_00[0x64];
-    void (*unk64)(void *);
-} Unk_800489B4_GVtbl;
-typedef struct Unk_800489B4 {
-    Unk_800489B4_Vtbl *unk0;
-    u8 pad_04[0x20];
-    s32 unk24;
-    u8 pad_28[2];
-    u16 unk2A;
-    s16 unk2C;
-    s16 unk2E;
-    u8 pad_30[8];
-    s32 unk38;
-} Unk_800489B4;
-s32 Rand_SeedAndNext();
-u8 *func_80048F60(s32 arg0);
-u8 *func_80048E80(s32 arg0);
-typedef struct Unk_80048AAC_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, s32, s32);
-    void (*unk48)(void *);
-    u8 pad_4C[0x8];
-    void (*unk54)(void *, void *, s32);
-    u8 pad_58[0x1C];
-    void (*unk74)(void *);
-} Unk_80048AAC_Vtbl;
-typedef struct Unk_80048AAC {
-    Unk_80048AAC_Vtbl *unk0;
-    u8 pad_04[0xC];
-    void *unk10;
-    u8 pad_14[0x16];
-    u16 unk2A;
-    s16 unk2C;
-} Unk_80048AAC;
-typedef struct Unk_80048BC0 Unk_80048BC0;
-typedef struct Unk_80048BC0_Vtbl {
-    u8 pad_00[0x4C];
-    void (*unk4C)(Unk_80048BC0 *, s32, s32);
-    u8 pad_50[4];
-    void (*unk54)(Unk_80048BC0 *, s32, s32);
-    u8 pad_58[0x2C];
-    void (*unk84)(Unk_80048BC0 *);
-} Unk_80048BC0_Vtbl;
-typedef struct Unk_80048BC0_Sub {
+
+/* The header of a chunk file (STGxx\Mxxx.LBD) as this unit reads it */
+typedef struct ChunkFileHeader {
     u8 pad_00[2];
-    u16 unk2;
-    u8 pad_04[0xC];
-    s32 unk10;
-    s32 unk14;
-} Unk_80048BC0_Sub;
-struct Unk_80048BC0 {
-    Unk_80048BC0_Vtbl *unk0;
-    u8 pad_04[0xC];
-    Unk_80048BC0_Sub *unk10;
-    u8 pad_14[0x16];
-    u16 unk2A;
-    u8 pad_2C[8];
-    s32 unk34;
+    u16 hasEntities;         /* 0x02 non-zero: the file has an entity part (slot 0x80) */
+    s32 modelsOffset;        /* 0x04 MapChunkData.modelsOffset in include/game/stage.h */
+    s32 modelsSize;          /* 0x08 */
+    u8 pad_0C[0x10 - 0x0C];
+    s32 entitiesOffset;      /* 0x10 file offset of the entity part */
+    s32 entitiesSize;        /* 0x14 */
+} ChunkFileHeader;
+
+typedef struct MapChunkFile MapChunkFile;
+
+/* g_mapChunkVtbl: the file class slots (FileVtbl in include/game/loader.h), then the chunk's own */
+typedef struct MapChunkFileVtbl {
+    s32 unk_00;              /* 0x903 */
+    void *(*delete_)();      /* 0x04 File_Delete */
+    void (*init)();          /* 0x08 MapChunk_Init */
+    void (*destroy)();       /* 0x0C MapChunk_Destroy */
+    u8 pad_10[0x44 - 0x10];  /* Object methods, then 0 */
+    void (*open)();          /* 0x44 (self, path, 1, 0) */
+    void (*close)();         /* 0x48 */
+    void (*seek)();          /* 0x4C (self, offset, whence) */
+    u8 pad_50[0x54 - 0x50];
+    void (*read)();          /* 0x54 (self, buffer, size) */
+    u8 pad_58[0x5C - 0x58];
+    void (*freeData)();      /* 0x5C File_FreeData */
+    void (*unk_60)();        /* 0x60 func_80026C80, empty */
+    void (*onLoaded)();      /* 0x64 MapChunk_OnLoaded */
+    u8 pad_68[0x74 - 0x68];
+    void (*unload)();        /* 0x74 MapChunk_Unload, replaces the file class cancel slot */
+    void (*load)();          /* 0x78 MapChunk_Load (chunk, path) */
+    void (*clear)();         /* 0x7C MapChunk_Clear */
+    void (*loadEntities)();  /* 0x80 MapChunk_LoadEntities */
+    void (*freeEntities)();  /* 0x84 MapChunk_FreeEntities */
+    void (*setLoadEntities)(); /* 0x88 MapChunk_SetLoadEntities (chunk, flag) */
+} MapChunkFileVtbl;
+
+struct MapChunkFile {
+    MapChunkFileVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    u8 pad_0C[0x10 - 0x0C];
+    ChunkFileHeader *data;   /* 0x10 the 0xB358-byte chunk buffer */
+    s32 size;                /* 0x14 0xB358 once the buffer exists */
+    u8 pad_18[0x24 - 0x18];
+    s32 flags;               /* 0x24 done file requests: 0x80 read */
+    u8 pad_28[0x2A - 0x28];
+    u16 state;               /* 0x2A 9 reading the chunk, 10 reading its entity part, 0 idle */
+    s16 loaded;              /* 0x2C */
+    s16 entitiesLoaded;      /* 0x2E StageMap_PollLoads clears it and sends map message 7 */
+    s16 index;               /* 0x30 chunk index in the stage grid, -1 when empty */
+    s16 id;                  /* 0x32 */
+    s32 entities;            /* 0x34 the entity part (heap), handed to Sym_SpawnOrSpy by Place_SpawnCell */
+    s32 loadEntities;        /* 0x38 read the entity part as soon as the chunk is in */
 };
-u8 *func_80048D64(void);
-s32 func_80049110(s32 *arg0);
-typedef struct Unk_80048CD8 {
-    u8 pad_00[0x38];
-    s32 unk38;
-} Unk_80048CD8;
-extern u8 D_80081940[];
-void *D_8008A960;
-extern u8 D_800819CC[];
-extern s32 D_8008A96C[];
 
-s32 func_80048894(void) {
-    s32 temp_v0;
+MapChunkFileVtbl *MapChunk_GetVtbl(void);
+FileVtbl *File_GetBackendVtbl(void);
+s32 Heap_Alloc(s32 size);
+extern s16 g_stageFirstPath[];     /* first path of each stage in the path table */
+StageGrid *Stage_GetGrid(s32 stage);
+u8 *Stage_GetChunkPaths(s32 stage);
+u8 *Stage_GetChunkPath(s32 stage, s32 chunk);
+u8 *Cine_GetEventPaths(s32 *videoId);
+s32 Cine_GetOpeningPaths(s32 *videoId);
+s32 Cine_GetEndingPathEntry(s32 *videoId);
+u8 *Cine_GetEventPath(s32 *videoId, s32 event);
+s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category);
 
-    temp_v0 = Heap_Alloc(0x3C);
-    if (temp_v0 != 0) {
-        func_80048CE0()->unk8(temp_v0);
-        return temp_v0;
+/* {category, variant} of DreamSys +0x168; a negative category means an event video */
+typedef struct CineChoice {
+    s16 category;
+    s16 variant;
+} CineChoice;
+
+s32 Rand_SeedAndNext();
+u8 *Stage_GetTrackPaths(s32 stage);
+u8 *Stage_GetTexturePaths(s32 stage);
+u8 *Music_GetBanks(void);
+extern u8 g_mapChunkVtbl[];      /* MapChunkFileVtbl */
+void *g_rootDir;            /* "CDI\\", the root directory of every path */
+extern u8 g_musicBanks[];      /* the 7 sound bank paths, SND\AMBIENT to SND\STANDERD */
+extern s32 g_effectsBank[];     /* points to "SND\\SE" */
+
+s32 MapChunk_New(void) {
+    s32 chunk;
+
+    chunk = Heap_Alloc(0x3C);
+    if (chunk != 0) {
+        MapChunk_GetVtbl()->init(chunk);
+        return chunk;
     }
     return 0;
 }
 
-void func_800488E4(Unk_800488E4 *arg0) {
-    ((Unk_800488E4_vt *)func_80026CAC())->unk8(arg0);
-    arg0->unk0 = ((Unk_800488E4_vt *)func_80048CE0());
-    arg0->unk30 = -1;
-    arg0->unk2C = 0;
-    arg0->unk2E = 0;
-    arg0->unk32 = 0;
-    arg0->unk34 = 0;
-    arg0->unk38 = 1;
-    arg0->unk10 = ((void *)Heap_Alloc(0xB358));
-    if (arg0->unk10 != NULL) {
-        arg0->unk14 = 0xB358;
+/* Slot 0x08 */
+void MapChunk_Init(MapChunkFile *chunk) {
+    File_GetBackendVtbl()->init(chunk);
+    chunk->vtbl = MapChunk_GetVtbl();
+    chunk->index = -1;
+    chunk->loaded = 0;
+    chunk->entitiesLoaded = 0;
+    chunk->id = 0;
+    chunk->entities = 0;
+    chunk->loadEntities = 1;
+    chunk->data = ((void *)Heap_Alloc(0xB358));
+    if (chunk->data != NULL) {
+        chunk->size = 0xB358;
     }
 }
 
-void func_80048960(Unk_80048960 *arg0) {
-    arg0->vt->unk84(arg0);
-    func_80026CAC()->unkC(arg0);
+/* Slot 0x0C */
+void MapChunk_Destroy(MapChunkFile *chunk) {
+    chunk->vtbl->freeEntities(chunk);
+    File_GetBackendVtbl()->destroy(chunk);
 }
 
-void func_800489B4(Unk_800489B4 *arg0) {
-    u16 temp_v1;
+/* Slot 0x64, after each finished file request */
+void MapChunk_OnLoaded(MapChunkFile *chunk) {
+    u16 state;
 
-    temp_v1 = arg0->unk2A;
-    if (temp_v1 == 9) {
-        if (arg0->unk24 & 0x80) {
-            s32 temp_v1_2 = arg0->unk38;
+    state = chunk->state;
+    if (state == 9) {
+        if (chunk->flags & 0x80) {
+            s32 loadEntities = chunk->loadEntities;
 
-            arg0->unk2A = 0;
-            arg0->unk2C = 1;
-            if (temp_v1_2 != 0) {
-                arg0->unk0->unk80();
+            chunk->state = 0;
+            chunk->loaded = 1;
+            if (loadEntities != 0) {
+                chunk->vtbl->loadEntities();
             }
         }
-    } else if (temp_v1 == 0xA) {
-        if (arg0->unk24 & 0x80) {
-            arg0->unk2E = 1;
-            arg0->unk2A = 0;
+    } else if (state == 0xA) {
+        if (chunk->flags & 0x80) {
+            chunk->entitiesLoaded = 1;
+            chunk->state = 0;
         }
     }
-    ((Unk_800489B4_GVtbl *)func_80026CAC())->unk64(arg0);
+    File_GetBackendVtbl()->onLoaded(chunk);
 }
 
-void func_80048A68(Unk_80048A68 *arg0) {
-    func_80026CAC()->unk74(arg0);
-    arg0->unk2C = 0;
-    arg0->unk2E = 0;
-    arg0->unk2A = 0;
+/* Slot 0x74: drops the pending requests */
+void MapChunk_Unload(MapChunk *chunk) {
+    File_GetBackendVtbl()->cancel(chunk);
+    chunk->loaded = 0;
+    chunk->unk2E = 0;
+    chunk->unk2A = 0;
 }
 
-void func_80048AAC(Unk_80048AAC *arg0, s32 arg1) {
-    if ((arg0->unk10 != NULL) && (arg1 != 0)) {
-        if (arg0->unk2A == 0) {
-            arg0->unk2C = 0;
+/* Slot 0x78: reads the chunk file at path into the buffer */
+void MapChunk_Load(MapChunkFile *chunk, s32 path) {
+    if ((chunk->data != NULL) && (path != 0)) {
+        if (chunk->state == 0) {
+            chunk->loaded = 0;
         } else {
-            arg0->unk0->unk74(arg0);
+            chunk->vtbl->unload(chunk);
         }
-        arg0->unk2A = 9;
-        arg0->unk0->unk48(arg0);
-        arg0->unk0->unk44(arg0, arg1, 1, 0);
-        arg0->unk0->unk54(arg0, arg0->unk10, 0xB358);
+        chunk->state = 9;
+        chunk->vtbl->close(chunk);
+        chunk->vtbl->open(chunk, path, 1, 0);
+        chunk->vtbl->read(chunk, chunk->data, 0xB358);
     }
 }
 
-void func_80048B78(struct Unk_80048B78 *arg0) {
-    arg0->unk0->unk5C();
-    arg0->unk2C = 0;
-    arg0->unk30 = -1;
+/* Slot 0x7C */
+void MapChunk_Clear(MapChunkFile *chunk) {
+    chunk->vtbl->freeData();
+    chunk->loaded = 0;
+    chunk->index = -1;
 }
 
-s32 func_80048BC0(Unk_80048BC0 *arg0) {
-    s32 temp_s1;
-    s32 temp_v0;
+/* Slot 0x80: reads the entity part of the chunk file into a new heap block; 1 when started */
+s32 MapChunk_LoadEntities(MapChunkFile *chunk) {
+    s32 size;
+    s32 entities;
 
-    if ((arg0->unk10->unk2 != 0) && (arg0->unk2A == 0)) {
-        arg0->unk0->unk84(arg0);
-        temp_s1 = arg0->unk10->unk14;
-        temp_v0 = Heap_Alloc(temp_s1);
-        arg0->unk34 = temp_v0;
-        if (temp_v0 != 0) {
-            arg0->unk2A = 10;
-            arg0->unk0->unk4C(arg0, arg0->unk10->unk10, 0);
-            arg0->unk0->unk54(arg0, arg0->unk34, temp_s1);
+    if ((chunk->data->hasEntities != 0) && (chunk->state == 0)) {
+        chunk->vtbl->freeEntities(chunk);
+        size = chunk->data->entitiesSize;
+        entities = Heap_Alloc(size);
+        chunk->entities = entities;
+        if (entities != 0) {
+            chunk->state = 10;
+            chunk->vtbl->seek(chunk, chunk->data->entitiesOffset, 0);
+            chunk->vtbl->read(chunk, chunk->entities, size);
             return 1;
         }
     }
     return 0;
 }
 
-void func_80048C98(Unk_80048C98 *arg0) {
-    s32 temp_a0;
+/* Slot 0x84 */
+void MapChunk_FreeEntities(MapChunkFile *chunk) {
+    s32 entities;
 
-    temp_a0 = arg0->unk34;
-    arg0->unk2E = 0;
-    if (temp_a0 != 0) {
-        arg0->unk34 = Heap_Free(temp_a0);
+    entities = chunk->entities;
+    chunk->entitiesLoaded = 0;
+    if (entities != 0) {
+        chunk->entities = Heap_Free(entities);
     }
 }
 
-void func_80048CD8(Unk_80048CD8 *arg0, s32 arg1) {
-    arg0->unk38 = arg1;
+/* Slot 0x88 */
+void MapChunk_SetLoadEntities(MapChunkFile *chunk, s32 loadEntities) {
+    chunk->loadEntities = loadEntities;
 }
 
-Unk_80048894 *func_80048CE0(void) {
-    return (Unk_80048894 *)D_80081940;
+MapChunkFileVtbl *MapChunk_GetVtbl(void) {
+    return (MapChunkFileVtbl *)g_mapChunkVtbl;
 }
 
-void *func_80048CF0(void) {
-    return D_8008A960;
+void *File_GetRootDir(void) {
+    return g_rootDir;
 }
 
 s32 Rand_SeedAndNext(seed)
@@ -290,216 +253,230 @@ s32 Rand_SeedAndNext(seed)
     return rand();
 }
 
-void Music_SetOverride(s32 arg0, s32 arg1) {
-    if (arg0 >= 0) {
-        D_8008A964 = arg0;
+/* No caller: pins the bank and the track (1-based), a negative value keeps the current one */
+void Music_SetOverride(s32 bank, s32 track) {
+    if (bank >= 0) {
+        g_musicBankOverride = bank;
     }
-    if (arg1 >= 0) {
-        D_8008A968 = arg1;
+    if (track >= 0) {
+        g_musicTrackOverride = track;
     }
 }
 
-void *func_80048D48(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = 0x230;
+void *File_GetPathTable(s32 *count) {
+    if (count != NULL) {
+        *count = 0x230;
     }
-    return D_80081A04;
+    return g_pathTable;
 }
 
-u8 *func_80048D64(void) {
-    return D_800819CC;
+u8 *Music_GetBanks(void) {
+    return g_musicBanks;
 }
 
-s32 Music_PickBank(s32 arg0) {
+/* unused goes to Rand_SeedAndNext as an extra argument it ignores */
+s32 Music_PickBank(s32 unused) {
     s32 r;
-    u8 *p;
+    u8 *banks;
     s32 ofs;
 
-    r = (u32)Rand_SeedAndNext(0, arg0) % 7;
-    p = func_80048D64();
-    if (D_8008A964 != 0) {
-        ofs = (D_8008A964 - 1) * 4;
+    r = (u32)Rand_SeedAndNext(0, unused) % 7;
+    banks = Music_GetBanks();
+    if (g_musicBankOverride != 0) {
+        ofs = (g_musicBankOverride - 1) * 4;
     } else {
         ofs = r * 4;
     }
-    return *(s32 *)(p + ofs);
+    return *(s32 *)(banks + ofs);
 }
 
-s32 *func_80048DF8(void) {
-    return D_8008A96C;
+s32 *Music_GetEffectsBankPtr(void) {
+    return g_effectsBank;
 }
 
-s32 func_80048E08(void) {
-    return *func_80048DF8();
+s32 Music_GetEffectsBank(void) {
+    return *Music_GetEffectsBankPtr();
 }
 
-u8 *Stage_GetPathBase(s32 arg0) {
-    return (u8 *)func_80048D48(NULL) + D_800819E8[arg0] * 0x1C;
+u8 *Stage_GetPathBase(s32 stage) {
+    return (u8 *)File_GetPathTable(NULL) + g_stageFirstPath[stage] * 0x1C;
 }
 
-u8 *func_80048E80(s32 arg0) {
-    return Stage_GetPathBase(arg0);
+u8 *Stage_GetTexturePaths(s32 stage) {
+    return Stage_GetPathBase(stage);
 }
 
-u8 *Stage_PickTexturePath(s32 arg0, s32 arg1, s32 arg2) {
+/* TEXA to TEXD.TIX: rand() % (((dayNumber - 1) % 40) / 10 + 1) */
+u8 *Stage_PickTexturePath(s32 stage, s32 unused, s32 dayNumber) {
     s32 row;
     s32 r;
 
-    row = ((arg2 - 1) % 40) / 10 + 1;
-    r = Rand_SeedAndNext(0, arg1) % row;
-    return func_80048E80(arg0) + r * 0x1C;
+    row = ((dayNumber - 1) % 40) / 10 + 1;
+    r = Rand_SeedAndNext(0, unused) % row;
+    return Stage_GetTexturePaths(stage) + r * 0x1C;
 }
 
-u8 *func_80048F60(s32 arg0) {
-    return Stage_GetPathBase(arg0) + 0x70;
+u8 *Stage_GetTrackPaths(s32 stage) {
+    return Stage_GetPathBase(stage) + 0x70;
 }
 
-u8 *Music_PickTrack(s32 arg0) {
-    u32 var_s0;
-    u8 *temp_a0;
-    s32 var_v0;
+/* BGA to BGE.SEQ at random; stage 9 never gets BGC */
+u8 *Music_PickTrack(s32 stage) {
+    u32 track;
+    u8 *tracks;
+    s32 ofs;
 
-    var_s0 = (u32)Rand_SeedAndNext(0) % 5;
-    if (arg0 == 9) {
-        if (var_s0 == 2) {
-            var_s0 = 3;
+    track = (u32)Rand_SeedAndNext(0) % 5;
+    if (stage == 9) {
+        if (track == 2) {
+            track = 3;
         }
-        if (D_8008A968 == 3) {
-            D_8008A968 = 4;
+        if (g_musicTrackOverride == 3) {
+            g_musicTrackOverride = 4;
         }
     }
-    temp_a0 = func_80048F60(arg0);
-    if (D_8008A968 != 0) {
-        var_v0 = (D_8008A968 - 1) * 7;
+    tracks = Stage_GetTrackPaths(stage);
+    if (g_musicTrackOverride != 0) {
+        ofs = (g_musicTrackOverride - 1) * 7;
     } else {
-        var_v0 = var_s0 * 7;
+        ofs = track * 7;
     }
-    return temp_a0 + (var_v0 * 4);
+    return tracks + (ofs * 4);
 }
 
-u8 *func_8004903C(s32 arg0) {
-    return Stage_GetPathBase(arg0) + 0xFC;
+u8 *Stage_GetChunkPaths(s32 stage) {
+    return Stage_GetPathBase(stage) + 0xFC;
 }
 
-u8 *func_80049060(s32 arg0, s32 arg1) {
-    return func_8004903C(arg0) + arg1 * 0x1C;
+u8 *Stage_GetChunkPath(s32 stage, s32 chunk) {
+    return Stage_GetChunkPaths(stage) + chunk * 0x1C;
 }
 
-void func_80049098(s32 arg0, s32 arg1, s32 arg2) {
-    func_80049060(arg0, arg1 + (Stage_GetGrid(arg0)->unk_0 * arg2));
+void Stage_GetChunkPathAt(s32 stage, s32 col, s32 row) {
+    Stage_GetChunkPath(stage, col + (Stage_GetGrid(stage)->cols * row));
 }
 
 INCLUDE_RODATA("asm/nonmatchings/game/80048894", D_80011384);
 
-char *func_800490F4(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = 0x31;
+/* The ASMIK logo video, video id 0x31 */
+char *Cine_GetLogoPath(s32 *videoId) {
+    if (videoId != NULL) {
+        *videoId = 0x31;
     }
     return "ETC\\ASMK.STR";
 }
 
-s32 func_80049110(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = 0;
+/* ETC\OPENINGA.STR to OPENINGG.STR, video ids 0 to 6 */
+s32 Cine_GetOpeningPaths(s32 *videoId) {
+    if (videoId != NULL) {
+        *videoId = 0;
     }
-    return (s32)func_80048D48(NULL) + 0x3D40;
+    return (s32)File_GetPathTable(NULL) + 0x3D40;
 }
 
-s32 func_8004913C(s32 *arg0) {
-    s32 sp10;
+s32 Cine_PickOpeningPath(s32 *videoId) {
+    s32 firstId;
     s32 r;
-    s32 ret;
+    s32 path;
 
     r = (u32)Rand_SeedAndNext(0) % 7;
-    ret = func_80049110(&sp10);
-    if (arg0 != NULL) {
-        *arg0 = r + sp10;
+    path = Cine_GetOpeningPaths(&firstId);
+    if (videoId != NULL) {
+        *videoId = r + firstId;
     }
-    return ret + r * 0x1C;
+    return path + r * 0x1C;
 }
 
-s32 func_800491CC(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = 7;
+/* ETC\ENDING.STR, video id 7 */
+s32 Cine_GetEndingPathEntry(s32 *videoId) {
+    if (videoId != NULL) {
+        *videoId = 7;
     }
-    return (s32)func_80048D48(NULL) + 0x3E04;
+    return (s32)File_GetPathTable(NULL) + 0x3E04;
 }
 
-s32 func_800491FC(s32 *arg0) {
-    s32 sp10;
-    s32 temp_v1;
+s32 Cine_GetEndingPath(s32 *videoId) {
+    s32 id;
+    s32 path;
 
-    temp_v1 = func_800491CC(&sp10);
-    if (arg0 != NULL) {
-        *arg0 = sp10;
+    path = Cine_GetEndingPathEntry(&id);
+    if (videoId != NULL) {
+        *videoId = id;
     }
-    return temp_v1;
+    return path;
 }
 
-u8 *func_80049240(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = 8;
+/* FILM\EVENT1.STR to EVENT6.STR, video ids from 8 */
+u8 *Cine_GetEventPaths(s32 *videoId) {
+    if (videoId != NULL) {
+        *videoId = 8;
     }
-    return (u8 *)func_80048D48(NULL) + 0x3E20;
+    return (u8 *)File_GetPathTable(NULL) + 0x3E20;
 }
 
-u8 *Cine_GetEventPath(s32 *arg0, s32 arg1) {
-    s32 sp10;
-    u8 *temp_v1;
+u8 *Cine_GetEventPath(s32 *videoId, s32 event) {
+    s32 firstId;
+    u8 *paths;
 
-    temp_v1 = func_80049240(&sp10);
-    if (arg0 != NULL) {
-        *arg0 = arg1 + sp10;
+    paths = Cine_GetEventPaths(&firstId);
+    if (videoId != NULL) {
+        *videoId = event + firstId;
     }
-    return temp_v1 + arg1 * 0x1C;
+    return paths + event * 0x1C;
 }
 
-s32 Cine_GetSpecialDayPaths(s32 *arg0, s32 arg1) {
-    s32 temp_v1;
+/* The 6 paths of a special-day category (0xA8 bytes): videos A and B have ids category * 2 + 14 */
+s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category) {
+    s32 paths;
 
-    temp_v1 = (s32)func_80048D48(NULL) + 0x3EC8;
-    if (arg0 != NULL) {
-        *arg0 = (arg1 * 2) + 0xE;
+    paths = (s32)File_GetPathTable(NULL) + 0x3EC8;
+    if (videoId != NULL) {
+        *videoId = (category * 2) + 0xE;
     }
-    return temp_v1 + (arg1 * 0xA8);
+    return paths + (category * 0xA8);
 }
 
-s32 Cine_GetPath(s32 *arg0, Unk_80049334 arg1) {
-    s32 sp10;
-    s32 temp_v0;
-    s32 var_v1;
+/* Variants 0 and 1 are videos; 2 to 5 are pictures and get video id -1 */
+s32 Cine_GetPath(s32 *videoId, CineChoice choice) {
+    s32 firstId;
+    s32 paths;
+    s32 id;
 
-    if (arg1.unk0 >= 0) {
-        temp_v0 = Cine_GetSpecialDayPaths(&sp10, arg1.unk0);
-        if (arg0 != NULL) {
-            if ((u16)arg1.unk2 < 2U) {
-                var_v1 = arg1.unk2 + sp10;
+    if (choice.category >= 0) {
+        paths = Cine_GetSpecialDayPaths(&firstId, choice.category);
+        if (videoId != NULL) {
+            if ((u16)choice.variant < 2U) {
+                id = choice.variant + firstId;
             } else {
-                var_v1 = -1;
+                id = -1;
             }
-            *arg0 = var_v1;
+            *videoId = id;
         }
-        return temp_v0 + (arg1.unk2 * 0x1C);
+        return paths + (choice.variant * 0x1C);
     }
-    return (s32)Cine_GetEventPath(arg0, arg1.unk2);
+    return (s32)Cine_GetEventPath(videoId, choice.variant);
 }
 
-s16 func_800493C8(s32 arg0) {
-    return g_videoTable[arg0];
+s16 Cine_GetVideoFrames(s32 videoId) {
+    return g_videoTable[videoId];
 }
 
-s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2) {
+/*
+ * The first path of special-day category `category` and, in *frames, the length of its videos
+ * and those of the next count - 1 categories played as one stream (A and B each, 10 frames per join).
+ */
+s32 Cine_GetSpecialDayRun(s32 *frames, s32 category, s32 count) {
     s32 start;
     s32 ret;
     s32 i;
 
-    ret = Cine_GetSpecialDayPaths(&start, arg1);
-    *arg0 = 0;
-    arg2 *= 2;
-    arg2 += start;
-    for (i = start; i < arg2; i++) {
-        *arg0 += 10 + g_videoTable[i];
+    ret = Cine_GetSpecialDayPaths(&start, category);
+    *frames = 0;
+    count *= 2;
+    count += start;
+    for (i = start; i < count; i++) {
+        *frames += 10 + g_videoTable[i];
     }
-    *arg0 -= 10;
+    *frames -= 10;
     return ret;
 }

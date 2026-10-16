@@ -12,12 +12,12 @@ typedef struct TixHeaderBytes {
     u8 bytes[0x24];
 } TixHeaderBytes;
 
-/* The TIM image class (func_8003B39C, vtable 0x8006E558, 0x50 bytes) as this unit uses it */
+/* The TIM image class (Tim_New, vtable 0x8006E558, 0x50 bytes) as this unit uses it */
 typedef struct TimObjectVtbl {
     u8 pad_00[0x78];
-    void (*upload)();          /* 0x78 func_8003B4A8: pixels and CLUT to VRAM */
+    void (*upload)();          /* 0x78 Tim_Upload: pixels and CLUT to VRAM */
     u8 pad_7C[0x9C - 0x7C];
-    void (*getInfo)();         /* 0x9C func_8003B5F0: GsGetTimInfo(data + 4, image) */
+    void (*getInfo)();         /* 0x9C Tim_GetInfo: GsGetTimInfo(data + 4, image) */
 } TimObjectVtbl;
 
 typedef struct TimObject {
@@ -45,10 +45,10 @@ typedef struct GsImage {
     u8 pad_1C[0x20 - 0x1C];
 } GsImage;
 
-/* The GPU object of func_80020C5C (src/game/800206E0.c) */
+/* The GPU object of Display_GetCurrent (src/game/800206E0.c) */
 typedef struct GfxVtbl {
     u8 pad_00[0x58];
-    void (*loadImage)();       /* 0x58 (self, rect, pixels): func_8003B4A8 uploads TIMs with it */
+    void (*loadImage)();       /* 0x58 (self, rect, pixels): Tim_Upload uploads TIMs with it */
     u8 pad_5C[0x78 - 0x5C];
     void (*unk_78)();
 } GfxVtbl;
@@ -57,7 +57,7 @@ typedef struct GfxObject {
     GfxVtbl *vtbl;
 } GfxObject;
 
-/* The stream class of func_80046F0C as the movie uses it */
+/* The stream class of Stream_New as the movie uses it */
 typedef struct MovieStreamVtbl {
     s32 unk_00;
     struct MovieStream *(*delete_)(); /* 0x04 */
@@ -138,16 +138,16 @@ extern void GsMapModelingData(u32 *p);
 extern void Object_DeleteArray(void *, s32);
 extern void Heap_Free(s32);
 extern s32 Heap_Alloc(s32 size);
-extern void func_80026E0C(void);
-extern void func_80026E38(void);
-FileVtbl *func_80026CAC(void);
-FileSource *func_80026CE8(FileSource *source, s32 data, s32 path, s32 unk08);
-ObjectVtbl *func_8001E57C(void);
+extern void File_LockBackend(void);
+extern void File_UnlockBackend(void);
+FileVtbl *File_GetBackendVtbl(void);
+FileSource *File_MakeSource(FileSource *source, s32 data, s32 path, s32 unk08);
+ObjectVtbl *SceneNode_GetVtbl(void);
 ObjectVtbl *Object_GetBaseVtbl(void);
 extern void *ModelObject_Create(s32 tmdObject);
-s32 func_8003B39C(s32 path);
-GfxObject *func_80020C5C(void);
-MovieStream *func_80046F0C(void *arg0, s32 arg1, s32 arg2);
+s32 Tim_New(s32 path);
+GfxObject *Display_GetCurrent(void);
+MovieStream *Stream_New(void *arg0, s32 arg1, s32 arg2);
 extern s32 DrawSync(s32 mode);
 extern void DecDCTReset(s32 mode);
 extern void DecDCToutCallback(void (*func)(void));
@@ -226,7 +226,7 @@ void Tix_Init(Tix *tix, s32 path) {
     s32 buffer;
     TixFade *fade;
 
-    func_80026CAC()->init(tix);
+    File_GetBackendVtbl()->init(tix);
     tix->vtbl = Tix_GetVtbl();
     tix->partIndex = 0;
     tix->parts = 0;
@@ -264,7 +264,7 @@ void Tix_Init(Tix *tix, s32 path) {
 void Tix_Destroy(Tix *tix) {
     Object_DeleteArray(tix->parts, tix->partIndex);
     Heap_Free(tix->parts);
-    func_80026CAC()->destroy(tix);
+    File_GetBackendVtbl()->destroy(tix);
 }
 
 /*
@@ -278,7 +278,7 @@ void Tix_OnReadDone(Tix *tix) {
     u32 maxSize;
     TimPack **slot;
 
-    func_80026E0C();
+    File_LockBackend();
     switch (tix->state) {
     case 9:
         if (tix->flags & 0x80) {
@@ -318,7 +318,7 @@ void Tix_OnReadDone(Tix *tix) {
                 tix->bufferSize = 0;
                 tix->state = 0;
                 tix->loaded = 1;
-                func_80026CAC()->onLoaded(tix);
+                File_GetBackendVtbl()->onLoaded(tix);
             }
         }
         break;
@@ -327,7 +327,7 @@ void Tix_OnReadDone(Tix *tix) {
 fail:
     tix->failed = 1;
 end:
-    func_80026E38();
+    File_UnlockBackend();
 }
 
 /* The largest part size of the header (sizes at words 5 to 8) */
@@ -358,21 +358,21 @@ void Tix_SetFadeShift(Tix *tix, s32 palette, u16 shift) {
 void Tix_SetFadeColorAll(Tix *tix, ColorRGB *color) {
     s32 i;
 
-    func_80026E0C();
+    File_LockBackend();
     for (i = 0; i < 4; i++) {
         tix->vtbl->setFadeColor(tix, i, color);
     }
-    func_80026E38();
+    File_UnlockBackend();
 }
 
 void Tix_SetFadeColor(Tix *tix, s32 palette, ColorRGB *color) {
     TixFade *fade;
 
-    func_80026E0C();
+    File_LockBackend();
     fade = &tix->fades[palette];
     fade->color = *color;
     Tix_BuildFade(fade, palette);
-    func_80026E38();
+    File_UnlockBackend();
 }
 
 /*
@@ -468,7 +468,7 @@ Tmd *Tmd_Init(Tmd *tmd, FileSource *source) {
     s32 data;
     TmdVtbl *vtbl;
 
-    func_80026CAC()->init(tmd);
+    File_GetBackendVtbl()->init(tmd);
     vtbl = Tmd_GetVtbl();
     tmd->vtbl = vtbl;
     if (source != NULL) {
@@ -497,7 +497,7 @@ void Tmd_Destroy(Tmd *tmd) {
         model->vtbl->delete_(model);
     }
     Heap_Free((s32)tmd->models);
-    func_80026CAC()->destroy(tmd);
+    File_GetBackendVtbl()->destroy(tmd);
 }
 
 /* Slot 0x64: maps the TMD and makes one model per TMD object; 1 on failure */
@@ -525,7 +525,7 @@ s32 Tmd_OnLoaded(Tmd *tmd) {
         model++;
     }
     *model = NULL;
-    func_80026CAC()->onLoaded(tmd);
+    File_GetBackendVtbl()->onLoaded(tmd);
     return 0;
 }
 
@@ -564,7 +564,7 @@ s32 TimPack_Create(s32 path) {
 }
 
 void TimPack_Init(TimPack *timPack, s32 path) {
-    func_80026CAC()->init(timPack);
+    File_GetBackendVtbl()->init(timPack);
     timPack->vtbl = TimPack_GetVtbl();
     timPack->count = 0;
     timPack->tims = 0;
@@ -577,7 +577,7 @@ void TimPack_Init(TimPack *timPack, s32 path) {
 void TimPack_Destroy(TimPack *timPack) {
     Object_DeleteArray(timPack->tims, timPack->count);
     Heap_Free(timPack->tims);
-    func_80026CAC()->destroy(timPack);
+    File_GetBackendVtbl()->destroy(timPack);
 }
 
 /*
@@ -600,7 +600,7 @@ void TimPack_OnLoaded(TimPack *timPack) {
             slot = tims;
             offset = timPack->data.words + 1;
             for (i = 0; i < timPack->count; i++) {
-                tim = (TimObject *)func_8003B39C(0);
+                tim = (TimObject *)Tim_New(0);
                 *slot = tim;
                 tim->data = (u8 *)timPack->data.words + *offset;
                 (*slot)->size = 0;
@@ -610,7 +610,7 @@ void TimPack_OnLoaded(TimPack *timPack) {
                 slot++;
             }
             timPack->loaded = 1;
-            func_80026CAC()->onLoaded(timPack);
+            File_GetBackendVtbl()->onLoaded(timPack);
         }
     }
 }
@@ -651,7 +651,7 @@ void Tod_Init(Tod *tod, FileSource *source) {
     s32 data;
     TodVtbl *vtbl;
 
-    func_80026CAC()->init(tod);
+    File_GetBackendVtbl()->init(tod);
     vtbl = Tod_GetVtbl();
     tod->vtbl = vtbl;
     data = source->data;
@@ -665,7 +665,7 @@ void Tod_Init(Tod *tod, FileSource *source) {
 }
 
 void Tod_Destroy(Tod *tod) {
-    func_80026CAC()->destroy(tod);
+    File_GetBackendVtbl()->destroy(tod);
 }
 
 /* Slot 0x78: slot 0x7C on the first frame, after the 8-byte file header */
@@ -752,7 +752,7 @@ s32 Bg_Create(s32 map, s32 mode) {
 void Bg_Init(Bg *bg, s32 map, s32 mode) {
     BgVtbl *vtbl;
 
-    func_8001E57C()->init(bg);
+    SceneNode_GetVtbl()->init(bg);
     vtbl = Bg_GetVtbl();
     bg->vtbl = vtbl;
     vtbl->setMap(bg, map, mode);
@@ -884,7 +884,7 @@ Mom *Mom_Init(Mom *mom, FileSource *source, s32 hasParts) {
     MomVtbl *vtbl;
     s32 data;
 
-    func_80026CAC()->init(mom);
+    File_GetBackendVtbl()->init(mom);
     mom->vtbl = Mom_GetVtbl();
     mom->hasParts = hasParts;
     data = source->data;
@@ -905,11 +905,11 @@ Mom *Mom_Init(Mom *mom, FileSource *source, s32 hasParts) {
 /* Slot 0x7C is called without arguments: a0 still holds mom */
 void Mom_Destroy(Mom *mom) {
     mom->vtbl->freeParts();
-    func_80026CAC()->destroy(mom);
+    File_GetBackendVtbl()->destroy(mom);
 }
 
 void Mom_OnLoaded(Mom *mom) {
-    func_80026CAC()->onLoaded(mom);
+    File_GetBackendVtbl()->onLoaded(mom);
     mom->vtbl->loadParts(mom);
 }
 
@@ -920,7 +920,7 @@ s32 Mom_LoadParts(Mom *mom) {
     s32 motions;
 
     if (mom->hasParts != 0) {
-        func_80026CE8(&source, (s32)(mom->data + *(s32 *)(mom->data + 8)), 0, 1);
+        File_MakeSource(&source, (s32)(mom->data + *(s32 *)(mom->data + 8)), 0, 1);
         tmd = Tmd_Create((s32)&source);
         mom->tmd = (Tmd *)tmd;
         if (tmd != 0) {
@@ -1015,7 +1015,7 @@ s32 Mml_LoadParts(Mml *mml) {
     s32 i;
     s32 mom;
 
-    func_80026CE8(&source, 0, 0, 1);
+    File_MakeSource(&source, 0, 0, 1);
     entry = &mml->data[2];
     count = mml->data[1];
     mml->momCount = 0;
@@ -1070,7 +1070,7 @@ s32 BgMap_Create(s32 arg0, s32 cells) {
 void BgMap_Init(BgMap *bgMap, s32 arg1, BgCells *cells) {
     s32 unused[8];
 
-    func_80026CAC()->init(bgMap);
+    File_GetBackendVtbl()->init(bgMap);
     bgMap->vtbl = BgMap_GetVtbl();
     bgMap->cellSource = cells;
     bgMap->built = 0;
@@ -1083,7 +1083,7 @@ void BgMap_Init(BgMap *bgMap, s32 arg1, BgCells *cells) {
 
 void BgMap_Destroy(BgMap *bgMap) {
     Heap_Free(bgMap->index);
-    func_80026CAC()->destroy(bgMap);
+    File_GetBackendVtbl()->destroy(bgMap);
 }
 
 /* Slot 0x78 is called without arguments: a0 still holds bgMap */
@@ -1139,9 +1139,9 @@ s32 BgCells_Create(s32 arg0) {
 }
 
 void BgCells_Init(BgCells *bgCells, s32 arg1) {
-    char unused[0x20]; /* same 0x20 buffer as func_8004232C's strcpy target */
+    char unused[0x20]; /* same 0x20 buffer as SeqFile_Init's strcpy target */
 
-    func_80026CAC()->init(bgCells);
+    File_GetBackendVtbl()->init(bgCells);
     bgCells->vtbl = BgCells_GetVtbl();
     bgCells->unk_34 = 0;
     bgCells->built = 0;
@@ -1155,7 +1155,7 @@ void BgCells_Init(BgCells *bgCells, s32 arg1) {
 void BgCells_Destroy(BgCells *bgCells) {
     Heap_Free(bgCells->unk_34);
     Heap_Free(bgCells->cells);
-    func_80026CAC()->destroy(bgCells);
+    File_GetBackendVtbl()->destroy(bgCells);
 }
 
 void BgCells_OnLoaded(BgCells *bgCells) {
@@ -1271,7 +1271,7 @@ s32 TodPack_OnLoaded(TodPack *todPack) {
     s32 n;
     s32 made;
 
-    func_80026CE8(&source, 0, 0, 1);
+    File_MakeSource(&source, 0, 0, 1);
     out = todPack->data.header->offsets;
     n = todPack->data.header->count;
     for (i = 0; i < n; i++, out++) {
@@ -1323,7 +1323,7 @@ s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
 
     Object_GetBaseVtbl()->init(movie);
     movie->vtbl = Movie_GetVtbl();
-    stream = func_80046F0C(streamArg, 0xF, 0);
+    stream = Stream_New(streamArg, 0xF, 0);
     movie->stream = stream;
     if (stream != NULL) {
         if (Movie_AllocBuffers(movie, rect, skipAlloc) == 0) {
@@ -1426,7 +1426,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
             movie->stopped = 0;
             movie->repeat = repeat;
             movie->loops = loops;
-            gfx = func_80020C5C();
+            gfx = Display_GetCurrent();
             gfx->vtbl->unk_78(gfx, D_8008A944, &movie->frame);
             return 0;
         }
@@ -1542,7 +1542,7 @@ void Movie_OnSlice(MovieSliceView *movie) {
     GfxObject *gfx;
     u16 x;
 
-    gfx = func_80020C5C();
+    gfx = Display_GetCurrent();
     gfx->vtbl->loadImage(gfx, &movie->sliceX, movie->slice);
     x = movie->sliceX + movie->sliceW;
     movie->sliceX = x;

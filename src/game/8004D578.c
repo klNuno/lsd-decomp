@@ -60,10 +60,10 @@ void Card_TrimFileList(Card *card);
 CardDialog *CommentObject_New(s32 text, s32 arg1);
 s32 lseek(s32 fd, s32 offset, s32 whence);
 s32 g_cardBlankComment;
-extern s32 func_800408CC(s32, s32, s32);
+extern s32 Label_Create(s32, s32, s32);
 extern s8 *Text_Decode(s8 *, u8 *);
 extern s32 strlen(u8 *);
-s32 func_8003B39C(s32 path);
+s32 Tim_New(s32 path);
 Card *Card_New(s32 sharePad, s32 port);
 extern u8 g_cardFileSuffixes[];
 void *g_cardFilePrefix;
@@ -83,7 +83,7 @@ extern s32 D_80086EC4[];
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
-CardMessage *func_80041C9C(CardMessage *picture, s32 *arg1, s32 arg2);
+CardMessage *ScreenSprite_Create(CardMessage *picture, s32 *arg1, s32 arg2);
 MenuVtbl *Menu_GetVtbl(void);
 void SaveMenu_SetTitleDay(s32 dayNumber);
 extern u8 g_mainMenuDesc[];
@@ -254,7 +254,7 @@ void Menu_CreateTitleLabel(Menu *menu, MenuDesc *desc) {
         size = ((u32)strlen(g_cardTitle) >> 1) + 4;
         text = Heap_Alloc(size);
         Text_Decode((s8 *)text, (u8 *)g_cardTitle);
-        label = func_800408CC(desc->font, size, text);
+        label = Label_Create(desc->font, size, text);
         menu->titleLabel = (MenuLabel *)label;
         menu->titleLabel->unkAB = 8;
         menu->titleLabel->unkAC = 4;
@@ -343,7 +343,7 @@ void Menu_RefreshFromSave(Menu *menu) {
 /* Menu slot 0x128: makes the card (first time) and hands it the pad and the clock. */
 void Menu_OpenCard(Menu *menu) {
     if (menu->card == NULL) {
-        menu->fileIcon = (MenuPicture *)func_8003B39C((s32)"CARD\\FILEICN1.TIM");
+        menu->fileIcon = (MenuPicture *)Tim_New((s32)"CARD\\FILEICN1.TIM");
         menu->card = Card_New(1, 0);
     }
     menu->card->vtbl->open(menu->card, g_cardFilePrefix, g_cardFileSuffixes, menu->env->pad, menu->clock, menu->root, menu->sound);
@@ -1119,9 +1119,9 @@ void Card_ShowMessage(Card *card, s32 state) {
         strcat(dst, g_cardPictureDir);
         strcat(dst, name);
         strcat(dst, g_timSuffix);
-        picture = func_8003B39C(dst);
+        picture = Tim_New(dst);
         picture->vt->unk78(picture);
-        message = func_80041C9C(picture, D_80086EC4, 0);
+        message = ScreenSprite_Create(picture, D_80086EC4, 0);
         card->message = message;
         picture->vt->delete_(picture);
         message->vt->draw(message, card->root, g_cardMessagePos);

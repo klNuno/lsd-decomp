@@ -6,8 +6,8 @@
 
 /*
  * File loaders of src/game/80043008.c. Each class below derives from the file class of
- * src/game/80025F7C.c (base vtable 0x8006D430, returned by Object_GetClassTable; func_80026CAC
- * returns the CD or PC back end, picked by D_8008A84C). At boot func_80026CFC copies the back
+ * src/game/80025F7C.c (base vtable 0x8006D430, returned by File_GetBaseVtbl; File_GetBackendVtbl
+ * returns the CD or PC back end, picked by g_fileBackend). At boot File_SetBackend copies the back
  * end's I/O slots (0x40 to 0x58 and 0x68 to 0x74) into the base vtable and into every class
  * vtable listed at 0x8006D4AC, which holds the vtable getters of this unit: in the data those
  * slots are 0.
@@ -18,7 +18,7 @@
  * Slots are left unprototyped: the code calls some of them with fewer arguments.
  */
 
-/* func_80026CE8(source, data, path, unk_08): data != 0 borrows it, else the path is loaded */
+/* File_MakeSource(source, data, path, unk_08): data != 0 borrows it, else the path is loaded */
 typedef struct FileSource {
     s32 data;   /* address inside a parent file, or 0 */
     s32 path;   /* char *, used when data is 0 */
@@ -28,7 +28,7 @@ typedef struct FileSource {
 /* Slots 0x00 to 0x74 of every file class vtable */
 typedef struct FileVtbl {
     s32 unk_00;                /* 0x003 in the base, 0xF03 in the TIX class, other values per class */
-    void *(*delete_)();        /* 0x04 func_800269F0 */
+    void *(*delete_)();        /* 0x04 File_Delete */
     s32 (*init)();             /* 0x08 */
     void (*destroy)();         /* 0x0C */
     u8 pad_10[0x3C - 0x10];    /* Object methods, see ObjectVtbl */
@@ -36,14 +36,14 @@ typedef struct FileVtbl {
     void (*unk_40)();          /* CD: func_800272C8, empty */
     void (*open)();            /* 0x44 (self, path, 1, 0), CD: File_LoadByName (CdSearchFile) */
     void (*close)();           /* 0x48 CD: File_Unload */
-    s32 (*seek)();             /* 0x4C (self, offset, whence); whence 2 returns the size (func_80026B08) */
+    s32 (*seek)();             /* 0x4C (self, offset, whence); whence 2 returns the size (File_LoadWhole) */
     void (*unk_50)();          /* CD: func_800276C8, empty */
     s32 (*read)();             /* 0x54 (self, buffer, size), CD: File_Read (CdRead) */
-    void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (func_80026B08, File_Open) */
-    void (*freeData)();        /* 0x5C func_80026C20: frees +0x10 when +0x14 != 0 */
+    void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_Open) */
+    void (*freeData)();        /* 0x5C File_FreeData: frees +0x10 when +0x14 != 0 */
     void (*unk_60)();          /* func_80026C80, empty */
     s32 (*onLoaded)();         /* 0x64 run after each queued request (File_ServiceQueue) and by creators of
-                                  borrowed data; classes parse their data here; base func_80026C88: flags |= 1 */
+                                  borrowed data; classes parse their data here; base File_MarkLoaded: flags |= 1 */
     void (*runQueue)();        /* 0x68 CD: File_ServiceQueue, runs the queued requests */
     void (*loadAsync)();       /* 0x6C (self, path), CD: File_RequestOpen queues slot 0x58 */
     void (*unk_70)();          /* CD: File_Stop */
@@ -108,7 +108,7 @@ typedef struct Tix {
 
 /*
  * TimPack (vtable g_timPackVtbl, 0x3C bytes, TimPack_Create): one part of a TIX, {count,
- * offsets[count]} then the TIM images. onLoaded makes a TIM object (func_8003B39C) per image,
+ * offsets[count]} then the TIM images. onLoaded makes a TIM object (Tim_New) per image,
  * borrowing its data, and points its +0x4C at the fade of its palette row.
  */
 typedef struct TimPackVtbl {
@@ -309,12 +309,12 @@ typedef struct GsCell {
     u16 tpage;
 } GsCell;
 
-/* Bg (vtable g_bgVtbl, 0x68 bytes, Bg_Create): derives from the class of func_8001E57C */
+/* Bg (vtable g_bgVtbl, 0x68 bytes, Bg_Create): derives from the class of SceneNode_GetVtbl */
 typedef struct BgVtbl {
     s32 unk_00;               /* 0x54 */
     void *(*delete_)();       /* 0x04 Object_Delete */
     s32 (*init)();            /* 0x08 Bg_Init (self, map, mode) */
-    void (*destroy)();        /* 0x0C func_8001CBA4 */
+    void (*destroy)();        /* 0x0C SceneNode_Destroy */
     u8 pad_10[0x40 - 0x10];
     void (*setMap)();         /* 0x40 Bg_SetMap (self, map, mode) */
     void (*setRotation)();    /* 0x44 Bg_SetRotation (self, set, fraction) */
@@ -374,13 +374,13 @@ typedef struct BgMap {
 
 /*
  * Movie (vtable g_movieVtbl, 0x6C bytes, Movie_Create): the MDEC player. A stream object
- * (func_80046F0C) hands it frames; it decodes the VLC data into one of two run-level buffers,
+ * (Stream_New) hands it frames; it decodes the VLC data into one of two run-level buffers,
  * sends it through DecDCTin and gets 16-pixel-wide slices back through DecDCTout, each loaded
  * into VRAM by Movie_OnSlice from the MDEC callback. g_activeMovie is the one
  * playing.
  */
 typedef struct MovieRect {
-    u16 x;                    /* the rect of the GPU object's slot 0x58 (func_8003B4A8 builds the same) */
+    u16 x;                    /* the rect of the GPU object's slot 0x58 (Tim_Upload builds the same) */
     u16 y;
     s32 w;
     s32 h;
