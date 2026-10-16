@@ -6,8 +6,8 @@
 #include "game/gs.h"
 
 /*
- * File loaders of src/game/80043008.c. Each class below derives from the file class of
- * src/game/80025F7C.c (base vtable 0x8006D430, returned by File_GetBaseVtbl; File_GetBackendVtbl
+ * File loaders of src/game/tix.c to src/game/movie.c. Each class below derives from the file class of
+ * src/game/file_base.c (base vtable 0x8006D430, returned by File_GetBaseVtbl; File_GetBackendVtbl
  * returns the CD or PC back end, picked by g_fileBackend). At boot File_SetBackend copies the back
  * end's I/O slots (0x40 to 0x58 and 0x68 to 0x74) into the base vtable and into every class
  * vtable listed at 0x8006D4AC, which holds the vtable getters of this unit: in the data those
@@ -52,8 +52,8 @@ typedef struct FileVtbl {
 } FileVtbl;
 
 /*
- * The file object (0x2C bytes, base vtable 0x8006D430, src/game/80025F7C.c and the CD back end of
- * src/game/800271D8.c). Every class of this header starts with these fields.
+ * The file object (0x2C bytes, base vtable 0x8006D430, src/game/file_base.c and the CD back end of
+ * src/game/file_cd.c). Every class of this header starts with these fields.
  */
 typedef struct File {
     FileVtbl *vtbl;
@@ -124,7 +124,7 @@ typedef struct Tix {
  * The TIM image class (vtable g_timVtbl, 0x50 bytes, Tim_New): a file object
  * (include/game/loader.h) holding one TIM. Slot 0x78 uploads its pixels and its CLUT to VRAM
  * through the current display; slots 0x7C to 0x94 are empty. A TimPack makes one per image of
- * a TIX and points +0x4C at the fade of its palette row (src/game/80043008.c).
+ * a TIX and points +0x4C at the fade of its palette row (src/game/tix.c).
  */
 typedef struct TimVtbl {
     FileVtbl base;
@@ -340,7 +340,7 @@ typedef struct Mml {
 
 /*
  * Psy-Q GsBG, GsMAP and GsCELL as the code below fills them: a background sprite made of
- * cells. src/game/8003B854.c builds one full-screen 16-bit Bg: BgCells, a BgMap over them,
+ * cells. src/game/menu_screen.c builds one full-screen 16-bit Bg: BgCells, a BgMap over them,
  * then a Bg in mode 1 over the map.
  */
 typedef struct GsBg {
@@ -493,7 +493,7 @@ typedef struct Movie {
 } Movie;
 
 /*
- * The CD stream (vtable g_streamVtbl, 0x5C bytes, Stream_New, src/game/80046F0C.c): plays one STR file
+ * The CD stream (vtable g_streamVtbl, 0x5C bytes, Stream_New, src/game/stream.c): plays one STR file
  * through the PSY-Q streaming library; the movie player owns one (Movie +0x60).
  */
 typedef struct Stream Stream;

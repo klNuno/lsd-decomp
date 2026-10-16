@@ -2,7 +2,7 @@
 # text 0x800118dc..0x80066828 (last jr ra), gp set at 0x80011a1c to 0x8008a808 (= start of .sdata),
 # startup clears bss 0x8008ac20..0x80090c68.
 # Text units: psyq/<addr> are Sony library blocks found by tools/psyq/match.py (asm, never decompiled);
-# game/<addr> are the code between them, to be split into real translation units as evidence comes.
+# game/<name> are the original source files rebuilt from the evidence in docs/layout.md.
 name: LSD Dream Emulator (SLPS-01556)
 sha1: 76322eeade5ebb22dca57fdeac7d68c30f06308d
 options:
@@ -62,62 +62,69 @@ segments:
       # symbol has force_not_migration and is included in source order with INCLUDE_RODATA. Sony units
       # keep plain rodata files.
       - [0x800,  rodata, psyq/80012768]   # LIBGS/LIBGTE print_matrix, prnt, _make_packet, EigenMatrix
-      - [0xA8C,  .rodata, game/80017A20]  # func_80017A20 "bMemPMgr"
+      - [0xA8C, .rodata, game/heap]  # Heap_Create "bMemPMgr"
       - [0xABC,  rodata, psyq/8001EF70]   # GsLinkObject4
-      - [0xB54,  .rodata, game/8001F250]  # jtbl func_80020050
+      - [0xB54, .rodata, game/model_object]  # jtbl ModelObject_NextPrim
       - [0xBD4,  rodata, psyq/80020C74]   # sys.c $Id, LIBGPU, LIBETC intr.c
-      - [0xF64,  .rodata, game/80025B34]  # const table func_80025E1C
-      - [0xFA4,  .rodata, game/80025F7C]
-      - [0xFD8,  .rodata, game/800271D8]  # strings of func_80027FFC, func_80028920, then jtbls of func_80027A24
+      - [0xF64, .rodata, game/pad]  # const table Pad_InitButtons
+      - [0xFA4, .rodata, game/scene]
+      - [0xFD8, .rodata, game/file_cd]  # strings of File_ResolveEntries, File_Locate, then jtbls of File_ServiceQueue
       - [0x1040, rodata, psyq/80028B78]   # LIBCD
-      - [0x14D8, .rodata, game/80032588]
+      - [0x14D8, .rodata, game/seq_timer]
       - [0x14F0, rodata, psyq/8003410C]   # LIBSND SEQREAD jtbls (moved to psyq 2026-10-15, sony-suspects.md)
       - [0x1764, rodata, psyq/80036AC8]   # LIBSPU
-      - [0x17EC, .rodata, game/800398E0]
+      - [0x17EC, .rodata, game/bgm]
       - [0x1818, rodata, psyq/8003A670]   # LIBSND SEQINIT messages
       - [0x1878, rodata, psyq/8003B21C]
-      - [0x1890, .rodata, game/8003B854]
+      - [0x1890, .rodata, game/menu_screen]
       - [0x1908, rodata, psyq/8003F2AC]
       - [0x19B4, rodata, psyq/8004117C]   # sprintf
-      - [0x1A90, .rodata, game/80041AB4]
+      - [0x1A90, .rodata, game/screen_sprite]
       - [0x1AA4, rodata, psyq/80045E54]   # MDEC
       - [0x1B6C, rodata, psyq/80047910]   # "DMA STATUS ERROR"
-      - [0x1B84, .rodata, game/80048894]  # SND\ table strings (from data 0x800819B8..) then ETC\ASMK.STR
-      - [0x1BEC, .rodata, game/800494B4]  # object A: func_80049684 strings, jtbl func_80049EB4
-      - [0x1C34, .rodata, game/8004D578]  # object B: FLASHBACK block (data 0x80086CFC), func_8004D578..func_80050034
-      - [0x1DD0, .rodata, game/80050BA8]  # object C: alphabet, COMINPUT/FONTICON, jtbl func_800513D0
-      - [0x1EA4, .rodata, game/80051F24]  # object D: alphabet copy, func_80051F24, jtbls func_800522DC, func_80053984
-      - [0x1F6C, .rodata, game/80057FC8]  # object D2: ETC\ETCSE of func_80057FC8
-      - [0x1F78, .rodata, game/80058078]  # object E: func_80058078, jtbls func_80058C58, func_8005B03C
-      - [0x206C, .rodata, game/8005C508]  # object F: func_8005C508, jtbl func_8005CBC8
-      - [0x20DC, c, game/800118DC]
+      - [0x1B84, .rodata, game/path_table]  # SND\ table strings (from data 0x800819B8..) then ETC\ASMK.STR
+      - [0x1BEC, .rodata, game/dream_runner]  # object A: DreamRunner_Init strings, jtbl DreamRunner_OnStageMessage
+      - [0x1C34, .rodata, game/menu]  # object B: FLASHBACK block (data 0x80086CFC), Menu_Init..Menu_GetVtbl
+      - [0x1D0C, .rodata, game/card]  # object B, card part: the strings of g_cardMessageNames
+      - [0x1DD0, .rodata, game/comment_object]  # object C: alphabet, COMINPUT/FONTICON, jtbl CommentObject_OnKey
+      - [0x1EA4, .rodata, game/string_list]  # object D: alphabet copy, StringList_Open, jtbl StringList_OnKey
+      - [0x1F4C, .rodata, game/place]  # object D, place part: jtbl Place_OnDreamSysNotify
+      - [0x1F6C, .rodata, game/graph]  # objects D2 and E start: ETC\ETCSE of Graph_Init, ETC\HGRAPH.TIM
+      - [0x1F88, .rodata, game/dream_sys]  # object E: jtbls DreamSys_OnPad, DreamSys_OnEntityEvent
+      - [0x206C, .rodata, game/sym]  # object F: Sym_LoadModels, jtbl Sym_CheckRule
+      - [0x20DC, c, game/main]  # proven
       - [0x2194, asm, psyq/80011994]  # 2MBYTE,LIBAPI,MALLOC
-      - [0x2864, c, game/80012064]
+      - [0x2864, c, game/scene_draw]  # proven
       - [0x2F68, asm, psyq/80012768]  # LIBAPI,LIBC2,LIBGS,LIBGTE
-      - [0x8220, c, game/80017A20]
+      - [0x8220, c, game/heap]  # guess
+      - [0x8C64, c, game/render]  # likely
       - [0xAD64, asm, psyq/8001A564]  # LIBGTE
-      - [0xD294, c, game/8001CA94]
+      - [0xD294, c, game/scene_node]  # proven
       - [0xF770, asm, psyq/8001EF70]  # LIBGS,LIBGTE
-      - [0xFA50, c, game/8001F250]
+      - [0xFA50, c, game/model_object]  # proven
       - [0x10D48, asm, psyq/80020548]  # LIBGS,LIBGTE
-      - [0x10EE0, c, game/800206E0]
+      - [0x10EE0, c, game/display]  # proven
       - [0x11474, asm, psyq/80020C74]  # LIBAPI,LIBC2,LIBETC,LIBGPU,LIBGS,LIBGTE
-      - [0x16334, c, game/80025B34]
+      - [0x16334, c, game/pad]  # proven
       - [0x166AC, asm, psyq/80025EAC]  # LIBAPI,LIBETC
-      - [0x1677C, c, game/80025F7C]
+      - [0x1677C, c, game/scene]  # likely
+      - [0x171F0, c, game/file_base]  # likely
       - [0x17930, asm, psyq/80027130]  # LIBC2
-      - [0x179D8, c, game/800271D8]  # one TU to 0x80028B78: its strings precede its jtbls in .rodata; 0x80027D40 is game code (tools/psyq/match.py FALSE_HITS)
+      - [0x179D8, c, game/file_cd]  # proven; one TU to 0x80028B78: its strings precede its jtbls in .rodata; 0x80027D40 is game code (tools/psyq/match.py FALSE_HITS)
       - [0x19378, asm, psyq/80028B78]  # LIBC2,LIBCD
-      - [0x1C92C, c, game/8002C12C]
+      - [0x1C92C, c, game/map_models]  # likely
+      - [0x1CBC0, c, game/file_null]  # likely
+      - [0x1CC80, c, game/sound_bank]  # likely
+      - [0x1D434, c, game/handler_node]  # guess
       - [0x1D718, asm, psyq/8002CF18]  # LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match, sony-suspects.md
       - [0x20FF0, asm, psyq/800307F0]  # LIBSND
       - [0x21180, asm, psyq/80030980]  # LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match, sony-suspects.md
       - [0x221B4, asm, psyq/800319B4]  # LIBSND
       - [0x22244, asm, psyq/80031A44]  # LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match
       - [0x22948, asm, psyq/80032148]  # LIBSND
-      - [0x22A1C, c, game/8003221C]
+      - [0x22A1C, c, game/spu]  # proven
       - [0x22BA8, asm, psyq/800323A8]  # LIBSND
-      - [0x22D88, c, game/80032588]
+      - [0x22D88, c, game/seq_timer]  # proven
       - [0x23318, asm, psyq/80032B18]  # LIBAPI,LIBSND
       - [0x24490, asm, psyq/80033C90]  # LIBSND DECRE, near match
       - [0x247B8, asm, psyq/80033FB8]  # LIBSND
@@ -129,43 +136,79 @@ segments:
       - [0x272C8, asm, psyq/80036AC8]  # LIBAPI,LIBSPU
       - [0x29554, asm, psyq/80038D54]  # LIBSPU SpuInit, near match
       - [0x29574, asm, psyq/80038D74]  # LIBAPI,LIBSPU
-      - [0x2A0E0, c, game/800398E0]
+      - [0x2A0E0, c, game/bgm]  # proven
       - [0x2A878, asm, psyq/8003A078]  # LIBSND
       - [0x2AE70, asm, psyq/8003A670]  # LIBSND SEQINIT, near match
       - [0x2B268, asm, psyq/8003AA68]  # LIBSND
-      - [0x2B78C, c, game/8003AF8C]
+      - [0x2B78C, c, game/app]  # proven
       - [0x2BA1C, asm, psyq/8003B21C]  # LIBCD,LIBGS
-      - [0x2BB9C, c, game/8003B39C]
+      - [0x2BB9C, c, game/tim]  # proven
       - [0x2BF70, asm, psyq/8003B770]  # LIBGS
-      - [0x2C054, c, game/8003B854]
+      - [0x2C054, c, game/video_screen]  # likely
+      - [0x2C694, c, game/menu_screen]  # likely
+      - [0x2E7DC, c, game/screen]  # likely
+      - [0x2EDD8, c, game/view]  # likely
       - [0x2FAAC, asm, psyq/8003F2AC]  # LIBGS,LIBGTE
-      - [0x305B0, c, game/8003FDB0]
+      - [0x305B0, c, game/fade]  # likely
+      - [0x30CD0, c, game/box]  # likely
+      - [0x310CC, c, game/label]  # likely
+      - [0x317C0, c, game/text]  # guess
       - [0x3197C, asm, psyq/8004117C]  # LIBC,LIBC2
-      - [0x322B4, c, game/80041AB4]
+      - [0x322B4, c, game/glyph]  # likely
+      - [0x3249C, c, game/screen_sprite]  # likely
+      - [0x326E8, c, game/sprite_node]  # likely
+      - [0x32ACC, c, game/seq_file]  # likely
+      - [0x32C00, c, game/clock]  # likely
+      - [0x32E94, c, game/root_node]  # likely
       - [0x330F4, asm, psyq/800428F4]  # LIBGS
-      - [0x3311C, c, game/8004291C]
+      - [0x3311C, c, game/flat_light]  # proven
       - [0x3328C, asm, psyq/80042A8C]  # LIBGS
-      - [0x33808, c, game/80043008]
+      - [0x33808, c, game/tix]  # likely
+      - [0x34040, c, game/tmd]  # likely
+      - [0x34388, c, game/tim_pack]  # likely
+      - [0x34684, c, game/tod]  # likely
+      - [0x349B4, c, game/bg]  # likely
+      - [0x34E8C, c, game/mom]  # likely
+      - [0x3520C, c, game/mml]  # likely
+      - [0x354D4, c, game/bg_map]  # likely
+      - [0x35730, c, game/bg_cells]  # likely
+      - [0x359B8, c, game/tod_pack]  # likely
+      - [0x35C38, c, game/movie]  # likely
       - [0x36654, asm, psyq/80045E54]  # LIBAPI,LIBC,LIBC2,LIBPRESS
-      - [0x3770C, c, game/80046F0C]
+      - [0x3770C, c, game/stream]  # proven
       - [0x38110, asm, psyq/80047910]  # LIBCD
-      - [0x39094, c, game/80048894]
+      - [0x39094, c, game/map_chunk]  # likely
+      - [0x394F0, c, game/path_table]  # likely
       - [0x39C80, asm, psyq/80049480]  # LIBC2
-      - [0x39CB4, c, game/800494B4]
-      - [0x3DD78, c, game/8004D578]  # rodata object B starts here (ETC\ETCSE); the A|B text boundary lies in (0x80049EB4, 0x8004D578]
+      - [0x39CB4, c, game/stage]  # guess
+      - [0x39E08, c, game/dream_runner]  # guess
+      - [0x3A930, c, game/task]  # likely
+      - [0x3ACC8, c, game/stage_map]  # likely
+      - [0x3DA54, c, game/dream_view]  # likely
+      - [0x3DB8C, c, game/map_tile]  # likely
+      - [0x3DD18, c, game/menu]  # likely
+      - [0x3EAE0, c, game/card]  # likely
       - [0x410E8, asm, psyq/800508E8]  # LIBAPI,LIBC2,LIBCARD
-      - [0x413A8, c, game/80050BA8]
-      - [0x42724, c, game/80051F24]  # rodata object D; C|D boundary in (0x800513D0, 0x80051F24]
-      - [0x487C8, c, game/80057FC8]  # rodata object D2 (ETC\ETCSE); D|D2 boundary in (0x80053984, 0x80057FC8]
-      - [0x48878, c, game/80058078]  # rodata object E: exact, its jtbls sit at 0 mod 8 only from here
-      - [0x4CD08, c, game/8005C508]  # rodata object F; E|F boundary in (0x8005B03C, 0x8005C508]
+      - [0x413A8, c, game/comment_object]  # likely
+      - [0x4225C, c, game/string_list]  # likely
+      - [0x43370, c, game/place]  # likely
+      - [0x44CE4, c, game/scenery]  # likely
+      - [0x46B20, c, game/scenery_obj]  # likely
+      - [0x477E4, c, game/actor]  # likely
+      - [0x48494, c, game/scenery_part]  # likely
+      - [0x48768, c, game/graph]  # likely
+      - [0x48F74, c, game/dream_sys]  # likely
+      - [0x4C250, c, game/dream_link]  # guess
+      - [0x4CD08, c, game/sym]  # likely
+      - [0x4D7DC, c, game/entity]  # likely
+      - [0x55DD4, c, game/model]  # likely
       - [0x57028, data, main]
       - [0x7B008, sdata, main]
       # 8-byte pairs copied whole: maspsx (ASPSX 2.21) reaches sym+4 through gp only for .sdata the C file
       # defines itself, so the unit owns these bytes (work/config-window.md).
-      - [0x7B0FC, .sdata, game/8003B854]  # D_8008A8FC { 0x100, 0xF0 }, func_8003E968
+      - [0x7B0FC, .sdata, game/view]  # g_viewDefaultScreenSize { 0x100, 0xF0 }, View_Reset
       - [0x7B104, sdata, main_8008A904]
-      - [0x7B368, .sdata, game/80051F24]  # D_8008AB68 { -100, -60 }, D_8008AB70 { 0x140, 0x90 }, func_800549A8, func_80054850
+      - [0x7B368, .sdata, game/scenery]  # g_bandPos { -100, -60 }, g_bandSize { 0x140, 0x90 }, Ambience_UpdateBands, Ambience_CreateBands
       - [0x7B378, sdata, main_8008AB78]
       - { type: bss, vram: 0x8008AC20, name: main }
   - [0x7B420]

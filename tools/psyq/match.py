@@ -66,10 +66,10 @@ FALSE_HITS = {
     # targets are wildcards. This copy calls game functions func_800280D0,
     # func_80028218 (VSyncCallback setup) and func_800280E0, sits in the
     # data function table at 0x8006D4E8 between func_80027C80 and
-    # func_80027D70, and the strings of game/80027D70 come before the jump
-    # tables of game/800271D8 in .rodata: one game TU 0x800271D8..0x80028B78
-    # (.agents/research/rodata-split.md).
-    0x80027D40: "SsInit pattern inside game TU 800271D8, calls game code",
+    # func_80027D70, and the strings of the code from 0x80027D70 come before
+    # the jump tables of the code from 0x800271D8 in .rodata: one game TU
+    # 0x800271D8..0x80028B78, src/game/file_cd.c (.agents/research/rodata-split.md).
+    0x80027D40: "SsInit pattern inside game TU file_cd.c, calls game code",
 }
 
 

@@ -6,7 +6,7 @@
 #include "game/gs.h"
 
 /*
- * Screens and the view: the classes of src/game/8003B854.c, each derived from Object.
+ * Screens and the view: the classes of src/game/video_screen.c, src/game/menu_screen.c, src/game/screen.c and src/game/view.c, each derived from Object.
  *
  *   Screen       vtable g_screenVtbl (tag 0x30), base only. A modal state machine: run (slot 0x44)
  *                watches the display, the pad and the clock of its ScreenEnv, then state 2 starts
@@ -14,7 +14,7 @@
  *   MenuScreen   vtable g_menuScreenVtbl (tag 0x130), 0xA4 bytes, made by MenuScreen_New. Screen plus a
  *                sound bank, a picture, fade in and fade out, a timeout and a menu of items with
  *                option lists. The logos and the special-day pictures use it as is
- *                (src/game/80025F7C.c); the main menu (src/game/8004D578.c) derives from it.
+ *                (src/game/scene.c); the main menu (src/game/menu.c) derives from it.
  *   VideoScreen  vtable g_videoScreenVtbl (tag 0x1130), 0xDC bytes, made by VideoScreen_New: a MenuScreen
  *                that plays one STR video (docs/discoveries.md, special days).
  *   View         vtable g_viewVtbl (tag 7), 0xBC bytes, made by View_New: the GsRVIEW2,
@@ -63,7 +63,7 @@ typedef struct Fraction {
  * Objects of other units a screen talks to, with the slots this unit calls.
  */
 
-/* The display (Display_GetVtbl 0x8006C070, src/game/800206E0.c, sender type 1): sends message 2 once per frame while its loop runs. */
+/* The display (Display_GetVtbl 0x8006C070, src/game/display.c, sender type 1): sends message 2 once per frame while its loop runs. */
 typedef struct DisplayVtbl {
     ObjectVtbl base;
     s32 unk3C;                /* 0x3C 0 */
@@ -102,7 +102,7 @@ typedef struct Display {
     void (*frameCallback)(void); /* 0x30 called after each VSync, 0 for none */
 } Display;
 
-/* The pad (vtable 0x8006D370, class word 2, src/game/80025B34.c, sender type 2): docs/discoveries.md, pad codes. */
+/* The pad (vtable 0x8006D370, class word 2, src/game/pad.c, sender type 2): docs/discoveries.md, pad codes. */
 typedef struct PadVtbl {
     s32 classWord;          /* 0x00 2 */
     void *(*delete_)();    /* 0x04 Object_Delete */
@@ -130,7 +130,7 @@ typedef struct Pad {
     s32 pressed; /* 0x18 bits that went down this frame */
 } Pad;
 
-/* The clock (vtable g_clockVtbl 0x8006EF50, class word 5, src/game/80041AB4.c, sender type 5): each
+/* The clock (vtable g_clockVtbl 0x8006EF50, class word 5, src/game/clock.c, sender type 5): each
    step counts and sends CLOCK_MSG_TICK, or CLOCK_MSG_PAUSED when paused, CLOCK_MSG_STOPPED when stopped. */
 #define CLOCK_MSG_TICK 2
 #define CLOCK_MSG_PAUSED 3
@@ -174,7 +174,7 @@ typedef struct ModelObjectValue {
 } ModelObjectValue;
 
 /*
- * One model object (src/game/8001F250.c, sender type 9): the 0x24-byte Object subclass made by
+ * One model object (src/game/model_object.c, sender type 9): the 0x24-byte Object subclass made by
  * ModelObject_Create, one per TMD object; a scene node links one at +0x20.
  * Its vtable is g_modelObjectVtbl (g_modelObjectVtbl). The first three fields are the Object root
  * of heap.h, kept as s32 because the constructor stores an s32 in them (see the report).
@@ -188,7 +188,7 @@ typedef struct ModelObject {
     ModelObjectValue value; /* +0x14 */
 } ModelObject;
 
-/* A scene node (vtable g_sceneNodeVtbl, class word 4, 0x44 bytes, src/game/8001CA94.c; sender type 4):
+/* A scene node (vtable g_sceneNodeVtbl, class word 4, 0x44 bytes, src/game/scene_node.c; sender type 4):
    a GsDOBJ2 with a parent; Scene_DrawNode draws a tree of them. Slots are left unprototyped. */
 typedef struct SceneNodeVtbl {
     s32 classWord;             /* 0x00 4: sender type scene node */
@@ -257,7 +257,7 @@ typedef struct SceneNode {
 } SceneNode;
 
 /*
- * What every screen runs with: the scene keeps it at +0x1C (App_Start in src/game/8003AF8C.c
+ * What every screen runs with: the scene keeps it at +0x1C (App_Start in src/game/app.c
  * builds it with the display and the pad, the other three 0). A NULL clock, root or view makes the screen create
  * its own for the run and delete it after.
  */
@@ -265,7 +265,7 @@ typedef struct ScreenEnv {
     Display *display;
     Pad *pad;
     Clock *clock;            /* default Clock_Create */
-    SceneNode *root;         /* default RootNode_Create: a RootNode (vtable 0x8006EFAC, src/game/80041AB4.c), lights at +0x44, ambient color at +0x50 */
+    SceneNode *root;         /* default RootNode_Create: a RootNode (vtable 0x8006EFAC, src/game/root_node.c), lights at +0x44, ambient color at +0x50 */
     struct View *view;       /* default View_New, a new View */
 } ScreenEnv;
 
@@ -413,7 +413,7 @@ typedef struct Screen {
     s32 unk24;              /* 0x24 run's third argument: when set, run only watches and returns */
 } Screen;
 
-/* One object of the classes the menu uses (src/game/8003FDB0.c): texts, the option box, a 2D overlay. */
+/* One object of the classes the menu uses (src/game/fade.c, src/game/box.c and src/game/label.c): texts, the option box, a 2D overlay. */
 typedef struct WidgetVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();      /* 0x04 */
@@ -425,7 +425,7 @@ typedef struct WidgetVtbl {
     void (*setSemiTrans)();  /* 0x64 Box and Fade */
     void (*setBlendMode)();  /* 0x68 Box and Fade */
     u8 pad_6C[0x78 - 0x6C];
-    void (*unk78)();         /* 0x78 one argument (src/game/80050BA8.c) */
+    void (*unk78)();         /* 0x78 one argument (src/game/comment_object.c) */
     u8 pad_7C[0x80 - 0x7C];
     void (*unk80)();         /* 0x80 (widget, value, 0x60, 0x60) from the keyboard's SetBoxValue */
     u8 pad_84[0xB8 - 0x84];
@@ -440,7 +440,7 @@ typedef struct Widget {
 } Widget;
 
 /*
- * Fade (vtable g_fadeVtbl at 0x8006E99C, class word 0x164, 0xA0 bytes, src/game/8003FDB0.c): a Box
+ * Fade (vtable g_fadeVtbl at 0x8006E99C, class word 0x164, 0xA0 bytes, src/game/fade.c): a Box
  * that fades from or to a color. The color index is a 3-bit RGB channel mask (g_fadePalette: 1 blue,
  * 2 green, 4 red, 7 white); 0 means black and stores the mask 0xF. Each tick of the watched object
  * adds the step to the masked channels; at the end the fade notifies its watchers: 5 after a fade in,
@@ -524,8 +524,8 @@ struct Fade {
 };
 
 /*
- * Label (vtable g_labelVtbl, class word 0x11144, 0xB8 bytes, src/game/8003FDB0.c): a glyph that owns
- * a row of glyphs (src/game/80041AB4.c), one per character, laid out from its position with spacing
+ * Label (vtable g_labelVtbl, class word 0x11144, 0xB8 bytes, src/game/label.c): a glyph that owns
+ * a row of glyphs (src/game/glyph.c), one per character, laid out from its position with spacing
  * pixels between them. Label_Create makes the menu texts and the save title (menu.h Menu +0xB0).
  */
 typedef struct LabelVtbl {
@@ -723,7 +723,7 @@ typedef struct View {
     ScreenVec refPoint;     /* 0x20 */
     s32 twist;              /* 0x2C rz, 4.12 */
     Coord2 *super;          /* 0x30 node's coordinate; render clears its flg */
-    ScreenPoint screenSize; /* 0x34 (0x100, 0xF0): Scene_DrawNode (src/game/80012064.c) sizes boxes and sprites by its half */
+    ScreenPoint screenSize; /* 0x34 (0x100, 0xF0): Scene_DrawNode (src/game/scene_draw.c) sizes boxes and sprites by its half */
     s32 otBits;             /* 0x3C 13 */
     s32 projection;         /* 0x40 h of SetGeomScreen, 0x100 */
     s32 packetCount;        /* 0x44 2000 */
@@ -756,7 +756,7 @@ typedef struct View {
 
 /*
  * The application base class (vtable g_appVtbl, 0x20 bytes), the class Scene derives from
- * (vtable 0x8006D3C8, src/game/80025F7C.c). main (src/game/800118DC.c) makes the scene, starts it
+ * (vtable 0x8006D3C8, src/game/scene.c). main (src/game/main.c) makes the scene, starts it
  * with a display and a pad (slot 0x44), then runs it (slot 0x4C), which never returns.
  * Slots 0x50 to 0x64 are 0 here; Scene fills them (docs/discoveries.md, the ending video).
  */
@@ -796,8 +796,8 @@ typedef struct SceneSettings {
 } SceneSettings;
 
 /*
- * Scene (vtable g_sceneVtbl 0x8006D3C8, src/game/80025F7C.c), the App the game runs: main
- * (src/game/800118DC.c) makes it with g_sceneSettings, then calls setup (0x44) and run (0x4C).
+ * Scene (vtable g_sceneVtbl 0x8006D3C8, src/game/scene.c), the App the game runs: main
+ * (src/game/main.c) makes it with g_sceneSettings, then calls setup (0x44) and run (0x4C).
  * Every slot of g_sceneVtbl; 0x00 to 0x3C are Object's, 0x48 and 0x4C the base class's.
  */
 typedef struct SceneVtbl {

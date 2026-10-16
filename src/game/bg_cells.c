@@ -1,0 +1,113 @@
+#include "common.h"
+#include "game/loader.h"
+
+/*
+ * BgCells: the GsCELL table of a BgMap (include/game/loader.h).
+ *
+ * File boundaries: likely (docs/layout.md)
+ */
+
+extern void Heap_Free(s32);
+extern s32 Heap_Alloc(s32 size);
+FileVtbl *File_GetBackendVtbl(void);
+extern s32 GetTPage(s32 tp, s32 abr, s32 x, s32 y);
+BgCellsVtbl *BgCells_GetVtbl(void);
+extern BgCellsVtbl g_bgCellsVtbl;
+
+/* ---- BgCells: the GsCELL table ---- */
+
+s32 BgCells_Create(s32 skipBuild) {
+    s32 bgCells;
+
+    bgCells = Heap_Alloc(0x38);
+    if (bgCells != 0) {
+        BgCells_GetVtbl()->base.init(bgCells, skipBuild);
+        return bgCells;
+    }
+    return 0;
+}
+
+void BgCells_Init(BgCells *bgCells, s32 skipBuild) {
+    char unused[0x20]; /* same 0x20 buffer as SeqFile_Init's strcpy target */
+
+    File_GetBackendVtbl()->init(bgCells);
+    bgCells->vtbl = BgCells_GetVtbl();
+    bgCells->unk_34 = 0;
+    bgCells->built = 0;
+    if (skipBuild == 0) {
+        bgCells->fullScreen = 1;
+        bgCells->state = 0;
+        bgCells->vtbl->base.onLoaded(bgCells);
+    }
+}
+
+void BgCells_Destroy(BgCells *bgCells) {
+    Heap_Free(bgCells->unk_34);
+    Heap_Free(bgCells->cells);
+    File_GetBackendVtbl()->destroy(bgCells);
+}
+
+void BgCells_OnLoaded(BgCells *bgCells) {
+    s32 unused[8];
+
+    if (bgCells->state == 0) {
+        bgCells->vtbl->build(bgCells);
+        bgCells->built = 1;
+    }
+}
+
+/*
+ * Slot 0x78: 300 cells of 16x16, 20 per row over VRAM x 640 to 960, rows of 16 lines;
+ * the texture page follows x (x >> 6, + 0x10 from line 256).
+ */
+void BgCells_Build(BgCells *bgCells) {
+    s32 i;
+    s32 n;
+    s32 u;
+    s32 v;
+    s32 x;
+    s32 tpage;
+    GsCell *p;
+    GsCell *cells;
+
+    if (bgCells->fullScreen != 0) {
+        x = 0x280;
+        v = 0;
+        u = 0;
+        tpage = GetTPage(2, 0, 0x280, 0) & 0xFFFF;
+        cells = (GsCell *)Heap_Alloc(0x960);
+        bgCells->cells = cells;
+        if (cells != NULL) {
+            i = 0;
+            p = cells;
+            n = 0x12C;
+            do {
+                p->u = u;
+                u += 0x10;
+                x += 0x10;
+                p->tpage = tpage;
+                p->v = v;
+                p->cba = 0;
+                p->flag = 0;
+                if (x >= 0x3C0) {
+                    u = 0;
+                    x = 0x280;
+                    v += 0x10;
+                }
+                if ((x & 0x3F) == 0) {
+                    tpage = x >> 6;
+                    if (v >= 0x100) {
+                        tpage += 0x10;
+                    }
+                    u = 0;
+                }
+                i += 1;
+                p++;
+            } while (i < n);
+        }
+    }
+}
+
+BgCellsVtbl *BgCells_GetVtbl(void) {
+    return &g_bgCellsVtbl;
+}

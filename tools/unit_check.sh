@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Check one game unit on its own: it must assemble to the same bytes as the reference build.
 #   tools/unit_check.sh --save              after a green `make check`: keep build/src/**/*.o as the reference
-#   tools/unit_check.sh src/game/80058078.c build that unit alone (in a temp dir) and compare it
+#   tools/unit_check.sh src/game/dream_sys.c build that unit alone (in a temp dir) and compare it
 # Compares every section's bytes and the relocation list (offset, type and symbol) with the reference
 # object, so renames and struct rewrites can be tested while other units are being edited.
 # The final judge stays `make check` (sha1 of the linked executable).

@@ -124,7 +124,7 @@ typedef struct Entity {
     u8 pad_54[0x58 - 0x54];
     s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
     u8 pad_5C[0x6C - 0x5C];
-    s32 partCount;           /* 0x6C model parts (Model in src/game/8005C508.c) */
+    s32 partCount;           /* 0x6C model parts (Model in src/game/model.c) */
     struct ModelPart **parts; /* 0x70 */
     u8 pad_74[0x7C - 0x74];
     s32 animation;           /* 0x7C current animation (setAnimation) */

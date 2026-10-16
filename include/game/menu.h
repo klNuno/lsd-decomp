@@ -8,10 +8,10 @@
 
 /*
  * The main menu (START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE) and the memory card object it
- * drives, both from src/game/8004D578.c.
+ * drives, both from src/game/menu.c and src/game/card.c.
  *
  * Menu: class vtable g_menuVtbl 0x80086B60 (class word 0x1F130). It derives from the menu
- * screen class of src/game/8003B854.c (vtable 0x8006E730, class word 0x130, returned by
+ * screen class of src/game/menu_screen.c (vtable 0x8006E730, class word 0x130, returned by
  * MenuScreen_GetVtbl), whose slots it overrides at 0x08 to 0x0C, 0x38, 0x40, 0x50, 0x60, 0x90, 0x94
  * and 0xD8 to 0xE4, and adds 0x124 to 0x138. The glossary's Menu and SaveMenu are this one class.
  *
@@ -161,7 +161,7 @@ typedef struct MenuVtbl {
     void (*onCardNotify)(struct Menu *, s32 **, s32);    /* 0x138 Menu_OnCardNotify */
 } MenuVtbl;
 
-/* The main menu object. Fields below 0xA4 are MenuScreen's (include/game/scene.h, src/game/8003B854.c). */
+/* The main menu object. Fields below 0xA4 are MenuScreen's (include/game/scene.h, src/game/menu_screen.c). */
 typedef struct Menu {
     MenuVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];

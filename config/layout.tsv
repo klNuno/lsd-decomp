@@ -1,0 +1,71 @@
+UNIT	FIRST_FUNC	LAST_FUNC	FILE	CONFIDENCE	evidence
+800118DC	main	main	main.c	proven	first game code, then psyq/80011994 (2MBYTE, LIBAPI, MALLOC)
+80012064	Scene_DrawNode	Scene_DrawNode	scene_draw.c	proven	one function between psyq/80011994 and psyq/80012768
+80017A20	Heap_Create	Heap_IsBusy	heap.c	guess	start proven (psyq/80012768 before); Heap, Object and List with Heap_SetBusy/IsBusy after Object (gp g_heapBusy, sdata right after g_currentHeap) read as one file; heap.c plus object.c is the alternative; types already grouped in heap.h
+80017A20	Render_SortModel	Render_ForceClipDivision	render.c	likely	end proven (psyq/8001A564 LIBGTE after); gp g_clip*/g_texturedRgb and an sdata inversion bind all 27 functions; nothing ties them to Heap/Object; reload carry Render_ProjectTri -> Render_ProjectQuad (TRAPS) inside
+8001CA94	SceneNode_New	SceneNode_SetRayHeightCheck	scene_node.c	proven	psyq/8001A564 before, psyq/8001EF70 after; gp g_rayHeightCheck binds 34..54, the rest is the SceneNode class
+8001F250	ModelObject_Create	ModelObject_SetClut	model_object.c	proven	psyq/8001EF70 before, psyq/80020548 after; one class
+800206E0	Display_New	Display_SetCurrent	display.c	proven	psyq/80020548 before, psyq/80020C74 after; one class
+80025B34	Pad_New	Pad_GetVtbl	pad.c	proven	psyq/80020C74 before, psyq/80025EAC after; one class
+80025F7C	Scene_New	Scene_GetVtbl	scene.c	likely	start proven (psyq/80025EAC before); class ends with Scene_GetVtbl; only Scene functions use the unit .rodata; data order g_sceneVtbl then File data
+80025F7C	File_Delete	File_JoinPath	file_base.c	likely	end proven (psyq/80027130 LIBC2 after); data inversion g_fileVtable after g_fileClassGetters binds 22..26, gp g_fileBackend binds 24..37; File base class and backend selection
+800271D8	File_Create	File_GetVSyncMode	file_cd.c	proven	psyq/80027130 before, psyq/80028B78 after; rodata strings of File_ResolveEntries/File_Locate sit before the jtbls of File_ServiceQueue (one cc1 output) and gp g_fileEnabled bind it
+8002C12C	MapModels_New	func_8002C3B8	map_models.c	likely	start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, func_8002C3B8 (empty slot) kept with it
+8002C12C	File_NullInit	File_NullGetVSyncMode	file_null.c	likely	null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data
+8002C12C	Sound_CreateBank	Sound_GetTickRate	sound_bank.c	likely	gp/sdata block 25..40 (g_bankCount, g_soundTickRate...); vtable g_soundBankVtbl after g_fileNullVtbl
+8002C12C	HandlerNode_Start	HandlerNode_Run	handler_node.c	guess	end proven (psyq/8002CF18 LIBSND after); three functions with no data; could close sound_bank.c
+8003221C	Spu_Reset	Spu_ResetHot	spu.c	proven	psyq/80032148 before, psyq/800323A8 after
+80032588	Seq_SetRate	Seq_OnTickHalf	seq_timer.c	proven	psyq/800323A8 before, psyq/80032B18 after; data inversion binds 1..7
+800398E0	Bgm_New	Bgm_GetSeqTable	bgm.c	proven	psyq/80038D74 before, psyq/8003A078 after; gp binds 1..15
+8003AF8C	App_Init	App_GetVtbl	app.c	proven	psyq/8003AA68 before, psyq/8003B21C after
+8003B39C	Tim_New	Display_RotateRect	tim.c	proven	psyq/8003B21C before, psyq/8003B770 after; Display_RotateRect is a helper after Tim_GetVtbl
+8003B854	VideoScreen_New	VideoScreen_GetVtbl	video_screen.c	likely	start proven (psyq/8003B770 before); class ends with its GetVtbl; g_videoScreenVtbl first in the unit data
+8003B854	MenuScreen_New	MenuScreen_GetPictureRect	menu_screen.c	likely	data inversions bind 24..69; both jtbls of the unit are MenuScreen; GetPictureRect follows its GetVtbl
+8003B854	Screen_Init	Screen_GetVtbl	screen.c	likely	base class Screen, g_screenVtbl between MenuScreen and View data
+8003B854	View_New	View_SetGeomScreen	view.c	likely	end proven (psyq/8003F2AC after); sdata inversions bind 83..101; owns the gp record g_viewDefaultScreenSize (.sdata subsegment)
+8003FDB0	Fade_Create	Fade_GetVtbl	fade.c	likely	start proven (psyq/8003F2AC before); data inversion binds 9..13; class ends with GetVtbl
+8003FDB0	Box_Create	Box_GetVtbl	box.c	likely	class with Rgb_CopyOrAdd helper inside; g_boxVtbl after Fade data
+8003FDB0	Label_Create	Label_GetVtbl	label.c	likely	class ends with GetVtbl; g_labelVtbl last in unit data
+8003FDB0	Text_Decode	Text_FormatNumber	text.c	guess	end proven (psyq/8004117C after); three Shift-JIS helpers with no data, could close label.c
+80041AB4	Glyph_Create	Glyph_GetRect	glyph.c	likely	start proven (psyq/8004117C before); vtables of the unit follow class order
+80041AB4	ScreenSprite_Create	ScreenSprite_GetVtbl	screen_sprite.c	likely	data inversion binds 10..13; only jtbl of the unit
+80041AB4	SpriteNode_Create	SpriteNode_GetVtbl	sprite_node.c	likely	class ends with GetVtbl, vtable in class order
+80041AB4	SeqFile_Create	SeqFile_GetVtbl	seq_file.c	likely	class ends with GetVtbl, vtable in class order
+80041AB4	Clock_Create	Clock_GetVtbl	clock.c	likely	class ends with GetVtbl, vtable in class order
+80041AB4	RootNode_Create	RootNode_GetVtbl	root_node.c	likely	end proven (psyq/800428F4 after)
+8004291C	FlatLight_New	FlatLight_GetVtbl	flat_light.c	proven	psyq/800428F4 before, psyq/80042A8C after: a 6-function class alone, the clearest sign of one class per file
+80043008	Tix_Create	Tix_GetVtbl	tix.c	likely	start proven (psyq/80042A8C before); gp binds 1..8
+80043008	Tmd_Create	Tmd_GetVtbl	tmd.c	likely	class ends with GetVtbl
+80043008	TimPack_Create	TimPack_GetVtbl	tim_pack.c	likely	class ends with GetVtbl
+80043008	Tod_Create	Tod_GetVtbl	tod.c	likely	class ends with GetVtbl
+80043008	Bg_Create	Bg_GetVtbl	bg.c	likely	class ends with GetVtbl
+80043008	Mom_Create	Mom_GetVtbl	mom.c	likely	class ends with GetVtbl
+80043008	Mml_Create	Mml_GetVtbl	mml.c	likely	class ends with GetVtbl
+80043008	BgMap_Create	BgMap_GetVtbl	bg_map.c	likely	class ends with GetVtbl
+80043008	BgCells_Create	BgCells_GetVtbl	bg_cells.c	likely	class ends with GetVtbl
+80043008	TodPack_Create	TodPack_GetVtbl	tod_pack.c	likely	class ends with GetVtbl
+80043008	Movie_Create	Movie_GetVtbl	movie.c	likely	end proven (psyq/80045E54 LIBPRESS after); gp binds 80..93
+80046F0C	Stream_New	Stream_GetVtbl	stream.c	proven	psyq/80045E54 before, psyq/80047910 after; gp binds 4..15
+80048894	MapChunk_New	MapChunk_GetVtbl	map_chunk.c	likely	start proven (psyq/80047910 before); class ends with GetVtbl, g_mapChunkVtbl first in unit data
+80048894	File_GetRootDir	Cine_GetSpecialDayRun	path_table.c	likely	end proven (psyq/80049480 rand after); data inversion g_musicBanks/g_stageFirstPath before g_pathTable binds 14..19, gp music overrides 13..23; SND strings then ETC\ASMK.STR in rodata
+800494B4	Stage_GetCount	Stage_GetChunkMood	stage.c	guess	start proven (psyq/80049480 before); stage table accessors with their own tables, data before DreamRunner data; could open dream_runner.c
+800494B4	DreamRunner_New	File_ResolvePathTablePart	dream_runner.c	guess	data inversion binds 12..19; File_ResolvePathTablePart (own gp pair) placed after DreamRunner_GetVtbl by guess
+800494B4	Task_New	Task_GetVtbl	task.c	likely	class ends with GetVtbl, g_taskVtbl after DreamRunner data
+800494B4	StageMap_New	StageMap_GetVtbl	stage_map.c	likely	data inversions bind 34..94 (MapTile_Tell, Stage_PlaceToWorld inside)
+800494B4	DreamView_New	DreamView_GetVtbl	dream_view.c	likely	class ends with GetVtbl, vtable in class order
+800494B4	MapTile_New	MapTile_GetVtbl	map_tile.c	likely	class ends with GetVtbl, last data of the unit
+800494B4+8004D578	Menu_New	Menu_GetVtbl	menu.c	likely	rodata object B (string after DreamRunner_OnStageMessage jtbl) proves a boundary in (0x80049EB4, 0x8004D578]; Menu_New opens the class; gp g_cardTitle etc. bind Menu_Init..Menu_GetVtbl
+8004D578	Card_New	Card_SetTitleLetter	card.c	likely	end proven (psyq/800508E8 LIBCARD after); data and sdata inversions bind 41..76
+80050BA8	CommentObject_New	CommentObject_GetVtbl	comment_object.c	likely	start proven (psyq/800508E8 before); end proven to lie in (CommentObject_SetChar, StringList_Open]: FONTICON is stored twice (cc1 merges equal literals per file) and gp g_alphabet binds 1..25; exact cut at the class end likely
+80050BA8+80051F24	StringList_New	StringList_GetVtbl	string_list.c	likely	object D (alphabet copy after CommentObject_OnKey jtbl); StringList methods are copies of CommentObject ones; gp/rodata bind StringList_Open..StringList_SetView
+80051F24	Place_New	Place_GetVtbl	place.c	likely	gp and data inversions bind Place_Load..Place_GetVtbl; Place jtbl follows the StringList jtbl (no constraint)
+80051F24	Scenery_Begin	Ambience_IsEvenFamily	scenery.c	likely	proven one file: sdata gp g_sceneryMap and 13 sbss statics bind 60..102; ETC\ETCSE after the Place jtbl proves a boundary after Place_OnDreamSysNotify; separate from place.c and scenery_obj.c by guess (Scenery_SetPlaceRefs setter)
+80051F24	Scenery_New	Scenery_SetPlaceRefs	scenery_obj.c	likely	gp g_sceneryModels/View/Font bind 108..124; class ends with GetVtbl then the setter the manager calls
+80051F24	Actor_New	Actor_GetVtbl	actor.c	likely	class ends with GetVtbl, g_actorVtbl after Scenery data
+80051F24	SceneryPart_New	SceneryPart_GetVtbl	scenery_part.c	likely	data inversion binds 157..164
+80051F24+80057FC8+80058078	Graph_New	Graph_GetVtable	graph.c	likely	ETC\ETCSE (Graph_Init) after the Place jtbl proves a boundary before Graph_Init; [ETCSE][ETC\HGRAPH.TIM] is 0x1C bytes so the DreamSys jtbl at 0x80011788 is 8-aligned in its own object: the 0x80058078 cut is not forced; one class
+80058078	DreamSys_New	DreamSys_GetVtable	dream_sys.c	likely	data inversions bind DreamSys_Reset..DreamSys_GetVtable (Mood_* inside); jtbls of DreamSys_OnPad and DreamSys_OnEntityEvent
+80058078	Nav_InitFlags	Day_FindSpecial	dream_link.c	guess	gp g_navFlags binds 112..128; Sym strings after the DreamSys jtbl prove a boundary after DreamSys_GetVtable, Link_Find, Spawn_PickFromMood or Day_FindSpecial; could close dream_sys.c
+8005C508	Sym_LoadModels	Sym_SpawnSpy	sym.c	likely	rodata object F starts with its strings (proven boundary in (0x8005B03C, 0x8005C508]); gp g_sym* and data inversions bind 0..16
+8005C508	Entity_Create	Behavior_Type129	entity.c	likely	proven one file for Entity_Attach..Behavior_TinyLips: 670+ data inversions between entity records and behaviour tables; Entity_Create..Init and Behavior_Type129 by adjacency
+8005C508	Model_New	Model_GetVtbl	model.c	likely	end proven (end of .text); class ends with GetVtbl, g_modelVtbl last

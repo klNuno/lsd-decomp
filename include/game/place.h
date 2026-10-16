@@ -9,10 +9,10 @@
 /*
  * Place: the object that runs one stage while the dreamer is in it (the "dream stage class"
  * of docs/discoveries.md, vtable 0x80087034 returned by Place_GetVtbl, 0x88 bytes made by
- * Place_New from the dream runner DreamRunner_CreateStage). Its methods are in src/game/80051F24.c:
+ * Place_New from the dream runner DreamRunner_CreateStage). Its methods are in src/game/place.c:
  * load (slot 0x4C, music track and texture set), the pad handler (0x58, pause and the hidden
  * exit), the per-tick update (0x5C) and the place's scenery and ambience.
- * The base class is the one Task_GetVtbl returns (src/game/800494B4.c).
+ * The base class is the one Task_GetVtbl returns (src/game/task.c).
  * Slots are left unprototyped: callers pass different argument types.
  */
 
@@ -76,7 +76,7 @@ typedef struct PlaceBaseVtbl {
     void (*detach)();                 /* 0x48 */
 } PlaceBaseVtbl;
 
-/* Vtable 0x80087034. Slot names from the functions stored there (src/game/80051F24.c). */
+/* Vtable 0x80087034. Slot names from the functions stored there (src/game/place.c). */
 typedef struct PlaceVtbl {
     s32 classWord;                    /* 0x0002F230 */
     void *(*delete_)();               /* 0x04 Object_Delete */

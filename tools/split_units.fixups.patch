@@ -1,0 +1,257 @@
+diff -ru a/src/game/graph.c b/src/game/graph.c
+--- a/src/game/graph.c
++++ b/src/game/graph.c
+@@ -7,13 +7,33 @@
+  * File boundaries: likely (docs/layout.md)
+  */
+ 
+-/* The vtable of Graph_GetVtable, slot 0x08 only. */
+-typedef struct GraphCtorVtbl {
+-    u8 pad[8];
+-    void (*construct)(void *, s32);
+-} GraphCtorVtbl;
++/*
++ * The graph screen (vtable g_graphVtbl, class word 0x2F130, 0x244 bytes, made by Graph_New): a
++ * MenuScreen (scene.h) whose menu slots draw the mood chart instead of items, one 10 x 10 box per
++ * day for the last 100 days of the save block, and that spots the secret reel (docs/discoveries.md,
++ * the secret video reel).
++ */
++typedef struct Graph {
++    MenuScreen screen;      /* 0x000 vtbl is g_graphVtbl */
++    DreamSys *dreamSys;     /* 0x0A4 Graph_Init's argument: the save block comes from it */
++    Widget *boxes[100];     /* 0x0A8 Box_Create boxes: [0] the newest day, then older and older days */
++    s32 reelFound;          /* 0x238 Graph_CheckReel: the four reel points are on the chart */
++    u32 reelShown;          /* 0x23C reel points painted green so far */
++    s8 *reelDays;           /* 0x240 4 bytes: for each reel point, how many days back it was found */
++} Graph;
++
++/* g_graphVtbl: the MenuScreen slots (ScreenVtbl, slot 0x40 is Graph_LoadImage), plus one of its own. */
++typedef struct GraphVtbl {
++    u8 pad_00[0x08];
++    void (*init)(void *, s32);       /* 0x008 Graph_Init */
++    u8 pad_0C[0x124 - 0x0C];
++    void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
++} GraphVtbl;
++
+ void *Heap_Alloc(s32 size);
+-GraphCtorVtbl *Graph_GetVtable(void);
++void Heap_Free(s32);
++GraphVtbl *Graph_GetVtable(void);
++extern ScreenVtbl *MenuScreen_GetVtbl(void);
+ 
+ /* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
+ void *Graph_New(s32 dreamSys) {
+@@ -21,47 +41,22 @@
+ 
+     graph = Heap_Alloc(0x244);
+     if (graph != 0) {
+-        Graph_GetVtable()->construct(graph, dreamSys);
++        Graph_GetVtable()->init(graph, dreamSys);
+         return graph;
+     }
+     return 0;
+ }
+ 
+-typedef struct Graph Graph;
+-
+-/* The graph vtable (g_graphVtbl): slot 0x40 is Graph_LoadImage (src/game/graph.c). */
+-typedef struct GraphVtbl {
+-    u8 pad_00[0x40];
+-    void (*loadImage)(Graph *, s32);         /* 0x40 */
+-    u8 pad_44[0xD8 - 0x44];
+-    void (*unk_D8)(Graph *, s32);            /* 0xD8 */
+-} GraphVtbl;
+-
+-/* The graph screen (the mood chart): the vtable at 0x00, a MenuScreen (scene.h) whose sound bank at 0x48 is used here. */
+-struct Graph {
+-    GraphVtbl *vtbl;
+-    u8 pad_04[0x44];
+-    SoundBank *sound;    /* 0x48 MenuScreen.sound (scene.h), ETC\\ETCSE */
+-    u8 pad_4C[0xA4 - 0x4C];
+-    s32 unk_A4;                              /* 0xA4 the value given to Graph_Init, passed to slot 0x40 */
+-};
+-
+-extern ScreenVtbl *MenuScreen_GetVtbl(void);
+-extern GraphVtbl *Graph_GetVtable(void);
+-
+ /* Graph_New's init (slot 0x08 of the graph vtable): the MenuScreen init with the sound file ETC\\ETCSE,
+- * the graph vtable, the child's slot 0x9C, then the graph's slots 0xD8 and 0x40. */
+-void Graph_Init(Graph *graph, s32 value) {
++ * the graph vtable, then the graph's slots 0xD8 (setMenu) and 0x40 (Graph_LoadImage). */
++void Graph_Init(Graph *graph, DreamSys *dreamSys) {
+     MenuScreen_GetVtbl()->init(graph, 0, "ETC\\ETCSE", 0);
+-    graph->vtbl = Graph_GetVtable();
+-    graph->sound->vtbl->setOctave(graph->sound, -1);
+-    graph->unk_A4 = value;
+-    graph->vtbl->unk_D8(graph, 0);
+-    graph->vtbl->loadImage(graph, value);
++    graph->screen.vtbl = Graph_GetVtable();
++    graph->screen.sound->vtbl->setOctave(graph->screen.sound, -1);
++    graph->dreamSys = dreamSys;
++    graph->screen.vtbl->setMenu(graph, 0);
++    graph->screen.vtbl->reset(graph, dreamSys);
+ }
+-extern ScreenVtbl *MenuScreen_GetVtbl(void);
+-void *Heap_Alloc(s32 size);
+-void Heap_Free(s32);
+ extern s32 g_graphReelColor;
+ extern u8 g_graphBoxSize[];
+ extern s32 g_graphNewestColor[];
+@@ -73,27 +68,7 @@
+     s8 b;
+ } GraphColor;
+ extern GraphColor g_graphOldColor;
+-extern s32 g_graphVtbl[];
+-/*
+- * The graph screen (vtable g_graphVtbl, class word 0x2F130, 0x244 bytes; Graph_New and Graph_Init are in
+- * src/game/graph.c): a MenuScreen (scene.h) whose menu slots draw the mood chart instead of items,
+- * one 10 x 10 box per day for the last 100 days of the save block, and that spots the secret reel
+- * (docs/discoveries.md, the secret video reel).
+- */
+-typedef struct Graph {
+-    MenuScreen screen;      /* 0x000 vtbl is g_graphVtbl */
+-    DreamSys *dreamSys;     /* 0x0A4 Graph_Init's argument: the save block comes from it */
+-    Widget *boxes[100];     /* 0x0A8 Box_Create boxes: [0] the newest day, then older and older days */
+-    s32 reelFound;          /* 0x238 Graph_CheckReel: the four reel points are on the chart */
+-    u32 reelShown;          /* 0x23C reel points painted green so far */
+-    s8 *reelDays;           /* 0x240 4 bytes: for each reel point, how many days back it was found */
+-} Graph;
+-
+-/* g_graphVtbl: the MenuScreen slots (ScreenVtbl), plus one of its own. */
+-typedef struct GraphVtbl {
+-    u8 pad_00[0x124];
+-    void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
+-} GraphVtbl;
++extern GraphVtbl g_graphVtbl[];
+ 
+ /* A MoodPoint compared whole, as one s16 (x low byte, y high byte). */
+ typedef struct ReelPoint {
+@@ -285,6 +260,6 @@
+     }
+ }
+ 
+-void *Graph_GetVtable(void) {
++GraphVtbl *Graph_GetVtable(void) {
+     return g_graphVtbl;
+ }
+diff -ru a/src/game/menu.c b/src/game/menu.c
+--- a/src/game/menu.c
++++ b/src/game/menu.c
+@@ -9,16 +9,10 @@
+  * File boundaries: likely (docs/layout.md)
+  */
+ 
+-/* The class of src/game/menu.c (Menu_GetVtbl), 0xC4 bytes. */
+-typedef struct MenuNewVtbl {
+-    u8 pad_00[0x08];
+-    void (*init)(s32, s32);
+-} MenuNewVtbl;
+-
+ s32 Heap_Alloc(s32 size);
+-extern MenuNewVtbl *Menu_GetVtbl(void);
++MenuVtbl *Menu_GetVtbl(void);
+ 
+-/* Allocates 0xC4 bytes and runs slot 0x8 of the class of src/game/menu.c. */
++/* Allocates the menu (0xC4 bytes) and runs slot 0x8 of its class, Menu_Init. */
+ s32 Menu_New(s32 arg0) {
+     s32 obj;
+ 
+diff -ru a/src/game/string_list.c b/src/game/string_list.c
+--- a/src/game/string_list.c
++++ b/src/game/string_list.c
+@@ -11,19 +11,34 @@
+ 
+ struct StringListVtbl {
+     s32 unk_00;                              /* 0x00 first word, value 0x20 in the data, meaning unknown */
+-    u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this unit */
++    u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this file */
+     void (*init)(StringList *, s32 **, s32);                  /* 0x08 StringList_Init */
+     void (*destroy)(StringList *);                            /* 0x0C StringList_Destroy */
+-    void (*watch)(StringList *, s32 **);                      /* 0x10 StringList_Watch */
+-    void (*unwatch)(StringList *, s32 **);                    /* 0x14 StringList_Unwatch */
++    void (*watch)();                                          /* 0x10 StringList_Watch */
++    void (*unwatch)();                                        /* 0x14 StringList_Unwatch */
+     void (*unwatchAll)(StringList *);                         /* 0x18 StringList_UnwatchAll */
+-    u8 pad_1C[0x38 - 0x1C];                  /* 0x1C to 0x37 base Object slots */
++    u8 pad_1C[0x30 - 0x1C];                  /* 0x1C to 0x2F base Object slots */
++    void (*notify)();                                         /* 0x30 Object_Notify */
++    u8 pad_34[0x38 - 0x34];
+     void (*onNotify)(StringList *, s32 **, s32);              /* 0x38 StringList_OnNotify */
+-    u8 pad_3C[0x40 - 0x3C];                  /* 0x3C not used by this unit */
++    u8 pad_3C[0x40 - 0x3C];                  /* 0x3C not used by this file */
+     void (*reset)(StringList *);                              /* 0x40 StringList_Reset */
+-    u8 pad_44[0x58 - 0x44];                  /* 0x44 to 0x57 not used by this unit */
++    u8 pad_44[0x48 - 0x44];
++    void (*close)();                                          /* 0x48 StringList_Close */
++    u8 pad_4C[0x54 - 0x4C];
++    void (*setMode)();                                        /* 0x54 StringList_SetState */
+     void (*unk_58)(StringList *, s32 **, s32);                /* 0x58 called by onNotify for sender tag 5 */
+     void (*unk_5C)(StringList *, s32 **, s32);                /* 0x5C called by onNotify for sender tag 2 */
++    void (*setBoxValue)();                                    /* 0x60 StringList_SetBoxValue */
++    u8 pad_64[0x7C - 0x64];
++    void (*scrollRight)();                                    /* 0x7C StringList_ScrollRight */
++    void (*scrollLeft)();                                     /* 0x80 StringList_ScrollLeft */
++    void (*moveUp)();                                         /* 0x84 StringList_CursorUp */
++    void (*moveDown)();                                       /* 0x88 StringList_CursorDown */
++    void (*createRows)();                                     /* 0x8C StringList_CreateRows */
++    void (*deleteRows)();                                     /* 0x90 StringList_DeleteRows */
++    void (*drawRows)();                                       /* 0x94 StringList_RedrawRows */
++    void (*moveCursor)();                                     /* 0x98 StringList_MoveHighlight */
+ };
+ 
+ struct StringList {
+@@ -184,33 +199,10 @@
+ }
+ 
+ /*
+- * The memory card file list window (vtable g_stringListVtbl, returned by StringList_GetVtbl; its first
+- * methods are in src/game/string_list.c): background CARD\SELECT.TIM, up to 4 visible rows of
++ * The memory card file list window: background CARD\SELECT.TIM, up to 4 visible rows of
+  * 26 characters built by Label_Create, the selected row in g_stringListCursorColor (0x80, 0x80, 0), the
+  * others in g_stringListRowColor (0x50, 0x50, 0x50). Slots 0x7C to 0x88 scroll it, 0x8C to 0x98 draw it.
+  */
+-typedef struct CardListVtbl {
+-    u8 pad_00[0x10];
+-    void (*watch)();      /* 0x10 Object_Watch */
+-    void (*unwatch)();    /* 0x14 Object_Unwatch */
+-    u8 pad_18[0x30 - 0x18];
+-    void (*notify)();     /* 0x30 Object_Notify */
+-    u8 pad_34[0x48 - 0x34];
+-    void (*close)();      /* 0x48 StringList_Close */
+-    u8 pad_4C[0x54 - 0x4C];
+-    void (*setMode)();    /* 0x54 StringList_SetState */
+-    u8 pad_58[0x60 - 0x58];
+-    void (*setBoxValue)();      /* 0x60 StringList_SetBoxValue */
+-    u8 pad_64[0x7C - 0x64];
+-    void (*scrollRight)(); /* 0x7C StringList_ScrollRight */
+-    void (*scrollLeft)(); /* 0x80 StringList_ScrollLeft */
+-    void (*moveUp)();     /* 0x84 StringList_CursorUp */
+-    void (*moveDown)();   /* 0x88 StringList_CursorDown */
+-    void (*createRows)(); /* 0x8C StringList_CreateRows */
+-    void (*deleteRows)(); /* 0x90 StringList_DeleteRows */
+-    void (*drawRows)();   /* 0x94 StringList_RedrawRows */
+-    void (*moveCursor)(); /* 0x98 StringList_MoveHighlight */
+-} CardListVtbl;
+ 
+ /* A row text, the background, a loaded file: the slots called on them here. */
+ typedef struct CardTextVtbl {
+@@ -239,8 +231,9 @@
+     CardListOwnerVtbl *vt;
+ } CardListOwner;
+ 
++/* The StringList object as the window methods read it. */
+ typedef struct CardList {
+-    CardListVtbl *vt;
++    StringListVtbl *vt;
+     u8 pad_04[0x10 - 0x04];
+     s32 count;            /* 0x10 rows in the list */
+     s32 width;            /* 0x14 characters of the longest row */
+@@ -596,6 +589,6 @@
+     return list->cursor;
+ }
+ 
+-CardListVtbl *StringList_GetVtbl(void) {
+-    return (CardListVtbl *)g_stringListVtbl;
++StringListVtbl *StringList_GetVtbl(void) {
++    return (StringListVtbl *)g_stringListVtbl;
+ }

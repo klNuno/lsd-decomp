@@ -4,11 +4,11 @@
 #include "common.h"
 
 /*
- * Sound banks and handler voices (src/game/8002C12C.c).
+ * Sound banks and handler voices (src/game/sound_bank.c and src/game/handler_node.c).
  * A sound bank (class vtable g_soundBankVtbl, Sound_GetBankClass, 0x64 bytes) loads one VAB into sound
  * RAM, builds its tone tables and starts and stops voices with SsUtKeyOn. Menus and screens own one
  * (scene.h MenuScreen +0x48, menu.h Menu +0x48 and Card +0x6C), tasks may own one (stage.h Task +0x34),
- * and every model has one at +0x58 (Model in src/game/8005C508.c, DreamSys +0x58, Entity +0x58):
+ * and every model has one at +0x58 (Model in src/game/model.c, DreamSys +0x58, Entity +0x58):
  * the voices a behaviour handler asks for play on it (HandlerNode, HandlerNode_Run).
  */
 
@@ -40,7 +40,7 @@ typedef struct SoundBankVtbl {
 } SoundBankVtbl;
 
 /* The sound bank, 0x64 bytes. Sound_LoadProgramTable and Sound_PlayTone read +0x4C to +0x60 with
-   other types (views SoundBankVab and SoundBankTones in src/game/8002C12C.c). */
+   other types (views SoundBankVab and SoundBankTones in src/game/sound_bank.c). */
 typedef struct SoundBank {
     /* 0x00 */ SoundBankVtbl *vtbl;
     /* 0x04 */ u8 pad_04[0xC];

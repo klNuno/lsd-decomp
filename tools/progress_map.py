@@ -11,7 +11,8 @@ Every game function is matching C, so the map measures what is left to understan
 - named: it has a name of ours, but its body still reads a field called unk_XX, a local or
   parameter named by m2c (arg0, temp_s0, var_v0, sp10), an Unk_ type or a D_ global;
 - read: every name in its body is ours.
-The 40 Sony library units (PSY-Q, linked as asm, never decompiled) are drawn apart.
+The 70 game files are labelled by name; the 40 Sony library units (PSY-Q, linked as asm, never
+decompiled) are drawn apart.
 """
 import argparse
 import hashlib
@@ -261,7 +262,7 @@ def svg(r):
         '<g font-family="system-ui, -apple-system, Segoe UI, sans-serif">',
         f'<text x="{pad}" y="44" font-size="25" font-weight="700" fill="{INK}">LSD: Dream Emulator · decompilation</text>',
         f'<text x="{pad}" y="72" font-size="14" fill="{INK2}">Matching SLPS_015.56 verified · {e(r["commit"])}'
-        f'{" (dirty tree)" if r["tracked_tree_dirty"] else ""} · {t["game_functions"]:,} game functions, '
+        f'{" + edits" if r["tracked_tree_dirty"] else ""} · {t["game_functions"]:,} game functions, '
         f'{g:,} code bytes, all in C</text>',
         f'<text x="{W - pad}" y="44" text-anchor="end" font-size="30" font-weight="700" fill="{INK}">'
         f'{pct("read"):.1f}% read</text>',
@@ -283,8 +284,7 @@ def svg(r):
     for ux, uy, uw, uh, u in placed:
         inner = [(f["bytes"], f) for f in u["functions"] if f["bytes"] > 0]
         if u["game"]:
-            name = pathlib.Path(u["unit"]).name
-            ulab = f'{name} · {u["subsystem"]}' if u["subsystem"] else name
+            ulab = pathlib.Path(u["unit"]).name  # the source file, named by what it holds
         else:
             ulab = u["libraries"] or "Sony " + pathlib.Path(u["unit"]).stem
         for fx, fy, fw, fh, f in squarify(inner, ux, uy, uw, uh):
@@ -299,8 +299,8 @@ def svg(r):
                          f'stroke="{SURFACE}" stroke-width="0.6"><title>{e(tip)}</title></rect>')
         parts.append(f'<rect x="{ux:.2f}" y="{uy:.2f}" width="{uw:.2f}" height="{uh:.2f}" fill="none" '
                      f'stroke="{SURFACE}" stroke-width="2.5"><title>{e(u["unit"])}</title></rect>')
-        # the longest label that fits: "file · Subsystem", then the subsystem alone
-        for lab in (ulab, u.get("subsystem") or ""):
+        # the longest label that fits: "file.c", then the file name without its suffix
+        for lab in (ulab, pathlib.Path(ulab).stem if u["game"] else ""):
             if lab and uw > 7.2 * len(lab) + 18 and uh > 30:
                 labels.append((ux, uy, lab))
                 break

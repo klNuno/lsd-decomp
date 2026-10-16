@@ -8,7 +8,7 @@
 #include "game/sound.h"
 
 /*
- * Stages and the world the dream is built from (src/game/800494B4.c):
+ * Stages and the world the dream is built from (src/game/stage.c to src/game/map_tile.c):
  * - the per-stage chunk grids (StageGrid, g_stageChunkMoods at g_stageChunkMoods),
  * - Task, the class with a timeout and a result (vtable 0x80086668, class id 0x230) that the
  *   dream runner and the dream stage (include/game/place.h) derive from,
@@ -35,7 +35,7 @@ typedef struct StageGrid {
 /* ------------------------------------------------------------------------------------------ */
 /* Task: vtable 0x80086668, 0x38 bytes. Its base (vtable 0x8006E878) runs the loop.           */
 
-/* The base class of Task (vtable 0x8006E878, src/game/8003B854.c): the slots Task chains to. */
+/* The base class of Task (vtable 0x8006E878, src/game/screen.c): the slots Task chains to. */
 typedef struct TaskBaseVtbl {
     u8 pad_00[0x08];
     void (*init)();         /* 0x08 Screen_Init */
@@ -258,7 +258,7 @@ typedef struct MapTile {
 #define MAP_TILE_HIDDEN 0x80000000
 #define MAP_SLOT_TILES 410      /* 20 x 20 squares and 10 extra tiles */
 
-/* The chunk object of a slot (MapChunk_New, 0x3C bytes, src/game/80048894.c): a file object (loader.h
+/* The chunk object of a slot (MapChunk_New, 0x3C bytes, src/game/map_chunk.c): a file object (loader.h
    File) that reads one STGxx\Mxxx.LBD chunk file, then its entity part. Vtable g_mapChunkVtbl: the file
    class slots, then the chunk's own. */
 typedef struct MapChunkVtbl {
