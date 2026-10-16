@@ -10,7 +10,7 @@
 /* The scene settings main hands to Scene_New (g_sceneSettings: 0x13, 0, 1, 1, 1, 1). */
 typedef struct SceneSettings {
     s32 fileBackend; /* 0x00 FILE_BACKEND_*, given to the base init (File_SetBackend) */
-    s32 unk4;        /* 0x04 DreamRunner_New's third argument: DreamRunner_Init calls File_EnableWait(unk4 == 0, 1, 1) */
+    s32 useCdSearch;        /* 0x04 DreamRunner_New's third argument: DreamRunner_Init calls File_EnableWait(unk4 == 0, 1, 1) */
     s32 videos;      /* 0x08 opening, reel, cinematic and ending videos */
     s32 logos;       /* 0x0C */
     s32 title;       /* 0x10 the graph and the main menu */

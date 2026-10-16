@@ -20,11 +20,11 @@ void Actor_MoveX(void *actor, s32 value, s32 notify);
 void Actor_MoveY(void *actor, s32 value, s32 notify);
 void Actor_MoveZOnGround(struct Actor *actor, s32 value, s32 notify);
 void Actor_MoveXOnGround(struct Actor *actor, s32 value, s32 notify);
-void Actor_StubD8(void);
+void Actor_EmptySlotD8(void);
 void Actor_OnNode34(struct Actor *actor, void *sender, s32 message);
 void Actor_OnNode24(s32 actor, s32 sender, s32 message);
 void Actor_SetSpeed(struct Actor *actor, s16 value);
-void Actor_StubE8(void);
+void Actor_EmptySlotE8(void);
 void Actor_SetBoxMargin(struct Actor *actor, s32 value);
 
 #endif

@@ -209,7 +209,7 @@ s32 Scene_RunDream(Scene *scene) {
     s32 year[2];
     s32 result;
 
-    runner = DreamRunner_New(scene->env, scene->dreamSys, scene->settings->unk4);
+    runner = DreamRunner_New(scene->env, scene->dreamSys, scene->settings->useCdSearch);
     runResult = runner->vtbl->run(runner);
     runner->vtbl->delete_(runner);
     switch (runResult) {

@@ -17,7 +17,7 @@ typedef struct StringList StringList;
 typedef struct StringListVtbl StringListVtbl;
 
 struct StringListVtbl {
-    s32 unk_00;                              /* 0x00 first word, value 0x20 in the data, meaning unknown */
+    s32 classWord;                              /* 0x00 first word, value 0x20 in the data, meaning unknown */
     u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this file */
     void (*init)(StringList *, s32 **, s32);                  /* 0x08 StringList_Init */
     void (*destroy)(StringList *);                            /* 0x0C StringList_Destroy */
@@ -33,10 +33,10 @@ struct StringListVtbl {
     u8 pad_44[0x48 - 0x44];
     void (*close)();                                          /* 0x48 StringList_Close */
     u8 pad_4C[0x54 - 0x4C];
-    void (*setMode)();                                        /* 0x54 StringList_SetState */
-    void (*unk_58)(StringList *, s32 **, s32);                /* 0x58 called by onNotify for sender tag 5 */
-    void (*unk_5C)(StringList *, s32 **, s32);                /* 0x5C called by onNotify for sender tag 2 */
-    void (*setBoxValue)();                                    /* 0x60 StringList_SetBoxValue */
+    void (*setState)();                                        /* 0x54 StringList_SetState */
+    void (*tick)(StringList *, s32 **, s32);                /* 0x58 called by onNotify for sender tag 5 */
+    void (*onKey)(StringList *, s32 **, s32);                /* 0x5C called by onNotify for sender tag 2 */
+    void (*playTone)();                                    /* 0x60 StringList_PlayTone */
     u8 pad_64[0x7C - 0x64];
     void (*scrollRight)();                                    /* 0x7C StringList_ScrollRight */
     void (*scrollLeft)();                                     /* 0x80 StringList_ScrollLeft */
@@ -57,15 +57,15 @@ struct StringList {
     s32 maxLength;                           /* 0x14 set by init */
     s32 **strings;                           /* 0x18 set by init */
     s32 *lengths;                            /* 0x1C set by init */
-    s32 unk_20;                              /* 0x20 cleared by reset (StringList_Reset) */
-    s32 unk_24;                              /* 0x24 cleared by reset (StringList_Reset) */
-    s32 unk_28;                              /* 0x28 cleared by reset (StringList_Reset) */
-    s32 unk_2C;                              /* 0x2C not referenced in this unit */
-    s32 unk_30;                              /* 0x30 not referenced in this unit */
-    s32 **senderTag2;                        /* 0x34 tag pointer used by watch and unwatch */
-    s32 **senderTag5;                        /* 0x38 tag pointer used by watch and unwatch */
+    s32 top;                              /* 0x20 cleared by reset (StringList_Reset) */
+    s32 column;                              /* 0x24 cleared by reset (StringList_Reset) */
+    s32 cursor;                              /* 0x28 cleared by reset (StringList_Reset) */
+    s32 state;                              /* 0x2C not referenced in this unit */
+    s32 stateTicks;                              /* 0x30 not referenced in this unit */
+    s32 **pad;                        /* 0x34 tag pointer used by watch and unwatch */
+    s32 **clock;                        /* 0x38 tag pointer used by watch and unwatch */
     u8 pad_3C[0x50 - 0x3C];                  /* 0x3C to 0x4F not used by this unit */
-    s32 unk_50;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
+    s32 background;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
 };
 
 static StringListVtbl *StringList_GetVtbl(void);
@@ -128,9 +128,9 @@ void StringList_Init(StringList *list, s32 **strings, s32 mode) {
 }
 
 static void StringList_ClearSenders(StringList *list) {
-    list->senderTag2 = 0;
-    list->senderTag5 = 0;
-    list->unk_50 = 0;
+    list->pad = 0;
+    list->clock = 0;
+    list->background = 0;
 }
 
 void StringList_Destroy(StringList *list) {
@@ -151,11 +151,11 @@ void StringList_Watch(StringList *list, s32 **sender) {
         Object_GetBaseVtbl()->watch(list, sender);
         tag = **sender & 0xF;
         if (tag == 2) {
-            list->senderTag2 = sender;
+            list->pad = sender;
             return;
         }
         if (tag == 5) {
-            list->senderTag5 = sender;
+            list->clock = sender;
         }
     }
 }
@@ -166,18 +166,18 @@ void StringList_Unwatch(StringList *list, s32 **sender) {
     if (sender != NULL) {
         tag = **sender & 0xF;
         if (tag == 2) {
-            list->senderTag2 = NULL;
+            list->pad = NULL;
         } else if (tag == 5) {
-            list->senderTag5 = NULL;
+            list->clock = NULL;
         }
         Object_GetBaseVtbl()->unwatch(list, sender);
     }
 }
 
 void StringList_UnwatchAll(StringList *list) {
-    list->senderTag2 = 0;
-    list->senderTag5 = 0;
-    list->unk_50 = 0;
+    list->pad = 0;
+    list->clock = 0;
+    list->background = 0;
     Object_GetBaseVtbl()->unwatchAll(list);
 }
 
@@ -187,16 +187,16 @@ void StringList_OnNotify(StringList *list, s32 **sender, s32 value) {
     Object_GetBaseVtbl()->onNotify(list, sender, value);
     tag = **sender & 0xF;
     if (tag == 2) {
-        list->vtbl->unk_5C(list, sender, value);
+        list->vtbl->onKey(list, sender, value);
     } else if (tag == 5) {
-        list->vtbl->unk_58(list, sender, value);
+        list->vtbl->tick(list, sender, value);
     }
 }
 
 void StringList_Reset(StringList *list) {
-    list->unk_20 = 0;
-    list->unk_24 = 0;
-    list->unk_28 = 0;
+    list->top = 0;
+    list->column = 0;
+    list->cursor = 0;
 }
 
 /*
@@ -225,7 +225,7 @@ typedef struct CardText {
 
 typedef struct CardListOwnerVtbl {
     u8 pad_00[0x80];
-    void (*unk80)();
+    void (*playTone)();
 } CardListOwnerVtbl;
 
 typedef struct CardListOwner {
@@ -243,11 +243,11 @@ typedef struct CardList {
     s32 top;              /* 0x20 first visible row */
     s32 column;           /* 0x24 first visible character (text base for StringList_FormatRow) */
     s32 cursor;           /* 0x28 selected row */
-    s32 mode;             /* 0x2C 2 or 3 (setMode) */
-    s32 modeTicks;        /* 0x30 */
-    s32 watchedA;            /* 0x34 unwatched by setMode and the destructor */
-    s32 watchedB;
-    s32 owner;
+    s32 state;             /* 0x2C 2 or 3 (setMode) */
+    s32 stateTicks;        /* 0x30 */
+    s32 pad;            /* 0x34 unwatched by setMode and the destructor */
+    s32 clock;
+    s32 sound;
     CardText *rows[4];    /* 0x40 visible rows */
     CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
 } CardList;
@@ -264,7 +264,7 @@ extern s32 g_stringListBgPos[];
 extern s32 g_stringListBgRect[];
 extern u8 g_stringListVtbl[];
 
-INCLUDE_RODATA("asm/nonmatchings/game/string_list", D_800116A4);
+INCLUDE_RODATA("asm/nonmatchings/game/string_list", g_stringListAlphabetText);
 
 /* Slot 0x44: open the list with background CARD\SELECT.TIM and the rows in FONTICON. */
 void StringList_Open(CardList *list, s32 parent) {
@@ -298,30 +298,30 @@ void StringList_Close(CardList *list) {
     }
 }
 
-void StringList_WatchPair(CardList *list, s32 first, s32 second, s32 owner) {
-    list->vt->watch(list, first);
-    list->vt->watch(list, second);
-    list->owner = owner;
-    list->mode = 0;
+void StringList_WatchPair(CardList *list, s32 pad, s32 clock, s32 sound) {
+    list->vt->watch(list, pad);
+    list->vt->watch(list, clock);
+    list->sound = sound;
+    list->state = 0;
 }
 
 void StringList_UnwatchPair(CardList *list) {
-    list->vt->unwatch(list, list->watchedA);
-    list->vt->unwatch(list, list->watchedB);
-    list->owner = 0;
+    list->vt->unwatch(list, list->pad);
+    list->vt->unwatch(list, list->clock);
+    list->sound = 0;
 }
 
 void StringList_SetState(CardList *list, s32 mode) {
-    list->modeTicks = 0;
+    list->stateTicks = 0;
     switch (mode) {
     case 2:
     case 3:
-        list->vt->unwatch(list, list->watchedA);
+        list->vt->unwatch(list, list->pad);
         list->vt->close(list);
-        list->mode = mode;
+        list->state = mode;
         break;
     case 4:
-        list->vt->notify(list, list->mode);
+        list->vt->notify(list, list->state);
         break;
     }
 }
@@ -330,17 +330,17 @@ void StringList_Tick(CardList *list) {
     s32 mode;
     s32 ticks;
 
-    mode = list->mode;
+    mode = list->state;
     if (mode >= 4) {
         return;
     }
     if (mode < 2) {
         return;
     }
-    ticks = list->modeTicks;
-    list->modeTicks = ticks + 1;
+    ticks = list->stateTicks;
+    list->stateTicks = ticks + 1;
     if (ticks != 0) {
-        list->vt->setMode(list, 4);
+        list->vt->setState(list, 4);
     }
 }
 
@@ -351,12 +351,12 @@ void StringList_OnKey(CardList *list, s32 sender, s32 code) {
 
     switch (idx) {
     case 21:
-        list->vt->setBoxValue(list, 0x10, idx);
-        list->vt->setMode(list, 2);
+        list->vt->playTone(list, 0x10, idx);
+        list->vt->setState(list, 2);
         return;
     case 19:
-        list->vt->setBoxValue(list, 0x10, idx);
-        list->vt->setMode(list, 3);
+        list->vt->playTone(list, 0x10, idx);
+        list->vt->setState(list, 3);
         return;
     case 1:
         fn = list->vt->scrollRight;
@@ -376,10 +376,10 @@ void StringList_OnKey(CardList *list, s32 sender, s32 code) {
     fn(list, sender, idx);
 }
 
-void StringList_SetBoxValue(CardList *list, s32 value) {
-    CardListOwner *owner = (CardListOwner *)list->owner;
+void StringList_PlayTone(CardList *list, s32 tone) {
+    CardListOwner *owner = (CardListOwner *)list->sound;
     if (owner != NULL) {
-        owner->vt->unk80(owner, value, 0x60, 0x60);
+        owner->vt->playTone(owner, tone, 0x60, 0x60);
     }
 }
 
@@ -519,7 +519,7 @@ void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 
         }
         StringList_SetView(list, top, column, cursor, 0);
         if (notify != 0) {
-            list->vt->setBoxValue(list, 0);
+            list->vt->playTone(list, 0);
         }
     }
 }
@@ -575,7 +575,7 @@ void StringList_MoveHighlight(CardList *list, s32 down, s32 notify) {
         obj = *row;
         obj->vt->setColor(obj, g_stringListCursorColor);
         if (notify != 0) {
-            list->vt->setBoxValue(list, 0);
+            list->vt->playTone(list, 0);
         }
     }
 }

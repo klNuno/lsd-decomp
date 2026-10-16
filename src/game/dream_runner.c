@@ -28,7 +28,7 @@ extern s32 g_runnerRefPoint[];
 
 /* The file argument of Tmd_Create (TMD loader). */
 typedef struct TmdFileArg {
-    s32 unk0;
+    s32 data;
     s32 path;
     s32 unk8;
 } TmdFileArg;
@@ -68,19 +68,19 @@ static DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 void DreamRunner_CreateStage(DreamRunner *runner, s32 stage);
 
 /* Called by Scene_RunDream for each dream with the scene's context and its DreamSys. */
-s32 DreamRunner_New(s32 context, s32 dreamSys, s32 arg2) {
+s32 DreamRunner_New(s32 context, s32 dreamSys, s32 useCdSearch) {
     s32 runner;
 
     runner = Heap_Alloc(0x50);
     if (runner != 0) {
-        DreamRunner_GetVtbl()->init(runner, context, dreamSys, arg2);
+        DreamRunner_GetVtbl()->init(runner, context, dreamSys, useCdSearch);
         return runner;
     }
     return 0;
 }
 
 /* The world constructor: dreamer model, spawn flags, music bank, the map, and DreamSys watched. */
-void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dreamSys, s32 arg3) {
+void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dreamSys, s32 useCdSearch) {
     TmdFileArg modelFile;
     s32 bankName;
     RunnerRes *tim;
@@ -92,18 +92,18 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     Sym_LoadModels();
     tim = (RunnerRes *)Tim_New((s32)"ETC\\ETC.TIM");
     runner->etcTim = tim;
-    tim->vtbl->unk78(tim);
+    tim->vtbl->upload(tim);
     res = runner->etcTim;
-    res->vtbl->unk5C(res);
-    modelFile.unk0 = 0;
+    res->vtbl->freeData(res);
+    modelFile.data = 0;
     modelFile.path = (s32)"ETC\\DREAMER.TMD";
     runner->dreamerModel = (RunnerRes *)Tmd_Create((s32)&modelFile);
     runner->music = Bgm_New(Music_PickBank(0), 0, 1);
     File_ResolvePathTablePart(1);
-    File_EnableWait(arg3 == 0, 1, 1);
+    File_EnableWait(useCdSearch == 0, 1, 1);
     runner->context = context;
-    context->unk10 = (Object *)DreamView_New();
-    context->unk8 = Clock_Create();
+    context->view = (Object *)DreamView_New();
+    context->clock = Clock_Create();
     context->map = (StageMap *)StageMap_New(0, 1);
     runner->dreamSys = dreamSys;
     runner->vtbl->watch(runner, dreamSys);
@@ -118,8 +118,8 @@ void DreamRunner_Destroy(DreamRunner *runner) {
     context = runner->context;
     runner->vtbl->unwatch(runner, runner->dreamSys);
     context->map = context->map->vtbl->delete_(context->map);
-    context->unk8 = context->unk8->vtbl->delete_(context->unk8);
-    context->unk10 = context->unk10->vtbl->delete_(context->unk10);
+    context->clock = context->clock->vtbl->delete_(context->clock);
+    context->view = context->view->vtbl->delete_(context->view);
     runner->music->vtbl->delete_(runner->music);
     runner->dreamerModel->vtbl->delete_(runner->dreamerModel);
     runner->etcTim->vtbl->delete_(runner->etcTim);
@@ -149,9 +149,9 @@ void DreamRunner_Run(DreamRunner *runner) {
     DreamSys *dreamSys;
 
     dreamSys = runner->dreamSys;
-    dreamSys->vtbl->watch(dreamSys, runner->context->unk4);
-    dreamSys->vtbl->watch(dreamSys, runner->context->unk8);
-    dreamSys->vtbl->setCamera(dreamSys, runner->context->unk10);
+    dreamSys->vtbl->watch(dreamSys, runner->context->pad);
+    dreamSys->vtbl->watch(dreamSys, runner->context->clock);
+    dreamSys->vtbl->setCamera(dreamSys, runner->context->view);
     Task_GetVtbl()->run(runner, runner->context, 0);
 }
 
@@ -159,10 +159,10 @@ void DreamRunner_Finish(DreamRunner *runner) {
     DreamSys *dreamSys;
 
     dreamSys = runner->dreamSys;
-    Task_GetVtbl()->unk48(runner);
+    Task_GetVtbl()->finish(runner);
     dreamSys->vtbl->setCamera(dreamSys, 0);
-    dreamSys->vtbl->unwatch(dreamSys, runner->context->unk4);
-    dreamSys->vtbl->unwatch(dreamSys, runner->unk10);
+    dreamSys->vtbl->unwatch(dreamSys, runner->context->pad);
+    dreamSys->vtbl->unwatch(dreamSys, runner->clock);
 }
 
 void DreamRunner_Start(DreamRunner *runner) {
@@ -170,14 +170,14 @@ void DreamRunner_Start(DreamRunner *runner) {
     RunnerView *view;
     RunnerViewSub *sub;
 
-    head = runner->context->unk0;
+    head = runner->context->display;
     view = runner->view;
-    view->vtbl->unk44(view, head->vtbl->unk7C(head, 0));
-    sub = view->vtbl->unkAC(view);
-    sub->vtbl->unk60(sub, 1);
-    view->vtbl->unk4C(view, 0x4B0);
-    view->vtbl->unk70(view, runner->dreamSys, g_runnerViewpoint, g_runnerRefPoint, 0);
-    view->vtbl->unk8C(view);
+    view->vtbl->setScreenSize(view, head->vtbl->getScreenRect(head, 0));
+    sub = view->vtbl->getOverlay(view);
+    sub->vtbl->setVisible(sub, 1);
+    view->vtbl->setPacketCount(view, 0x4B0);
+    view->vtbl->setCamera(view, runner->dreamSys, g_runnerViewpoint, g_runnerRefPoint, 0);
+    view->vtbl->allocOt(view);
     runner->phase = RUNNER_STARTING;
 }
 
@@ -185,8 +185,8 @@ void DreamRunner_End(DreamRunner *runner) {
     RunnerView *view;
 
     view = runner->view;
-    view->vtbl->unk90(view);
-    view->vtbl->unk74(view);
+    view->vtbl->freeOt(view);
+    view->vtbl->detach(view);
 }
 
 /* On update (message 2): start the day, or rebuild the stage after a link. A special day (stage -1) ends at once with result 2. */
@@ -303,14 +303,14 @@ static DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
     return (DreamRunnerVtbl *)g_dreamRunnerVtbl;
 }
 
-void File_ResolvePathTablePart(s32 arg0) {
+void File_ResolvePathTablePart(s32 wholeTable) {
     s32 count;
     s32 files;
 
     files = (s32)File_GetPathTable(&count);
     switch (++g_pathTablePartCount) {
     case 1:
-        if (arg0 != 0) {
+        if (wholeTable != 0) {
             g_pathTablePartCount++;
         } else {
             g_pathTableFirstHalf = count /= 2;

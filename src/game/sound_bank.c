@@ -22,7 +22,7 @@ typedef struct ObjectRootVtbl {
     void (*init)(void *object);     /* 0x08 */
     void (*destroy)(s32 object);    /* 0x0C, the caller passes the pointer as s32 */
     u8 pad_10[0x54];
-    void (*unk_64)(void *object);   /* 0x64, not named in heap.h */
+    void (*onLoaded)(void *object);   /* 0x64, not named in heap.h */
 } ObjectRootVtbl;
 
 /* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
@@ -105,7 +105,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
             strcpy(pathCopy, path);
             File_JoinPath(fullPath, pathCopy, (s8 *)0, g_vabHeaderExt);
             bank->state = 1;
-            bank->vtbl->unk_6C(bank, fullPath);
+            bank->vtbl->loadAsync(bank, fullPath);
         }
     }
 }
@@ -137,14 +137,14 @@ void Sound_UpdateBank(SoundBank *bank) {
         case 0:
             break;
         case 1:
-            if (bank->unk_24 & 0x200) {
+            if (bank->flags & 0x200) {
                 bank->vabId = SsVabOpenHead((void *)bank->vabBuffer, -1);
                 File_JoinPath((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, g_vabBodyExt);
                 bank->state = 6;
                 oldVabBuffer = bank->vabBuffer;
                 bank->vabBuffer = 0;
                 g_vabBuffer = oldVabBuffer;
-                bank->vtbl->unk_58(bank, fullPath, oldVabBuffer);
+                bank->vtbl->load(bank, fullPath, oldVabBuffer);
                 if (bank->path != 0) {
                     Heap_Free(bank->path);
                     bank->path = 0;
@@ -152,7 +152,7 @@ void Sound_UpdateBank(SoundBank *bank) {
             }
             break;
         case 6:
-            if (bank->unk_24 & 0x200) {
+            if (bank->flags & 0x200) {
                 ret = SsVabTransBody((void *)bank->vabBuffer, bank->vabId);
                 bank->vabId = ret;
                 if (ret != -1) {
@@ -188,7 +188,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
     if (bank->transferDone == 0) {
         return;
     }
-    bank->vt->unk_5C();
+    bank->vt->freeData();
     bank->vabBuffer = g_vabBuffer;
     if (SsUtGetVabHdr(bank->vabId, &bank->vabHeader) == -1) {
         return;

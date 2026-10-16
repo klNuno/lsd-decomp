@@ -9,7 +9,7 @@
 struct ScreenSprite;
 struct ScreenSpriteVtbl;
 struct SpriteRect;
-void *ScreenSprite_Create(s32 image, struct SpriteRect *rect, s32 arg2);
+void *ScreenSprite_Create(s32 image, struct SpriteRect *rect, s32 unused);
 void ScreenSprite_Attach(struct ScreenSprite *sprite, s32 parent, ScreenPoint *position);
 void ScreenSprite_SetPosition(struct ScreenSprite *sprite, ScreenPoint *position);
 void ScreenSprite_SetPivot(struct ScreenSprite *sprite, s32 pivot);

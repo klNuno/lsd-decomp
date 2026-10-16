@@ -50,7 +50,7 @@ typedef struct PlaceOwner {
 static void Place_CheckTextureLoad(void *place_, void *loader_);
 /* the vtable of task.c through this file's view of its slots, so not from game/task.h */
 PlaceBaseVtbl *Task_GetVtbl();
-void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 watch);
+void Place_StartFade(void *place_, s32 color, s32 holdMode, s32 duration, s32 watch);
 static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
 static PlaceVtbl *Place_GetVtbl(void);
 extern u8 g_pauseText[];
@@ -90,7 +90,7 @@ void Place_Construct(Place *place, s32 handlerList, PlaceObj *music, void *font,
     place->refs.models = models;
     place->pauseOpen = 0;
     place->exitArmed = 0;
-    place->vt->unk40(place);
+    place->vt->reset(place);
 }
 
 /* Slot 0x0C */
@@ -117,7 +117,7 @@ void Place_OnNotify(Place *place, s32 **sender, s32 message) {
     }
 }
 
-void Place_Stub40(void) {
+void Place_EmptySlot40(void) {
 }
 
 /* Slot 0x44: keep the DreamSys and register Place_GetChunkPath with the runner's object. */
@@ -303,7 +303,7 @@ void Place_TogglePause(Place *place) {
     }
 }
 
-void Place_Stub7C(void) {
+void Place_EmptySlot7C(void) {
 }
 
 /* Slot 0x80, after the texture set: hands the stage to the spawn code (Sym_InitStage) and sets up the map. */
@@ -324,7 +324,7 @@ void Place_Setup(Place *place) {
     map = place->map;
     place->vt->watch(place, map);
     map->vtbl->setAmbient(map, ambience->ambient, 0);
-    map->vtbl->unkC4(map, 3, ambience->lightVectors, ambience->lightColors);
+    map->vtbl->setLights(map, 3, ambience->lightVectors, ambience->lightColors);
     map->vtbl->setGrid(map, Stage_GetGrid(place->stage));
     dreamSys = place->dreamSys;
     dreamSys->vtbl->enterMap(dreamSys, map);
@@ -361,8 +361,8 @@ void Place_Start(Place *place) {
     view->vtbl->setClearColor(view, ambience->colorA);
     view->vtbl->setFogNear(view, ambience->depth);
     view->vtbl->setFogColor(view, ambience->mode != 1 ? ambience->colorB : ambience->colorA);
-    view->vtbl->setUnkB4(view, 0);
-    view->vtbl->setUnkB8(view, 1);
+    view->vtbl->setExtraSwap(view, 0);
+    view->vtbl->setPresentEnabled(view, 1);
     fader = view->vtbl->getOverlay(view);
     place->vt->watch(place, fader);
     dreamSys = place->dreamSys;
@@ -511,7 +511,7 @@ void Place_OnLink17(Place *place) {
 }
 
 /* Start the view's fader towards a colour index (0 to 7), watched when asked. */
-void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 watch) {
+void Place_StartFade(void *place_, s32 color, s32 holdMode, s32 duration, s32 watch) {
     Place *place = place_;
     View *view;
     Fade *fader;
@@ -524,7 +524,7 @@ void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 wa
     if (watch != 0) {
         place->vt->watch(place, fader);
     }
-    fader->vtbl->startOut(fader, place->clock, color, channels);
+    fader->vtbl->startOut(fader, place->clock, color, holdMode);
 }
 
 /* Slot 0xB0: the fader is done (5: back to state 0; 6: its colour goes to the view, state 10 becomes 4). */
@@ -583,7 +583,7 @@ s32 Place_SpawnCell(Place *place) {
     return 1;
 }
 
-void Place_StubBC(void) {
+void Place_EmptySlotBC(void) {
 }
 
 /* Slot 0xC0, SELECT held: arms the exit while the pause is open and the state is 0. */
@@ -619,17 +619,17 @@ void Place_UpdatePause(Place *place) {
     s32 ticks = place->pauseOpen;
 
     if (ticks == 0) {
-        place->pauseText = (PlaceObj *)Label_Create((s32)place->refs.font, 5, (s32)g_pauseText);
-        place->pauseText->vt->unk4C(place->pauseText, place->map, g_pauseTextPos);
-        place->pauseText->vt->unkB8(place->pauseText, g_pauseTextColor);
+        place->pauseText = (Widget *)Label_Create((s32)place->refs.font, 5, (s32)g_pauseText);
+        place->pauseText->vtbl->show(place->pauseText, place->map, g_pauseTextPos);
+        place->pauseText->vtbl->setColor(place->pauseText, g_pauseTextColor);
         place->pauseOpen = 1;
         return;
     }
     place->pauseOpen = ticks + 1;
     if (ticks == 4) {
-        place->view->vtbl->setUnkB8(place->view, 0);
-        place->clock->vt->unk4C(place->clock);
-        place->music->vt->unk4C(place->music);
+        place->view->vtbl->setPresentEnabled(place->view, 0);
+        place->clock->vt->pause(place->clock);
+        place->music->vt->pause(place->music);
         place->sound->vt->muteBank(place->sound);
     }
 }
@@ -637,12 +637,12 @@ void Place_UpdatePause(Place *place) {
 /* Slot 0xD4: close the pause window and resume the objects. */
 void Place_ClosePause(Place *place) {
     if (place->pauseOpen != 0) {
-        place->pauseText->vt->delete_(place->pauseText);
+        place->pauseText->vtbl->delete_(place->pauseText);
     }
     place->sound->vt->unmuteBank(place->sound);
     place->music->vt->resume(place->music);
     place->clock->vt->resume(place->clock);
-    place->view->vtbl->setUnkB8(place->view, 1);
+    place->view->vtbl->setPresentEnabled(place->view, 1);
     place->pauseOpen = 0;
 }
 

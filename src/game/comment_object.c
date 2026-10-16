@@ -21,14 +21,14 @@ typedef struct CommentWidget CommentWidget;
 typedef struct CommentWidgetVtbl CommentWidgetVtbl;
 
 struct CommentWidgetVtbl {
-    s32 unk_00;
+    s32 classWord;
     void *(*delete_)(CommentWidget *);       /* 0x04 same slot as screen.h WidgetVtbl delete_ */
     u8 pad_08[0x4C - 0x08];
     void (*attach)(CommentWidget *, s32, void *); /* 0x4C SceneNode_Attach and its overrides (ScreenSprite_Attach, Label_Show): parent, position */
     u8 pad_50[0x78 - 0x50];
-    void (*unk_78)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
+    void (*upload)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
     u8 pad_7C[0x80 - 0x7C];
-    void (*unk_80)(CommentWidget *, s32, s32, s32);  /* 0x80 called on the box object at CommentObject 0x3C */
+    void (*playTone)(CommentWidget *, s32, s32, s32);  /* 0x80 called on the box object at CommentObject 0x3C */
     u8 pad_84[0xB8 - 0x84];
     void (*setColor)(CommentWidget *, void *);   /* 0xB8 same slot as screen.h setColor, called with g_glyphColor */
     void (*setPosition)(CommentWidget *, void *);  /* 0xBC same slot as screen.h setPosition */
@@ -41,7 +41,7 @@ struct CommentWidget {
 };
 
 struct CommentVtbl {
-    s32 unk_00;                              /* 0x00 first word, value 0x10 in the data, meaning unknown */
+    s32 classWord;                              /* 0x00 first word, value 0x10 in the data, meaning unknown */
     u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this unit */
     void (*init)(CommentObject *, u8 *, s32);                 /* 0x08 CommentObject_Init */
     void (*destroy)(CommentObject *);                         /* 0x0C CommentObject_Destroy */
@@ -61,7 +61,7 @@ struct CommentVtbl {
     void (*setState)(CommentObject *, s32);                    /* 0x54 CommentObject_SetState */
     void (*tick)(CommentObject *, s32 **, s32);                /* 0x58 CommentObject_Tick, called for sender tag 5 */
     void (*onKey)(CommentObject *, s32 **, s32);               /* 0x5C CommentObject_OnKey, called for sender tag 2 */
-    void (*setBoxValue)(CommentObject *, s32);                 /* 0x60 CommentObject_SetBoxValue */
+    void (*playTone)(CommentObject *, s32);                 /* 0x60 CommentObject_PlayTone */
     u8 pad_64[0x88 - 0x64];                  /* 0x64 to 0x87 not used by this unit */
     void (*caretRight)(CommentObject *);                       /* 0x88 CommentObject_CaretRight */
     void (*caretLeft)(CommentObject *);                        /* 0x8C CommentObject_CaretLeft */
@@ -83,14 +83,14 @@ struct CommentObject {
     s32 alphabetLength;                      /* 0x14 length of the alphabet g_alphabet (init) */
     s32 caret;                               /* 0x18 caret index, zeroed by setText, bounded by textLength */
     s32 charIndex;                           /* 0x1C alphabet index, zeroed by setText, bounded by alphabetLength */
-    s32 unk_20;                              /* 0x20 toggled by CommentObject_ToggleFlag */
+    s32 repeatOnHold;                              /* 0x20 toggled by CommentObject_ToggleFlag */
     u8 *sourceText;                          /* 0x24 source string read by setText */
     s8 *textBuf;                             /* 0x28 Heap_Alloc(textLength + 4) in init, freed in destroy */
     s32 state;                               /* 0x2C */
     s32 tickCount;                           /* 0x30 ticks spent in states 2 and 3, zeroed by setState */
-    s32 **senderTag2;                        /* 0x34 sender stored by watch when its tag is 2, key codes go to slot 0x5C */
-    s32 **senderTag5;                        /* 0x38 sender stored by watch when its tag is 5, slot 0x58 */
-    CommentWidget *boxWidget;                /* 0x3C box object, its slot 0x80 is called with 0x60 */
+    s32 **pad;                        /* 0x34 sender stored by watch when its tag is 2, key codes go to slot 0x5C */
+    s32 **clock;                        /* 0x38 sender stored by watch when its tag is 5, slot 0x58 */
+    CommentWidget *sound;                /* 0x3C box object, its slot 0x80 is called with 0x60 */
     CommentWidget *caretGlyph;              /* 0x40 Glyph_Create(font, '_'), moved by SetCaretPos */
     CommentWidget *textLabel;               /* 0x44 Label_Create from the FONTICON font, showing textBuf */
     CommentWidget *inputBox;                /* 0x48 ScreenSprite of the COMINPUT image, NULL until BuildWidgets */
@@ -144,8 +144,8 @@ void CommentObject_Init(CommentObject *obj, u8 *text, s32 mode) {
 }
 
 static void CommentObject_ClearSenders(CommentObject *obj) {
-    obj->senderTag2 = NULL;
-    obj->senderTag5 = NULL;
+    obj->pad = NULL;
+    obj->clock = NULL;
     obj->inputBox = 0;
 }
 
@@ -161,11 +161,11 @@ void CommentObject_Watch(CommentObject *obj, s32 **sender) {
         Object_GetBaseVtbl()->watch(obj, sender);
         tag = **sender & 0xF;
         if (tag == 2) {
-            obj->senderTag2 = sender;
+            obj->pad = sender;
             return;
         }
         if (tag == 5) {
-            obj->senderTag5 = sender;
+            obj->clock = sender;
         }
     }
 }
@@ -176,17 +176,17 @@ void CommentObject_Unwatch(CommentObject *obj, s32 **sender) {
     if (sender != NULL) {
         tag = **sender & 0xF;
         if (tag == 2) {
-            obj->senderTag2 = NULL;
+            obj->pad = NULL;
         } else if (tag == 5) {
-            obj->senderTag5 = NULL;
+            obj->clock = NULL;
         }
         Object_GetBaseVtbl()->unwatch(obj, sender);
     }
 }
 
 void CommentObject_UnwatchAll(CommentObject *obj) {
-    obj->senderTag2 = 0;
-    obj->senderTag5 = 0;
+    obj->pad = 0;
+    obj->clock = 0;
     obj->inputBox = 0;
     Object_GetBaseVtbl()->unwatchAll(obj);
 }
@@ -226,13 +226,13 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
 
     if ((enable != 0) && (obj->inputBox == NULL)) {
         inputWidget = Tim_New((s32)File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
-        inputWidget->vtbl->unk_78(inputWidget);
+        inputWidget->vtbl->upload(inputWidget);
         obj->inputBox = ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
         inputWidget->vtbl->delete_(inputWidget);
         widget = obj->inputBox;
         widget->vtbl->attach(widget, enable, g_inputShowArg);
         fontWidget = Tim_New((s32)File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
-        fontWidget->vtbl->unk_78(fontWidget);
+        fontWidget->vtbl->upload(fontWidget);
         obj->textLabel = (CommentWidget *)Label_Create((s32)fontWidget, obj->textLength, (s32)obj->textBuf);
         obj->caretGlyph = Glyph_Create((s32)fontWidget, 0x5F);
         fontWidget->vtbl->delete_(fontWidget);
@@ -258,18 +258,18 @@ void CommentObject_FreeWidgets(CommentObject *obj) {
     }
 }
 
-void CommentObject_WatchPair(CommentObject *obj, s32 **senderTag2, s32 **senderTag5, CommentWidget *box) {
-    obj->vtbl->watch(obj, senderTag2);
-    obj->vtbl->watch(obj, senderTag5);
-    obj->boxWidget = box;
+void CommentObject_WatchPair(CommentObject *obj, s32 **pad, s32 **clock, CommentWidget *sound) {
+    obj->vtbl->watch(obj, pad);
+    obj->vtbl->watch(obj, clock);
+    obj->sound = sound;
     obj->state = 0;
-    obj->unk_20 = 0;
+    obj->repeatOnHold = 0;
 }
 
 void CommentObject_UnwatchPair(CommentObject *obj) {
-    obj->vtbl->unwatch(obj, obj->senderTag2);
-    obj->vtbl->unwatch(obj, obj->senderTag5);
-    obj->boxWidget = 0;
+    obj->vtbl->unwatch(obj, obj->pad);
+    obj->vtbl->unwatch(obj, obj->clock);
+    obj->sound = 0;
 }
 
 void CommentObject_SetState(CommentObject *obj, s32 newState) {
@@ -277,7 +277,7 @@ void CommentObject_SetState(CommentObject *obj, s32 newState) {
     switch (newState) {
     case 2:
     case 3:
-        obj->vtbl->unwatch(obj, obj->senderTag2);
+        obj->vtbl->unwatch(obj, obj->pad);
         obj->vtbl->freeWidgets(obj);
         obj->state = newState;
         break;
@@ -313,11 +313,11 @@ void CommentObject_OnKey(CommentObject *obj, s32 sender, s32 keyCode) {
         } else {
             strcpy((s8 *)obj->sourceText, obj->textBuf);
         }
-        obj->vtbl->setBoxValue(obj, 0x10);
+        obj->vtbl->playTone(obj, 0x10);
         obj->vtbl->setState(obj, 2);
         break;
     case 23:
-        obj->vtbl->setBoxValue(obj, 0x10);
+        obj->vtbl->playTone(obj, 0x10);
         obj->vtbl->setState(obj, 3);
         break;
     case 32:
@@ -330,54 +330,54 @@ void CommentObject_OnKey(CommentObject *obj, s32 sender, s32 keyCode) {
         obj->vtbl->toggleFlag(obj);
         break;
     case 21:
-        if (obj->unk_20 == 0) {
+        if (obj->repeatOnHold == 0) {
             obj->vtbl->caretRight(obj);
         }
         break;
     case 5:
-        if (obj->unk_20 != 0) {
+        if (obj->repeatOnHold != 0) {
             obj->vtbl->caretRight(obj);
         }
         break;
     case 20:
-        if (obj->unk_20 == 0) {
+        if (obj->repeatOnHold == 0) {
             obj->vtbl->caretLeft(obj);
         }
         break;
     case 4:
-        if (obj->unk_20 != 0) {
+        if (obj->repeatOnHold != 0) {
             obj->vtbl->caretLeft(obj);
         }
         break;
     case 18:
-        if (obj->unk_20 == 0) {
+        if (obj->repeatOnHold == 0) {
             obj->vtbl->charNext(obj);
         }
         break;
     case 2:
-        if (obj->unk_20 != 0) {
+        if (obj->repeatOnHold != 0) {
             obj->vtbl->charNext(obj);
         }
         break;
     case 19:
-        if (obj->unk_20 == 0) {
+        if (obj->repeatOnHold == 0) {
             obj->vtbl->charPrev(obj);
         }
         break;
     case 3:
-        if (obj->unk_20 != 0) {
+        if (obj->repeatOnHold != 0) {
             obj->vtbl->charPrev(obj);
         }
         break;
     }
 }
 
-void CommentObject_SetBoxValue(CommentObject *obj, s32 value) {
+void CommentObject_PlayTone(CommentObject *obj, s32 tone) {
     CommentWidget *box;
 
-    box = obj->boxWidget;
+    box = obj->sound;
     if (box != NULL) {
-        box->vtbl->unk_80(box, value, 0x60, 0x60);
+        box->vtbl->playTone(box, tone, 0x60, 0x60);
     }
 }
 
@@ -443,7 +443,7 @@ void CommentObject_CharPrev(CommentObject *obj) {
 
 void CommentObject_ToggleFlag(CommentObject *obj) {
     if (obj->inputBox != 0) {
-        obj->unk_20 ^= 1;
+        obj->repeatOnHold ^= 1;
     }
 }
 
@@ -478,7 +478,7 @@ void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 refresh) {
         widget->vtbl->setPosition(widget, pos);
         obj->caret = caret;
         if (refresh != 0) {
-            obj->vtbl->setBoxValue(obj, 0);
+            obj->vtbl->playTone(obj, 0);
         }
     }
 }
@@ -493,7 +493,7 @@ void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 ref
         obj->caret = caret;
         obj->charIndex = charIndex;
         if (refresh != 0) {
-            obj->vtbl->setBoxValue(obj, 0);
+            obj->vtbl->playTone(obj, 0);
         }
     }
 }

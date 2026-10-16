@@ -59,7 +59,7 @@ typedef struct MenuScreen {
     struct View *view;
     s32 ticks;
     s32 state;
-    s32 unk24;
+    s32 noLoop;
     /* MenuScreen */
     s32 viewOtBits;         /* 0x28 3, given to the view on begin */
     s32 viewPacketCount;    /* 0x2C 300 */

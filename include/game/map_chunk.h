@@ -21,7 +21,7 @@ typedef struct MapChunkVtbl {
     void (*read)();          /* 0x54 (self, buffer, size) */
     u8 pad_58[0x5C - 0x58];
     void (*freeData)();      /* 0x5C File_FreeData */
-    void (*unk_60)();        /* 0x60 func_80026C80, empty */
+    void (*unk_60)();        /* 0x60 File_EmptySlot60, empty */
     void (*onLoaded)();      /* 0x64 MapChunk_OnLoaded */
     u8 pad_68[0x74 - 0x68];
     void (*unload)();        /* 0x74 MapChunk_Unload, replaces the file class cancel slot */

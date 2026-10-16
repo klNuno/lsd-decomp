@@ -24,7 +24,7 @@ typedef struct PlaceObjVtbl {
     void (*delete_)();                /* 0x04 Object_Delete */
     u8 pad_08[0x48 - 0x08];
     void (*stop)();
-    void (*unk4C)();
+    void (*pause)();
     void (*resume)();
     u8 pad_54[0x5C - 0x54];
     void (*setSeq)();                  /* music: plays the track Music_PickTrack chose */
@@ -35,7 +35,7 @@ typedef struct PlaceObjVtbl {
     void (*muteBank)();
     void (*unmuteBank)();
     u8 pad_90[0xB8 - 0x90];
-    void (*unkB8)();
+    void (*setColor)();
 } PlaceObjVtbl;
 
 typedef struct PlaceObj {
@@ -65,7 +65,7 @@ typedef struct PlaceVtbl {
     u8 pad_18[0x30 - 0x18];
     void (*notify)();                 /* 0x30 Object_Notify: 0xC and 0xD reach the dream runner */
     u8 pad_34[0x40 - 0x34];
-    void (*unk40)();                  /* 0x40 Place_Stub40, empty */
+    void (*reset)();                  /* 0x40 Place_EmptySlot40, empty */
     void (*attach)();                 /* 0x44 Place_Attach */
     void (*detach)();                 /* 0x48 Place_Detach */
     void (*load)();                   /* 0x4C Place_Load */
@@ -88,7 +88,7 @@ typedef struct PlaceVtbl {
     void (*onFaderNotify)();          /* 0xB0 Place_OnFaderNotify */
     void (*onMapNotify)();            /* 0xB4 Place_OnMapNotify: map messages */
     s32 (*spawnCell)();               /* 0xB8 Place_SpawnCell */
-    void (*unkBC)();                  /* 0xBC Place_StubBC, empty */
+    void (*unkBC)();                  /* 0xBC Place_EmptySlotBC, empty */
     void (*armExit)();                /* 0xC0 Place_ArmExit, SELECT held */
     void (*disarmExit)();             /* 0xC4 Place_DisarmExit, SELECT released */
     void (*confirmExit)();            /* 0xC8 Place_ConfirmExit, TRIANGLE: code 0xD */
@@ -130,7 +130,7 @@ typedef struct Place {
     s32 ready;            /* 0x64 set once the map is ready, then slot 0x88 starts the place */
     s32 started;          /* 0x68 set by start; the pad handler and the tick run only then */
     PlaceRefs refs;       /* 0x6C what the scenery code keeps of the place (g_placeRefs) */
-    PlaceObj *pauseText;  /* 0x7C "Pause" (g_pauseText) while the window is open */
+    Widget *pauseText;    /* 0x7C the label "Pause" (g_pauseText) while the window is open */
     s32 pauseOpen;        /* 0x80 0 closed, else ticks since it opened + 1 */
     s32 exitArmed;        /* 0x84 SELECT held while paused in the normal state */
 } Place;

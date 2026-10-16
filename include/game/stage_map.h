@@ -104,10 +104,10 @@ typedef struct StageMapVtbl {
     u8 pad_44[0x88 - 0x44];
     void (*onSlotMessage)(); /* 0x88 StageMap_OnSlotMessage (map, 6 or 7, slot, index) */
     u8 pad_8C[0xB8 - 0x8C];
-    void *(*unkB8)();       /* 0xB8 RootNode_GetLight */
+    void *(*getLight)();       /* 0xB8 RootNode_GetLight */
     void (*setAmbient)();   /* 0xBC RootNode_SetAmbient */
     void (*clearSlots)();   /* 0xC0 StageMap_ClearSlots */
-    void (*unkC4)();        /* 0xC4 StageMap_SetLights */
+    void (*setLights)();        /* 0xC4 StageMap_SetLights */
     void (*setChunkLoader)(); /* 0xC8 StageMap_SetChunkLoader */
     void (*setMessageFilter)(); /* 0xCC StageMap_SetMessageFilter */
     void (*filterMessage)(); /* 0xD0 StageMap_FilterMessage */
@@ -121,7 +121,7 @@ typedef struct StageMapVtbl {
     s32 (*follow)();        /* 0xF4 StageMap_Follow */
     void (*loadAround)();   /* 0xF8 StageMap_LoadAround (map, chunk index, origin, neighbours) */
     void (*assignChunks)(); /* 0xFC StageMap_AssignChunks */
-    void (*unk100)();       /* 0x100 StageMap_PollLoads */
+    void (*pollLoads)();       /* 0x100 StageMap_PollLoads */
     void (*buildTiles)();   /* 0x104 StageMap_BuildTiles */
     void (*hideSlot)();     /* 0x108 StageMap_HideSlot */
     void *(*getLocation)(); /* 0x10C StageMap_GetLocation */
@@ -135,9 +135,9 @@ typedef struct StageMapVtbl {
     s32 (*tellView)();      /* 0x12C StageMap_TellNearTiles */
     void (*unk130)();       /* 0x130 func_8004CFA8 */
     void (*setBounds)();       /* 0x134 StageMap_SetBounds */
-    void (*unk138)();       /* 0x138 StageMap_StartTileStretch */
-    void (*unk13C)();       /* 0x13C StageMap_StepTileStretch */
-    void (*unk140)();       /* 0x140 StageMap_ResetTileScale */
+    void (*startTileStretch)();       /* 0x138 StageMap_StartTileStretch */
+    void (*stepTileStretch)();       /* 0x13C StageMap_StepTileStretch */
+    void (*resetTileScale)();       /* 0x140 StageMap_ResetTileScale */
 } StageMapVtbl;
 
 typedef struct StageMap {
@@ -175,11 +175,11 @@ typedef struct StageMap {
     u8 pad_1C4[0x1CC - 0x1C4];
     s32 unk1CC[4];          /* 0x1CC address returned by slot 0x130 */
     void *bounds;           /* 0x1DC box of chunks tested by StageMap_IsOutsideBounds */
-    s32 unk1E0;             /* 0x1E0 */
-    MapTileStep *unk1E4;    /* 0x1E4 */
+    s32 stretchTicks;             /* 0x1E0 */
+    MapTileStep *stretchStep;    /* 0x1E4 */
 } StageMap;
 
 /* Functions of src/game/stage_map.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 StageMap_New(s32 origin, s32 arg1);
+s32 StageMap_New(s32 origin, s32 loadEntities);
 
 #endif

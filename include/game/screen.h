@@ -131,7 +131,7 @@ typedef struct ScreenVtbl {
     void (*setMovieLoops)();    /* 0x128 */
     void (*setSkippable)();     /* 0x12C */
     void (*setUnkD0)();         /* 0x130 */
-    void (*setUnkD4)();         /* 0x134 */
+    void (*setCloseAtOnce)();         /* 0x134 */
 } ScreenVtbl;
 
 typedef struct Screen {
@@ -144,7 +144,7 @@ typedef struct Screen {
     struct View *view;      /* 0x18 env->view or its own */
     s32 ticks;              /* 0x1C clock messages since the last state change */
     s32 state;              /* 0x20 SCREEN_* */
-    s32 unk24;              /* 0x24 run's third argument: when set, run only watches and returns */
+    s32 noLoop;              /* 0x24 run's third argument: when set, run only watches and returns */
 } Screen;
 
 /* One object of the classes the menu uses (src/game/fade.c, src/game/box.c and src/game/label.c): texts, the option box, a 2D overlay. */

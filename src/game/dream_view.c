@@ -16,17 +16,17 @@ typedef struct RenderObjVtbl {
     u8 pad_00[0x08];
     void (*init)();             /* 0x08 */
     u8 pad_0C[0x40 - 0x0C];
-    void (*unk40)();            /* 0x40 */
+    void (*reset)();            /* 0x40 */
     u8 pad_44[0x9C - 0x44];
-    void (*unk9C)();            /* 0x9C */
+    void (*render)();            /* 0x9C */
 } RenderObjVtbl;
 
 typedef struct RenderObj {
     RenderObjVtbl *vtbl;
     u8 pad_04[0x10 - 0x04];
-    s32 unk10;
+    s32 node;
     u8 pad_14[0x70 - 0x14];
-    s32 unk70;
+    s32 otReady;
 } RenderObj;
 
 /* the vtable of view.c through this file's view of its slots, so not from game/view.h */
@@ -50,15 +50,15 @@ void DreamView_Init(void **obj) {
     View_GetVtbl()->init(obj);
     vtbl = DreamView_GetVtbl();
     *obj = vtbl;
-    vtbl->unk40(obj);
+    vtbl->reset(obj);
 }
 
 void DreamView_Reset(void) {
 }
 
 void DreamView_Render(RenderObj *obj) {
-    if ((obj->unk10 != 0) && (obj->unk70 != 0)) {
-        View_GetVtbl()->unk9C(obj);
+    if ((obj->node != 0) && (obj->otReady != 0)) {
+        View_GetVtbl()->render(obj);
     }
 }
 

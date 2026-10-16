@@ -37,9 +37,9 @@ typedef struct FadeVtbl {
     void (*setColor)(Fade *fade, s32 copy, u8 *color); /* 0xB8 */
     u8 pad_BC[0xD0 - 0xBC];
     void (*setStep)();                        /* 0xD0 Fade_SetStep (fade, step): 5, 6, 10 or 30 */
-    void (*startIn)();                        /* 0xD4 Fade_StartIn (fade, ticker, channels, arg3) */
-    void (*startOut)();                       /* 0xD8 Fade_StartOut (fade, ticker, channels, arg3) */
-    s32 (*begin)(Fade *fade, s32 ticker, s32 channels, s32 arg3); /* 0xDC Fade_Begin */
+    void (*startIn)();                        /* 0xD4 Fade_StartIn (fade, ticker, channels, holdMode) */
+    void (*startOut)();                       /* 0xD8 Fade_StartOut (fade, ticker, channels, holdMode) */
+    s32 (*begin)(Fade *fade, s32 ticker, s32 channels, s32 holdMode); /* 0xDC Fade_Begin */
     void (*stop)(void *fade);                 /* 0xE0 Fade_Stop (fade, ticker) */
     void *(*getColor)();                      /* 0xE4 Fade_GetColor */
     u8 pad_E8[0xF0 - 0xE8];
@@ -80,9 +80,9 @@ struct Fade {
     s32 defaultChannels;    /* 0x70 used when Fade_Begin gets a negative index */
     FadeStep step;          /* 0x74 added to the channels each tick, 10 by default */
     s32 channels;           /* 0x78 */
-    s32 unk_7C;             /* third argument of Fade_Begin: 9 holds the color */
+    s32 holdMode;             /* third argument of Fade_Begin: 9 holds the color */
     s32 remaining;          /* 0x80 ticks left */
-    s32 unk_84;             /* mask / ticks */
+    s32 maskStep;             /* mask / ticks */
     FadeSaved savedWidth;   /* 0x88 */
     FadeSaved savedHeight;  /* 0x8C */
     ScreenPoint savedPosition; /* 0x90 */

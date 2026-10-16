@@ -24,15 +24,15 @@ extern s8 g_ruleColors[];
 typedef struct SpyModel {
     Mom *model;
     Entity *spy;
-    s32 unk8;
+    s32 spawnOffset;
     u8 pad_0C[0x8];
 } SpyModel;
 extern SpyModel g_spyModel[];
-typedef struct Unk_8005C76C_Entry {
+typedef struct SpyEntityRef {
     Entity *obj;
     u8 pad[0x14 - 4];
-} Unk_8005C76C_Entry;
-extern Unk_8005C76C_Entry g_spyEntity[];
+} SpyEntityRef;
+extern SpyEntityRef g_spyEntity[];
 s32 g_currentStage;
 typedef struct Unk_80065CEC_Obj {
     ObjectVtbl *vt;
@@ -151,7 +151,7 @@ static void Sym_CheckExtraListType(s32 type) {
 }
 
 void Sym_FreeSpy(void) {
-    Unk_8005C76C_Entry *entry;
+    SpyEntityRef *entry;
     u32 i;
 
     for (i = 0, entry = g_spyEntity; i < 1; i++) {
@@ -377,11 +377,11 @@ static s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
     if (entity != NULL) {
         query.chunkKey = *(u16 *) slot;
         placeInfo = &g_spawnPlaces[place];
-        query.placeWord = placeInfo->unk0;
-        recIndex = placeInfo->unk3;
+        query.placeWord = placeInfo->tile;
+        recIndex = placeInfo->offsetIndex;
         query.offset = g_spawnPlaceOffsets[recIndex];
         ((StageMap *) g_symMap)->vtbl->placeToWorld((void *) g_symMap, placement, &query);
-        entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->unk2 * 12]);
+        entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->rotationIndex * 12]);
         entity->vt->attach(entity, g_symDreamSys, g_symClock, g_symMap, placement);
         return 0;
     }
@@ -395,7 +395,7 @@ static void Sym_SpawnSpy(SpyModel *spyModel) {
     spy = spyModel->spy;
     if (spy != NULL) {
         spy->vt->detach(spy);
-        SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->unk8, 0);
+        SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->spawnOffset, 0);
         spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, g_symClock, g_symMap, placement);
         Entity_FaceDreamer(spyModel->spy, g_symDreamSys, 1, 0, 0);
     }

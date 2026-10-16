@@ -27,10 +27,10 @@ typedef struct SoundBankVtbl {
     void *(*delete_)();                                                      /* 0x04 Object_Delete */
     void (*init)(void *bank, s32 param);                                     /* 0x08 Sound_InitBank, from Sound_CreateBank */
     u8 pad_0C[0x58 - 0x0C];
-    void (*unk_58)(void *bank, void *fullPath, s32 vabBuffer);               /* 0x58 */
-    void (*unk_5C)(void);                                                    /* 0x5C */
+    void (*load)(void *bank, void *fullPath, s32 vabBuffer);               /* 0x58 */
+    void (*freeData)(void);                                                    /* 0x5C */
     u8 pad_60[0x6C - 0x60];
-    void (*unk_6C)(void *bank, s8 *fullPath);                                /* 0x6C */
+    void (*loadAsync)(void *bank, s8 *fullPath);                                /* 0x6C */
     u8 pad_70[0x78 - 0x70];
     void (*pollTransfer)(void *bank, s32 param);                                   /* 0x78 */
     void (*loadProgramTable)(void *bank);                                              /* 0x7C */
@@ -47,7 +47,7 @@ typedef struct SoundBank {
     /* 0x04 */ u8 pad_04[0xC];
     /* 0x10 */ s32 vabBuffer;     /* VAB data being loaded; g_vabBuffer keeps it between calls */
     /* 0x14 */ u8 pad_14[0x10];
-    /* 0x24 */ s32 unk_24;        /* flags: bit 0x200 means the file has been read */
+    /* 0x24 */ s32 flags;        /* flags: bit 0x200 means the file has been read */
     /* 0x28 */ u8 pad_28[0x2];
     /* 0x2A */ u16 state;         /* 0 idle, 1 open the VAB header, 6 transfer the body */
     /* 0x2C */ u8 pad_2C[0x20];   /* the VAB header, see SoundBankVab */

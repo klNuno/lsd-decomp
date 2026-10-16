@@ -37,7 +37,7 @@ typedef struct ActorVtbl {
     void (*onTouch34)();  /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
     void (*onTouch24)();  /* 0xE0 Actor_OnNode24: on message byte 0x24 */
     u8 pad_E4[0xE8 - 0xE4];
-    void (*unkE8)();
+    void (*afterTouch)();
 } ActorVtbl;
 
 /* The vtable of the class SceneNode_GetVtbl returns (src/game/scene_node.c), base of Actor. */
@@ -63,7 +63,7 @@ typedef struct Actor {
     u8 pad_24[0x28 - 0x24];
     s32 contact;          /* 0x28 the object found by Actor_SnapToGround, 0 when none */
     u8 pad_2C[0x44 - 0x2C];
-    s32 unk44;            /* 0x44 cleared by the constructor */
+    s32 state;            /* 0x44 cleared by the constructor */
     s16 speed;            /* 0x48 0x12C at init */
     u8 pad_4A[0x4C - 0x4A];
     s32 map;              /* 0x4C the watched object whose class id ends in 0x114 (the map) */
@@ -147,7 +147,7 @@ void *Actor_New(void) {
 void *Actor_Construct(Actor *actor) {
     if (SceneNode_GetVtbl()->construct(actor) != 0) {
         actor->vt = Actor_GetVtbl();
-        actor->unk44 = 0;
+        actor->state = 0;
         actor->map = 0;
         actor->clock = 0;
         actor->vt->init(actor);
@@ -215,7 +215,7 @@ void Actor_SendBoxes(Actor *actor, s32 message) {
                 contact = (Actor *)actor->contact;
                 if (contact != NULL) {
                     if (*(u8 *)contact->vt == 0x34) {
-                        contact->vt->unkE8(contact, contact->vt);
+                        contact->vt->afterTouch(contact, contact->vt);
                     }
                 }
             }
@@ -299,7 +299,7 @@ void Actor_MoveXOnGround(Actor *actor, s32 value, s32 notify) {
     Actor_MoveThenSnap(actor, actor->vt->moveX, value, notify);
 }
 
-void Actor_StubD8(void) {
+void Actor_EmptySlotD8(void) {
 }
 
 /* Run a move, then look for a contact when the move found none. */
@@ -492,7 +492,7 @@ void Actor_SetSpeed(Actor *actor, s16 value) {
     actor->speed = value;
 }
 
-void Actor_StubE8(void) {
+void Actor_EmptySlotE8(void) {
 }
 
 /* Slot 0xEC */

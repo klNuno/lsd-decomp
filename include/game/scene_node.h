@@ -29,7 +29,7 @@ typedef struct SceneNodeVtbl {
     void (*freeWatchers)();   /* 0x28 Object_FreeWatchers */
     void (*nextWatcher)();    /* 0x2C Object_NextWatcher */
     void (*notify)();         /* 0x30 Object_Notify */
-    void (*unk34)();          /* 0x34 func_80018350, empty */
+    void (*unk34)();          /* 0x34 Object_EmptySlot34, empty */
     void (*onNotify)();       /* 0x38 SceneNode_OnNotify */
     void (*unk3C)();          /* 0x3C 0 */
     void (*reset)();          /* 0x40 SceneNode_Reset */
@@ -74,7 +74,7 @@ typedef struct SceneNode {
     s32 tmd;                     /* 0x18 GsDOBJ2.tmd */
     s32 id;                      /* 0x1C GsDOBJ2.id */
     ModelObject *model;          /* 0x20 the watched model object (sender type 9) */
-    s32 unk24;                   /* 0x24 cleared by reset */
+    s32 ticks;                   /* 0x24 cleared by reset */
     struct SceneNode *contact; /* 0x28 the last node that hit this one (message 4) */
     s32 hitMask;                 /* 0x2C boxes hit by the last test, one bit per box */
     s32 *boxList;                /* 0x30 the box list being sent, NULL otherwise */
@@ -119,7 +119,7 @@ void SceneNode_WorldToLocal(SceneNode *node, struct SVec3 *offset, struct SVec3 
 s32 SceneNode_BoxesOverlap(SceneNode *node, struct NodeBoxList *boxList, struct SVec3 *offset);
 s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, struct SVec3 *hitPos, struct NodeBoxList *boxList);
 void SceneNode_EmptySlotB0(void);
-void SceneNode_AddActorWatchers(s32 arg0, Object *object);
+void SceneNode_AddActorWatchers(s32 node, Object *object);
 void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, struct SVec3 *src);
 void SceneNode_LocalToWorld(); /* unprototyped: dream_sys.c and sym.c pass a fourth argument */
 void SceneNode_GetRotation(SceneNode *node, Fraction *degrees);

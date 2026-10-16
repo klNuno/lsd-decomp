@@ -14,7 +14,7 @@ s32 Link_FindStatic(void *out, void *location, s32 stage);
 s32 Link_FindFacing(void *out, s16 *location, s32 stage);
 s32 Link_CheckFacing(u8 **arrivalOut, u8 **headingOut, struct RotationYaw *rotation);
 s32 Link_PickFallStage(void *place, s32 stage, struct FallLocation *location, s32 timer);
-s32 *func_8005BF48(void);
+s32 *Link_GetFallTurn(void);
 void Link_SetExtraListOn(s32 on);
 s32 Link_FindExtra(void *out, void *location, s32 stage);
 s32 Link_GetExtraSeconds(void);

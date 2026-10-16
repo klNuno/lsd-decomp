@@ -137,7 +137,7 @@ typedef struct DreamSysVtbl {
     void (*freeWatchers)();                                                 /* 0x028 Object_FreeWatchers */
     void (*nextWatcher)();                                                 /* 0x02C Object_NextWatcher */
     void (*notify)(struct DreamSys *, s32);                           /* 0x030 Object_Notify */
-    void (*unk34)();                                                 /* 0x034 func_80018350 */
+    void (*unk34)();                                                 /* 0x034 Object_EmptySlot34 */
     void (*onNotify)();                                                 /* 0x038 SceneNode_OnNotify */
     void (*unk3C)();                                                 /* 0x03C 0x00000000 */
     void (*reset)(struct DreamSys *);                                /* 0x040 DreamSys_Reset */
@@ -178,7 +178,7 @@ typedef struct DreamSysVtbl {
     void (*moveY)();                                                 /* 0x0CC Actor_MoveY */
     void (*moveZOnGround)();                                                 /* 0x0D0 Actor_MoveZOnGround */
     void (*moveXOnGround)(struct DreamSys *, void *, s32);                   /* 0x0D4 Actor_MoveXOnGround */
-    void (*unkD8)();                                                 /* 0x0D8 Actor_StubD8 */
+    void (*unkD8)();                                                 /* 0x0D8 Actor_EmptySlotD8 */
     void (*routeEntityMessage)();                                                 /* 0x0DC DreamSys_RouteEntityMessage */
     void (*onWallTouch)(struct DreamSys *, void *, s32);             /* 0x0E0 DreamSys_OnWallTouch */
     void (*setSpeed)();                                                 /* 0x0E4 Actor_SetSpeed */
@@ -342,7 +342,7 @@ typedef struct DreamSys {
     SaveBlock save;         /* 0x178 the 0x700 bytes the memory card saves (DreamSys_GetSaveBlock) */
     s32 neverSaved;         /* set by a new game, cleared by a save or a load */
     s32 nextFlashback;      /* playback index into flashbacks */
-    s32 *unk880;
+    s32 *fallTurn;
     u8 *linkHeading;
     u8 *arrivalHeading;
     s32 savedDay;           /* day at the start of the dream (DreamSys_StartDay) */

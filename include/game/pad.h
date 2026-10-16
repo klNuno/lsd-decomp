@@ -16,9 +16,9 @@ typedef struct PadVtbl {
     void (*reset)();       /* 0x40 Pad_Reset (pad, padId) */
     void (*read)();        /* 0x44 Pad_Read */
     void (*send)();        /* 0x48 Pad_SendEvents */
-    void (*unk4C)();       /* 0x4C func_80025E14, empty */
+    void (*unk4C)();       /* 0x4C Pad_EmptySlot4C, empty */
     void (*initButtons)(); /* 0x50 Pad_InitButtons */
-    void (*unk54)();       /* 0x54 func_80025E94, empty */
+    void (*unk54)();       /* 0x54 Pad_EmptySlot54, empty */
 } PadVtbl;
 
 typedef struct Pad {

@@ -104,25 +104,25 @@ static void SpriteNode_FillSprite();
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 
-static void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 arg3, s32 arg4) {
+static void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 unused4, s32 unused5) {
     void *node;
 
     node = Heap_Alloc(0xA0);
     if (node != 0) {
-        SpriteNode_GetVtbl()->init(node, image, blendRate, rect, arg3, arg4);
+        SpriteNode_GetVtbl()->init(node, image, blendRate, rect, unused4, unused5);
         return node;
     }
     return 0;
 }
 
 /* Slot 0x08 */
-void SpriteNode_Init(SpriteNode *node, s32 image, s32 blendRate, s32 rect, s32 arg4, s32 arg5) {
+void SpriteNode_Init(SpriteNode *node, s32 image, s32 blendRate, s32 rect, s32 unused4, s32 unused5) {
     SpriteNodeVtbl *vtbl;
 
     SceneNode_GetVtbl()->init(node);
     vtbl = SpriteNode_GetVtbl();
     node->vtbl = vtbl;
-    vtbl->setImage(node, image, blendRate, rect, arg4, arg5);
+    vtbl->setImage(node, image, blendRate, rect, unused4, unused5);
 }
 
 /* Slot 0x40 (node, image object, blend rate, rect) */

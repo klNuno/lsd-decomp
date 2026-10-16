@@ -386,7 +386,7 @@ void Object_Notify(Object *object, void *message) {
 }
 
 /* vtable slot 0x34 */
-void func_80018350(void) {
+void Object_EmptySlot34(void) {
 }
 
 /* vtable slot 0x38: a watched object going away is dropped (`sender` stays in a1) */

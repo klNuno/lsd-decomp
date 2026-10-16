@@ -54,14 +54,14 @@ void Task_ClearTimeout(Task *task) {
     task->vtbl->setTimeout(task, -1);
 }
 
-s32 Task_Run(Task *task, s32 context, s32 arg2) {
+s32 Task_Run(Task *task, s32 context, s32 noLoop) {
     task->result = 0;
-    Screen_GetVtbl()->run(task, context, arg2);
+    Screen_GetVtbl()->run(task, context, noLoop);
     return task->result;
 }
 
 void Task_Finish(s32 task) {
-    Screen_GetVtbl()->unk48(task);
+    Screen_GetVtbl()->finish(task);
 }
 
 void Task_OnPad(void) {

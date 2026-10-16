@@ -86,16 +86,16 @@ void SceneryPart_SetScale(TextPart *part, s32 assign, s16 *ratio) {
     }
 }
 
-void SceneryPart_Stub98(void) {
+void SceneryPart_EmptySlot98(void) {
 }
 
-void SceneryPart_StubBC(void) {
+void SceneryPart_EmptySlotBC(void) {
 }
 
-void SceneryPart_StubC0(void) {
+void SceneryPart_EmptySlotC0(void) {
 }
 
-void SceneryPart_StubC4(void) {
+void SceneryPart_EmptySlotC4(void) {
 }
 
 static TextPartVtbl *SceneryPart_GetVtbl(void) {

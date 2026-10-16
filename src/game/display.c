@@ -21,7 +21,7 @@ typedef struct DisplayRect {
     u16 x;
     u16 y;
     u16 w;                    /* low half of the s32 width */
-    u16 unk6;
+    u16 wHigh;
     u16 h;                    /* 0x08 low half of the s32 height */
 } DisplayRect;
 
@@ -36,9 +36,9 @@ typedef struct Rect {
 /* A screen size ({s32 w, s32 h}) read through halfwords */
 typedef struct DisplaySizeHalves {
     u16 w;
-    u16 unk2;
+    u16 wHigh;
     u16 h;
-    u16 unk6;
+    u16 hHigh;
 } DisplaySizeHalves;
 
 static DisplayVtbl *Display_GetVtbl(void);

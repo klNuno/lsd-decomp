@@ -71,7 +71,7 @@ void Fade_Init(Fade *fade, s32 channels) {
     fade->state = 0;
     fade->step.value = 0xA;
     fade->channels = 0;
-    fade->unk_7C = 0;
+    fade->holdMode = 0;
     fade->vtbl->setVisible(fade, 0);
     fade->vtbl->setSemiTrans(fade, 0);
     fade->tint = 0;
@@ -81,7 +81,7 @@ void Fade_Init(Fade *fade, s32 channels) {
 void Fade_Step(Fade *fade, s32 ticker, s32 message) {
     if (message == 2) {
         if (fade->remaining-- > 0) {
-            if (fade->unk_7C != 9) {
+            if (fade->holdMode != 9) {
                 if (fade->channels & 4) {
                     fade->color.r += fade->step.low;
                 }
@@ -104,10 +104,10 @@ void Fade_SetStep(Fade *fade, s32 step) {
 }
 
 /* Slot 0xD4: fade in, from the full color down to nothing (Place calls it when a stage starts) */
-void Fade_StartIn(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+void Fade_StartIn(Fade *fade, s32 ticker, s32 channels, s32 holdMode) {
     s32 index;
     if (fade->state == 0) {
-        index = fade->vtbl->begin(fade, ticker, channels, arg3);
+        index = fade->vtbl->begin(fade, ticker, channels, holdMode);
         fade->vtbl->setColor(fade, 1, g_fadePalette[index]);
         fade->state = 1;
         fade->step.value = -fade->step.value;
@@ -115,9 +115,9 @@ void Fade_StartIn(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
 }
 
 /* Slot 0xD8: fade out, from black up to the color (Place_StartFade) */
-void Fade_StartOut(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+void Fade_StartOut(Fade *fade, s32 ticker, s32 channels, s32 holdMode) {
     if (fade->state == 0) {
-        channels = fade->vtbl->begin(fade, ticker, channels, arg3);
+        channels = fade->vtbl->begin(fade, ticker, channels, holdMode);
         if (fade->tint != 0) {
             fade->remaining--;
         } else {
@@ -131,7 +131,7 @@ void Fade_StartOut(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
  * Slot 0xDC: watches the ticker, sets the channels (0: all, black through blend mode 2, else
  * blend mode 1) and the tick count 0x100 / step, then shows the box semi-transparent.
  */
-s32 Fade_Begin(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
+s32 Fade_Begin(Fade *fade, s32 ticker, s32 channels, s32 holdMode) {
     FadeVtbl *vtbl;
     s32 index;
     s32 mode;
@@ -156,13 +156,13 @@ s32 Fade_Begin(Fade *fade, s32 ticker, s32 channels, s32 arg3) {
         fade->channels = 0xF;
     }
     ticks = 0x100 / fade->step.value;
-    fade->unk_7C = arg3;
+    fade->holdMode = holdMode;
     fade->remaining = ticks;
     if (fade->tint != 0) {
         fade->remaining = ticks - ticks / fade->tintDivisor;
     }
     channels = fade->mask / fade->remaining;
-    fade->unk_84 = channels;
+    fade->maskStep = channels;
     vtbl->watch(fade);
     vtbl->setSemiTrans(fade, 1);
     vtbl->setBlendMode(fade, mode);

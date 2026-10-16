@@ -46,9 +46,9 @@ typedef struct SpawnSlot {
 
 /* A place a group can stand on, 4 bytes, table g_spawnPlaces indexed by SpawnGroup.places (Sym_SpawnAtPlace). */
 typedef struct SpawnPlace {
-    u16 unk0; /* 0x00 copied into the placement query */
-    s8 unk2;  /* 0x02 index of a 12-byte record at g_spawnPlaceRotations, given to the new entity's slot 0x44 */
-    s8 unk3;  /* 0x03 index of a 6-byte record at g_spawnPlaceOffsets, copied into the placement query */
+    u16 tile; /* 0x00 copied into the placement query */
+    s8 rotationIndex;  /* 0x02 index of a 12-byte record at g_spawnPlaceRotations, given to the new entity's slot 0x44 */
+    s8 offsetIndex;  /* 0x03 index of a 6-byte record at g_spawnPlaceOffsets, copied into the placement query */
 } SpawnPlace;
 
 /*
@@ -140,7 +140,7 @@ typedef struct Entity {
     s32 handlerActive;       /* 0xF8 set by startHandler, cleared by stopHandler */
     s32 handlerTicks;        /* 0xFC cleared by startHandler, counted by slot 0x11C */
     struct Fade *effect;     /* 0x100 a Fade (fade.h) made by Fade_Create: the Grey Man white flash */
-    struct Fade *unk104;
+    struct Fade *secondEffect;
 } Entity;
 
 /* Functions of src/game/entity.c that other files call or reference (docs/naming.md, Prototypes) */

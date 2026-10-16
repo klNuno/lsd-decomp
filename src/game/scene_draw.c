@@ -179,7 +179,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
         if (pos->z > view->nearZ) {
             pos->x = pos->x * view->projection / pos->z;
             pos->y = pos->y * view->projection / pos->z;
-            pos->z = (pos->z - view->nearZ) / view->unk98;
+            pos->z = (pos->z - view->nearZ) / view->otZStep;
             spriteNode = node;
             if ((pos->x < 0 ? ~pos->x + 1 : pos->x) <= 0x200) {
                 spriteNode->sprite.x = pos->x;

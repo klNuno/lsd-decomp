@@ -35,7 +35,7 @@ typedef struct MovieVtbl {
     void (*onSlice)();        /* 0x60 Movie_OnSlice */
     s32 (*onStopped)();       /* 0x64 Movie_OnStopped */
     s32 (*decodeFrame)();     /* 0x68 Movie_DecodeFrame */
-    void (*setUnk68)();       /* 0x6C func_80045E3C */
+    void (*setAutoStart)();       /* 0x6C Movie_SetAutoStart */
 } MovieVtbl;
 
 typedef struct Movie {
@@ -54,13 +54,13 @@ typedef struct Movie {
     s32 stopped;              /* 0x44 */
     s32 streamEnded;          /* 0x48 */
     s32 frameDone;            /* 0x4C every slice of the frame is out */
-    s32 unk_50;               /* -1 from the stream callback Movie_OnStreamCallback, 1 from Movie_RequestStart */
+    s32 startRequest;               /* -1 from the stream callback Movie_OnStreamCallback, 1 from Movie_RequestStart */
     s32 repeat;               /* 0x54 restart when stopped */
     s32 loops;                /* 0x58 0 = no limit */
-    s32 unk_5C;               /* passed to the stream's slot 0x50 */
+    s32 frameCount;               /* passed to the stream's slot 0x50 */
     struct Stream *stream;      /* 0x60 */
-    s32 unk_64;
-    s32 unk_68;               /* set by slot 0x6C (1 from init) */
+    s32 streamStarted;
+    s32 autoStart;               /* set by slot 0x6C (1 from init) */
 } Movie;
 
 /* Functions of src/game/movie.c that other files call or reference (docs/naming.md, Prototypes) */

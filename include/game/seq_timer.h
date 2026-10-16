@@ -15,6 +15,6 @@ extern s32 g_seqVsyncCount;
 extern s32 g_seqIrq;
 extern s32 g_seqHalfRate;
 extern s32 g_videoMode;
-extern s32 D_8009024C;
+extern s32 g_seqTicksPerSecond;
 
 #endif

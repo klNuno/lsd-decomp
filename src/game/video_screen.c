@@ -24,7 +24,7 @@ typedef struct ScreenMovieVtbl {
     s32 (*poll)();       /* 0x48 non-zero once the video has ended */
     void (*stop)();      /* 0x4C */
     u8 pad_50[0x6C - 0x50];
-    void (*setUnk68)();  /* 0x6C */
+    void (*setAutoStart)();  /* 0x6C */
 } ScreenMovieVtbl;
 
 typedef struct ScreenMovie {
@@ -70,14 +70,14 @@ void VideoScreen_Reset(VideoScreen *video) {
     video->movieRepeat = 0;
     video->skippable = 1;
     video->unkD0 = 0;
-    video->unkD4 = 1;
+    video->closeAtOnce = 1;
 }
 
 /* Slot 0x44: plays path until it ends, CIRCLE skips it (when skippable) or the timeout runs out. */
-void VideoScreen_Play(VideoScreen *video, ScreenEnv *env, char *path, s32 frameCount, s32 arg4) {
+void VideoScreen_Play(VideoScreen *video, ScreenEnv *env, char *path, s32 frameCount, s32 autoStart) {
     video->path = path;
     video->frameCount = frameCount;
-    video->unkC0 = arg4;
+    video->autoStart = autoStart;
     MenuScreen_GetVtbl()->run(video, env, 0);
 }
 
@@ -87,7 +87,7 @@ void VideoScreen_Begin(VideoScreen *video) {
     MenuScreen_GetVtbl()->begin(video);
     movie = video->movie;
     video->finished = 0;
-    movie->vtbl->setUnk68(movie, video->unkC0);
+    movie->vtbl->setAutoStart(movie, video->autoStart);
     if (video->movie->vtbl->open(video->movie, video->path, video->frameCount, video->movieRepeat, video->movieLoops) != 0) {
         /* the video does not open: time out at once */
         video->vtbl->setTimeout(video, 0);
@@ -119,7 +119,7 @@ void VideoScreen_SetState(VideoScreen *video, s32 state) {
         video->closing = 1;
         break;
     case SCREEN_CLOSED:
-        if (video->unkD4 == 0) {
+        if (video->closeAtOnce == 0) {
             video->movie->vtbl->stop(video->movie);
         }
         break;
@@ -160,7 +160,7 @@ void VideoScreen_EmptySlot8C(void) {
 }
 
 void VideoScreen_Close(VideoScreen *video) {
-    if (video->unkD4 != 0) {
+    if (video->closeAtOnce != 0) {
         video->movie->vtbl->stop(video->movie);
         return;
     }
@@ -184,7 +184,7 @@ void func_8003BE74(VideoScreen *video, s32 value) {
 }
 
 void VideoScreen_SetCloseAtOnce(VideoScreen *video, s32 value) {
-    video->unkD4 = value;
+    video->closeAtOnce = value;
 }
 
 static ScreenVtbl *VideoScreen_GetVtbl(void) {

@@ -41,12 +41,12 @@ typedef struct FileVtbl {
     s32 (*read)();             /* 0x54 (self, buffer, size), CD: File_Read (CdRead) */
     void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_Open) */
     void (*freeData)();        /* 0x5C File_FreeData: frees +0x10 when +0x14 != 0 */
-    void (*unk_60)();          /* func_80026C80, empty */
+    void (*unk_60)();          /* File_EmptySlot60, empty */
     s32 (*onLoaded)();         /* 0x64 run after each queued request (File_ServiceQueue) and by creators of
                                   borrowed data; classes parse their data here; base File_MarkLoaded: flags |= 1 */
     void (*runQueue)();        /* 0x68 CD: File_ServiceQueue, runs the queued requests */
     void (*loadAsync)();       /* 0x6C (self, path), CD: File_RequestOpen queues slot 0x58 */
-    void (*unk_70)();          /* CD: File_Stop */
+    void (*stop)();          /* CD: File_Stop */
     void (*cancel)();          /* 0x74 CD: File_CancelRequests, drops the object's queued requests */
 } FileVtbl;
 
@@ -74,7 +74,7 @@ typedef struct File {
 s32 File_Delete(File *file);
 void File_LoadWhole(); /* unprototyped: file_cd.c calls it with no arguments */
 void File_FreeData(File *file);
-void func_80026C80(void);
+void File_EmptySlot60(void);
 void File_MarkLoaded(File *file);
 FileVtbl *File_GetBaseVtbl(void);
 FileVtbl *File_GetBackendVtbl(void);

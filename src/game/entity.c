@@ -6,6 +6,7 @@
 #include "game/handler_node.h"
 #include "game/fade.h"
 #include "game/model.h"
+#include "game/view.h"
 #include "psyq/libc.h"
 
 /*
@@ -106,7 +107,7 @@ typedef struct BehaviorDreamSys {
     u8 pad_04[0x14 - 0x04];
     BehaviorPos pos;         /* 0x14 */
     u8 pad_18[0x5C - 0x18];
-    ModelFile *model;        /* 0x5C */
+    View *camera;             /* 0x5C the DreamView (g_viewVtbl): Behavior_Type74 sets its clear color */
 } BehaviorDreamSys;
 
 /*
@@ -274,7 +275,7 @@ extern s32 g_scaleQuarter;
 extern void Behavior_Type71();
 extern s32 g_scaleDouble[];
 extern s32 g_moveYNeg64[];
-typedef struct Unk_80066818_Vtbl {
+typedef struct ModelBaseVtbl {
     u8 pad[0x8];
     s32 (*construct)(void *, s32, s32);                 /* 0x08 Model_Construct */
     void (*destruct)(void *);                           /* 0x0C Model_Destruct */
@@ -286,7 +287,7 @@ typedef struct Unk_80066818_Vtbl {
     u8 pad3[0xDC - 0x9C];
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
-} Unk_80066818_Vtbl;
+} ModelBaseVtbl;
 extern s32 g_scaleTiny;
 static s32 Entity_IsDreamerNear();
 static EntityVtbl *Entity_GetVtbl(void);
@@ -325,7 +326,7 @@ extern s32 g_moveXNeg64[];
 static void Entity_CheckLinkRadius();
 static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 extern u8 g_entityVtbl[];
-extern s8 D_8008AC1C[];
+extern s8 g_type74ClearColor[];
 extern s32 g_moveYNeg256[];
 extern s32 g_scaleTallFour[];
 extern s32 g_moveY256[];
@@ -368,7 +369,7 @@ void *Entity_Construct(Entity *entity, s32 type, s32 source, s32 soundBank) {
         entity->type = type;
         entity->handlerNode.id = 0;
         entity->effect = 0;
-        entity->unk104 = 0;
+        entity->secondEffect = 0;
         ((EntityVtbl *)entity->vt)->init(entity);
         return entity;
     }
@@ -403,7 +404,7 @@ void Entity_Destruct(Entity *entity) {
     if (effect != NULL) {
         effect->vtbl->delete_(effect);
     }
-    effect = entity->unk104;
+    effect = entity->secondEffect;
     if (effect != NULL) {
         effect->vtbl->delete_(effect);
     }
@@ -2121,7 +2122,7 @@ void Behavior_Type74(BehaviorEntity *entity) {
     s32 ticks;
 
     if (entity->handlerTicks == 0) {
-        entity->dreamSys->model->vt->onLoaded(entity->dreamSys->model, D_8008AC1C);
+        entity->dreamSys->camera->vtbl->setClearColor(entity->dreamSys->camera, g_type74ClearColor);
         entity->state = rand() % 3;
         if (entity->dreamSys->pos.coord->coord.t.z < 0x262) {
             entity->state = 0;

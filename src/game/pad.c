@@ -113,7 +113,7 @@ void Pad_SendEvents(Pad *pad) {
     }
 }
 
-void func_80025E14(void) {
+void Pad_EmptySlot4C(void) {
 }
 
 /* The PadRead bit of each button index (docs/discoveries.md, the erase combo). */
@@ -132,7 +132,7 @@ void Pad_InitButtons(void) {
     }
 }
 
-void func_80025E94(void) {
+void Pad_EmptySlot54(void) {
 }
 
 static PadVtbl *Pad_GetVtbl(void) {

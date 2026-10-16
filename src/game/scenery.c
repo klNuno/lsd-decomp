@@ -106,7 +106,7 @@ typedef struct Scenery {
     void *model;          /* 0x20 */
     u32 ticks;            /* 0x24 counted by update (Scenery_Update) */
     u8 pad_28[0x44 - 0x28];
-    s32 unk44;            /* 0x44 cleared by the constructor */
+    s32 state;            /* 0x44 cleared by the constructor */
     u8 pad_48[0x54 - 0x48];
     s32 kind;             /* 0x54 0 to 3 */
     Vec3 offset;          /* 0x58 params x, y, z: offset from the origin */

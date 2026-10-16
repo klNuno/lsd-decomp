@@ -11,16 +11,16 @@ typedef struct MapTileVtbl {
     void *(*delete_)();     /* 0x04 */
     void (*init)();         /* 0x08 MapTile_Init */
     u8 pad_0C[0x38 - 0x0C];
-    void (*unk38)();        /* 0x38 run on the tiles of the view by MapTile_Tell */
+    void (*onNotify)();        /* 0x38 run on the tiles of the view by MapTile_Tell */
     u8 pad_3C[0x48 - 0x3C];
-    void (*unk48)();        /* 0x48 (tile, 0 or 1, 12-byte record) from StageMap_AddTileStretchStep and StageMap_ResetOneTileScale */
-    void (*unk4C)();        /* 0x4C (tile, parent, position) */
+    void (*setScale)();        /* 0x48 (tile, 0 or 1, 12-byte record) from StageMap_AddTileStretchStep and StageMap_ResetOneTileScale */
+    void (*attach)();        /* 0x4C (tile, parent, position) */
     u8 pad_50[0x70 - 0x50];
-    void (*unk70)();
+    void (*setLightFlags)();
     u8 pad_74[0xA0 - 0x74];
-    void (*unkA0)();        /* 0xA0 SceneNode_CheckContact */
+    void (*checkContact)();        /* 0xA0 SceneNode_CheckContact */
     u8 pad_A4[0xB8 - 0xA4];
-    void (*unkB8)();        /* 0xB8 MapTile_OnActorMessage */
+    void (*onActorMessage)();        /* 0xB8 MapTile_OnActorMessage */
 } MapTileVtbl;
 
 typedef struct MapTileModel {

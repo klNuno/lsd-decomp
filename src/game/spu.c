@@ -12,9 +12,9 @@
 static void Spu_Reset(s32 hot);
 extern u16 g_spuVoiceInit[];
 extern u16 g_spuControlInit[];
-extern s32 D_8008E934;
-extern s32 D_8008EA00;
-extern s32 D_80090368[][16];
+extern s32 g_soundBusy;
+extern s32 g_seqOpenMask;
+extern s32 g_seqNrpnCallbacks[][16];
 
 /*
  * Resets the SPU: loads the 24 voice registers (0x1F801C00) and the 16 control registers
@@ -60,17 +60,17 @@ static void Spu_Reset(s32 hot) {
     SpuVmInit(0x18);
     for (j = 0; j < 0x20; j++) {
         for (i = 0xF; i >= 0; i--) {
-            D_80090368[j][i] = 0;
+            g_seqNrpnCallbacks[j][i] = 0;
         }
     }
-    D_8009024C = 0x3C;
-    D_8008EA00 = 0;
+    g_seqTicksPerSecond = 0x3C;
+    g_seqOpenMask = 0;
     g_seqVsyncCount = 0;
     g_seqIrq = -1;
     g_seqHalfRate = 0;
     g_seqPrevHandler = 0;
     g_videoMode = GetVideoMode();
-    D_8008E934 = 0;
+    g_soundBusy = 0;
 }
 
 /* Cold SPU reset. */

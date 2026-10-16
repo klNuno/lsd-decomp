@@ -38,7 +38,7 @@ typedef struct PrimHeader {
 typedef struct ClipVertex {
     Bytes8 pos;    /* copy of the model vertex */
     u16 uv;
-    u16 unk_0A;
+    u16 uvPad;
     Rgbc rgb;
     Rgbc sxy;      /* copy of the packet's screen xy */
     u8 sz[4];      /* written by gte_stsz3 / gte_stsz4 */
@@ -199,7 +199,7 @@ typedef struct TmdObject {
     TmdModel *model;
 } TmdObject;
 typedef struct TmdOt {
-    u32 unk_00;
+    u32 length;
     s32 *org;
 } TmdOt;
 
@@ -236,9 +236,9 @@ static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx);
 static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx);
 static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx);
 static void Render_InitClipSlots(u8 **slots, u8 *area, s32 count);
-extern s32 D_8008E250; /* attribute bit 5 */
-extern s32 D_8008E24C; /* attribute bits 3-4 */
-extern s32 D_800902E0;
+extern s32 g_renderUseLightMode; /* attribute bit 5 */
+extern s32 g_renderObjLightMode; /* attribute bits 3-4 */
+extern s32 g_gsLightMode;
 extern u8 *g_packetCursor; /* next free byte of the packet buffer, set by the psyq func_8003FBE4 */
 extern TmdRgb g_texturedRgb; /* {0x80, 0x80, 0x80} in .sdata */
 
@@ -269,11 +269,11 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
     }
     g_renderDivision = (object->attribute >> 9) & 7;
     g_renderUnlit = (object->attribute >> 6) & 1;
-    D_8008E250 = (object->attribute >> 5) & 1;
-    D_8008E24C = (object->attribute >> 3) & 3;
+    g_renderUseLightMode = (object->attribute >> 5) & 1;
+    g_renderObjLightMode = (object->attribute >> 3) & 3;
     ctx->unk_08 = 10;
     ctx->baseRgb = g_texturedRgb;
-    if ((D_8008E250 != 0 && D_800902E0 != 0) || D_8008E24C != 0) {
+    if ((g_renderUseLightMode != 0 && g_gsLightMode != 0) || g_renderObjLightMode != 0) {
         ctx->depthShift = 9;
     } else {
         ctx->depthShift = 16;
@@ -694,9 +694,9 @@ static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
-        ctx->triClip.v[0]->unk_0A = prim->c1.cd;
-        ctx->triClip.v[1]->unk_0A = prim->c1.cd;
-        ctx->triClip.v[2]->unk_0A = prim->c2.cd;
+        ctx->triClip.v[0]->uvPad = prim->c1.cd;
+        ctx->triClip.v[1]->uvPad = prim->c1.cd;
+        ctx->triClip.v[2]->uvPad = prim->c2.cd;
         ctx->triClip.v[0]->rgb = prim->c0;
         ctx->triClip.v[1]->rgb = prim->c1;
         ctx->triClip.v[2]->rgb = prim->c2;
@@ -711,9 +711,9 @@ static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
-        ctx->triClip.v[0]->unk_0A = prim->pad1;
-        ctx->triClip.v[1]->unk_0A = prim->pad1;
-        ctx->triClip.v[2]->unk_0A = prim->pad1;
+        ctx->triClip.v[0]->uvPad = prim->pad1;
+        ctx->triClip.v[1]->uvPad = prim->pad1;
+        ctx->triClip.v[2]->uvPad = prim->pad1;
         ctx->triClip.v[0]->uv = prim->uv0;
         ctx->triClip.v[1]->uv = prim->uv1;
         ctx->triClip.v[2]->uv = prim->uv2;
@@ -739,10 +739,10 @@ static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->x0, &prim->x1, &prim->x2, &prim->x3);
-        ctx->quadClip.v[0]->unk_0A = prim->c1.cd;
-        ctx->quadClip.v[1]->unk_0A = prim->c1.cd;
-        ctx->quadClip.v[2]->unk_0A = prim->c2.cd;
-        ctx->quadClip.v[3]->unk_0A = prim->c3.cd;
+        ctx->quadClip.v[0]->uvPad = prim->c1.cd;
+        ctx->quadClip.v[1]->uvPad = prim->c1.cd;
+        ctx->quadClip.v[2]->uvPad = prim->c2.cd;
+        ctx->quadClip.v[3]->uvPad = prim->c3.cd;
         ctx->quadClip.v[0]->rgb = prim->c0;
         ctx->quadClip.v[1]->rgb = prim->c1;
         ctx->quadClip.v[2]->rgb = prim->c2;
@@ -758,10 +758,10 @@ static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
-        ctx->quadClip.v[0]->unk_0A = prim->pad1;
-        ctx->quadClip.v[1]->unk_0A = prim->pad1;
-        ctx->quadClip.v[2]->unk_0A = prim->pad1;
-        ctx->quadClip.v[3]->unk_0A = prim->pad1;
+        ctx->quadClip.v[0]->uvPad = prim->pad1;
+        ctx->quadClip.v[1]->uvPad = prim->pad1;
+        ctx->quadClip.v[2]->uvPad = prim->pad1;
+        ctx->quadClip.v[3]->uvPad = prim->pad1;
         ctx->quadClip.v[0]->uv = prim->uv0;
         ctx->quadClip.v[1]->uv = prim->uv1;
         ctx->quadClip.v[2]->uv = prim->uv2;
@@ -777,9 +777,9 @@ static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
-        ctx->triClip.v[0]->unk_0A = prim->pad2;
-        ctx->triClip.v[1]->unk_0A = prim->pad2;
-        ctx->triClip.v[2]->unk_0A = prim->pad2;
+        ctx->triClip.v[0]->uvPad = prim->pad2;
+        ctx->triClip.v[1]->uvPad = prim->pad2;
+        ctx->triClip.v[2]->uvPad = prim->pad2;
         ctx->triClip.v[0]->rgb = prim->c0;
         ctx->triClip.v[1]->rgb = prim->c1;
         ctx->triClip.v[2]->rgb = prim->c2;
@@ -797,10 +797,10 @@ static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
-        ctx->quadClip.v[0]->unk_0A = prim->pad2;
-        ctx->quadClip.v[1]->unk_0A = prim->pad2;
-        ctx->quadClip.v[2]->unk_0A = prim->pad3;
-        ctx->quadClip.v[3]->unk_0A = prim->pad3;
+        ctx->quadClip.v[0]->uvPad = prim->pad2;
+        ctx->quadClip.v[1]->uvPad = prim->pad2;
+        ctx->quadClip.v[2]->uvPad = prim->pad3;
+        ctx->quadClip.v[3]->uvPad = prim->pad3;
         ctx->quadClip.v[0]->rgb = prim->c0;
         ctx->quadClip.v[1]->rgb = prim->c1;
         ctx->quadClip.v[2]->rgb = prim->c2;

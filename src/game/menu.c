@@ -20,12 +20,12 @@
 static MenuVtbl *Menu_GetVtbl(void);
 
 /* Allocates the menu (0xC4 bytes) and runs slot 0x8 of its class, Menu_Init. */
-s32 Menu_New(s32 arg0) {
+s32 Menu_New(s32 dreamSys) {
     s32 obj;
 
     obj = Heap_Alloc(0xC4);
     if (obj != 0) {
-        Menu_GetVtbl()->init(obj, arg0);
+        Menu_GetVtbl()->init(obj, dreamSys);
         return obj;
     }
     return 0;
@@ -33,7 +33,7 @@ s32 Menu_New(s32 arg0) {
 s32 g_cardFileName;
 s32 g_cardTitle;
 extern MenuFillRect g_menuFillRects[];
-extern s32 D_8008A9B4;
+extern s32 g_menuTitlePos;
 s32 g_cardBlankComment;
 extern u8 g_cardFileSuffixes[];
 void *g_cardFilePrefix;
@@ -45,17 +45,17 @@ s32 g_titleBlinkTick;
 extern u8 g_menuVtbl[];
 s8 *g_titleDayDigits;
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011434);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_menuFlashbackText);
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011440);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_menuFontPath);
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011454);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_cardFilePrefixText);
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011464);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_cardFileNameText);
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011474);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_cardBlankCommentText);
 
-INCLUDE_RODATA("asm/nonmatchings/game/menu", D_8001149C);
+INCLUDE_RODATA("asm/nonmatchings/game/menu", g_cardTitleText);
 
 /* Menu slot 0x08: base constructor with the menu description and ETC\ETCSE, then the save block. */
 void Menu_Init(Menu *menu, DreamSys *dreamSys) {
@@ -223,7 +223,7 @@ void Menu_ShowItems(Menu *menu, s32 root) {
 
     MenuScreen_GetVtbl()->showItems(menu, root);
     label = menu->titleLabel;
-    label->vtbl->show(label, root, &D_8008A9B4);
+    label->vtbl->show(label, root, &g_menuTitlePos);
 }
 
 /*

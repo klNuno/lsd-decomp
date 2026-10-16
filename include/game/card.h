@@ -67,10 +67,10 @@ typedef struct CardDialogVtbl {
     u8 pad_00[0x4];
     void (*delete_)(struct CardDialog *);
     u8 pad_08[0x44 - 0x08];
-    void (*unk44)(struct CardDialog *, s32);
-    void (*unk48)(struct CardDialog *);
-    void (*unk4C)(struct CardDialog *, void *, void *, void *);
-    void (*unk50)(struct CardDialog *);
+    void (*open)(struct CardDialog *, s32);
+    void (*close)(struct CardDialog *);
+    void (*watchPair)(struct CardDialog *, void *, void *, void *);
+    void (*unwatchPair)(struct CardDialog *);
     u8 pad_54[0x9C - 0x54];
     s32 (*getChoice)(struct CardDialog *);               /* 0x9C chooser: the file picked */
 } CardDialogVtbl;
@@ -86,7 +86,7 @@ typedef struct CardMessageVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*attach)(struct CardMessage *, s32, s32 *); /* 0x4C ScreenSprite_Attach (sprite, parent, 2D position) */
     u8 pad_50[0x78 - 0x50];
-    void (*unk78)(struct CardMessage *);
+    void (*upload)(struct CardMessage *);
 } CardMessageVtbl;
 
 typedef struct CardMessage {
@@ -155,7 +155,7 @@ typedef struct Card {
     char **foundSuffixes;   /* 0x3C the suffix of each file found */
     char *fileName;         /* 0x40 */
     char *title;            /* 0x44 */
-    s32 unk48;              /* 0x48 0xD from SaveMenu_Save; the keyboard gets title + 2 x this */
+    s32 commentStart;              /* 0x48 0xD from SaveMenu_Save; the keyboard gets title + 2 x this */
     u8 iconFrames;          /* 0x4C 3 */
     MenuPicture *icon;      /* 0x50 the file icon, CARD\FILEICN1.TIM */
     void *data;             /* 0x54 */

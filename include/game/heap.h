@@ -71,7 +71,7 @@ typedef struct ObjectVtbl {
     void (*freeWatchers)();  /* 0x28 Object_FreeWatchers */
     void (*nextWatcher)();   /* 0x2C Object_NextWatcher (self, &value, &iter) */
     void (*notify)();        /* 0x30 Object_Notify (self, message) */
-    void (*unk_34)();        /* 0x34 func_80018350, empty */
+    void (*unk_34)();        /* 0x34 Object_EmptySlot34, empty */
     void (*onNotify)();      /* 0x38 Object_OnNotify (self, sender, message) */
 } ObjectVtbl;
 
@@ -100,7 +100,7 @@ void Object_RemoveWatcher(Object *object);
 void Object_FreeWatchers(Object *object);
 void Object_NextWatcher(Object *object, s32 *value, ListNode **iter);
 void Object_Notify(Object *object, void *message);
-void func_80018350(void);
+void Object_EmptySlot34(void);
 void Object_OnNotify(Object *object, s32 sender, s32 message);
 ObjectVtbl *Object_GetBaseVtbl(void);
 void List_Next(s32 *value, ListNode **iter);

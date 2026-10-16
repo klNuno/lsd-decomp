@@ -17,22 +17,22 @@
 /* The camera-like object at +0x18 (base class field): slot 0x70 gets DreamSys and two points 1200 units up. */
 typedef struct RunnerViewVtbl {
     u8 pad_00[0x44];
-    void (*unk44)();
+    void (*setScreenSize)();
     u8 pad_48[0x4C - 0x48];
-    void (*unk4C)();
+    void (*setPacketCount)();
     u8 pad_50[0x70 - 0x50];
-    void (*unk70)();
-    void (*unk74)();
+    void (*setCamera)();
+    void (*detach)();
     u8 pad_78[0x8C - 0x78];
-    void (*unk8C)();
-    void (*unk90)();
+    void (*allocOt)();
+    void (*freeOt)();
     u8 pad_94[0xAC - 0x94];
-    struct RunnerViewSub *(*unkAC)();
+    struct RunnerViewSub *(*getOverlay)();
 } RunnerViewVtbl;
 
 typedef struct RunnerViewSubVtbl {
     u8 pad_00[0x60];
-    void (*unk60)();
+    void (*setVisible)();
 } RunnerViewSubVtbl;
 
 typedef struct RunnerViewSub {
@@ -46,7 +46,7 @@ typedef struct RunnerView {
 /* The object at +0xC (from the scene, +0x1C): its +0 answers slot 0x7C, the runner fills +0x8 to +0x10. */
 typedef struct RunnerContextHeadVtbl {
     u8 pad_00[0x7C];
-    s32 (*unk7C)();
+    s32 (*getScreenRect)();
 } RunnerContextHeadVtbl;
 
 typedef struct RunnerContextHead {
@@ -54,11 +54,11 @@ typedef struct RunnerContextHead {
 } RunnerContextHead;
 
 typedef struct RunnerContext {
-    RunnerContextHead *unk0;
-    s32 unk4;               /* watched by DreamSys while the runner runs */
-    Object *unk8;           /* Clock_Create() */
+    RunnerContextHead *display;
+    s32 pad;               /* watched by DreamSys while the runner runs */
+    Object *clock;           /* Clock_Create() */
     struct StageMap *map;   /* 0x0C StageMap_New(0, 1) */
-    Object *unk10;          /* DreamView_New(), class 0x800869D8 */
+    Object *view;          /* DreamView_New(), class 0x800869D8 */
 } RunnerContext;
 
 /* What the vtable slots of the loaded TIM and model objects do here. */
@@ -66,9 +66,9 @@ typedef struct RunnerResVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();     /* 0x04 */
     u8 pad_08[0x5C - 0x08];
-    void (*unk5C)();
+    void (*freeData)();
     u8 pad_60[0x78 - 0x60];
-    void (*unk78)();
+    void (*upload)();
 } RunnerResVtbl;
 
 typedef struct RunnerRes {
@@ -100,9 +100,9 @@ typedef struct DreamRunnerVtbl {
     u8 pad_3C[0x40 - 0x3C];
     void (*clearPhase)();   /* 0x40 DreamRunner_ClearPhase */
     s32 (*run)();           /* 0x44 DreamRunner_Run */
-    void (*unk48)();        /* 0x48 DreamRunner_Finish */
+    void (*finish)();        /* 0x48 DreamRunner_Finish */
     void (*start)();        /* 0x4C DreamRunner_Start */
-    void (*unk50)();        /* 0x50 DreamRunner_End */
+    void (*end)();        /* 0x50 DreamRunner_End */
     void (*update)();       /* 0x54 DreamRunner_Update */
     u8 pad_58[0x60 - 0x58];
     void (*setState)();     /* 0x60 Task_SetState */
@@ -121,7 +121,7 @@ typedef struct DreamRunner {
     DreamRunnerVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];
     RunnerContext *context; /* 0x0C */
-    s32 unk10;
+    s32 clock;
     u8 pad_14[0x18 - 0x14];
     RunnerView *view;       /* 0x18 */
     u32 ticks;              /* 0x1C */
@@ -138,7 +138,7 @@ typedef struct DreamRunner {
 } DreamRunner;
 
 /* Functions of src/game/dream_runner.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 DreamRunner_New(s32 context, s32 dreamSys, s32 arg2);
-void File_ResolvePathTablePart(s32 arg0);
+s32 DreamRunner_New(s32 context, s32 dreamSys, s32 useCdSearch);
+void File_ResolvePathTablePart(s32 wholeTable);
 
 #endif

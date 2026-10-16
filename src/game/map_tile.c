@@ -40,7 +40,7 @@ void MapTile_Reset(void) {
 
 void MapTile_OnNode(MapTile *tile, u8 **message) {
     if (**message == 0x34) {
-        tile->vtbl->unkB8(tile);
+        tile->vtbl->onActorMessage(tile);
     }
 }
 
@@ -48,7 +48,7 @@ void MapTile_OnActorMessage(MapTile *tile, void *sender, s32 message) {
     SceneNode_GetVtbl()->onNode(tile, sender, message);
     if (message < 9) {
         if (message >= 5) {
-            tile->vtbl->unkA0(tile, sender, message);
+            tile->vtbl->checkContact(tile, sender, message);
         }
     }
 }

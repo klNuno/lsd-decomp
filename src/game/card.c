@@ -53,7 +53,7 @@ s32 g_cardCount;
 static void Card_ClearEvents(Card *card);
 static s32 Card_WaitEvent(Card *card);
 extern s8 *g_cardMessageNames[];
-extern s32 D_80086EC4[];
+extern s32 g_cardMessageRect[];
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
@@ -614,12 +614,12 @@ static void Card_FreeFileList(Card *card) {
  * Card slot 0x78: an existing file asks to overwrite first; then the comment keyboard, then
  * SAVING. No room for a new file: CARD_STATE_FULL.
  */
-void Card_Save(Card *card, char *fileName, char *title, s32 unk48, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+void Card_Save(Card *card, char *fileName, char *title, s32 commentStart, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
     s32 next;
 
     card->fileName = fileName;
     card->title = title;
-    card->unk48 = unk48;
+    card->commentStart = commentStart;
     card->operation = CARD_OP_SAVE;
     card->iconFrames = iconFrames;
     card->icon = icon;
@@ -781,8 +781,8 @@ void Card_ShowMessage(Card *card, s32 state) {
         strcat(dst, name);
         strcat(dst, g_timSuffix);
         picture = Tim_New(dst);
-        picture->vt->unk78(picture);
-        message = ScreenSprite_Create(picture, D_80086EC4, 0);
+        picture->vt->upload(picture);
+        message = ScreenSprite_Create(picture, g_cardMessageRect, 0);
         card->message = message;
         picture->vt->delete_(picture);
         message->vt->attach(message, card->root, g_cardMessagePos);
@@ -833,7 +833,7 @@ void Card_OnConfirm(Card *card) {
             strcpy(card->title, card->titles[card->choice]);
         }
         if (card->operation == CARD_OP_SAVE) {
-            vtbl->save(card, card->fileName, card->title, card->unk48, card->iconFrames, card->icon, card->data, card->size);
+            vtbl->save(card, card->fileName, card->title, card->commentStart, card->iconFrames, card->icon, card->data, card->size);
             return;
         } else if (card->operation == CARD_OP_LOAD) {
             vtbl->load(card, card->fileName, card->title, card->data, card->size);
@@ -891,12 +891,12 @@ void Card_OnTick(Card *card) {
 void Card_OpenKeyboard(Card *card) {
     if (card->root != 0 && card->pad != 0) {
         if (card->keyboard == NULL) {
-            card->keyboard = CommentObject_New((card->unk48 * 2) + (s32)card->title, 1);
+            card->keyboard = CommentObject_New((card->commentStart * 2) + (s32)card->title, 1);
             card->ownsDialog = 1;
         }
         card->vtbl->watch(card, card->keyboard);
-        card->keyboard->vt->unk44(card->keyboard, card->root);
-        card->keyboard->vt->unk4C(card->keyboard, card->pad, card->clock, card->sound);
+        card->keyboard->vt->open(card->keyboard, card->root);
+        card->keyboard->vt->watchPair(card->keyboard, card->pad, card->clock, card->sound);
     }
 }
 
@@ -907,8 +907,8 @@ void Card_CloseKeyboard(Card *card) {
     if (card->root != 0 && card->pad != 0) {
         keyboard = card->keyboard;
         if (keyboard != NULL) {
-            keyboard->vt->unk50(keyboard);
-            card->keyboard->vt->unk48(card->keyboard);
+            keyboard->vt->unwatchPair(keyboard);
+            card->keyboard->vt->close(card->keyboard);
             if (card->ownsDialog != 0) {
                 card->keyboard->vt->delete_(card->keyboard);
                 card->keyboard = NULL;
@@ -922,7 +922,7 @@ void Card_OnKeyboard(Card *card, void *sender, s32 message) {
     switch (message) {
     case 2:
         card->vtbl->closeKeyboard(card);
-        card->vtbl->save(card, card->fileName, card->title, card->unk48, card->iconFrames, card->icon, card->data, card->size);
+        card->vtbl->save(card, card->fileName, card->title, card->commentStart, card->iconFrames, card->icon, card->data, card->size);
         break;
     case 3:
         card->vtbl->closeKeyboard(card);
@@ -942,9 +942,9 @@ void Card_OpenChooser(Card *card) {
         }
         card->vtbl->watch(card, card->chooser);
         chooser = card->chooser;
-        chooser->vt->unk44(chooser, card->root);
+        chooser->vt->open(chooser, card->root);
         chooser = card->chooser;
-        chooser->vt->unk4C(chooser, card->pad, card->clock, card->sound);
+        chooser->vt->watchPair(chooser, card->pad, card->clock, card->sound);
     }
 }
 
@@ -955,9 +955,9 @@ void Card_CloseChooser(Card *card) {
     if (card->root != 0 && card->pad != 0) {
         chooser = card->chooser;
         if (chooser != NULL) {
-            chooser->vt->unk50(chooser);
+            chooser->vt->unwatchPair(chooser);
             chooser = card->chooser;
-            chooser->vt->unk48(chooser);
+            chooser->vt->close(chooser);
             if (card->ownsDialog != 0) {
                 chooser = card->chooser;
                 chooser->vt->delete_(chooser);

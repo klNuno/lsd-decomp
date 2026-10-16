@@ -76,8 +76,8 @@ s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
             g_mdecReady = 1;
             DecDCToutCallback(Movie_OnMdecOut);
             movie->stream->vtbl->setRing(movie->stream, movie->streamBuffer, 0x12000);
-            movie->unk_50 = 0;
-            movie->vtbl->setUnk68(movie, 1);
+            movie->startRequest = 0;
+            movie->vtbl->setAutoStart(movie, 1);
             return 0;
         }
         return 1;
@@ -150,16 +150,16 @@ static void Movie_FreeBuffers(Movie *movie) {
 }
 
 /* Slot 0x40: opens source on the stream and makes this the playing movie; 1 when it cannot */
-s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
+s32 Movie_Open(Movie *movie, void *source, s32 frameCount, s32 repeat, s32 loops) {
     Stream *stream;
     Display *gfx;
 
     if (g_activeMovie == NULL) {
-        if (movie->unk_68 != 0) {
+        if (movie->autoStart != 0) {
             Movie_RequestStart(movie);
         }
         stream = movie->stream;
-        movie->unk_5C = unk5C;
+        movie->frameCount = frameCount;
         if (stream->vtbl->open(stream, source, 100) == 0) {
             g_activeMovie = movie;
             movie->frameReady = 0;
@@ -179,7 +179,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
 }
 
 static void Movie_RequestStart(Movie *movie) {
-    movie->unk_50 = 1;
+    movie->startRequest = 1;
 }
 
 /* Slot 0x44: restarts the playing movie, with Movie_OnStreamCallback as the stream callback */
@@ -196,29 +196,29 @@ void Movie_Start(Movie *movie) {
         active->stopped = 0;
         stream->vtbl->setCallback(stream, Movie_OnStreamCallback, active);
         stream = active->stream;
-        active->unk_64 = 0;
+        active->streamStarted = 0;
         stream->vtbl->rewind(stream);
     }
 }
 
 static void Movie_OnStreamCallback(Movie *movie) {
-    movie->unk_50 = -1;
+    movie->startRequest = -1;
 }
 
 /* Slot 0x48, each tick: handles a stream callback (counts loops), else decodes a frame */
 s32 Movie_Update(Movie *movie) {
     Movie *active = g_activeMovie;
 
-    if (active == movie && (active->unk_50 != 0 || active->unk_64 != 0)) {
-        if (active->unk_50 != 0) {
-            active->stream->vtbl->start(active->stream, 1, active->unk_5C);
-            if (active->unk_50 < 0) {
+    if (active == movie && (active->startRequest != 0 || active->streamStarted != 0)) {
+        if (active->startRequest != 0) {
+            active->stream->vtbl->start(active->stream, 1, active->frameCount);
+            if (active->startRequest < 0) {
                 if (active->loops == 0 || --active->loops == 0) {
                     active->stream->vtbl->mute(active->stream);
                 }
             }
-            movie->unk_50 = 0;
-            movie->unk_64 = 1;
+            movie->startRequest = 0;
+            movie->streamStarted = 1;
             return 0;
         }
         active->vtbl->decodeFrame(active);
@@ -236,10 +236,10 @@ void Movie_Stop(Movie *movie) {
         active->repeat = 0;
         stream->vtbl->close(stream);
         active->stopped = 1;
-        if (active->unk_64 == 0) {
+        if (active->streamStarted == 0) {
             stream = active->stream;
             stream->vtbl->setCallback(stream, 0, 0);
-            active->unk_64 = 1;
+            active->streamStarted = 1;
             active->stopped = 1;
         }
     }
@@ -354,8 +354,8 @@ static void Movie_WaitFrame(Movie *movie) {
     }
 }
 
-void func_80045E3C(Movie *movie, s32 value) {
-    movie->unk_68 = value;
+void Movie_SetAutoStart(Movie *movie, s32 value) {
+    movie->autoStart = value;
 }
 
 static MovieVtbl *Movie_GetVtbl(void) {

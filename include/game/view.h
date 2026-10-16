@@ -67,8 +67,8 @@ typedef struct ViewVtbl {
     void (*present)();          /* 0xA4 */
     void (*setOverlay)();       /* 0xA8 */
     struct Fade *(*getOverlay)(); /* 0xAC View_GetOverlay */
-    void (*setUnkB4)();         /* 0xB0 */
-    void (*setUnkB8)();         /* 0xB4 */
+    void (*setExtraSwap)();         /* 0xB0 */
+    void (*setPresentEnabled)();         /* 0xB4 */
 } ViewVtbl;
 
 typedef struct View {
@@ -102,12 +102,12 @@ typedef struct View {
     void *packets[2];       /* 0x88 GPU packet areas, packetCount x packetSize each */
     s32 clockCount;         /* 0x90 clock messages received */
     u8 pad_94[0x98 - 0x94];
-    s32 unk98;              /* 0x98 */
+    s32 otZStep;              /* 0x98 */
     u8 pad_9C[0xAC - 0x9C];
     SceneNode *root;        /* 0xAC SceneNode_New, drawn every frame; the overlay hangs from it */
     Fade *overlay;          /* 0xB0 a 320 x 240 Fade at (-100, -100); Place uses it as its fader (place.h) */
-    s32 unkB4;              /* 0xB4 when set, present swaps buffers once more on buffer 0 */
-    s32 unkB8;              /* 0xB8 present draws only when set, 1 */
+    s32 extraSwap;              /* 0xB4 when set, present swaps buffers once more on buffer 0 */
+    s32 presentEnabled;              /* 0xB8 present draws only when set, 1 */
 } View;
 
 /* Functions of src/game/view.c that other files call or reference (docs/naming.md, Prototypes) */

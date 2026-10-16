@@ -191,7 +191,7 @@ static s32 Model_BuildParts(Model *model);
 static void Model_ReleaseParts(Model *model);
 /* the vtable of actor.c through this file's view of its slots, so not from game/actor.h */
 ModelParentVtbl *Actor_GetVtbl(void);
-typedef struct Unk_80066818_Vtbl {
+typedef struct ModelBaseVtbl {
     u8 pad[0x8];
     s32 (*construct)(void *, s32, s32);                 /* 0x08 Model_Construct */
     void (*destruct)(void *);                           /* 0x0C Model_Destruct */
@@ -203,7 +203,7 @@ typedef struct Unk_80066818_Vtbl {
     u8 pad3[0xDC - 0x9C];
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
-} Unk_80066818_Vtbl;
+} ModelBaseVtbl;
 typedef struct Unk_80065CEC_Obj {
     ObjectVtbl *vt;
 } Unk_80065CEC_Obj;
@@ -679,6 +679,6 @@ void Model_ClearTarget(Model *model) {
     }
 }
 
-Unk_80066818_Vtbl *Model_GetVtbl(void) {
-    return (Unk_80066818_Vtbl *)g_modelVtbl;
+ModelBaseVtbl *Model_GetVtbl(void) {
+    return (ModelBaseVtbl *)g_modelVtbl;
 }

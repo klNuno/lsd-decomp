@@ -112,7 +112,8 @@ def main():
             restore()
             sys.exit(f"{f}: struct {st} not found")
         body = text[blk[0]:blk[1]]
-        if re.search(r"\b" + re.escape(new) + r"\b", body):
+        code = re.sub(r"/\*.*?\*/|//[^\n]*", " ", body, flags=re.S)  # a comment may say the new name
+        if re.search(r"\b" + re.escape(new) + r"\b", code):
             restore()
             sys.exit(f"{f}: struct {st} already has a member {new}")
         # rename the member in code only: comments of the struct may mention the old name

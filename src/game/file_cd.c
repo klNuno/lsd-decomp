@@ -87,7 +87,7 @@ typedef struct {
     u8 pad3[0x64 - 0x5C];
     void (*onLoaded)(FileHandle *);             /* 0x64 File_MarkLoaded */
     u8 pad4[0x70 - 0x68];
-    void (*unk70)(FileHandle *);                /* 0x70 File_Stop, called once the queue drains */
+    void (*stop)(FileHandle *);                 /* 0x70 File_Stop, called once the queue drains */
 } FileHandleVt;
 struct FileHandle {
     FileHandleVt *vt;
@@ -540,7 +540,7 @@ void File_ServiceQueue(void) {
             obj->vt->onLoaded(obj);
             File_FreeRequest(req);
             if (g_fileRequestHead == NULL) {
-                obj->vt->unk70(obj);
+                obj->vt->stop(obj);
             }
         }
     }

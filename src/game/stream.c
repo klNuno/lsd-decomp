@@ -68,7 +68,7 @@ void Stream_Init(Stream *stream, u32 speedMode, s32 fps, s32 unk3C) {
     stream->frameBytes = (speedMode < 4 ? 300 : 150) / fps / 2 * 0x806;
     stream->unk3C = unk3C;
     stream->ring = 0;
-    stream->unk4C = 0;
+    stream->closeAtEnd = 0;
     stream->callback = 0;
     stream->seekDone = 0;
     stream->state = 0;
@@ -308,7 +308,7 @@ static void Stream_NotifyFrame(Stream *stream, void *frame) {
 }
 
 static void Stream_NotifyEnd(Stream *stream) {
-    if (stream->unk4C != 0) {
+    if (stream->closeAtEnd != 0) {
         stream->callback(stream->callbackArg);
         stream->vtbl->close(stream);
     }

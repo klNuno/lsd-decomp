@@ -155,7 +155,7 @@ void SceneNode_OnNotify(SceneNode *node, Object *sender, s32 message) {
 
 /* Slot 0x40: no parent coordinate, rotation 0, scale 1 (g_nodeZeroRotation and g_nodeUnitScale are Fraction[3]). */
 void SceneNode_Reset(SceneNode *node) {
-    node->unk24 = 0;
+    node->ticks = 0;
     node->attribute = 0;
     GsInitCoordinate2(0, node->coord);
     node->vtbl->setRotation(node, 1, g_nodeZeroRotation);
@@ -694,7 +694,7 @@ void SceneNode_EmptySlotB0(void) {
  * Slot 0xB4: every watcher of object that is a scene node (sender type 4) and whose
  * class tag byte is 0x34 is made to watch arg0.
  */
-void SceneNode_AddActorWatchers(s32 arg0, Object *object) {
+void SceneNode_AddActorWatchers(s32 node, Object *object) {
     WatcherVtbl *vtbl;
     Object *watcher;
     s32 more;
@@ -714,7 +714,7 @@ void SceneNode_AddActorWatchers(s32 arg0, Object *object) {
         if (watcher != NULL) {
             vtbl = (WatcherVtbl *)watcher->vtbl;
             if (vtbl->tag == 0x34) {
-                vtbl->watch(watcher, arg0);
+                vtbl->watch(watcher, node);
             }
         }
     } while (more != 0);

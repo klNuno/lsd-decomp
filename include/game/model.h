@@ -6,7 +6,7 @@
 /* Functions of src/game/model.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/model.c */
 struct Model;
-struct Unk_80066818_Vtbl;
+struct ModelBaseVtbl;
 void Model_OnNotify(struct Model *model, u16 **sender, s32 message);
 void Model_SetVisible(struct Model *model, s32 visible);
 void Model_SetLightFlags(struct Model *model, s32 flags);
@@ -30,6 +30,6 @@ void *Model_ApplyFrame(struct Model *model, u8 *frame, void *context);
 s32 Model_ApplyCommand(struct Model *model, s32 command);
 void Model_SetTarget(struct Model *model, struct Model *target);
 void Model_ClearTarget(struct Model *model);
-struct Unk_80066818_Vtbl *Model_GetVtbl(void);
+struct ModelBaseVtbl *Model_GetVtbl(void);
 
 #endif

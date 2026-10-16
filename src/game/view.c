@@ -133,8 +133,8 @@ void View_Reset(View *view) {
     view->fogNear = 0x4E20;
     view->fogColor = g_viewDefaultColor;
     view->clearColor = g_viewDefaultColor;
-    view->unkB4 = 0;
-    view->unkB8 = 1;
+    view->extraSwap = 0;
+    view->presentEnabled = 1;
 }
 
 void View_SetScreenSize(View *view, ScreenPoint *value) {
@@ -310,7 +310,7 @@ void View_Render(View *view) {
         }
         GsSetRefView2(&view->viewpoint);
         view->super->flg = 0;
-        view->unk98 = ((u32)(view->farZ - view->nearZ) / (u32)(1 << view->otBits)) + 1;
+        view->otZStep = ((u32)(view->farZ - view->nearZ) / (u32)(1 << view->otBits)) + 1;
         func_8003FBE4(view->packets[view->buffer]);
         GsClearOt(0, 0, view->ot[view->buffer]);
         view->vtbl->drawNode(view, view->root);
@@ -324,15 +324,15 @@ void View_Render(View *view) {
 void View_Present(View *view) {
     if (view->otReady != 0) {
         view->buffer = view->display->vtbl->getActiveBuffer(view->display);
-        if (view->unkB8 != 0) {
+        if (view->presentEnabled != 0) {
             ResetGraph(1);
             view->display->vtbl->swapBuffers(view->display);
-            if (view->unkB4 != 0 && view->buffer == 0) {
+            if (view->extraSwap != 0 && view->buffer == 0) {
                 view->display->vtbl->swapBuffers(view->display);
             }
             GsSortClear(view->clearColor.r, view->clearColor.g, view->clearColor.b, view->ot[view->buffer]);
             GsDrawOt(view->ot[view->buffer]);
-            if (view->unkB4 != 0 && view->buffer == 0) {
+            if (view->extraSwap != 0 && view->buffer == 0) {
                 view->display->vtbl->swapBuffers(view->display);
             }
         }
@@ -360,11 +360,11 @@ Fade *View_GetOverlay(View *view) {
 }
 
 void View_SetExtraSwap(View *view, s32 value) {
-    view->unkB4 = value;
+    view->extraSwap = value;
 }
 
 void View_SetPresentEnabled(View *view, s32 value) {
-    view->unkB8 = value;
+    view->presentEnabled = value;
 }
 
 ViewVtbl *View_GetVtbl(void) {

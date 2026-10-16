@@ -32,13 +32,13 @@ extern MapView g_wholeChunkView;      /* {slot -1, 0, 0, 20, 20}: a whole chunk 
 extern MapTileStep g_tileStretchSlowUp, g_tileStretchFastUp, g_tileStretchSlowDown, g_tileStretchFastDown;
 extern s32 g_tileScaleOne;
 
-extern Matrix D_8008E98C;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
+extern Matrix GsIDMATRIX;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
 
 /* What StageMap slot 0xB8 (RootNode_GetLight) returns. */
 typedef struct MapChildVtbl {
     u8 pad_00[0x44];
-    void (*unk44)();
-    void (*unk48)();
+    void (*setColor)();
+    void (*setVector)();
 } MapChildVtbl;
 
 typedef struct MapChild {
@@ -94,19 +94,19 @@ static void StageMap_ResetOneTileScale(s32 map, MapTile *tile);
 static void StageMap_ForEachTile(StageMap *map, void (*perTile)(), void (*perSlot)(void *, void *));
 static void StageMap_ForEachSlotTile(StageMap *map, void (*perTile)(), MapSlot *slot);
 
-s32 StageMap_New(s32 origin, s32 arg1) {
+s32 StageMap_New(s32 origin, s32 loadEntities) {
     s32 map;
 
     map = Heap_Alloc(0x1E8);
     if (map != 0) {
-        StageMap_GetVtbl()->init(map, origin, arg1);
+        StageMap_GetVtbl()->init(map, origin, loadEntities);
         return map;
     }
     return 0;
 }
 
 /* Constructor: 7 slots, each with its chunk object, model set, origin node and 410 tiles laid 0x800 apart. */
-void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
+void StageMap_Init(StageMap *map, Vec3 *origin, s32 loadEntities) {
     Vec3 pos;
     MapSlot *slot;
     MapChunk *chunk;
@@ -128,14 +128,14 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
     map->active = 0;
     map->target = NULL;
     map->messageFilter = NULL;
-    map->unk1E0 = 0;
+    map->stretchTicks = 0;
     for (i = 0; i < 7; i++) {
         slot = &map->slots[i];
         slot->chunk = MapChunk_New();
         slot->chunk->keepData = (slot->chunk->data != 0);
         slot->chunk->id = i;
         chunk = slot->chunk;
-        chunk->vtbl->setLoadEntities(chunk, arg2);
+        chunk->vtbl->setLoadEntities(chunk, loadEntities);
         slot->spawned = 0;
         slot->unk18 = 0;
         slot->index = i;
@@ -143,7 +143,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
         slot->models = MapModels_New(0);
         tile = (MapTile *)MapTile_New();
         slot->root = tile;
-        tile->vtbl->unk4C(tile, map, &map->origin);
+        tile->vtbl->attach(tile, map, &map->origin);
         slot->tiles = (MapTile **)Heap_Alloc(0x668);
         if (slot->tiles == NULL) {
             return;
@@ -155,14 +155,14 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
         for (p = slot->tiles; p < end; p++) {
             tile = (MapTile *)MapTile_New();
             *p = tile;
-            tile->vtbl->unk4C(tile, slot->root, &pos);
+            tile->vtbl->attach(tile, slot->root, &pos);
             pos.x += 0x800;
             if (pos.x > 0xA400) {
                 pos.x = 0x400;
                 pos.z += 0x800;
             }
             tile = *p;
-            tile->vtbl->unk70(tile, 1);
+            tile->vtbl->setLightFlags(tile, 1);
             tile = *p;
             tile->attribute = (s32)(tile->attribute | MAP_TILE_HIDDEN);
         }
@@ -209,7 +209,7 @@ void StageMap_Destroy(StageMap *map) {
 void StageMap_OnNotify(StageMap *map, s32 **sender, s32 message) {
     SceneNode_GetVtbl()->onNotify(map, sender, message);
     if ((**sender & 0xF) == 1) {
-        map->vtbl->unk100(map, sender, message);
+        map->vtbl->pollLoads(map, sender, message);
     }
 }
 
@@ -246,7 +246,7 @@ void StageMap_OnSlotMessage(StageMap *map, s32 message, MapSlot *slot) {
 void StageMap_Tick(StageMap *map) {
     if (map->active != 0) {
         map->vtbl->follow(map);
-        map->vtbl->unk13C(map);
+        map->vtbl->stepTileStretch(map);
     }
 }
 
@@ -276,19 +276,19 @@ void StageMap_ClearSlots(StageMap *map) {
     }
     map->ready = 0;
     map->pendingSlots = 0;
-    map->vtbl->unk140(map);
+    map->vtbl->resetTileScale(map);
 }
 
-void StageMap_SetLights(StageMap *map, s32 count, s32 arg2, s32 arg3) {
+void StageMap_SetLights(StageMap *map, s32 count, s32 vectors, s32 colors) {
     s32 i;
     MapChild *child;
 
     for (i = 0; i < count; i++) {
-        child = map->vtbl->unkB8(map, i);
-        child->vtbl->unk44(child, 1, arg3);
-        arg3 += 3;
-        child->vtbl->unk48(child, 1, arg2);
-        arg2 += 6;
+        child = map->vtbl->getLight(map, i);
+        child->vtbl->setColor(child, 1, colors);
+        colors += 3;
+        child->vtbl->setVector(child, 1, vectors);
+        vectors += 6;
     }
 }
 
@@ -447,7 +447,7 @@ static void StageMap_TellViewTiles(StageMap *map, MapActor *sender, s32 message)
 
 static void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message) {
     if ((tile != NULL) && (tile->flags & 0x80)) {
-        tile->vtbl->unk38(tile);
+        tile->vtbl->onNotify(tile);
     }
 }
 
@@ -778,7 +778,7 @@ void StageMap_BuildTiles(StageMap *map, MapSlot *slot) {
     chunk = slot->chunk;
     models = slot->models;
     models->data = (u8 *)chunk->data + chunk->data->modelsOffset;
-    models->unk14 = 0;
+    models->size = 0;
     if (models->tmd != NULL) {
         models->tmd->vtbl->delete_(models->tmd);
     }
@@ -1001,7 +1001,7 @@ static void StageMap_ComputeFlatView(StageMap *map, s32 width, s32 depth) {
     if (param->rotate.axis[1] < 0) {
         angle += 0x1000;
     }
-    mat = D_8008E98C;
+    mat = GsIDMATRIX;
     mat.t.x = 0;
     mat.t.y = 0;
     mat.t.z = map->viewDistance;
@@ -1252,42 +1252,42 @@ void StageMap_StartTileStretch(StageMap *map, s32 count, s32 fast) {
     if (count > 0) {
         step = &g_tileStretchSlowUp;
         if (fast != 0) {
-            map->unk1E4 = &g_tileStretchFastUp;
+            map->stretchStep = &g_tileStretchFastUp;
         } else {
-            map->unk1E4 = step;
+            map->stretchStep = step;
         }
     } else {
         step = &g_tileStretchSlowDown;
         if (fast != 0) {
             step = &g_tileStretchFastDown;
         }
-        map->unk1E4 = step;
+        map->stretchStep = step;
     }
-    map->unk1E0 = map->unk1E4->ticks * (count < 0 ? ~count + 1 : count);
+    map->stretchTicks = map->stretchStep->ticks * (count < 0 ? ~count + 1 : count);
 }
 
 void StageMap_StepTileStretch(StageMap *map) {
-    if (map->unk1E0 > 0) {
+    if (map->stretchTicks > 0) {
         StageMap_ForEachTile(map, StageMap_AddTileStretchStep, 0);
-        if (--map->unk1E0 == 0) {
-            map->unk1E0 = -1;
+        if (--map->stretchTicks == 0) {
+            map->stretchTicks = -1;
         }
     }
 }
 
 void StageMap_ResetTileScale(StageMap *map) {
-    if (map->unk1E0 != 0) {
+    if (map->stretchTicks != 0) {
         StageMap_ForEachTile(map, StageMap_ResetOneTileScale, 0);
-        map->unk1E0 = 0;
+        map->stretchTicks = 0;
     }
 }
 
 static void StageMap_AddTileStretchStep(StageMap *map, MapTile *tile) {
-    tile->vtbl->unk48(tile, 0, map->unk1E4);
+    tile->vtbl->setScale(tile, 0, map->stretchStep);
 }
 
 static void StageMap_ResetOneTileScale(s32 map, MapTile *tile) {
-    tile->vtbl->unk48(tile, 1, &g_tileScaleOne);
+    tile->vtbl->setScale(tile, 1, &g_tileScaleOne);
 }
 
 /* Calls perTile(map, tile) on the tiles of the 7 slots, after perSlot(map, slot) when given. */

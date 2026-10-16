@@ -77,7 +77,7 @@ void Screen_Run(Screen *screen, ScreenEnv *env, s32 noLoop) {
     vtbl->watch(screen, env->pad);
     vtbl->watch(screen, screen->clock);
     vtbl->begin(screen, 0, 0, 0);
-    screen->unk24 = noLoop;
+    screen->noLoop = noLoop;
     if (noLoop == 0) {
         view->vtbl->watch(view, env->display);
         view->vtbl->watch(view, screen->clock);
@@ -99,7 +99,7 @@ void Screen_Finish(Screen *screen) {
     vtbl = screen->vtbl;
     vtbl->end(screen);
     view = screen->view;
-    if (screen->unk24 == 0) {
+    if (screen->noLoop == 0) {
         root = screen->root;
         root->vtbl->unwatch(root, screen->clock);
         view->vtbl->unwatch(view, screen->clock);

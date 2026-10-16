@@ -1023,7 +1023,7 @@ s32 DreamSys_LinkFall(DreamSys *dreamSys, s32 location) {
     if (dreamSys->transition == 0) {
         newStage = Link_PickFallStage(&dreamSys->place, dreamSys->stage, location, dreamSys->timer);
         if (newStage >= 0) {
-            dreamSys->unk880 = func_8005BF48();
+            dreamSys->fallTurn = Link_GetFallTurn();
             dreamSys->linkHeading = 0;
             dreamSys->arrivalHeading = 0;
             DreamSys_ExecuteLink(dreamSys, newStage, 0x10, 0);

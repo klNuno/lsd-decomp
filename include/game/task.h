@@ -20,7 +20,7 @@ typedef struct TaskBaseVtbl {
     void (*destroy)();      /* 0x0C Object_Destroy */
     u8 pad_10[0x44 - 0x10];
     void (*run)();          /* 0x44 Screen_Run */
-    void (*unk48)();        /* 0x48 Screen_Finish */
+    void (*finish)();        /* 0x48 Screen_Finish */
     u8 pad_4C[0x5C - 0x4C];
     void (*onTick)();       /* 0x5C Screen_OnClock: ticks++ */
     void (*setState)();     /* 0x60 Screen_SetState: state = arg, notify the watchers */
@@ -40,7 +40,7 @@ typedef struct TaskVtbl {
     u8 pad_3C[0x40 - 0x3C];
     void (*reset)();        /* 0x40 Task_ClearTimeout: no timeout */
     s32 (*run)();           /* 0x44 Task_Run: run the loop, return the result */
-    void (*unk48)();        /* 0x48 Task_Finish */
+    void (*finish)();        /* 0x48 Task_Finish */
     u8 pad_4C[0x54 - 0x4C];
     void (*update)();       /* 0x54 Screen_OnDisplay (base), message type 1 */
     u8 pad_58[0x5C - 0x58];

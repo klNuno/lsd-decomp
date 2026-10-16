@@ -79,20 +79,20 @@ SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
 
-void *ScreenSprite_Create(s32 image, SpriteRect *rect, s32 arg2) {
+void *ScreenSprite_Create(s32 image, SpriteRect *rect, s32 unused) {
     void *sprite;
 
     sprite = Heap_Alloc(0xA8);
     if (sprite != 0) {
-        ScreenSprite_GetVtbl()->init(sprite, image, rect, arg2);
+        ScreenSprite_GetVtbl()->init(sprite, image, rect, unused);
         return sprite;
     }
     return 0;
 }
 
 /* Slot 0x08 */
-void ScreenSprite_Init(ScreenSprite *sprite, s32 image, s32 rect, s32 arg3) {
-    SpriteNode_GetVtbl()->init(sprite, image, 0, rect, 0, arg3);
+void ScreenSprite_Init(ScreenSprite *sprite, s32 image, s32 rect, s32 unused) {
+    SpriteNode_GetVtbl()->init(sprite, image, 0, rect, 0, unused);
     sprite->vtbl = ScreenSprite_GetVtbl();
     sprite->vtbl->setup(sprite);
 }

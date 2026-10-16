@@ -26,7 +26,7 @@ typedef struct VideoScreen {
     struct View *view;
     s32 ticks;
     s32 state;
-    s32 unk24;
+    s32 noLoop;
     s32 viewOtBits;
     s32 viewPacketCount;
     s32 viewPacketSize;
@@ -65,12 +65,12 @@ typedef struct VideoScreen {
     struct ScreenMovie *movie; /* 0xB4 the Movie of Movie_Create (include/game/movie.h) */
     char *path;             /* 0xB8 the .STR file */
     s32 frameCount;         /* 0xBC from g_videoTable, -1 when the length comes from setTimeout; Movie +0x5C */
-    s32 unkC0;              /* 0xC0 handed to Movie slot 0x6C (Movie +0x68) */
+    s32 autoStart;              /* 0xC0 handed to Movie slot 0x6C (Movie +0x68) */
     s32 movieRepeat;        /* 0xC4 Movie +0x54, 0 */
     s32 movieLoops;         /* 0xC8 Movie +0x58, -1 */
     s32 skippable;          /* 0xCC CIRCLE ends the video with result 2; 1 by default */
     s32 unkD0;              /* 0xD0 0, not read in this unit */
-    s32 unkD4;              /* 0xD4 1: close stops the movie at once instead of fading out */
+    s32 closeAtOnce;              /* 0xD4 1: close stops the movie at once instead of fading out */
     s32 closing;            /* 0xD8 */
 } VideoScreen;
 

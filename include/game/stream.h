@@ -56,7 +56,7 @@ struct Stream {
     s32 endFrame;           /* 0x40 frame count: file size / frameBytes, or slot 0x50's end frame */
     void *callbackArg;      /* 0x44 */
     void (*callback)(void *); /* 0x48 run for each frame and at the end; 0 from init */
-    s32 unk4C;              /* 0x4C non-zero: the end runs the callback and closes */
+    s32 closeAtEnd;              /* 0x4C non-zero: the end runs the callback and closes */
     s32 ring;               /* 0x50 the ring buffer of slot 0x40; 0 = open fails */
     void (*seekDone)(void *); /* 0x54 non-zero: seeks are asynchronous and call it with callbackArg */
     u32 lastFrame;          /* 0x58 */

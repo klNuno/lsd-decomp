@@ -136,6 +136,6 @@ typedef struct Menu {
 } Menu;
 
 /* Functions of src/game/menu.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Menu_New(s32 arg0);
+s32 Menu_New(s32 dreamSys);
 
 #endif

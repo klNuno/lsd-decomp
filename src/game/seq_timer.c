@@ -18,7 +18,7 @@ static void Seq_OnTickHalf(void);
 
 /*
  * Sets the rate in g_seqRate from the low 12 bits of rate; bit 0x1000 sets g_seqExternal. Rates 0, 1, 4
- * and 5 depend on the video mode in g_videoMode (1 is PAL, 50 Hz; 0 is NTSC, 60 Hz). D_8009024C gets
+ * and 5 depend on the video mode in g_videoMode (1 is PAL, 50 Hz; 0 is NTSC, 60 Hz). g_seqTicksPerSecond gets
  * the period for the rate.
  */
 void Seq_SetRate(s32 rate) {
@@ -32,7 +32,7 @@ void Seq_SetRate(s32 rate) {
     if (g_seqRate < 6) {
         switch (g_seqRate) {
         case 4:
-            D_8009024C = 0x32;
+            g_seqTicksPerSecond = 0x32;
             if (g_videoMode == 1) {
                 g_seqRate = 5;
             } else {
@@ -40,7 +40,7 @@ void Seq_SetRate(s32 rate) {
             }
             return;
         case 1:
-            D_8009024C = 0x3C;
+            g_seqTicksPerSecond = 0x3C;
             if (g_videoMode == 0) {
                 g_seqRate = 5;
             } else {
@@ -48,39 +48,39 @@ void Seq_SetRate(s32 rate) {
             }
             return;
         case 3:
-            D_8009024C = 0x78;
+            g_seqTicksPerSecond = 0x78;
             return;
         case 2:
-            D_8009024C = 0xF0;
+            g_seqTicksPerSecond = 0xF0;
             return;
         case 5:
             switch (g_videoMode) {
             case 1:
-                D_8009024C = 0x32;
+                g_seqTicksPerSecond = 0x32;
                 return;
             default:
             case 0:
-                D_8009024C = 0x3C;
+                g_seqTicksPerSecond = 0x3C;
                 return;
             }
             break;
         case 0:
             if (g_videoMode != 0) {
                 if (g_videoMode == 1) {
-                    D_8009024C = 0x32;
+                    g_seqTicksPerSecond = 0x32;
                     return;
                 }
-                D_8009024C = 0x3C;
+                g_seqTicksPerSecond = 0x3C;
                 return;
             }
-            D_8009024C = 0x3C;
+            g_seqTicksPerSecond = 0x3C;
             return;
         default:
-            D_8009024C = 0x3C;
+            g_seqTicksPerSecond = 0x3C;
             return;
         }
     } else {
-        D_8009024C = g_seqRate;
+        g_seqTicksPerSecond = g_seqRate;
     }
 }
 

@@ -40,7 +40,7 @@ typedef struct ActorVtbl {
     void (*onTouch34)();  /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
     void (*onTouch24)();  /* 0xE0 Actor_OnNode24: on message byte 0x24 */
     u8 pad_E4[0xE8 - 0xE4];
-    void (*unkE8)();
+    void (*afterTouch)();
 } ActorVtbl;
 
 /* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, Scenery_Init). */
@@ -106,7 +106,7 @@ typedef struct Scenery {
     void *model;          /* 0x20 */
     u32 ticks;            /* 0x24 counted by update (Scenery_Update) */
     u8 pad_28[0x44 - 0x28];
-    s32 unk44;            /* 0x44 cleared by the constructor */
+    s32 state;            /* 0x44 cleared by the constructor */
     u8 pad_48[0x54 - 0x48];
     s32 kind;             /* 0x54 0 to 3 */
     Vec3 offset;          /* 0x58 params x, y, z: offset from the origin */
@@ -174,7 +174,7 @@ void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin) {
 void *Scenery_Construct(Scenery *scenery, s32 kind, s32 params, s32 map, s32 origin) {
     if (Actor_GetVtbl()->construct(scenery) != 0) {
         scenery->vt = Scenery_GetVtbl();
-        scenery->unk44 = 0;
+        scenery->state = 0;
         scenery->kind = kind;
         scenery->vt->init(scenery, params);
         Scenery_Build(scenery, map, origin);

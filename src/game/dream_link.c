@@ -9,7 +9,7 @@
 
 u8 *g_navFlags;
 s32 *g_dynamicLinkCount;
-extern s32 D_8008ABF0[];
+extern s32 g_fallTurn[];
 s32 g_linkToStage;
 s32 g_linkFromStage;
 /* A scripted link target as Link_GetStepScript reads it: byte 5 is the index into g_linkSteps. */
@@ -191,10 +191,10 @@ s32 Link_PickFallStage(void *place, s32 stage, FallLocation *location, s32 timer
     return ret;
 }
 
-s32 *func_8005BF48(void) {
+s32 *Link_GetFallTurn(void) {
     s32 *r = NULL;
     if (g_linkToStage != 12) {
-        r = D_8008ABF0;
+        r = g_fallTurn;
     }
     return r;
 }

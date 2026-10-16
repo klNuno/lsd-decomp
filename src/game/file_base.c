@@ -87,7 +87,7 @@ void File_FreeData(File *file) {
     }
 }
 
-void func_80026C80(void) {
+void File_EmptySlot60(void) {
 }
 
 /* File base slot 0x64 (onLoaded). */
@@ -147,7 +147,7 @@ static void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src) {
     dst->load = src->load;
     dst->runQueue = src->runQueue;
     dst->loadAsync = src->loadAsync;
-    dst->unk_70 = src->unk_70;
+    dst->stop = src->stop;
     dst->cancel = src->cancel;
 }
 
