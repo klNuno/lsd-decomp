@@ -47,7 +47,7 @@ Flashbacks
 
 The Grey Man
 - ✅ [The Grey Man flips your graph and wipes your memories](#-the-grey-man-flips-your-graph-and-wipes-your-memories): his mood sits past the edge of the graph, so touching him throws your day to the opposite corner.
-- 🧩 [When the Grey Man can appear](#-when-the-grey-man-can-appear): even days only, 1 chance in 12 at a spot left empty that day.
+- 🧩 [When the Grey Man can appear](#-when-the-grey-man-can-appear): even days only, 1 chance in 12 at a spot left empty that day, and he is placed about four tiles in front of you.
 - 🔄 [Who can meet the Grey Man, and where](#-who-can-meet-the-grey-man-and-where): he only replaces odd-day characters, and six places never get him.
 
 Rare sights
@@ -82,6 +82,8 @@ Links between places
 - 🔄 [Where a random link sends you](#-where-a-random-link-sends-you): the place after yours comes up twice as often as the others.
 - 🔄 [Fixed links do not change with visits, but some depend on who showed up](#-fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up): no visit counter; four characters switch on extra links.
 - 🧩 [Falling off an edge, walls and the cottage's walking squares](#-falling-off-an-edge-walls-and-the-cottages-walking-squares): a fall ends the dream like the clock, a wall links only 1 tick in 16.
+- ✅ [The world is built from square blocks, and only marked blocks are walls](#-the-world-is-built-from-square-blocks-and-only-marked-blocks-are-walls): quarter turns, whole-tile heights, and one block in six can link you.
+- 🔄 [The Long Hallway's room turns the sky blue, then pulls you out 2 times in 3](#-the-long-hallways-room-turns-the-sky-blue-then-pulls-you-out-2-times-in-3): the blue is the background, and a die decides between the Natural World and the walk back.
 
 Music and sound
 - ✅ [A Clockwork Machines track that can never play](#-a-clockwork-machines-track-that-can-never-play): the dice can pick it, but the game plays the next track instead.
@@ -91,6 +93,7 @@ Music and sound
 Memory card
 - 🧩 [Everything the game remembers fits in one block](#-everything-the-game-remembers-fits-in-one-block): 1,792 bytes, starting with the letters J01, with the SHAKE option and the video reel flag.
 - 🧩 [How the memory card save works](#-how-the-memory-card-save-works): the day number goes into the save title, and a new game saves to a new file.
+- 🆕 [SELECT on the comment keyboard makes the cursor run](#-select-on-the-comment-keyboard-makes-the-cursor-run): a mode the help never mentions, and where your comment lands in the title.
 
 Randomness
 - 🔄 [The dice of the game](#-the-dice-of-the-game): a fixed number sequence that is almost never reseeded; "type A and B days" are just odd and even days.
@@ -99,6 +102,7 @@ Hidden and unused content
 - 🆕 [SELECT + TRIANGLE in the pause erases your game](#-select--triangle-in-the-pause-erases-your-game): the game's only hidden button input, with no warning; no cheat code exists.
 - ✅ [The dog that never loads](#-the-dog-that-never-loads): a dog model sits on the disc, but the loader stops before it.
 - 🧩 [What the game never asks for](#-what-the-game-never-asks-for): three files on the disc and one menu slot, and no debug menu found.
+- 🆕 [Switches and features the game never uses](#-switches-and-features-the-game-never-uses): a CD lookup switch, place overrides, looping videos, a holding fade, and fog that each model sets for itself.
 
 Myths checked
 - ❌ [Myth: a hidden ending if the graph is full](#-myth-a-hidden-ending-if-the-graph-is-full): false.
@@ -428,7 +432,9 @@ The Grey Man is entity type 98: `Sym_InitStage` creates the spy object with `Ent
 
 Each spot where a character can stand has a day rule: always, odd days only, or even days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white and [the memories were erased](#-what-erases-the-flashbacks).
 
-Status: 🎮 checked in the game, with the die forced.
+He does not walk in from far away. When he spawns, the game puts him about four tiles straight ahead of you, turned to face you, and he glides toward you from there. There is only one Grey Man: when another empty spot rolls him while he is out, the code moves the same one in front of you again. That is very likely why players see him jump from place to place.
+
+Status: 🎮 checked in the game, with the die forced (the spawn spot ahead of you was measured in memory).
 
 <img src="img/game/grey-man.png" alt="The Grey Man, in a hat and long coat, walking toward the camera under the torii of the canal place on day 4" width="60%">
 
@@ -438,8 +444,9 @@ Grey Man spawn: per entity spawn slot, `Place_SpawnCell` calls `Sym_SpawnOrSpy @
 
 - Proof: `Sym_SpawnOrSpy` @0x8005C7D4 (asm: `andi s1,1` and the 0x2AAAAAAB divide by 12), `Sym_CheckDayParity` @0x8005C9A4, `Sym_FindSlot` @0x8005C8AC, `Sym_LoadModels` @0x8005C508, `Place_SpawnCell` @0x80054120.
 - In game: yes, forced. PCSX-Redux interpreter: +0x180 = 3 (day number 4, even), yesterday's point +0x194/+0x195 = (-3, 1) so the dream starts on stage 2, rand state 0 at every `Sym_SpawnOrSpy` entry (3 slots, vsyncs 3460 to 3481); the Grey Man walked toward the camera (capture at 4400) and the screen flashed white when he reached the player (4500). A later run with the same setup measured the flashback list cleared by that contact (`work/hunt3/gm.log`). Log `work/shots/manifest.md`.
-- Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15.
-- Before us: the wikis (fandom Gray Man, compu-lsd Spy) knew he comes on even (type B) days, but put his spawn down to the seed or an unknown "Gray Man Power"; new here: the 1 in 12 roll on a spot left empty.
+- Spawn spot: `Sym_SpawnSpy` @0x8005CF34 takes the one spy entity of `g_spyModel`, detaches it and attaches it again at `SceneNode_LocalToWorld(dreamer, spawnOffset)`, then calls `Entity_FaceDreamer`. `spawnOffset` (`SpyModel` +8, 0x80088D30) is (0, -200, 8000): z points ahead (as in `DreamSys_TestPointAhead`) and negative y is up, so 8,000 units ahead and 200 higher. A tile is 0x800 = 2,048 units, so 8,000 is just under four tiles. In game (`work/unknowns/U3/bspy.log`, same forced die): `Sym_SpawnSpy` ran at f 3,460, 3,481 and 4,519 with that offset; two frames after the first, the spy stood at (0, -200, -7,970) from the dreamer, whose forward matrix column was (0, 0, -4,096); after the call at 4,519 he stood at (0, -200, -7,842) while the dreamer kept walking. The 30-unit gap from 8,000 was not explained.
+- Question: [5](mysteries.md#grey-man-and-flashback). Found 2026-10-15, spawn spot 2026-10-16.
+- Before us: the wikis (fandom Gray Man, compu-lsd Spy) knew he comes on even (type B) days, but put his spawn down to the seed or an unknown "Gray Man Power"; new here: the 1 in 12 roll on a spot left empty. The fandom wiki also says he appears right in front of you and may "teleport around rapidly"; new here: the distance, and that the code moves the same Grey Man again.
 
 </details>
 
@@ -1167,6 +1174,47 @@ Status: 🎮 partly checked. The falls (three, by pad only, in Pit & Temple and 
 
 </details>
 
+### ✅ The world is built from square blocks, and only marked blocks are walls
+
+Every place is laid out on a grid of square tiles. Each block of scenery sits on one tile, faces one of four directions (it only ever turns by a quarter turn) and is stacked a whole number of tiles above the ground, up to 7. Nothing in the world is turned at an odd angle or raised by half a tile.
+
+Each block also carries a mark that makes it a wall. 5,223 of the 31,068 blocks on the disc have it, about one in six. When you push into a marked block, the game puts you back and may link you: through a fixed link if that spot has one, else a random one on [1 tick in 16](#-falling-off-an-edge-walls-and-the-cottages-walking-squares). A touch on an unmarked block is never passed on, so it can never link you. The byte that holds the mark also holds the block's footstep sound.
+
+Status: 🎮 partly checked. The marks were seen on the blocks in memory during a walk; that only marked blocks link you is read in the code, and the grid rules come from the code and the 139 map files.
+
+<details><summary>Technical details</summary>
+
+- Map files: each `STGxx\Mxxx.LBD` holds a 20 x 20 grid of 12-byte records (`GridRecord`, src/game/map_models.c; stacked blocks chain through `nextOffset`): present, a byte nothing reads, object index, flags, quarter turns, height. `MapModels_NextModel` @0x8002C278 places a block at x = col * 0x800 + 0x400, z = row * 0x800 + 0x400, y = height << 11, yaw = quarterTurns << 10 (1,024 is 90 degrees in the 4,096-per-turn angle unit). Census of the 139 files (`work/unknowns/U2/lbd_models.py extract/CDI`): 31,068 present records; quarter turns 0 to 3 only (22,045, 3,724, 2,573, 2,726); height 0 on 30,627 records and -1 to -7 on 441 (negative y is up); flag bit 0x80 on 5,223.
+- Walls: `StageMap_BuildTiles` @0x8004BE54 copies the flags into each `MapTile`. On a contact, `StageMap_TellViewTiles` @0x8004B100 tells the tiles around the actor through `MapTile_Tell` @0x8004B2D4, which passes the message on only when `flags & 0x80`. `MapTile_OnActorMessage` @0x8004D47C then runs `checkContact`, which reaches `DreamSys_OnWallTouch` @0x80058FAC: the static link, else the dynamic link while its flag is set, then `restorePosition` and `afterWallTouch`. The low 7 bits are the step sound: `DreamSys_OnGroundProbe` @0x80058B08 takes `contact->flags & 0x7F` (0x18 and above become 0).
+- Never read: record byte 1 (1 on 30,480 records, 0 on 588) is copied to the tile item (+0x2C) and read by nothing; `MapTile.unk34` stays 0.
+- In game: partly. Interpreter run `work/unknowns/U2/walk1.log` (new game, UP held from vsync 3,300 to 5,900, three stage loads): the 2,870 tiles in memory, read every 300 vsyncs, carry the same flag values as the files, for example at 4,200 {0: 500, 1: 120, 6: 1,499, 128: 333, 129: 136, 134: 164, ...}. No wall touch was logged in that run.
+- Sources: `work/unknowns/U2-report.md`. Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: Figglewatts' libLSD (`LBD.cs`) already reads this record: four tile directions in 90-degree steps, a height offset, and a byte whose low 7 bits it calls the footstep and whose top bit it "hypothesized" to be collision, plus a `SolidTile` flag "either 0 or 1" of unknown use. The code confirms the footstep and wall bits; new here: the wall bit is what lets a block link you, heights are whole tiles, and the `SolidTile` byte is never read. The fandom wiki (Linking) says any solid obstacle can link you.
+
+</details>
+
+### 🔄 The Long Hallway's room turns the sky blue, then pulls you out 2 times in 3
+
+At the end of the Long Hallway stands a small room with a window. When you reach it, its walls break apart and a blue sky with clouds shows behind it. The blue is not part of the room: the character that runs the event repaints the background of the whole place, which is white the rest of the time. That fits the wiki's note that the blue stays visible in the distance afterwards.
+
+Then the game rolls a three-sided die. On two faces out of three you are pushed forward into the clouds and linked to the Natural World. On the third you are walked back down the hallway and get the controls back. If you stand very close to one side of the hallway, the die is ignored and you are always walked back. That is very likely the rule behind the wiki's note that the room always sends you back when you are about to hit the right wall, but it was not tested.
+
+Status: 🎮 partly checked. The blue background, the forward push and the link to the Natural World were seen in the emulator, with only the start place written in; the walk back and the side rule are read in the code only.
+
+<p>
+<img src="img/game/long-hallway-blue-sky.png" alt="The Long Hallway after the room broke apart: a sandy floor under white clouds on a deep blue sky" width="49%">
+<img src="img/game/long-hallway-pulled-up.png" alt="A moment later the dreamer is carried forward into the clouds, just before the link" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Handler `Behavior_Type74` @0x80062730 (src/game/entity.c). At its first tick it sets the clear colour of the camera (DreamSys +0x5C is the DreamView, `View_SetClearColor` @0x8003EA84) to `g_type74ClearColor` @0x8008AC1C = (0, 100, 190), then picks `state = rand() % 3`, forced to 0 while the dreamer's local z (`coord.t.z`) is below 0x262. States 1 and 2: past half its animation it pushes the dreamer 0x80 forward per tick (`moveZ`) and posts event 10, a link, 30 ticks before the animation ends. State 0: between ticks 20 and 120 it moves the dreamer back by (tick - 19) << 5 per tick and gives the controls back at tick 85 (`setControls(1, 1)`). Its only spawn is stage 10, chunk key 2, place 19, together with type 73 (`Behavior_Type73` @0x80062660).
+- In game: yes for state 1, interpreter (`work/unknowns/U3/a74.log`, captures in `captures/unknowns/U3/a74/`). New game with the drive plan of hunt 6 (day number 4); at `DreamSys_ChooseStart`'s call to SwapTimeLimit the script wrote stage 10 and its spawn 3 (chunk (2, 0), tile (14, 10)), next to place 19. At f 3,274 the place set its clear colour to white (255, 255, 255); at 3,283 types 73 and 74 started and type 74 set (0, 100, 190) (ra 0x8006277C). It took state 1: world x went from 50,176 to 56,064 between ticks 60 and 120. At 3,658 the link fade turned the screen red and `Place_Load` ran for stage 3, the Natural World. The sky pixels of the captures at 3,400 and 3,500 read (0, 98, 189), which is (0, 100, 190) after the 15-bit framebuffer. Not run: state 0 and the side rule.
+- Sources: `work/unknowns/U3-report.md`. Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Long Hallway) describes the exploding room, the blue sky and clouds, and the two outcomes (blown back to the start, or sucked into the sky and linked to the Natural World), says the outcome "depends on the current dream's generation" and that the blue sky and the clouds are "a single object" while the real sky is always white. Corrected here: the blue is the place's background colour set by the event's character, not an object, and the outcome is a 2 in 3 die roll with one position rule.
+
+</details>
+
 ## Music and sound
 
 ### ✅ A Clockwork Machines track that can never play
@@ -1262,6 +1310,26 @@ Memory card: `Menu_Init` keeps the DreamSys save block (vtable 0x1B0) and its si
 
 </details>
 
+### 🆕 SELECT on the comment keyboard makes the cursor run
+
+When you save, the game offers a keyboard to type a comment. The help on screen lists the d-pad, two shoulder buttons and CIRCLE, but not SELECT. Press SELECT and the d-pad changes mode: instead of one step per press, the cursor (LEFT, RIGHT) and the character wheel (UP, DOWN) keep moving, one step every frame, for as long as you hold the direction. Press SELECT again to go back. CIRCLE (done) and CROSS (cancel) play the same menu sound, and so do they in the file chooser of LOAD.
+
+What you type goes into the save's title, right after the day number and one blank.
+
+Status: 🎮 partly checked. The keyboard and the place where the comment starts were seen in the emulator; the SELECT mode and the sounds are read in the code only.
+
+<img src="img/game/save-comment-keyboard.png" alt="The save comment keyboard over the menu: Please enter a comment, an empty field, and the help for the shoulder buttons, the d-pad and CIRCLE" width="60%">
+
+<details><summary>Technical details</summary>
+
+- Where the comment goes: `Card_Save` @0x8004F8A4 gets 13 as its third argument and keeps it as `Card.commentStart` (+0x48); `Card_OpenKeyboard` @0x80050340 then opens the keyboard on the title text 26 bytes in, 13 full-width characters, one blank after "Day001".
+- Keys: `CommentObject_OnKey` @0x800513D0. Codes are state + button (2 held, 0x12 pressed; buttons 0 UP, 1 DOWN, 2 LEFT, 3 RIGHT, 5 CROSS, 7 CIRCLE, 10 SELECT), and a held button sends its code every frame (`Pad_SendEvents`). Code 28 (SELECT pressed) calls `CommentObject_ToggleFlag` @0x800517EC, which flips `repeatOnHold` (+0x20). While it is 0, the pressed codes 18 to 21 change the character (UP, DOWN) and move the caret (LEFT, RIGHT); while it is 1, the held codes 2 to 5 do the same. Codes 31 and 32 (two shoulder buttons) are the two delete keys of the help. Code 25 (CIRCLE) copies the text back, 23 (CROSS) leaves; both call `CommentObject_PlayTone` @0x8005161C with tone 0x10 on `card->sound`, the menu sound bank that `Card_OpenKeyboard` passes as the fourth `CommentObject_WatchPair` argument. The file chooser does the same through `StringList_PlayTone` @0x800523F0 (`Card_OpenChooser` @0x800505A8).
+- In game: partly, interpreter (`work/unknowns/U4/run2.log`, script `work/unknowns/U4/probe.lua`): SAVE picked at vsync 3,060; `Card_Save` at 3,214 with third argument 13 and the title `ＬＳＤ　　　Ｄａｙ００１` followed by blanks; `Card_OpenKeyboard` at 3,303 with +0x48 = 13 and the keyboard text at 0x800114B6, the title + 26; keyboard captured at 3,400. Nothing was confirmed, so nothing was written to the emulator's memory card. Not tried: SELECT and the sounds.
+- Sources: `work/unknowns/U3-report.md`, `work/unknowns/U4-report.md`. Question: [15](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Game menu) covers SAVE, LOAD and the overwrite dialog but not the comment keyboard; nothing on its SELECT mode in the pages and notes we read; new.
+
+</details>
+
 ## Randomness
 
 ### 🔄 The dice of the game
@@ -1291,9 +1359,11 @@ Random numbers: `rand` @0x80049480 is the PSY-Q LCG, state `g_randState` @0x8008
 
 Pause a dream with START, hold SELECT, then press TRIANGLE. The dream stops at once and the menu comes back on "Day 001": the day, the year, the score, the flashback memories and the navigation goals are wiped, with no warning and no confirmation. Your next save then goes to a new file, as for a brand new game (read in the code). The [video reel](#-the-secret-video-reel-four-graph-points-and-11-minutes-of-film) can be seen again after that.
 
-It is the only hidden button input in the game. Every piece of code that reacts to the pad was read: each one reacts to a single press at a time and none remembers earlier presses, so no typed cheat code can exist. The pause code also holds a second exit, a quit that does not count the day, but no button leads to it: it is dead code, maybe a developer shortcut whose button was removed.
+It is the only hidden button input in the game that changes your game (the other one, [SELECT on the save comment keyboard](#-select-on-the-comment-keyboard-makes-the-cursor-run), only changes how the cursor moves). Every piece of code that reacts to the pad was read: each one reacts to a single press at a time and none remembers earlier presses, so no typed cheat code can exist. The pause code also holds a second exit, a quit that does not count the day, but no button leads to it: it is dead code, maybe a developer shortcut whose button was removed.
 
-Status: 🎮 checked in the game (the wipe; the new save file and the dead exit are read in the code only).
+The pause also freezes the picture. About a fifth of a second after "Pause" appears, the game stops sending new pictures to the screen, so nothing moves until you close the pause (in our run, the rays of the sun stopped turning).
+
+Status: 🎮 checked in the game (the wipe and the frozen picture; the new save file and the dead exit are read in the code only).
 
 <p>
 <img src="img/game/erase-combo-pause.png" alt="The pause on day 41, just before the combo: a small red Pause at the top of the tatami room" width="49%">
@@ -1312,8 +1382,9 @@ Other pad handlers, all read (C scan for case and compare values in the pad rang
 
 - Proof: `Pad_SendEvents`, `Pad_InitButtons`, `Place_OnPad` (matched C), `Place_ArmExit`, `Place_DisarmExit`, `Place_ConfirmExit`, `Place_ExitNoRecord`, `DreamRunner_OnStageMessage`, `DreamSys_EndDay`, `DreamSys_InitNewGame`, the handlers above.
 - In game: yes (`work/hunt4/B-run1.log`, dynarec): day +0x180 = 40 and score +0x184 = 5,000,000 written at vsync 2100, the dream started normally; START at 3800 (pause shown), SELECT held from 3900 for 150 vsyncs, TRIANGLE at 3960. RAM at 3964: day 0, year 0, score 0; the menu showed "Day 001" from vsync 4100 (that capture is pixel-identical to the Day 001 menu picture above, which is reused). Forced: the day and the score, to make the wipe visible; the input and its effect are the game's. Not run: a save after the wipe (to keep the emulator's shared memory card as it is).
-- Questions: [14](mysteries.md#events-and-hidden-content), [15](mysteries.md#events-and-hidden-content). Found 2026-10-15.
-- Before us: nothing on it in the fandom wiki (Game menu and the pages above), compu-lsd, the LSD Revamped docs or a web search; new.
+- Frozen picture: `Place_UpdatePause` @0x800542D0 (slot 0xD0, once per game tick while the pause is open) counts `pauseOpen`; at count 4 it calls the view's `setPresentEnabled(0)` (`View_SetPresentEnabled` @0x8003F244, View +0xB8), and `View_Present` @0x8003F04C then skips `ResetGraph`, the buffer swap, `GsSortClear` and `GsDrawOt`; `Place_ClosePause` @0x800543FC sets it back to 1. In game: interpreter, `work/unknowns/merge/pause.log` (script `work/unknowns/merge/pause.lua`, START at vsync 3,800 and 4,000, no RAM written but the hunt 6 day, yesterday's point and time limit): first `Place_UpdatePause` at 3,802, `setPresentEnabled(0)` at 3,815, then every `View_Present` call skipped (2 or 3 per 10 vsyncs, none drawn) until `Place_ClosePause` and `setPresentEnabled(1)` at 4,002. The captures at 3,860, 3,900 and 3,960 are byte-identical; those at 3,780 and 4,060 differ from them.
+- Questions: [14](mysteries.md#events-and-hidden-content), [15](mysteries.md#events-and-hidden-content). Found 2026-10-15, frozen picture 2026-10-16.
+- Before us: nothing on it in the fandom wiki (Game menu and the pages above), compu-lsd, the LSD Revamped docs or a web search; new. The frozen picture is something any player sees; the reason (the view stops drawing) is new.
 
 </details>
 
@@ -1342,12 +1413,36 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-All printable paths in `SLPS_015.56` were compared to the 685 files of the disc (patched English v1): every named path exists, and only `ETC\ASMKLOG.TIM` (153,620 bytes, dated 1997-05-20, same size as `ASMKLOGO.TIM`), `ETC\ETC2.TIM` (30,784 bytes) and `ZDUMMY\ZDUMMY.STR` (61,937,664 bytes) are never named. The `CARD\*.TIM` pictures are built from `CARD\` plus the names at 0x8008AA34 and are used. The scene loop `App_Run` calls slot 0x5C when the title returns 1; slot 0x5C is the empty `func_80026690`, and the title routine `Scene_RunTitle` only returns 0 or 2. The scene settings `g_sceneSettings` passed by `main` (0x13, 0, 1, 1, 1, 1) turn the logos (+0xC), videos (+0x8) and title (+0x10) on; flipping them is the closest thing to a dev switch found. The pad handlers of the title and menu screens were read since: none keeps a sequence ([the erase combo](#-select--triangle-in-the-pause-erases-your-game)).
+All printable paths in `SLPS_015.56` were compared to the 685 files of the disc (patched English v1): every named path exists, and only `ETC\ASMKLOG.TIM` (153,620 bytes, dated 1997-05-20, same size as `ASMKLOGO.TIM`), `ETC\ETC2.TIM` (30,784 bytes) and `ZDUMMY\ZDUMMY.STR` (61,937,664 bytes) are never named. The `CARD\*.TIM` pictures are built from `CARD\` plus the names at 0x8008AA34 and are used. The scene loop `App_Run` calls slot 0x5C when the title returns 1; slot 0x5C is the empty `func_80026690`, and the title routine `Scene_RunTitle` only returns 0 or 2. The scene settings `g_sceneSettings` passed by `main` (0x13, 0, 1, 1, 1, 1) turn the logos (+0xC), videos (+0x8) and title (+0x10) on; flipping them is the closest thing to a dev switch found. Two more words of it are switches the shipped game leaves alone: +4 for file lookup on the CD and +0x14, of unknown use ([switches and features the game never uses](#-switches-and-features-the-game-never-uses)). The pad handlers of the title and menu screens were read since: none keeps a sequence ([the erase combo](#-select--triangle-in-the-pause-erases-your-game)).
 
 - Proof: `App_Run`, `func_80026690`, `Scene_RunTitle`, `g_sceneSettings`, `main` @0x800118DC, string scan (`work/hunt3`, inline scripts).
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 - Before us: the fandom wiki (Data Analysis, Unused Content) knew `ZDUMMY.STR` as disc filler, the Japanese Asmik logo and the cut WC room, and TCRF (through the community notes) a debug menu in a 1997 demo; new here: the executable never names these three files, and no WC room file or debug menu turned up.
+
+</details>
+
+### 🆕 Switches and features the game never uses
+
+The code holds several finished features that the shipped game never turns on. None of them shows on screen, but they tell how the game was built.
+
+- A file switch: one setting would make the game look up every file by name on the CD instead of using its own table of where each file sits on the disc. It ships turned off.
+- Place overrides: a place could load with its own view distance and its own ambience. No place asks for them: every place loads with the default view distance, 20 tiles, and the ambience the game picks for its area.
+- Looping videos: the video player can loop a film and count the loops, but no video asks for it. Every video plays once, for a number of frames written in a table: 90 for the Asmik logo and 1,046 for the opening of a first boot, about 6 and 70 seconds at the usual 15 frames a second of PlayStation videos (not timed). Had a video asked to loop, it would have frozen when restarting: the piece that should start it again is an empty function.
+- Fades: a fade that holds its colour and a second buffer swap are never used.
+- Fog: each model decides for itself whether the fog touches it, and a setting that would let a model follow the place's fog is never set. In a dream, about one model in eight that the game draws carries no fog and keeps its full colour however far it is (counted in memory, not checked in a picture; which models these are was not looked at).
+
+Status: 🎮 partly checked. Each switch and feature was watched in memory during a boot and a dream, and none was used; what the file switch and a looping video would do is read in the code only.
+
+<details><summary>Technical details</summary>
+
+- File switch: `g_sceneSettings` @0x80066828 is (0x13, 0, 1, 1, 1, 1); word +4 is `SceneSettings.useCdSearch`, passed by `Scene_RunDream` @0x80026698 to `DreamRunner_New`, and `DreamRunner_Init` @0x80049684 calls `File_EnableWait(useCdSearch == 0, 1, 1)` @0x80026F34. With 0 (shipped), loads are queued and found through the disc's path table; non-zero, each file would be loaded at once by path through `CdSearchFile`. Value 0 in RAM (`work/unknowns/U2/walk1.log`). Word +0x14 (1) goes through `Scene_Init` @0x80025FDC to DreamSys slot 0x228 (`func_8005BA20`, a swap of DreamSys +0x924); nothing reads +0x924 afterwards (it stays 1 from the title on, `work/unknowns/U3/a74.log`), so what this sixth switch did is unknown.
+- Place overrides: `Place_Load` @0x80052F10 is the place screen's slot 0x4C `begin`, and `Screen_Run` calls it as `begin(screen, 0, 0, 0)`, so the view distance stays the 0xA000 default (40,960 units, 20 tiles of 0x800) and the ambience is the one `Scenery_Begin` @0x800544E4 picks; `Scenery_Begin`'s fifth argument (stored at `D_8008AC78`, read by nothing) is the constant 0. In RAM (`work/unknowns/U3/a74.log`, `bspy.log`): `Place_Load` got (0, 0, 0) from ra 0x8003E1E0 at every load, the link to stage 3 included.
+- Videos: `Movie_Open` @0x800457C0 (movie, path, frameCount, repeat, loops) takes its length from `Cine_GetVideoFrames` @0x800493C8 (`g_videoTable` @0x80086170), and `Movie_Update` @0x80045948 hands it to the stream's start. The restart `Movie_Start` @0x800458B8 installs `Movie_OnStreamCallback` (which sets `startRequest` to -1, the path that counts the loops) through `Stream_SetCallback` @0x800478F8, an empty function, then clears `streamStarted` and rewinds; `Movie_Update` only works while one of the two is set, so a restarted video would stop decoding. The video screen always opens its movie with repeat 0. In RAM (`work/unknowns/U4/run2.log`): `ETC\ASMK.STR` opened at vsync 1,498 with 90 frames, `ETC\OPENINGG.STR` at 2,122 with 1,046; `Movie_Start`, `Movie_OnStreamCallback` and `Stream_SetCallback` never ran.
+- Fades and swaps: `Fade_Step` @0x8003FF44 changes the colour only while `holdMode` (Fade +0x7C, the fourth argument of `Fade_Begin` @0x80040154) is not 9; every caller (place.c, entity.c, screen.c) passes 0. `View_Present` @0x8003F04C swaps the buffers twice when `extraSwap` (View +0xB4) is set; Place calls `View_SetExtraSwap` @0x8003F23C with 0 only. In RAM (`work/unknowns/U1/run1.log`, boot to the first dream, vsync 7,000): `Fade_Begin` 6 calls, fourth argument always 0; `View_SetExtraSwap` 3 calls, always 0.
+- Fog: `Render_SortModel` @0x80018464 reads each object's GsDOBJ2 attribute, bits 3-4 (`g_renderObjLightMode`) and bit 5 (`g_renderUseLightMode`), and applies depth cue (CLUT shift 9) when bits 3-4 are non-zero, or when bit 5 is set and the view's light mode `g_gsLightMode` is on. In RAM (same run, 165,529 models sorted): bit 5 never set; in the dream (light mode 1), 144,677 sorts with bits 3-4 at 1 and 20,723 at 0, drawn without depth cue. The capture at 6,900 was too dark to judge.
+- Sources: `work/unknowns/U1-report.md` to `U4-report.md`. Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: nothing on these in the fandom wiki pages we read (Data Analysis, Unused Content, Clips, Game menu), lsddecomp's symbol list or the community notes; TCRF could not be read this time (a bot check). The wiki (Clips) lists seven intro videos; only the first-boot one was measured here. New.
 
 </details>
 

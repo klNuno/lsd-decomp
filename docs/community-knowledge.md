@@ -15,7 +15,7 @@ Starting point, from the planning notes of 2026-10-14. "Code" means read in code
 | Special days | 42 days in a table show a video or a diary text instead of a dream; players see 2 variants per day, the code seems to draw from 6 | code | lsddecomp, fandom Video Dreams |
 | After day 365 | The day counter wraps to 0 and a hidden year counter increments; players see an ending video on day 365 | code | lsddecomp, fandom Clips |
 | Flashback | Unlocked by a score (30 navigation challenges worth 1 million each, a penalty per dynamic link), not by day count; at most 10 kept; players see it around days 10 to 20 | code | lsddecomp, fandom Flashback |
-| Grey Man | Appears on even days (type B), erases flashbacks, sends the graph to the opposite side; never seen at Sun Faces Heave or in the Long Hallway. Wikis disagree on whether he chases the player | observed | compu-lsd Spy, fandom Gray Man |
+| Grey Man | Appears on even days (type B), erases flashbacks, sends the graph to the opposite side; never seen at Sun Faces Heave or in the Long Hallway. Wikis disagree on whether he chases the player. Our check: he is placed about four tiles ahead of the player, facing the player, and the same Grey Man is moved again at each new spawn ([when he appears](discoveries.md#-when-the-grey-man-can-appear)) | observed | compu-lsd Spy, fandom Gray Man |
 | Texture sets | 4 sets per zone (normal, kanji, downer, upper); new sets after days 10, 20 and 30, on a 40-day cycle | observed | compu-lsd Textures, fandom Textures |
 | Glitch textures | Appear after long sessions until power-off; reproducible by zeroing the frame counters in RAM | observed | fandom Data Analysis |
 | Generation seed | A debug picture shows "World: 17464 0 36838"; said to be fed by loads, timers and menus | observed | fandom Generation |
@@ -40,7 +40,7 @@ Starting point, from the planning notes of 2026-10-14. "Code" means read in code
 
 | Format | Content | Decoded by | State |
 |---|---|---|---|
-| LBD | 20x20-tile level chunk | libLSD | Known; collision and footstep fields are guesses |
+| LBD | 20x20-tile level chunk | libLSD | Known; collision and footstep fields were guesses. Our check: the low 7 bits are the step sound, the top bit marks a wall block that can link you, rotations are quarter turns, heights whole tiles, and the `SolidTile` byte is never read ([blocks and walls](discoveries.md#-the-world-is-built-from-square-blocks-and-only-marked-blocks-are-walls)) |
 | MOM / MML / MOS | Entity model and animations | libLSD | Containers complete; behaviour lives in the exe |
 | TMD, TIM, TOD | Sony models, textures, animations | libLSD, LSDView | Complete |
 | TIX | A zone's texture set (TEXA to TEXD) | libLSD | Complete |
