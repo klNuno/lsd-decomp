@@ -71,7 +71,8 @@ def c_functions(path):
                 tail = head.rstrip().split("\n")[-1]
                 cands = [l for l in head.split("\n") if l[:1].strip() and "(" in l
                          and not l.rstrip().endswith(";") and "=" not in l.split("(")[0]]
-                if cands and not re.search(r"\b(struct|union|enum)\b|=", tail):
+                # a struct body or an initializer: no parenthesis before the brace, or `=` before it
+                if cands and "(" in tail and "=" not in tail.split("(")[0]:
                     m = re.search(r"(\w+)\s*\(", cands[-1])
                     if m:
                         funcs[m.group(1)] = code[start:i + 1]
