@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/sound.h"
 
 /*
  * The background music object (vtable g_bgmVtbl, 0x24 bytes, Bgm_New; "WBgm" in its
@@ -23,19 +24,11 @@ typedef struct BgmVtbl {
     void (*setBank)();         /* 0x60 Bgm_SetBank (bgm, path) */
 } BgmVtbl;
 
-/* The sound bank (src/game/8002C12C.c) and the SEQ file as this unit reads them */
+/* The SEQ file as this unit reads it; the bank is a SoundBank (sound.h) */
 typedef struct BgmFileVtbl {
     u8 pad_00[0x4];
     void (*delete_)(void *);
 } BgmFileVtbl;
-
-typedef struct BgmBank {
-    BgmFileVtbl *vtbl;
-    u8 pad_04[0x54 - 0x04];
-    s16 vabId;                 /* 0x54 */
-    u8 pad_56[0x58 - 0x56];
-    u16 transferDone;          /* 0x58 1 once the VAB is in sound RAM */
-} BgmBank;
 
 /* The SEQ file of SeqFile_Create (src/game/80041AB4.c), a file object */
 typedef struct BgmSeq {
@@ -55,7 +48,7 @@ typedef struct Bgm {
     BgmVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
-    BgmBank *bank;             /* 0x0C */
+    SoundBank *bank;           /* 0x0C */
     BgmSeq *seq;               /* 0x10 */
     s16 seqId;                 /* 0x14 SsSeqOpen's access number */
     u8 pad_16[0x1A - 0x16];
@@ -114,16 +107,16 @@ void Bgm_Init(Bgm *bgm, s32 bankPath, s32 seqPath, s32 autoPlay) {
 }
 
 void Bgm_Destroy(Bgm *bgm) {
-    BgmBank *file;
+    Object *file;
 
     g_bgmActive = 0;
     bgm->vtbl->stop(bgm);
     SsSeqClose(bgm->seqId);
-    file = bgm->bank;
+    file = (Object *)bgm->bank;
     if (file != NULL) {
         file->vtbl->delete_(file);
     }
-    file = (BgmBank *)bgm->seq;
+    file = (Object *)bgm->seq;
     if (file != NULL) {
         file->vtbl->delete_(file);
     }
@@ -134,7 +127,7 @@ void Bgm_Destroy(Bgm *bgm) {
 /* Messages from the display (sender type 1) go to slot 0x40. */
 void Bgm_OnNotify(Bgm *bgm, Object *sender, s32 message) {
     Object_GetBaseVtbl()->onNotify(bgm, sender, message);
-    if ((sender->vtbl->unk_00 & 0xF) == 1) {
+    if ((sender->vtbl->classWord & 0xF) == 1) {
         bgm->vtbl->onDisplayEvent(bgm, sender, message);
     }
 }
@@ -148,7 +141,7 @@ void Bgm_OnDisplayEvent(Bgm *bgm, s32 display, s32 message) {
 
 /* Opens the SEQ with the bank's VAB once both are loaded; returns 1 when opened. */
 s32 Bgm_Open(Bgm *bgm) {
-    BgmBank *bank;
+    SoundBank *bank;
     BgmSeq *seq;
     s16 seqId;
 
@@ -243,7 +236,7 @@ void Bgm_SetSeq(Bgm *bgm, s32 path) {
 
 /* The same for the sound bank. */
 void Bgm_SetBank(Bgm *bgm, s32 path) {
-    BgmBank *bank;
+    SoundBank *bank;
 
     if (bgm->playing != 0) {
         bgm->vtbl->stop(bgm);

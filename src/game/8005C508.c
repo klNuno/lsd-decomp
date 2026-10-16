@@ -1,5 +1,7 @@
 #include "common.h"
 #include "game/entity.h"
+#include "game/sound.h"
+#include "game/scene.h"
 
 /*
  * Behaviour handlers (record +0xC, the second half of this unit) and the model base class.
@@ -7,26 +9,6 @@
  * node at Entity +0x9C (func_8002CC34) and slot 0x11C (func_8005D6D4) runs func_8002CD08, which
  * calls the handler, then plays the sounds the handler asked for on the entity's sound bank (+0x58).
  */
-
-/* One of the three voices of a HandlerNode; func_8002CD08 resets sound, octave and volumes before each run. */
-typedef struct HandlerVoice {
-    s32 voice;     /* 0x00 SPU voice playing (sound bank slot 0x80), -1 none */
-    s32 sound;     /* 0x04 bank program to start this tick, -1 none, -2 stops the voice */
-    s32 octave;    /* 0x08 sound bank slot 0x9C (Sound_SetOctave): notes shift by octave * 12 - 24, 0 by default */
-    s32 volume;    /* 0x0C start volume, 0x7F by default */
-    s32 endVolume; /* 0x10 volume SsUtAutoVol slides to, 0x40 by default */
-} HandlerVoice;
-
-/* The node at Entity +0x9C (entity.h EntityHandlerNode, 0x54 bytes), the handler's second argument. */
-typedef struct HandlerNode {
-    s32 id;                 /* 0x00 entity type + 1 while registered, 0 once stopped */
-    s32 tick;               /* 0x04 runs so far, counted by func_8002CD08 */
-    void *owner;            /* 0x08 the entity, passed back as the handler's first argument */
-    void *handler;          /* 0x0C the record's handler */
-    s32 fade;               /* 0x10 each step lowers both volumes by volume / fadeSteps; < 0 plays nothing (slot 0x148 by distance) */
-    s32 fadeSteps;          /* 0x14 10 */
-    HandlerVoice voices[3]; /* 0x18 */
-} HandlerNode;
 
 /* The animations of a model file (+0x30): animation i is anims->list->entries[i]->data. */
 typedef struct ModelAnimData {
@@ -78,10 +60,10 @@ typedef struct ModelFile {
     ModelAnimSet *anims;     /* 0x30 */
 } ModelFile;
 
-/* An entity's position block (+0x14), as the handlers read it (entity.h EntityPos). */
+/* An entity's position block (+0x14), as the handlers read it (entity.h Coord2). */
 typedef union BehaviorPos {
     u8 *bytes;
-    EntityPos *block;
+    Coord2 *coord;
 } BehaviorPos;
 
 /*
@@ -166,33 +148,6 @@ typedef struct BehaviorMap {
     BehaviorMapVtbl *vt;
 } BehaviorMap;
 
-/* The effect object at Entity +0x100 (entity.h EntityEffect) with the slots the handlers use. */
-typedef struct BehaviorEffectVtbl {
-    u8 pad_00[0xD4];
-    void (*unkD4)(void *self, void *arg1, s32 arg2, s32 arg3);
-    void (*unkD8)(void *self, void *arg1, s32 arg2, s32 arg3);
-} BehaviorEffectVtbl;
-
-typedef struct BehaviorEffect {
-    BehaviorEffectVtbl *vt;
-} BehaviorEffect;
-
-/* A PSY-Q GsCOORD2PARAM: what slots 0x44 (rotate) and 0x48 (scale) and the frame commands change. */
-typedef struct ModelCoordParam {
-    s32 scale[4];  /* 0x00 VECTOR, 4096 = 1 */
-    s16 rot[4];    /* 0x10 SVECTOR, 4096 = a full turn */
-    Vec3 trans;    /* 0x18 */
-} ModelCoordParam;
-
-/* A PSY-Q GsCOORDINATE2, the block at +0x14 of every model (entity.h EntityPos reads the same bytes). */
-typedef struct ModelCoord {
-    s32 flg;                /* 0x00 cleared after each change so libgs recomputes the matrix */
-    u8 pad_04[0x18 - 0x04];
-    Vec3 t;                 /* 0x18 coord.t, the position */
-    u8 pad_24[0x44 - 0x24];
-    ModelCoordParam *param; /* 0x44 */
-} ModelCoord;
-
 /* A part of a model (one per object of its TMD, made by func_80056FE4). */
 typedef struct ModelPartVtbl {
     u8 pad_00[0x4];
@@ -211,7 +166,7 @@ typedef struct ModelPart {
     ModelPartVtbl *vt;
     u8 pad_04[0x10 - 0x04];
     s32 flags;              /* 0x10 frame command 0 masks and sets it */
-    ModelCoord *coord;      /* 0x14 */
+    Coord2 *coord;      /* 0x14 */
     u8 pad_18[0x20 - 0x18];
     s32 unk20;              /* 0x20 frame command 2 gives it a texture only while it is 0 */
 } ModelPart;
@@ -280,7 +235,7 @@ typedef struct Model {
     u8 pad_04[0xC - 0x4];
     s32 attached;              /* 0x0C set by the parent's attach */
     u8 pad_10[0x14 - 0x10];
-    ModelCoord *coord;         /* 0x14 */
+    Coord2 *coord;         /* 0x14 */
     u8 pad_18[0x24 - 0x18];
     u32 timer;                 /* 0x24 ticks, counted by tickAnimation */
     u8 pad_28[0x50 - 0x28];
@@ -303,16 +258,6 @@ typedef struct Model {
     s32 animPlaying;           /* 0x90 */
     struct Model *target;      /* 0x94 */
 } Model;
-
-/* The sound bank object (Model +0x58, class of Sound_PlayTone): slot 0x80 starts a sound. */
-typedef struct SoundBankVtbl {
-    u8 pad_00[0x80];
-    s32 (*play)(void *self, s32 sound, s32 volume, s32 endVolume); /* 0x80 Sound_PlayTone: SsUtKeyOn, then SsUtAutoVol */
-} SoundBankVtbl;
-
-typedef struct SoundBank {
-    SoundBankVtbl *vt;
-} SoundBank;
 
 /* What Model_LoadFile loads a model from: a ready file object at +0xC, else what Mom_Create reads. */
 typedef struct ModelSource {
@@ -356,7 +301,7 @@ typedef struct BehaviorEntity {
     s32 touched;               /* 0xF4 */
     s32 handlerActive;         /* 0xF8 */
     s32 handlerTicks;          /* 0xFC */
-    BehaviorEffect *effect;    /* 0x100 */
+    Fade *effect;    /* 0x100 */
 } BehaviorEntity;
 
 extern void Object_DeleteArray(void *, s32);
@@ -891,7 +836,7 @@ s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
         recIndex = placeInfo->unk3;
         query.rec = D_80088D3C[recIndex];
         ((Unk_8005CDF8_Obj *) D_8008ABFC)->vt->unkE8((void *) D_8008ABFC, placement, &query);
-        entity->vt->unk44(entity, 1, &D_80088F18[placeInfo->unk2 * 12]);
+        entity->vt->rotate(entity, 1, &D_80088F18[placeInfo->unk2 * 12]);
         entity->vt->attach(entity, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
         return 0;
     }
@@ -929,7 +874,7 @@ void *Entity_Construct(Entity *entity, s32 type, s32 arg2, s32 arg3) {
     if (Model_GetVtbl()->unk8(entity, arg2, arg3) != 0) {
         entity->vt = Entity_GetVtbl();
         entity->type = type;
-        entity->handlerNode.unk0 = 0;
+        entity->handlerNode.id = 0;
         entity->effect = 0;
         entity->unk104 = 0;
         ((EntityVtbl *)entity->vt)->init(entity);
@@ -939,7 +884,7 @@ void *Entity_Construct(Entity *entity, s32 type, s32 arg2, s32 arg3) {
 }
 
 s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg4) {
-    EntityEffect *effect;
+    Fade *effect;
 
     if (entity->effect == NULL) {
         if (arg1 == NULL) {
@@ -953,22 +898,22 @@ s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg
     } else {
         effect = entity->effect;
     }
-    effect->vt->unk50(effect);
-    effect->vt->unk4C(effect, entity, arg2 ? arg2 : D_8008AC0C);
-    effect->vt->unkD0(effect, arg3);
+    effect->vtbl->hide(effect);
+    effect->vtbl->show(effect, entity, arg2 ? arg2 : D_8008AC0C);
+    effect->vtbl->setStep(effect, arg3);
     return (s32)effect;
 }
 
 void Entity_Destruct(Entity *entity) {
-    EntityEffect *effect;
+    Fade *effect;
 
     effect = entity->effect;
     if (effect != NULL) {
-        effect->vt->unk4(effect);
+        effect->vtbl->delete_(effect);
     }
     effect = entity->unk104;
     if (effect != NULL) {
-        effect->vt->unk4(effect);
+        effect->vtbl->delete_(effect);
     }
     Model_GetVtbl()->unkC(entity);
 }
@@ -978,14 +923,14 @@ void Entity_Init(Entity *entity) {
     if ((u8)D_80089EA6[entity->type * 16] - 1U < 9) {
         entity->vt->unk70(entity, 1);
     }
-    entity->vt->unk10C(entity, 0x42);
+    entity->vt->setTickMode(entity, 0x42);
     entity->vt->sleep(entity);
 }
 
 void Entity_Attach(Entity *entity, void *dreamSys, void *arg2, s32 arg3, s32 arg4) {
     if (entity->attached == 0) {
         Model_GetVtbl()->unk4C(entity, dreamSys, arg2, arg3, arg4);
-        entity->unk4C = arg3;
+        entity->map = arg3;
         /* record +3 wake mode 0: awake at spawn; +0xB handler range 0: handler from the start */
         if (D_80089EA7[entity->type * 16] == 0) {
             entity->vt->wake(entity);
@@ -1000,7 +945,7 @@ void Entity_Detach(Entity *entity) {
     if (entity->attached != 0) {
         entity->vt->sleep(entity);
         Model_GetVtbl()->unk50(entity);
-        entity->unk4C = 0;
+        entity->map = 0;
     }
 }
 
@@ -1045,7 +990,7 @@ void func_8005D658(Entity *entity, void *arg1, s32 message) {
 }
 
 void func_8005D6D4(Entity *entity) {
-    func_8002CD08(entity->unk58, &entity->handlerNode);
+    func_8002CD08(entity->soundBank, &entity->handlerNode);
     entity->handlerTicks++;
 }
 
@@ -1070,7 +1015,7 @@ s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
 /* Ground distance |dx| + |dz| from this entity to the position copy of other. */
 s32 Entity_GroundDistance(Entity *entity, Entity *other) {
     Vec3 *otherPos;
-    EntityPos *block;
+    Coord2 *block;
     s32 dz;
     s32 dx;
     s32 dist;
@@ -1079,12 +1024,12 @@ s32 Entity_GroundDistance(Entity *entity, Entity *other) {
     if (other->attached != 0) {
         otherPos = (Vec3 *)(other->pos.bytes + 0x38);
     }
-    block = entity->pos.block;
-    dx = block->pos.x - otherPos->x;
+    block = entity->pos.coord;
+    dx = block->coord.t.x - otherPos->x;
     if (dx < 0) {
         dx = ~dx + 1;
     }
-    dz = block->pos.z - otherPos->z;
+    dz = block->coord.t.z - otherPos->z;
     if (dz >= 0) {
         dist = dx + dz;
     } else {
@@ -1101,7 +1046,7 @@ s32 Entity_GetSoundFade(Entity *entity) {
         dist = entity->vt->distanceTo(entity, entity->dreamSys);
         range = D_80089EAE[entity->type * 16] << 11;
         if (range >= dist) {
-            return dist / (range / entity->unkB0);
+            return dist / (range / entity->handlerNode.fadeSteps);
         }
     }
     return -1;
@@ -1151,17 +1096,17 @@ void Entity_SetTouched(Entity *entity, s32 touched) {
 
 void Entity_StartHandler(Entity *entity) {
     /* register the record's handler (+0xC) */
-    func_8002CC34(entity->unk58, &entity->handlerNode, entity->type + 1, entity, D_80089EB0[entity->type * 4]);
-    entity->vt->unk12C(entity);
-    entity->vt->unk110(entity);
+    func_8002CC34(entity->soundBank, &entity->handlerNode, entity->type + 1, entity, D_80089EB0[entity->type * 4]);
+    entity->vt->playAnimation(entity);
+    entity->vt->startTick(entity);
     entity->handlerTicks = 0;
     entity->handlerActive = 1;
 }
 
 void Entity_StopHandler(Entity *entity) {
-    func_8002CC84(entity->unk58, &entity->handlerNode);
-    entity->vt->unk130(entity);
-    entity->vt->unk114(entity);
+    func_8002CC84(entity->soundBank, &entity->handlerNode);
+    entity->vt->stopAnimation(entity);
+    entity->vt->stopTick(entity);
     entity->handlerActive = 0;
 }
 
@@ -1169,7 +1114,7 @@ s32 Entity_CheckWake(Entity *entity) {
     EntityRecord *record;
     s32 wake;
 
-    if (entity->awake == 0 && entity->unk44 != 1) {
+    if (entity->awake == 0 && entity->state != 1) {
         wake = 0;
         record = &g_entityRecords[entity->type];
         if (record->wakeMode == 0) {
@@ -1271,7 +1216,7 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
 
     if (entity->awake != 0) {
         if (entity->handlerActive == 0) {
-            if (entity->unk44 != 1) {
+            if (entity->state != 1) {
                 record = &g_entityRecords[entity->type];
                 range = record->handlerRange;
                 if (range != 0) {
@@ -1308,8 +1253,8 @@ s32 Entity_IsDreamerNear(Entity *entity, s32 radius) {
     s32 my;
 
     other = entity->dreamSys;
-    y = other->pos.block->pos.y;
-    my = entity->pos.block->pos.y;
+    y = other->pos.coord->coord.t.y;
+    my = entity->pos.coord->coord.t.y;
     if (y + 0x200 >= my && my >= y - 0x200 && entity->vt->distanceTo(entity, other, y) < radius) {
         return 1;
     }
@@ -1526,7 +1471,7 @@ void func_8005EA94(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0 && !(rand() & 1)) {
         entity->state = 0xB;
     }
-    if (entity->pos.block->pos.y < 0x7D0) {
+    if (entity->pos.coord->coord.t.y < 0x7D0) {
         Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
     }
     if (entity->state == 11) {
@@ -2252,7 +2197,7 @@ void func_80061158(BehaviorEntity *entity) {
 }
 
 void func_80061198(BehaviorEntity *entity, HandlerNode *node) {
-    BehaviorEffect *effect;
+    Fade *effect;
     s32 frame;
 
     if (entity->handlerTicks == 0) {
@@ -2283,7 +2228,7 @@ void func_80061198(BehaviorEntity *entity, HandlerNode *node) {
             if (Entity_IsInRange(entity, entity->pos.bytes + 0x18, 0xF, 0xA) != 0) {
                 if (Entity_StartEffect((Entity *)entity, 0, 0, 0xA, 0) != 0) {
                     effect = entity->effect;
-                    effect->vt->unkD4(effect, entity->unk50, 4, 0);
+                    effect->vtbl->startIn(effect, entity->unk50, 4, 0);
                 }
                 if (rand() & 1) {
                     entity->vt->postEvent(entity, 0xB);
@@ -2686,7 +2631,7 @@ void func_80062730(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         entity->dreamSys->model->vt->unk64(entity->dreamSys->model, D_8008AC1C);
         entity->state = rand() % 3;
-        if (entity->dreamSys->pos.block->pos.z < 0x262) {
+        if (entity->dreamSys->pos.coord->coord.t.z < 0x262) {
             entity->state = 0;
         }
     }
@@ -3042,7 +2987,7 @@ void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
         } else {
             func_80063C84(node);
             if (Entity_StartEffect((Entity *)entity, 0, 0, 0x1E, 0) != 0) {
-                entity->effect->vt->unkD4(entity->effect, entity->unk50, 7, 0);
+                entity->effect->vtbl->startIn(entity->effect, entity->unk50, 7, 0);
             }
             entity->state = 0xD;
             entity->handlerTicks = -1;
@@ -3051,7 +2996,7 @@ void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
         if (entity->handlerTicks < 0x5A) {
             if (entity->handlerTicks == 0x1E) {
                 if (Entity_StartEffect((Entity *)entity, 0, 0, 0xA, 0) != 0) {
-                    entity->effect->vt->unkD8(entity->effect, entity->unk50, 0, 0);
+                    entity->effect->vtbl->startOut(entity->effect, entity->unk50, 0, 0);
                 }
             }
             entity->dreamSys->vt->rotate(entity->dreamSys, 0, D_80089CD0);
@@ -3164,7 +3109,7 @@ void func_80063ED4(BehaviorEntity *entity, HandlerNode *node) {
             if (rand() & 1) {
                 entity->vt->move(entity, D_80089D90);
             }
-            entity->effect->vt->unkD4(entity->effect, entity->unk50, 0, 0);
+            entity->effect->vtbl->startIn(entity->effect, entity->unk50, 0, 0);
         }
     } else if (entity->animFrame == 0) {
         do {
@@ -3284,7 +3229,7 @@ void func_800644E8(BehaviorEntity *entity, HandlerNode *node) {
 
 void Behavior_EraseFlashbacks(BehaviorEntity *entity) {
     if (entity->touched != 0 && Entity_StartEffect(entity, 0, 0, 0xA, 0)) {
-        entity->effect->vt->unkD4(entity->effect, entity->unk50, 7, 0);
+        entity->effect->vtbl->startIn(entity->effect, entity->unk50, 7, 0);
         entity->vt->sleep(entity);
         entity->dreamSys->vt->clearFlashbacks(entity->dreamSys);
     }
@@ -3876,7 +3821,7 @@ void Model_PlaySound(Model *model, s32 sound) {
 
     bank = model->soundBank;
     if (bank != NULL) {
-        bank->vt->play(bank, sound, 0x6E, 0x6E);
+        bank->vtbl->playTone(bank, sound, 0x6E, 0x6E);
     }
 }
 
@@ -3927,8 +3872,8 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
     s32 *data;
     s32 n;
     ModelPart *part;
-    ModelCoord *coord;
-    ModelCoordParam *param;
+    Coord2 *coord;
+    Coord2Param *param;
     s16 *s;
     s16 *r;
     s32 *v;
@@ -3948,7 +3893,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
         case 1:
             if (flags & 1) {
                 if (flags & 2) {
-                    r = param->rot;
+                    r = param->rotate.axis;
                     for (i = 0; i < 3; i++, r++) {
                         *r += data[i] / 360;
                         *r %= 4096;
@@ -3970,11 +3915,11 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
                         *v += data[i];
                         v++;
                     }
-                    part->coord->t = param->trans;
+                    part->coord->coord.t = param->trans;
                 }
             } else {
                 if (flags & 2) {
-                    r = param->rot;
+                    r = param->rotate.axis;
                     for (i = 0; i < 3; i++) {
                         *r = data[i] / 360;
                         r++;
@@ -3996,7 +3941,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
                         *v = data[i];
                         v++;
                     }
-                    part->coord->t = param->trans;
+                    part->coord->coord.t = param->trans;
                 }
             }
             break;

@@ -25,55 +25,6 @@
 #define FILE_BACKEND_NULL 0x23 /* D_8006D9BC: every I/O slot is empty */
 
 /* The scene settings main hands to Scene_New (g_sceneSettings: 0x13, 0, 1, 1, 1, 1). */
-typedef struct SceneSettings {
-    s32 fileBackend; /* 0x00 FILE_BACKEND_*, given to the base init (File_SetBackend) */
-    s32 unk4;        /* 0x04 DreamRunner_New's third argument: DreamRunner_Init calls File_EnableWait(unk4 == 0, 1, 1) */
-    s32 videos;      /* 0x08 opening, reel, cinematic and ending videos */
-    s32 logos;       /* 0x0C */
-    s32 title;       /* 0x10 the graph and the main menu */
-    s32 unk14;       /* 0x14 handed to DreamSys slot 0x228, which keeps it at +0x924 */
-} SceneSettings;
-
-/* Every slot of g_sceneVtbl; 0x00 to 0x3C are Object's, 0x48 and 0x4C the base class's. */
-typedef struct SceneVtbl {
-    s32 tag;               /* 0x00 0x1F60 */
-    void *(*delete_)();    /* 0x04 Object_Delete */
-    void (*init)();        /* 0x08 Scene_Init (scene, settings) */
-    void (*destroy)();     /* 0x0C App_Destroy, empty */
-    u8 pad_10[0x40 - 0x10];
-    void (*seedRandom)();  /* 0x40 Scene_SeedRandom */
-    void (*setup)();       /* 0x44 Scene_Setup (scene, display, pad) */
-    void (*unk48)();       /* 0x48 func_8003B108, empty */
-    void (*run)();         /* 0x4C App_Run, the scene loop */
-    void (*showLogos)();   /* 0x50 Scene_ShowLogos */
-    void (*playOpening)(); /* 0x54 Scene_PlayOpening */
-    s32 (*runTitle)();     /* 0x58 Scene_RunTitle */
-    void (*unk5C)();       /* 0x5C func_80026690, empty: run when the title returns 1, which it never does */
-    s32 (*runDream)();     /* 0x60 Scene_RunDream */
-    void (*playEnding)();  /* 0x64 Scene_PlayEnding */
-} SceneVtbl;
-
-/* The slots of the base class (vtable 0x8006E4F0, src/game/8003AF8C.c) this unit calls. */
-typedef struct SceneBaseVtbl {
-    u8 pad_00[0x08];
-    void (*init)();        /* 0x08 App_Init (scene, fileBackend): CdInit, File_SetBackend */
-    u8 pad_0C[0x44 - 0x0C];
-    void (*setup)();       /* 0x44 App_Start (scene, display, pad): builds the ScreenEnv */
-} SceneBaseVtbl;
-
-typedef struct Scene {
-    SceneVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    ScreenPoint screenSize;  /* 0x0C set by the base slot 0x40 (App_SetScreenMode), (320, 240) from its init */
-    s32 unk14;               /* 0x14 the base slot 0x40's third argument */
-    s32 started;             /* 0x18 the base setup has built env */
-    ScreenEnv *env;          /* 0x1C what every screen of the scene runs with */
-    SceneSettings *settings; /* 0x20 */
-    s32 skipGraph;           /* 0x24 the dream ended in flashback mode, an end or an erase: no graph before the next menu */
-    DreamSys *dreamSys;      /* 0x28 the game state, made with ETC\DREAME5.TMD */
-} Scene;
-
 /*
  * DreamSys slot 0x1BC as the code calls it: the 4-byte {category, variant} is written through a
  * hidden first argument, which dreamsys.h's CineRef return cannot express.
@@ -94,21 +45,6 @@ typedef struct ReelStack {
  * A file object as the base class reads it: Object, then the fields of the CD back end
  * (src/game/800271D8.c) and of the classes of include/game/loader.h.
  */
-typedef struct FileObject {
-    FileVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 isOpen;  /* 0x0C set by open (File_LoadByName), cleared by close (File_Unload) */
-    s32 data;    /* 0x10 the whole file, or a parent's bytes */
-    s32 size;    /* 0x14 0 when the data is borrowed */
-    u8 pad_18[0x20 - 0x18];
-    u16 unk20;   /* 0x20 when set, freeData keeps the data */
-    s16 unk22;
-    u32 flags;   /* 0x24 done requests (File_ServiceQueue); bit 0 set by the base onLoaded */
-    s16 direct;  /* 0x28 the CD back end runs requests at once instead of queueing them */
-    s16 unk2A;
-} FileObject;
-
 void func_8004A070(s32);
 s32 g_fileBackend;
 void File_Lock(void);
@@ -126,7 +62,7 @@ s32 File_GetVSyncMode(void);
 void Rand_SeedAndNext(s32, s32);
 ObjectVtbl *Object_GetBaseVtbl(void);
 FileVtbl *File_GetBaseVtbl(void);
-SceneBaseVtbl *App_GetVtbl(void);
+AppVtbl *App_GetVtbl(void);
 void Heap_Free(void *);
 s8 *strcat(s8 *, s8 *);
 s32 Heap_Alloc(s32);
@@ -181,7 +117,7 @@ s32 Scene_New(SceneSettings *settings) {
 void Scene_Init(Scene *scene, SceneSettings *settings) {
     FileSource model;
 
-    App_GetVtbl()->init(scene, settings->fileBackend);
+    App_GetVtbl()->base.init(scene, settings->fileBackend);
     scene->vtbl = Scene_GetVtbl();
     scene->settings = settings;
     File_SetPathPrefix(File_GetRootDir());
@@ -201,7 +137,7 @@ void Scene_SeedRandom(void) {
 /* Slot 0x44, called once by main with the display and a new pad. */
 void Scene_Setup(Scene *scene, Display *display, Pad *pad) {
     if (scene->started == 0) {
-        App_GetVtbl()->setup(scene, display, pad, 0);
+        App_GetVtbl()->start(scene, display, pad, 0);
     }
 }
 
@@ -397,8 +333,8 @@ SceneVtbl *Scene_GetVtbl(void) {
 }
 
 /* File base slot 0x04, shared by every file class. */
-s32 File_Delete(FileObject *file) {
-    file->unk20 = 0;
+s32 File_Delete(File *file) {
+    file->keepData = 0;
     file->vtbl->destroy(file);
     Object_GetBaseVtbl()->destroy(file);
     Heap_Free(file);
@@ -406,27 +342,27 @@ s32 File_Delete(FileObject *file) {
 }
 
 /* File base slot 0x08. */
-void File_InitBase(FileObject *file) {
+void File_InitBase(File *file) {
     Object_GetBaseVtbl()->init(file);
     file->vtbl = File_GetBaseVtbl();
     file->isOpen = 0;
     file->data = 0;
     file->size = 0;
-    file->unk20 = 0;
-    file->unk22 = 0;
+    file->keepData = 0;
+    file->pending = 0;
     file->flags = 0;
     file->direct = 0;
-    file->unk2A = 0;
+    file->state = 0;
 }
 
 /* File base slot 0x0C: close, then free the data. */
-void File_DestroyBase(FileObject *file) {
+void File_DestroyBase(File *file) {
     file->vtbl->close();
     file->vtbl->freeData(file);
 }
 
 /* File base slot 0x58: open path, read the whole file into a new block, close. */
-void File_LoadWhole(FileObject *file, char *path) {
+void File_LoadWhole(File *file, char *path) {
     s32 wasOpen;
     s32 size;
     s32 buffer;
@@ -451,9 +387,9 @@ void File_LoadWhole(FileObject *file, char *path) {
     }
 }
 
-/* File base slot 0x5C: frees owned data (size != 0) unless unk20 is set. */
-void File_FreeData(FileObject *file) {
-    if (file->data != 0 && file->size != 0 && file->unk20 == 0) {
+/* File base slot 0x5C: frees owned data (size != 0) unless keepData is set. */
+void File_FreeData(File *file) {
+    if (file->data != 0 && file->size != 0 && file->keepData == 0) {
         Heap_Free(file->data);
         file->data = 0;
     }
@@ -463,7 +399,7 @@ void func_80026C80(void) {
 }
 
 /* File base slot 0x64 (onLoaded). */
-void File_MarkLoaded(FileObject *file) {
+void File_MarkLoaded(File *file) {
     file->flags |= 1;
 }
 

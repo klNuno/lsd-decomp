@@ -1,4 +1,6 @@
 #include "common.h"
+#include "game/loader.h"
+#include "game/scene.h"
 
 typedef struct FileLoadedView {
     u8 pad[0xC];
@@ -74,21 +76,8 @@ s8 *strcat(s8 *dst, s8 *src);
 extern s8 g_fileVersionSuffix[]; /* ";1" in .sdata */
 s32 g_fileDirCount;
 char *strstr(char *haystack, char *needle);
-typedef struct FileObject {
-    u8 pad[0x8];
-    s32 unk8;
-    void *unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    s32 unk1C;
-    u8 pad2[0x2];
-    u16 unk22;
-    s32 unk24;
-    u16 unk28;
-} FileObject;
 void File_HookVSync(void);
-FileObject *File_NewRequest(void);
+struct FileRequest *File_NewRequest(void);
 typedef struct FileHandle FileHandle;
 typedef struct {
     u8 pad[0x44];
@@ -133,10 +122,10 @@ void File_BeginOp(s32 kind, s32 state);
 void File_EndOp(void);
 typedef struct FileVtPathSlot {
     u8 pad[0x58];
-    void (*unk58)(FileObject *, char *);
+    void (*unk58)(File *, char *);
 } FileVtPathSlot;
 s32 File_FindIndex(char *name);
-void File_QueueRequest(FileObject *obj, s32 index, s32 kind, s32 param3, s32 param4);
+void File_QueueRequest(File *obj, s32 index, s32 kind, s32 param3, s32 param4);
 typedef struct VSyncObject {
     /* 0x00 */ u8 pad_00[0xC];
     /* 0x0C */ s32 unkC;
@@ -145,13 +134,6 @@ typedef struct VSyncObject {
     /* 0x24 */ s32 unk24;
 } VSyncObject;
 VSyncObject *Display_GetCurrent(void);
-typedef struct VSyncHookVt {
-    u8 pad[0x84];
-    void (*unk84)(void *, void (*)(void));
-} VSyncHookVt;
-typedef struct VSyncHook {
-    VSyncHookVt *vt;
-} VSyncHook;
 typedef struct FileVtVSyncSlot {
     u8 pad[0x68];
     void (*unk68)(void);
@@ -302,7 +284,7 @@ void File_Step(FileStepObject *obj) {
 void func_800272C8(void) {
 }
 
-void File_LoadByName(FileObject *obj, char *name, s32 param2, s32 param3) {
+void File_LoadByName(File *obj, char *name, s32 param2, s32 param3) {
     s8 path[0x40];
     CdlFileTail file;
     s32 result;
@@ -312,31 +294,31 @@ void File_LoadByName(FileObject *obj, char *name, s32 param2, s32 param3) {
         return;
     }
     File_Lock();
-    if (obj->unk28 != 0) {
-        if (g_fileBusy == 0 && obj->unkC == 0) {
+    if (obj->direct != 0) {
+        if (g_fileBusy == 0 && obj->isOpen == 0) {
             File_BeginOp(1, 1);
             if (g_fileEnabled != 0) {
                 g_fileCurEntry = File_FindEntry(name);
                 if (g_fileCurEntry == 0) {
                     return;
                 }
-                *(CdlLocTail *)&obj->unk18 = ((DirEntryTail *)g_fileCurEntry)->unk14;
-                obj->unk1C = ((DirEntryTail *)g_fileCurEntry)->unk18;
+                *(CdlLocTail *)&obj->cdPos = ((DirEntryTail *)g_fileCurEntry)->unk14;
+                obj->cdSize = ((DirEntryTail *)g_fileCurEntry)->unk18;
                 g_fileAsyncMode = 1;
-                obj->unkC = (void *)1;
+                obj->isOpen = 1;
             } else {
                 File_BuildPath(path, (s8 *)name);
                 while (CdSearchFile(&file, path) == 0) {
                 }
-                *(CdlLocTail *)&obj->unk18 = file.pos;
-                obj->unk1C = file.size;
+                *(CdlLocTail *)&obj->cdPos = file.pos;
+                obj->cdSize = file.size;
                 do {
-                    CdControl(2, (u8 *)&obj->unk18, 0);
+                    CdControl(2, (u8 *)&obj->cdPos, 0);
                     do {
                         result = CdSync(0, 0);
                     } while (result == 0);
                 } while (result == 5);
-                obj->unkC = (void *)1;
+                obj->isOpen = 1;
                 File_EndOp();
             }
         }
@@ -407,7 +389,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
             }
         }
     } else {
-        File_QueueRequest((FileObject *)obj, 0, 4, offset, mode);
+        File_QueueRequest((File *)obj, 0, 4, offset, mode);
     }
     File_Unlock();
     return 0;
@@ -443,7 +425,7 @@ s32 File_Read(FileStateView *obj, s32 buf, u32 offset) {
             }
         }
     } else {
-        File_QueueRequest((FileObject *)obj, 0, 5, buf, offset);
+        File_QueueRequest((File *)obj, 0, 5, buf, offset);
     }
     File_Unlock();
     return 0;
@@ -511,7 +493,7 @@ void File_Open(FileOpenObject *obj, char *name) {
             }
         }
     } else {
-        File_QueueRequest((FileObject *)obj, File_FindIndex(name), 7, 0, 0);
+        File_QueueRequest((File *)obj, File_FindIndex(name), 7, 0, 0);
     }
     File_Unlock();
 }
@@ -582,7 +564,7 @@ void File_ServiceQueue(void) {
     File_Unlock();
 }
 
-void File_RequestOpen(FileObject *obj, char *name) {
+void File_RequestOpen(File *obj, char *name) {
     FileRequest *uninit;
 
     File_Lock();
@@ -592,8 +574,8 @@ void File_RequestOpen(FileObject *obj, char *name) {
             File_QueueRequest(obj, File_FindIndex(name), 7, 0, 0);
         } else {
             (*(FileVtPathSlot **)obj)->unk58(obj, name);
-            if (obj->unk22 == 0) {
-                obj->unk24 = obj->unk24 | 4;
+            if (obj->pending == 0) {
+                obj->flags = obj->flags | 4;
             }
         }
     }
@@ -606,7 +588,7 @@ void File_Stop(void) {
     File_Unlock();
 }
 
-void File_CancelRequests(FileObject *obj) {
+void File_CancelRequests(File *obj) {
     FileRequestLink *node;
     FileRequestLink *cur;
     FileRequestLink *next;
@@ -614,8 +596,8 @@ void File_CancelRequests(FileObject *obj) {
 
     File_Lock();
     node = (FileRequestLink *)g_fileRequestHead;
-    if (node != NULL && obj->unk22 != 0) {
-        obj->unk24 = 0;
+    if (node != NULL && obj->pending != 0) {
+        obj->flags = 0;
         if (node->unkC == obj && node->unk0 != NULL && g_fileDone == 0) {
             CdFlush();
             File_EndOp();
@@ -628,7 +610,7 @@ void File_CancelRequests(FileObject *obj) {
             next = cur->unk20;
             if (cur->unkC == obj) {
                 File_FreeRequest(cur);
-                obj->unk22--;
+                obj->pending--;
             }
             cur = next;
         }
@@ -676,18 +658,18 @@ s32 File_GetEnabled(s32 *outValue) {
 }
 
 s32 File_Enable(s32 enabled, s32 param1, s32 mode) {
-    VSyncHook *temp;
+    Display *temp;
 
     if (g_fileBusy == 0) {
         if (mode == 0) {
-            temp = (VSyncHook *)Display_GetCurrent();
+            temp = (Display *)Display_GetCurrent();
             if (g_fileEnabled == 0) {
                 if (enabled != 0) {
-                    temp->vt->unk84(temp, File_OnVSync);
+                    temp->vtbl->setFrameCallback(temp, File_OnVSync);
                 }
             } else {
                 if (enabled == 0) {
-                    temp->vt->unk84(temp, NULL);
+                    temp->vtbl->setFrameCallback(temp, NULL);
                 }
             }
         }
@@ -795,8 +777,8 @@ void File_ClearVSyncPending(void) {
     File_Unlock();
 }
 
-void File_QueueRequest(FileObject *obj, s32 index, s32 kind, s32 param3, s32 param4) {
-    FileObject *req;
+void File_QueueRequest(File *obj, s32 index, s32 kind, s32 param3, s32 param4) {
+    FileRequest *req;
 
     req = File_NewRequest();
     req->unk8 = kind;
@@ -804,12 +786,12 @@ void File_QueueRequest(FileObject *obj, s32 index, s32 kind, s32 param3, s32 par
     req->unkC = obj;
     req->unk10 = index;
     req->unk18 = param4;
-    obj->unk24 = 0;
-    obj->unk22 = obj->unk22 + 1;
+    obj->flags = 0;
+    obj->pending = obj->pending + 1;
     File_HookVSync();
 }
 
-FileObject *File_NewRequest(void) {
+FileRequest *File_NewRequest(void) {
     FileRequest *node;
     FileRequest *last;
 
@@ -832,7 +814,7 @@ FileObject *File_NewRequest(void) {
         }
     }
     File_Unlock();
-    return (FileObject *)node;
+    return node;
 }
 
 void File_FreeRequest(FileRequest *node) {

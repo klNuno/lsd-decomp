@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "game/heap.h"
+#include "game/gs.h"
 
 /*
  * File loaders of src/game/80043008.c. Each class below derives from the file class of
@@ -27,7 +28,7 @@ typedef struct FileSource {
 
 /* Slots 0x00 to 0x74 of every file class vtable */
 typedef struct FileVtbl {
-    s32 unk_00;                /* 0x003 in the base, 0xF03 in the TIX class, other values per class */
+    s32 classWord;             /* 0x003 in the base, 0xF03 in the TIX class, other values per class */
     void *(*delete_)();        /* 0x04 File_Delete */
     s32 (*init)();             /* 0x08 */
     void (*destroy)();         /* 0x0C */
@@ -50,12 +51,25 @@ typedef struct FileVtbl {
     void (*cancel)();          /* 0x74 CD: File_CancelRequests, drops the object's queued requests */
 } FileVtbl;
 
-/* A colour as three bytes (the GsBG and fade colours; 0x80 is neutral) */
-typedef struct ColorRGB {
-    u8 r;
-    u8 g;
-    u8 b;
-} ColorRGB;
+/*
+ * The file object (0x2C bytes, base vtable 0x8006D430, src/game/80025F7C.c and the CD back end of
+ * src/game/800271D8.c). Every class of this header starts with these fields.
+ */
+typedef struct File {
+    FileVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    s32 isOpen;      /* 0x0C set by open (File_LoadByName), cleared by close (File_Unload) */
+    s32 data;        /* 0x10 the whole file, or a parent's bytes */
+    s32 size;        /* 0x14 0 when the data is borrowed */
+    s32 cdPos;       /* 0x18 CdlLOC of the file, copied whole from its directory entry */
+    s32 cdSize;      /* 0x1C its size on the disc, from the same entry */
+    u16 keepData;    /* 0x20 when set, freeData keeps the data */
+    u16 pending;     /* 0x22 queued requests: File_QueueRequest adds one */
+    u32 flags;       /* 0x24 done requests (File_ServiceQueue); bit 0 set by the base onLoaded */
+    u16 direct;      /* 0x28 the CD back end runs requests at once instead of queueing them */
+    u16 state;       /* 0x2A per class: 9 and 10 while a TIX or a map chunk reads its parts */
+} File;
 
 /*
  * TIX texture set (vtable g_tixVtbl, 0x84 bytes, Tix_Create): a STGxx\TEXA to TEXD.TIX
@@ -80,7 +94,7 @@ typedef struct TixFade {
     s16 y;          /* 0x06 0x1E0 + palette * rows */
     s16 w;          /* 0x08 0x100 */
     u16 h;          /* 0x0A 1, then rows once the fade is built */
-    ColorRGB color; /* 0x0C the colour the rows blend toward */
+    Color3 color; /* 0x0C the colour the rows blend toward */
     u8 pad_0F;
 } TixFade;
 
@@ -107,6 +121,54 @@ typedef struct Tix {
 } Tix;
 
 /*
+ * The TIM image class (vtable g_timVtbl, 0x50 bytes, Tim_New): a file object
+ * (include/game/loader.h) holding one TIM. Slot 0x78 uploads its pixels and its CLUT to VRAM
+ * through the current display; slots 0x7C to 0x94 are empty. A TimPack makes one per image of
+ * a TIX and points +0x4C at the fade of its palette row (src/game/80043008.c).
+ */
+typedef struct TimVtbl {
+    FileVtbl base;
+    void (*upload)();         /* 0x78 Tim_Upload */
+    void (*unk7C)();          /* 0x7C to 0x94: empty */
+    void (*unk80)();
+    void (*unk84)();
+    void (*unk88)();
+    void (*unk8C)();
+    void (*unk90)();
+    void (*unk94)();
+    void (*setUnk48)();       /* 0x98 func_8003B5E4: +0x48 = 1 */
+    void (*getInfo)(void *, void *); /* 0x9C Tim_GetInfo: GsGetTimInfo into a GsIMAGE */
+} TimVtbl;
+
+/* PSY-Q GsIMAGE as Tim_Upload reads it (GsImage below has s16 positions and pointers) */
+typedef struct TimImage {
+    u32 pmode;                /* 0x00 bit 3: the TIM has a CLUT */
+    u16 px;
+    u16 py;
+    u16 pw;
+    u16 ph;
+    s32 pixel;                /* 0x0C */
+    u16 cx;
+    u16 cy;
+    u16 cw;
+    u16 ch;
+    s32 clut;                 /* 0x18 */
+} TimImage;
+
+typedef struct Tim {
+    TimVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    u8 pad_0C[0x10 - 0x0C];
+    u32 *data;                /* 0x10 the TIM file: id word, then the TIM */
+    s32 size;                 /* 0x14 File.size: 0 when the TIM is borrowed from a TimPack */
+    u8 pad_18[0x2C - 0x18];   /* the other File fields */
+    TimImage image;           /* 0x2C filled by getInfo before each upload */
+    s32 unk48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
+    s32 fade;                 /* 0x4C address of the TixFade of its palette row, 0 at init */
+} Tim;
+
+/*
  * TimPack (vtable g_timPackVtbl, 0x3C bytes, TimPack_Create): one part of a TIX, {count,
  * offsets[count]} then the TIM images. onLoaded makes a TIM object (Tim_New) per image,
  * borrowing its data, and points its +0x4C at the fade of its palette row.
@@ -115,8 +177,6 @@ typedef struct TimPackVtbl {
     FileVtbl base;
     void (*uploadAll)();      /* 0x78 TimPack_UploadAll: slot 0x78 (upload to VRAM) of every TIM */
 } TimPackVtbl;
-
-struct TimObject;
 
 typedef struct TimPack {
     TimPackVtbl *vtbl;
@@ -132,7 +192,7 @@ typedef struct TimPack {
     s32 flags;                /* 0x24 0x200: a load request (slot 0x58) is done (File_ServiceQueue) */
     u8 pad_28[0x2C - 0x28];
     s32 count;                /* 0x2C TIM objects made */
-    struct TimObject **tims;  /* 0x30 */
+    struct Tim **tims;     /* 0x30 */
     s32 fades;                /* 0x34 address of the owner's TixFade[4] */
     s32 loaded;               /* 0x38 */
 } TimPack;
@@ -291,7 +351,7 @@ typedef struct GsBg {
     s16 h;
     s16 scrollX;
     s16 scrollY;
-    ColorRGB color;
+    Color3 color;
     u8 pad_13;
     void *map;
     s16 mx;                   /* rotation and scale centre, w / 2 and h / 2 */
@@ -406,7 +466,6 @@ typedef struct MovieVtbl {
     void (*setUnk68)();       /* 0x6C func_80045E3C */
 } MovieVtbl;
 
-struct MovieStream;
 
 typedef struct Movie {
     MovieVtbl *vtbl;
@@ -428,9 +487,67 @@ typedef struct Movie {
     s32 repeat;               /* 0x54 restart when stopped */
     s32 loops;                /* 0x58 0 = no limit */
     s32 unk_5C;               /* passed to the stream's slot 0x50 */
-    struct MovieStream *stream; /* 0x60 */
+    struct Stream *stream;      /* 0x60 */
     s32 unk_64;
     s32 unk_68;               /* set by slot 0x6C (1 from init) */
 } Movie;
+
+/*
+ * The CD stream (vtable g_streamVtbl, 0x5C bytes, Stream_New, src/game/80046F0C.c): plays one STR file
+ * through the PSY-Q streaming library; the movie player owns one (Movie +0x60).
+ */
+typedef struct Stream Stream;
+
+/* g_streamVtbl: Object methods, then the stream slots */
+typedef struct StreamVtbl {
+    s32 unk_00;             /* 0x40 */
+    void *(*delete_)();     /* 0x04 Object_Delete */
+    void (*init)();         /* 0x08 Stream_Init (self, speedMode, fps, unk3C) */
+    void (*destroy)();      /* 0x0C Stream_Destroy */
+    u8 pad_10[0x40 - 0x10]; /* Object methods, then 0 */
+    void (*setRing)();      /* 0x40 Stream_SetRing (self, buffer, size) */
+    s32 (*open)();          /* 0x44 Stream_Open (self, name, retries) */
+    void (*close)();        /* 0x48 Stream_Close */
+    void (*seek)();         /* 0x4C Stream_Seek (self, CdlLOC) */
+    void (*start)();        /* 0x50 Stream_Start (self, start frame, end frame) */
+    void (*stop)();         /* 0x54 Stream_Stop */
+    void (*rewind)();       /* 0x58 Stream_Rewind */
+    void (*unk_5C)();       /* func_800475C8, empty */
+    void (*unk_60)();       /* func_800475D0, empty */
+    void (*mute)();         /* 0x64 Stream_Mute */
+    void (*demute)();       /* 0x68 Stream_Demute */
+    s32 (*getFrame)();      /* 0x6C Stream_GetFrame (self, &frame, &frameNumber, polls) */
+    void (*releaseFrame)(); /* 0x70 Stream_ReleaseFrame (self, frame) */
+    void (*unsetRing)();    /* 0x74 Stream_UnsetRing */
+    void (*clearRing)();    /* 0x78 Stream_ClearRing */
+    void (*setCallback)();  /* 0x7C Stream_SetCallback, empty: nothing sets +0x48 */
+} StreamVtbl;
+
+/* PSY-Q CdlFILE */
+typedef struct StreamFile {
+    u8 pos[4];              /* CdlLOC of the first sector */
+    u32 size;               /* bytes */
+    s8 name[16];
+} StreamFile;
+
+struct Stream {
+    StreamVtbl *vtbl;
+    ListNode *watched;
+    ListNode *watchers;
+    StreamFile file;        /* 0x0C CdSearchFile result */
+    u8 result[0x2C - 0x24]; /* 0x24 CdSync result (Stream_Sync) */
+    s32 state;              /* 0x2C 0 closed, 1 seeked, 2 reading, 4 stopped */
+    s32 muted;              /* 0x30 */
+    s32 speedMode;          /* 0x34 below 4: double speed (CdRead2 mode 0x1C0, 300 in frameBytes), else 0x140 and 150 */
+    u32 frameBytes;         /* 0x38 file bytes per frame */
+    s32 unk3C;
+    s32 endFrame;           /* 0x40 frame count: file size / frameBytes, or slot 0x50's end frame */
+    void *callbackArg;      /* 0x44 */
+    void (*callback)(void *); /* 0x48 run for each frame and at the end; 0 from init */
+    s32 unk4C;              /* 0x4C non-zero: the end runs the callback and closes */
+    s32 ring;               /* 0x50 the ring buffer of slot 0x40; 0 = open fails */
+    void (*seekDone)(void *); /* 0x54 non-zero: seeks are asynchronous and call it with callbackArg */
+    u32 lastFrame;          /* 0x58 */
+};
 
 #endif

@@ -54,7 +54,11 @@ typedef struct ListNode {
  * Slots are left unprototyped: the code calls some of them with fewer arguments.
  */
 typedef struct ObjectVtbl {
-    s32 unk_00;              /* 0 here, 0x1F34 in the DreamSys vtable 0x80087BDC */
+    s32 classWord;           /* 0 here, 0x1F34 in the DreamSys vtable 0x80087BDC: identifies the class. Its low 4 bits
+                                are the sender type every onNotify dispatches on (1 display, 2 pad, 4 scene node,
+                                5 clock, 9 model object); the low byte the kind Scene_DrawNode switches on.
+                                Values: 0x130 menu screen, 0x1F130 main menu, 0xB card, 0x10 keyboard,
+                                0x20 file chooser, 0x164 fade, 0x230 task, 0x1F34 DreamSys */
     void *(*delete_)();      /* 0x04 Object_Delete: destroy, free, return NULL */
     void (*init)();          /* 0x08 Object_Init */
     void (*destroy)();       /* 0x0C Object_Destroy */

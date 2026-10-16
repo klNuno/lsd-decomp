@@ -5,6 +5,7 @@
 #include "game/heap.h"
 #include "game/dreamsys.h"
 #include "game/entity.h"
+#include "game/sound.h"
 
 /*
  * Stages and the world the dream is built from (src/game/800494B4.c):
@@ -31,37 +32,6 @@ typedef struct StageGrid {
     s32 stacked;  /* 0x04 1 for stages 0 and 6: one column of chunks stacked in height, 0x800 apart (StageMap_SlotAt) */
 } StageGrid;
 
-/*
- * A position on a stage, 10 bytes: chunk (col, row), tile in the chunk, and the offset in the
- * tile from its centre (Stage_PlaceToWorld turns it into world coordinates). Same bytes as DreamPlace.
- */
-typedef struct StagePlace {
-    s8 col;       /* 0x00 chunk column */
-    s8 row;       /* 0x01 chunk row */
-    s8 tileX;     /* 0x02 tile in the chunk, 0 to 19 */
-    s8 tileY;     /* 0x03 */
-    s16 x;        /* 0x04 offset in the tile, from its centre (0x400) */
-    s16 y;        /* 0x06 height */
-    s16 z;        /* 0x08 */
-} StagePlace;
-
-/* A PSY-Q GsCOORDINATE2 as the code reads it: the matrix, its translation and the GsCOORD2PARAM. */
-typedef struct Coord2Param {
-    u8 pad_00[0x10];        /* scale */
-    s16 rotate[3];          /* 0x10 */
-} Coord2Param;
-
-typedef struct Coord2 {
-    u32 flg;                /* 0x00 */
-    s16 m[3][3];            /* 0x04 */
-    u8 pad_16[0x18 - 0x16];
-    Vec3 t;                 /* 0x18 position */
-    s16 workm[3][3];        /* 0x24 world matrix */
-    u8 pad_36[0x38 - 0x36];
-    Vec3 workT;             /* 0x38 world position */
-    Coord2Param *param;     /* 0x44 */
-} Coord2;
-
 /* ------------------------------------------------------------------------------------------ */
 /* Task: vtable 0x80086668, 0x38 bytes. Its base (vtable 0x8006E878) runs the loop.           */
 
@@ -78,20 +48,8 @@ typedef struct TaskBaseVtbl {
     void (*setState)();     /* 0x60 Screen_SetState: state = arg, notify the watchers */
 } TaskBaseVtbl;
 
-/* The sound bank a task may own (Sound_CreateBank, class 0x8006DA34): slot 0x80 plays a tone with SsUtKeyOn. */
-typedef struct SoundBankVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();     /* 0x04 */
-    u8 pad_08[0x80 - 0x08];
-    void (*playTone)();     /* 0x80 Sound_PlayTone (bank, tone, volume left, volume right) */
-} SoundBankVtbl;
-
-typedef struct SoundBank {
-    SoundBankVtbl *vtbl;
-} SoundBank;
-
 typedef struct TaskVtbl {
-    s32 classId;            /* 0x230 */
+    s32 classWord;          /* 0x230 */
     void *(*delete_)();     /* 0x04 Object_Delete */
     void (*init)();         /* 0x08 Task_Init */
     void (*destroy)();      /* 0x0C Task_Destroy */
@@ -209,7 +167,7 @@ typedef struct RunnerStage {
 } RunnerStage;
 
 typedef struct DreamRunnerVtbl {
-    s32 classId;            /* 0x1F230 */
+    s32 classWord;          /* 0x1F230 */
     void *(*delete_)();     /* 0x04 Object_Delete */
     void (*init)();         /* 0x08 DreamRunner_Init */
     void (*destroy)();      /* 0x0C DreamRunner_Destroy */
@@ -300,38 +258,63 @@ typedef struct MapTile {
 #define MAP_TILE_HIDDEN 0x80000000
 #define MAP_SLOT_TILES 410      /* 20 x 20 squares and 10 extra tiles */
 
-/* The chunk object of a slot (MapChunk_New, 0x3C bytes): receives the chunk data, knows its index. */
+/* The chunk object of a slot (MapChunk_New, 0x3C bytes, src/game/80048894.c): a file object (loader.h
+   File) that reads one STGxx\Mxxx.LBD chunk file, then its entity part. Vtable g_mapChunkVtbl: the file
+   class slots, then the chunk's own. */
 typedef struct MapChunkVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();     /* 0x04 */
-    u8 pad_08[0x74 - 0x08];
-    void (*unload)();       /* 0x74 */
-    void (*load)();         /* 0x78 (chunk, data from the stage's chunk loader) */
-    void (*unk7C)();
-    u8 pad_80[0x84 - 0x80];
-    void (*unk84)();
-    void (*unk88)();        /* 0x88 (chunk, flag given to StageMap_Init) */
+    s32 classWord;           /* 0x903 */
+    void *(*delete_)();      /* 0x04 File_Delete */
+    void (*init)();          /* 0x08 MapChunk_Init */
+    void (*destroy)();       /* 0x0C MapChunk_Destroy */
+    u8 pad_10[0x44 - 0x10];  /* Object methods, then 0 */
+    void (*open)();          /* 0x44 (self, path, 1, 0) */
+    void (*close)();         /* 0x48 */
+    void (*seek)();          /* 0x4C (self, offset, whence) */
+    u8 pad_50[0x54 - 0x50];
+    void (*read)();          /* 0x54 (self, buffer, size) */
+    u8 pad_58[0x5C - 0x58];
+    void (*freeData)();      /* 0x5C File_FreeData */
+    void (*unk_60)();        /* 0x60 func_80026C80, empty */
+    void (*onLoaded)();      /* 0x64 MapChunk_OnLoaded */
+    u8 pad_68[0x74 - 0x68];
+    void (*unload)();        /* 0x74 MapChunk_Unload, replaces the file class cancel slot */
+    void (*load)();          /* 0x78 MapChunk_Load (chunk, data from the stage's chunk loader) */
+    void (*clear)();         /* 0x7C MapChunk_Clear */
+    void (*loadEntities)();  /* 0x80 MapChunk_LoadEntities */
+    void (*freeEntities)();  /* 0x84 MapChunk_FreeEntities */
+    void (*setLoadEntities)(); /* 0x88 MapChunk_SetLoadEntities (chunk, flag given to StageMap_Init) */
 } MapChunkVtbl;
 
-/* The chunk file data a chunk object holds: the model list, then the TMD. */
+/* The header of a chunk file: the model list, then the TMD, then the entity part. */
 typedef struct MapChunkData {
-    u8 pad_00[0x04];
-    s32 modelsOffset;       /* 0x04 the model list, handed to the slot's model set */
-    s32 modelsSize;         /* 0x08 the TMD follows the list */
+    u8 pad_00[2];
+    u16 hasEntities;         /* 0x02 non-zero: the file has an entity part (slot 0x80) */
+    s32 modelsOffset;        /* 0x04 the model list, handed to the slot's model set */
+    s32 modelsSize;          /* 0x08 the TMD follows the list */
+    u8 pad_0C[0x10 - 0x0C];
+    s32 entitiesOffset;      /* 0x10 file offset of the entity part */
+    s32 entitiesSize;        /* 0x14 */
 } MapChunkData;
 
 typedef struct MapChunk {
     MapChunkVtbl *vtbl;
-    u8 pad_04[0x10 - 0x04];
-    MapChunkData *data;     /* 0x10 */
-    u8 pad_14[0x20 - 0x14];
-    u16 unk20;              /* set to data != NULL at creation */
-    u8 pad_22[0x2A - 0x22];
-    u16 unk2A;
-    s16 loaded;             /* 0x2C 0 empty; non-zero once its data is in, 2 after StageMap_BuildTiles built its tiles */
-    s16 unk2E;              /* when set, StageMap_PollLoads clears it and sends slot message 7 */
-    s16 index;              /* 0x30 chunk index in the stage grid (row * cols + col) */
-    s16 id;                 /* 0x32 neighbour position 0 to 6 (StageMap_LoadAround) */
+    ListNode *watched;
+    ListNode *watchers;
+    u8 pad_0C[0x10 - 0x0C];
+    MapChunkData *data;      /* 0x10 the 0xB358-byte chunk buffer */
+    s32 size;                /* 0x14 0xB358 once the buffer exists */
+    u8 pad_18[0x20 - 0x18];
+    u16 keepData;            /* 0x20 File.keepData: set to data != NULL at creation */
+    u8 pad_22[0x24 - 0x22];
+    s32 flags;               /* 0x24 done file requests: 0x80 read */
+    u8 pad_28[0x2A - 0x28];
+    u16 state;               /* 0x2A 9 reading the chunk, 10 reading its entity part, 0 idle */
+    s16 loaded;              /* 0x2C 0 empty; non-zero once its data is in, 2 after StageMap_BuildTiles built its tiles */
+    s16 entitiesLoaded;      /* 0x2E StageMap_PollLoads clears it and sends slot message 7 */
+    s16 index;               /* 0x30 chunk index in the stage grid (row * cols + col), -1 when empty */
+    s16 id;                  /* 0x32 neighbour position 0 to 6 (StageMap_LoadAround) */
+    s32 entities;            /* 0x34 the entity part (heap), first argument of Sym_SpawnOrSpy (Place_SpawnCell) */
+    s32 loadEntities;        /* 0x38 read the entity part as soon as the chunk is in */
 } MapChunk;
 
 /* The model set of a slot (func_8002C12C(0)): slot 0x78 hands out the chunk's models one by one. */
@@ -359,7 +342,7 @@ typedef struct MapSlot {
     MapModels *models;      /* 0x08 */
     MapTile *root;          /* 0x0C the chunk's origin node; its coord is the chunk position */
     MapTile **tiles;        /* 0x10 MAP_SLOT_TILES tiles, row-major 20 per row */
-    Object *unk14;          /* 0x14 deleted on slot message 6; Sym_SpawnOrSpy's result in place.h */
+    Object *spawned;        /* 0x14 Sym_SpawnOrSpy's result (Place_SpawnCell), deleted on slot message 6 */
     s32 unk18;
 } MapSlot;
 
@@ -426,7 +409,7 @@ typedef struct MapTileStep {
 } MapTileStep;
 
 typedef struct StageMapVtbl {
-    s32 classId;            /* 0x114 */
+    s32 classWord;          /* 0x114 */
     void *(*delete_)();     /* 0x04 Object_Delete */
     void (*init)();         /* 0x08 StageMap_Init */
     void (*destroy)();      /* 0x0C StageMap_Destroy */
@@ -440,7 +423,7 @@ typedef struct StageMapVtbl {
     void (*onSlotMessage)(); /* 0x88 StageMap_OnSlotMessage (map, 6 or 7, slot, index) */
     u8 pad_8C[0xB8 - 0x8C];
     void *(*unkB8)();       /* 0xB8 RootNode_GetLight */
-    u8 pad_BC[0xC0 - 0xBC];
+    void (*setAmbient)();   /* 0xBC RootNode_SetAmbient */
     void (*clearSlots)();   /* 0xC0 StageMap_ClearSlots */
     void (*unkC4)();        /* 0xC4 func_8004ACF8 */
     void (*setChunkLoader)(); /* 0xC8 StageMap_SetChunkLoader */
@@ -468,7 +451,9 @@ typedef struct StageMapVtbl {
     s32 (*slotIndexByChunk)(); /* 0x124 StageMap_SlotIndexByChunk */
     void (*updateView)();   /* 0x128 StageMap_UpdateView */
     s32 (*tellView)();      /* 0x12C StageMap_TellNearTiles */
-    u8 pad_130[0x13C - 0x130];
+    void (*unk130)();       /* 0x130 func_8004CFA8 */
+    void (*unk134)();       /* 0x134 func_8004CFB0 */
+    void (*unk138)();       /* 0x138 func_8004CFB8 */
     void (*unk13C)();       /* 0x13C func_8004D028 */
     void (*unk140)();       /* 0x140 func_8004D088 */
 } StageMapVtbl;

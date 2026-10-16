@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/scene.h"
 
 /*
  * The display (vtable g_displayVtbl, 0x34 bytes, Display_New, sender type 1 in Screen_OnNotify):
@@ -8,49 +9,6 @@
  * The frame loop (slot 0x68) runs while +0x10 is set: VSync(vsyncMode), the frame callback,
  * then message 2 to every watcher. include/game/scene.h has the slots screens call.
  */
-typedef struct DisplayVtbl {
-    ObjectVtbl base;
-    s32 unk3C;                /* 0x3C 0 */
-    void (*reset)();          /* 0x40 Display_Reset: vsync mode 3, transfers synced, no callback */
-    void (*initGraph)();      /* 0x44 Display_InitGraph (display, size, vramMode) */
-    void (*startLoop)();      /* 0x48 Display_StartLoop */
-    void (*stopLoop)();       /* 0x4C Display_StopLoop */
-    void (*swapBuffers)();    /* 0x50 Display_SwapBuffers */
-    void (*getActiveBuffer)(); /* 0x54 Display_GetActiveBuffer */
-    void (*loadImage)();      /* 0x58 Display_LoadImage (display, rect, pixels) */
-    void (*storeImage)();     /* 0x5C Display_StoreImage (display, pixels, rect) */
-    s32 (*unk60)();           /* 0x60 func_80020A1C: returns 0 */
-    void (*moveImage)();      /* 0x64 Display_MoveImage (display, rect, x, y) */
-    void (*frameLoop)();      /* 0x68 Display_RunFrameLoop */
-    void (*countFrame)();     /* 0x6C Display_CountFrame, works on the current display */
-    void (*setVSyncMode)();   /* 0x70 Display_SetVSyncMode, ignored while the loop runs */
-    s32 (*getVSyncMode)();    /* 0x74 Display_GetVSyncMode */
-    void (*clearImage)();     /* 0x78 Display_ClearImage (display, color, rect): the whole screen when rect is 0 */
-    s32 *(*getScreenRect)();  /* 0x7C Display_GetScreenRect (display, rect): returns &size */
-    void (*setSyncDraw)();    /* 0x80 Display_SetSyncDraw */
-    void (*setFrameCallback)(); /* 0x84 Display_SetFrameCallback: File_Enable hooks File_OnVSync here */
-} DisplayVtbl;
-
-typedef struct DisplaySize {
-    s32 w;
-    s32 h;
-} DisplaySize;
-
-typedef struct Display {
-    DisplayVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 unk0C;                /* 0x0C set to 1 by countFrame when frameCount reaches vsyncMode */
-    s32 running;              /* 0x10 the frame loop runs: VRAM transfers then need syncDraw */
-    DisplaySize size;         /* 0x14 the screen size given to GsInitGraph */
-    s32 vramMode;             /* 0x1C GsInitGraph's vrammode */
-    s32 vsyncMode;            /* 0x20 VSync's argument each frame */
-    s32 frameCount;           /* 0x24 countFrame's counter */
-    u8 pad_28[0x2C - 0x28];
-    s32 syncDraw;             /* 0x2C transfers also run during the loop, and wait for DrawSync */
-    void (*frameCallback)(void); /* 0x30 called after each VSync, 0 for none */
-} Display;
-
 /* A rect as callers pass it ({u16 x, u16 y, s32 w, s32 h}), read through halfwords */
 typedef struct DisplayRect {
     u16 x;
@@ -67,14 +25,6 @@ typedef struct Rect {
     u16 w;
     u16 h;
 } Rect;
-
-/* The rect getScreenRect fills: {s16 x, s16 y, s32 w, s32 h} */
-typedef struct ScreenRectOut {
-    s16 x;
-    s16 y;
-    s32 w;
-    s32 h;
-} ScreenRectOut;
 
 /* A screen size ({s32 w, s32 h}) read through halfwords */
 typedef struct DisplaySizeHalves {
@@ -134,7 +84,7 @@ void Display_Reset(Display *display) {
 void Display_InitGraph(Display *display, DisplaySizeHalves *size, s32 vramMode) {
     GsInitGraph(size->w, size->h, 0, 1, vramMode);
     GsDefDispBuff(0, 0, 0, size->h);
-    display->size = *(DisplaySize *)size;
+    display->size = *(ScreenSize *)size;
     display->vramMode = vramMode;
 }
 
@@ -244,7 +194,7 @@ void Display_ClearImage(Display *display, u8 *color, s32 rect) {
     ClearImage(&vramRect, color[0], color[1], color[2]);
 }
 
-s32 *Display_GetScreenRect(Display *display, ScreenRectOut *rect) {
+s32 *Display_GetScreenRect(Display *display, ScreenRect *rect) {
     if (rect != NULL) {
         rect->x = 0;
         rect->y = 0;

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "game/scene.h"
 
 /*
  * The 2D widgets drawn by the scene tree (src/game/80012064.c): Box, a filled rectangle; Fade, the
@@ -7,17 +8,6 @@
  */
 
 /* An (x, y) pair of s32 */
-typedef struct PosPair {
-    s32 x;
-    s32 y;
-} PosPair;
-
-typedef struct Rgb {
-    u8 r;
-    u8 g;
-    u8 b;
-} Rgb;
-
 /* A bit field setter of src/game/8001CA94.c: sets width bits at shift in *word, returns the old value */
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
 void *Heap_Alloc(s32 size);
@@ -60,88 +50,22 @@ typedef struct Box {
     s32 priority;           /* 0x44 ordering table priority given to GsSortBoxFill */
     s32 relative;           /* 0x48 position in percent of the half screen */
     s32 unk_4C;
-    PosPair position;       /* 0x50 */
+    ScreenPoint position;       /* 0x50 */
     s32 attribute;          /* 0x58 GsBOXF: bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend mode */
     u16 x;                  /* 0x5C GsBOXF, written by the draw from position */
     u16 y;                  /* 0x5E */
     u16 width;              /* 0x60 */
     u16 height;             /* 0x62 */
-    Rgb color;              /* 0x64 */
+    Color3 color;              /* 0x64 */
     u8 pad_67;
     s32 mask;               /* 0x68 (1 << bits) - 1, 13 bits by default */
 } Box;
 
 extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
 BoxVtbl *Box_GetVtbl(void);
-void Rgb_CopyOrAdd(void *box, Rgb *dst, Rgb *src, s32 copy);
+void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
 
-/*
- * Fade (vtable g_fadeVtbl at 0x8006E99C, class word 0x164, 0xA0 bytes): a Box that fades from or
- * to a color. The color index is a 3-bit RGB channel mask (g_fadePalette: 1 blue, 2 green, 4 red,
- * 7 white); 0 means black and stores the mask 0xF. Each tick of the watched object adds the step to
- * the masked channels; at the end the fade notifies its watchers: 5 after a fade in, 6 after a fade out.
- */
-typedef struct Fade Fade;
-typedef struct FadeVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *fade, s32 size, s32 channels, s32 priority); /* 0x08 Fade_Construct */
-    u8 pad_0C[0x10 - 0xC];
-    void (*watch)(Fade *fade);                /* 0x10 (fade, ticker) */
-    void (*unwatch)(Fade *fade, s32 ticker);  /* 0x14 */
-    u8 pad_18[0x30 - 0x18];
-    void (*notify)(Fade *fade, s32 message);  /* 0x30 */
-    u8 pad_34[0x40 - 0x34];
-    void (*reset)(void *fade, s32 channels);  /* 0x40 Fade_Init */
-    u8 pad_44[0x60 - 0x44];
-    void (*setVisible)(Fade *fade, s32 visible);   /* 0x60 */
-    void (*setSemiTrans)(Fade *fade, s32 on);      /* 0x64 */
-    void (*setBlendMode)(Fade *fade, s32 mode);    /* 0x68 */
-    u8 pad_6C[0xB8 - 0x6C];
-    void (*setColor)(Fade *fade, s32 copy, u8 *color); /* 0xB8 */
-    u8 pad_BC[0xDC - 0xBC];
-    s32 (*begin)(Fade *fade, s32 ticker, s32 channels, s32 arg3); /* 0xDC Fade_Begin */
-    void (*stop)(void *fade);                 /* 0xE0 Fade_Stop (fade, ticker) */
-} FadeVtbl;
-
-/* The step at +0x74 is an s32, read as its low byte by Fade_Step */
-typedef union FadeStep {
-    s32 value;
-    u8 low;
-} FadeStep;
-
-/* A size saved by Fade_SaveAndSetRect as an s32 and read back by Fade_RestoreRect as a u16 */
-typedef union FadeSaved {
-    s32 value;
-    u16 half;
-} FadeSaved;
-
-struct Fade {
-    FadeVtbl *vtbl;
-    u8 pad_04[0xC - 0x4];
-    s32 parent;             /* 0x0C */
-    u8 pad_10[0x50 - 0x10];
-    PosPair position;       /* 0x50 */
-    s32 attribute;          /* 0x58 */
-    u16 x;                  /* 0x5C */
-    u16 y;                  /* 0x5E */
-    u16 width;              /* 0x60 */
-    u16 height;             /* 0x62 */
-    Rgb color;              /* 0x64 */
-    u8 pad_67;
-    s32 mask;               /* 0x68 */
-    s32 state;              /* 0x6C 0 idle, 1 fading in, 2 fading out */
-    s32 defaultChannels;    /* 0x70 used when Fade_Begin gets a negative index */
-    FadeStep step;          /* 0x74 added to the channels each tick, 10 by default */
-    s32 channels;           /* 0x78 */
-    s32 unk_7C;             /* third argument of Fade_Begin: 9 holds the color */
-    s32 remaining;          /* 0x80 ticks left */
-    s32 unk_84;             /* mask / ticks */
-    FadeSaved savedWidth;   /* 0x88 */
-    FadeSaved savedHeight;  /* 0x8C */
-    PosPair savedPosition;  /* 0x90 */
-    s32 tint;               /* 0x98 set in flashbacks: the fade stops short and the color stays */
-    s32 tintDivisor;        /* 0x9C the fade runs ticks - ticks / tintDivisor */
-};
+/* Fade, Label: include/game/scene.h */
 
 extern u8 g_fadePalette[][3];
 extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */
@@ -171,35 +95,6 @@ struct Glyph {
 
 GlyphVtbl *Glyph_GetVtbl(void);
 void *Glyph_Create(s32, u8);
-
-/*
- * Label (vtable g_labelVtbl, class word 0x11144, 0xB8 bytes): a glyph that owns a row of glyphs, one
- * per character, laid out from its position with spacing pixels between them (MenuLabel in menu.h).
- */
-typedef struct LabelVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *label, s32 font, s32 count, s32 text); /* 0x08 Label_Construct */
-    u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *label, s32 text);     /* 0x40 Label_Init */
-    u8 pad_44[0xCC - 0x44];
-    void (*setText)(void *label, s32 text);   /* 0xCC */
-    s32 unk_D0;
-    void (*setSpacing)(void *label, s32 spacing); /* 0xD4 */
-} LabelVtbl;
-
-typedef struct Label {
-    LabelVtbl *vtbl;
-    u8 pad_04[0xC - 0x4];
-    s32 parent;             /* 0x0C */
-    u8 pad_10[0xA9 - 0x10];
-    u8 count;               /* 0xA9 glyphs, the longest text */
-    u8 gapAt;               /* 0xAA when nonzero, 16 more pixels before this glyph */
-    u8 shownCount;          /* 0xAB */
-    u8 firstShown;          /* 0xAC */
-    u8 pad_AD[0xB0 - 0xAD];
-    s32 spacing;            /* 0xB0 */
-    Glyph **glyphs;         /* 0xB4 */
-} Label;
 
 LabelVtbl *Label_GetVtbl(void);
 s8 *itoa(s32 value);
@@ -388,7 +283,7 @@ u8 *Fade_GetColor(Fade *fade) {
 }
 
 /* Slot 0xE8: saves the size and position, then sets new ones (size read as u16 halves) */
-void Fade_SaveAndSetRect(Fade *fade, u16 *size, PosPair *position) {
+void Fade_SaveAndSetRect(Fade *fade, u16 *size, ScreenPoint *position) {
     if (fade->parent != 0) {
         fade->savedWidth.value = fade->width;
         fade->savedHeight.value = fade->height;
@@ -486,7 +381,7 @@ void Box_SetColor(Box *box, s32 copy, u8 *color) {
     Rgb_CopyOrAdd(box, &box->color, color, copy);
 }
 
-void Rgb_CopyOrAdd(void *box, Rgb *dst, Rgb *src, s32 copy) {
+void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy) {
     if (copy != 0) {
         *dst = *src;
         return;
@@ -497,7 +392,7 @@ void Rgb_CopyOrAdd(void *box, Rgb *dst, Rgb *src, s32 copy) {
 }
 
 /* Slot 0xBC: moves a shown box */
-void Box_SetPosition(Box *box, PosPair *position) {
+void Box_SetPosition(Box *box, ScreenPoint *position) {
     if (box->parent != 0) {
         box->position = *position;
     }
@@ -579,8 +474,8 @@ void Label_Init(Label *label, s32 text) {
 }
 
 /* Slot 0x4C: shows the label and its shown glyphs side by side under root */
-void Label_Show(Label *label, s32 root, PosPair *origin) {
-    PosPair pos;
+void Label_Show(Label *label, s32 root, ScreenPoint *origin) {
+    ScreenPoint pos;
     Glyph **p;
     s32 i;
 
@@ -645,8 +540,8 @@ void Label_SetColor(Label *label, s32 color) {
 }
 
 /* Slot 0xBC: moves a shown label and lays out every glyph from origin */
-void Label_SetPosition(Label *label, PosPair *origin) {
-    PosPair pos;
+void Label_SetPosition(Label *label, ScreenPoint *origin) {
+    ScreenPoint pos;
     Glyph **p;
     Glyph *glyph;
     s32 i;

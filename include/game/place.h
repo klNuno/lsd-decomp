@@ -3,6 +3,8 @@
 
 #include "common.h"
 #include "game/dreamsys.h"
+#include "game/stage.h"
+#include "game/scene.h"
 
 /*
  * Place: the object that runs one stage while the dreamer is in it (the "dream stage class"
@@ -37,95 +39,6 @@ typedef struct Ambience {
     u8 *colorB;   /* 0x18 RGB triple of D_800872C4, record byte 2 */
     s32 depth;    /* 0x1C D_8008730C[record byte 1]: 0x6800, 0x5000, 0x3800, 0x2000, 0x1000 or 0x800 */
 } Ambience;
-
-/* What map slot 0x114 returns for a position (Place_SpawnCell). */
-typedef struct MapCellOwnerVtbl {
-    u8 pad_00[0x84];
-    void (*unk84)();
-} MapCellOwnerVtbl;
-
-typedef struct MapCellOwner {
-    MapCellOwnerVtbl *vt;
-    u8 pad_04[0x34 - 0x04];
-    s32 unk34;    /* first argument of Sym_SpawnOrSpy */
-} MapCellOwner;
-
-typedef struct MapCell {
-    u8 pad_00[0x04];
-    MapCellOwner *owner;
-    u8 pad_08[0x14 - 0x08];
-    s32 spawned;  /* 0x14 Sym_SpawnOrSpy's result */
-} MapCell;
-
-/* The object at Place +0x14, also D_8008ABFC (Sym_InitStage) and D_8008AB4C: the map class of
-   src/game/800494B4.c (0x1E8 bytes, vtable 0x800866E8, StageMap in the W3 lane's stage.h). */
-typedef struct PlaceMapVtbl {
-    u8 pad_00[0xBC];
-    void (*unkBC)();
-    u8 pad_C0[0xC4 - 0xC0];
-    void (*unkC4)();
-    u8 pad_C8[0xCC - 0xC8];
-    void (*unkCC)();
-    u8 pad_D0[0xDC - 0xD0];
-    void (*unkDC)();
-    void (*unkE0)();
-    u8 pad_E4[0xE8 - 0xE4];
-    void (*unkE8)();                  /* (map, out position, tile record) */
-    void (*unkEC)();
-    u8 pad_F0[0x10C - 0xF0];
-    s32 (*unk10C)();                  /* position handed to the scenery tick */
-    u8 pad_110[0x114 - 0x110];
-    MapCell *(*cellAt)();             /* 0x114 (map, &chunkKey): the cell, and its key for Sym_SpawnOrSpy */
-    u8 pad_118[0x134 - 0x118];
-    void (*unk134)();
-} PlaceMapVtbl;
-
-typedef struct PlaceMap {
-    PlaceMapVtbl *vt;
-    u8 pad_04[0x1B4 - 0x04];
-    u16 unk1B4;   /* 0x1B4 the place starts once it reads 0 (Place_CheckTextureLoad); pending loads per the W3 lane */
-} PlaceMap;
-
-/* What slot 0xAC of the object at Place +0x18 returns: the fade or transition object (Place_StartFade). */
-typedef struct PlaceFaderVtbl {
-    u8 pad_00[0xD0];
-    void (*unkD0)();                  /* duration-like value: 5, 6, 10 or 30 */
-    void (*unkD4)();
-    void (*unkD8)();
-    u8 pad_DC[0xE4 - 0xDC];
-    void *(*unkE4)();
-    u8 pad_E8[0xF0 - 0xE8];
-    s32 (*unkF0)();
-} PlaceFaderVtbl;
-
-typedef struct PlaceFader {
-    PlaceFaderVtbl *vt;
-} PlaceFader;
-
-/* The object at Place +0x18 (and +0x78). */
-typedef struct PlaceViewVtbl {
-    u8 pad_00[0x54];
-    void (*unk54)();
-    u8 pad_58[0x60 - 0x58];
-    void (*unk60)();
-    void (*unk64)();
-    void (*unk68)();
-    void (*unk6C)();
-    void (*unk70)();
-    void (*unk74)();
-    u8 pad_78[0xAC - 0x78];
-    PlaceFader *(*getFader)();        /* 0xAC */
-    void (*unkB0)();
-    void (*unkB4)();                  /* 0 while the pause window is open, 1 after */
-} PlaceViewVtbl;
-
-typedef struct PlaceView {
-    PlaceViewVtbl *vt;
-    u8 pad_04[0x18 - 0x04];
-    s32 unk18;            /* 0x18 the scenery follows its changes (func_80056640) */
-    u8 pad_1C[0x24 - 0x1C];
-    s32 unk24;            /* 0x24 (unk18 - unk24) / 600 shifts the band colours (func_800549A8) */
-} PlaceView;
 
 /* Objects the pause window suspends (slots 0x4C/0x50, 0x88/0x8C) and the "Pause" text. */
 typedef struct PlaceObjVtbl {
@@ -165,7 +78,7 @@ typedef struct PlaceBaseVtbl {
 
 /* Vtable 0x80087034. Slot names from the functions stored there (src/game/80051F24.c). */
 typedef struct PlaceVtbl {
-    s32 unk00;                        /* 0x0002F230 */
+    s32 classWord;                    /* 0x0002F230 */
     void *(*delete_)();               /* 0x04 Object_Delete */
     void (*construct)();              /* 0x08 Place_Construct */
     void (*destruct)();               /* 0x0C func_80052CD8 */
@@ -211,7 +124,7 @@ typedef struct PlaceRefs {
     s32 handlerList;      /* +0x0 list the spot handlers are registered in (func_8002CC34) */
     PlaceObj *models;     /* +0x4 slot 0x80 returns a model by index (func_80056520, func_80056F5C) */
     void *font;           /* +0x8 font of the "Pause" text and of the kind 2 and 3 scenery parts */
-    PlaceView *view;      /* +0xC the view again, set by load */
+    View *view;           /* +0xC the view again, set by load */
 } PlaceRefs;
 
 typedef struct Place {
@@ -219,8 +132,8 @@ typedef struct Place {
     u8 pad_04[0x0C - 0x04];
     PlaceObj **unkC;      /* 0x0C */
     PlaceObj *unk10;      /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
-    PlaceMap *map;        /* 0x14 */
-    PlaceView *view;      /* 0x18 */
+    StageMap *map;        /* 0x14 the stage map (stage.h), also D_8008ABFC (Sym_InitStage) and D_8008AB4C */
+    View *view;           /* 0x18 the screen's view (scene.h Screen.view): its overlay is the place fader */
     s32 ticks;            /* 0x1C counted by the tick while started */
     s32 state;            /* 0x20 0 normal, 5 after load, 4 to 10 while a transition runs */
     u8 pad_24[0x34 - 0x24];

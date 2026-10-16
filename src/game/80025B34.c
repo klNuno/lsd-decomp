@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/scene.h"
 
 /*
  * The pad (vtable g_padVtbl, 0x20 bytes, made by Pad_New; main makes one for the scene):
@@ -14,42 +15,15 @@
 #define PAD_RELEASED 0x22 /* up this frame */
 
 /* Every slot of g_padVtbl past Object's (0x00 to 0x3C). */
-typedef struct PadClassVtbl {
-    s32 tag;               /* 0x00 2 */
-    void *(*delete_)();    /* 0x04 Object_Delete */
-    void (*init)();        /* 0x08 Pad_Init (pad, padInitMode, padId) */
-    void (*destroy)();     /* 0x0C Pad_Destroy */
-    u8 pad_10[0x30 - 0x10];
-    void (*notify)();      /* 0x30 Object_Notify: sends one code */
-    u8 pad_34[0x40 - 0x34];
-    void (*reset)();       /* 0x40 Pad_Reset (pad, padId) */
-    void (*read)();        /* 0x44 Pad_Read */
-    void (*send)();        /* 0x48 Pad_SendEvents */
-    void (*unk4C)();       /* 0x4C func_80025E14, empty */
-    void (*initButtons)(); /* 0x50 Pad_InitButtons */
-    void (*unk54)();       /* 0x54 func_80025E94, empty */
-} PadClassVtbl;
-
-typedef struct PadObject {
-    PadClassVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s16 padId;   /* 0x0C PadRead's argument, 0 or 1 */
-    u8 pad_0E[0x10 - 0x0E];
-    s32 held;    /* 0x10 the last PadRead */
-    s32 released; /* 0x14 bits that went up this frame */
-    s32 pressed; /* 0x18 bits that went down this frame */
-} PadObject;
-
 extern s32 PadRead(u16);
 void PadStop(void);
 ObjectVtbl *Object_GetBaseVtbl(void);
 s32 g_padCount;
 s32 Heap_Alloc(s32);
-PadClassVtbl *Pad_GetVtbl(void);
+PadVtbl *Pad_GetVtbl(void);
 extern s32 g_padButtonMasks[16];
 void PadInit(s32);
-extern PadClassVtbl g_padVtbl;
+extern PadVtbl g_padVtbl;
 
 s32 Pad_New(s32 padInitMode, s32 padId) {
     s32 pad;
@@ -63,8 +37,8 @@ s32 Pad_New(s32 padInitMode, s32 padId) {
 }
 
 /* The first pad made calls PadInit, the last one deleted PadStop (g_padCount counts them). */
-void Pad_Init(PadObject *pad, s32 padInitMode, s32 padId) {
-    PadClassVtbl *vtbl;
+void Pad_Init(Pad *pad, s32 padInitMode, s32 padId) {
+    PadVtbl *vtbl;
     s32 count;
 
     Object_GetBaseVtbl()->init(pad);
@@ -78,14 +52,14 @@ void Pad_Init(PadObject *pad, s32 padInitMode, s32 padId) {
     pad->vtbl->reset(pad, padId);
 }
 
-void Pad_Destroy(PadObject *pad) {
+void Pad_Destroy(Pad *pad) {
     if (--g_padCount == 0) {
         PadStop();
     }
     Object_GetBaseVtbl()->destroy(pad);
 }
 
-void Pad_Reset(PadObject *pad, s32 padId) {
+void Pad_Reset(Pad *pad, s32 padId) {
     s32 id = padId != 0;
     pad->padId = id;
     pad->held = 0;
@@ -94,7 +68,7 @@ void Pad_Reset(PadObject *pad, s32 padId) {
     pad->vtbl->initButtons(pad, id);
 }
 
-void Pad_Read(PadObject *pad) {
+void Pad_Read(Pad *pad) {
     s32 now;
     s32 before;
     s32 changed;
@@ -108,7 +82,7 @@ void Pad_Read(PadObject *pad) {
 }
 
 /* One code per button: released wins over pressed, pressed over held; sent from button 15 down to 0. */
-void Pad_SendEvents(PadObject *pad) {
+void Pad_SendEvents(Pad *pad) {
     void (*notify)(void *, s32);
     s32 codes[16];
     s32 *out;
@@ -169,6 +143,6 @@ void Pad_InitButtons(void) {
 void func_80025E94(void) {
 }
 
-PadClassVtbl *Pad_GetVtbl(void) {
+PadVtbl *Pad_GetVtbl(void) {
     return &g_padVtbl;
 }

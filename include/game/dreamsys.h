@@ -2,6 +2,8 @@
 #define GAME_DREAMSYS_H
 
 #include "common.h"
+#include "game/sound.h"
+#include "game/gs.h"
 
 /*
  * DreamSys: the game-state object, one instance at 0x80091530, class vtable
@@ -25,11 +27,19 @@ typedef struct MoodAccum {
     s32 count;
 } MoodAccum;
 
-/* A place in a stage, copied whole: +0x16C, flashback entries, link target. */
-typedef struct DreamPlace {
-    u8 unk0[4];
-    s16 vec[3]; /* subtracted from fixed s16[3] points by func_8005AF64 */
-} DreamPlace;
+/*
+ * A position on a stage, 10 bytes: chunk (col, row), tile in the chunk, and the offset in the
+ * tile from its centre (Stage_PlaceToWorld turns it into world coordinates). DreamSys keeps two: where the dreamer stands and the link target.
+ */
+typedef struct StagePlace {
+    s8 col;       /* 0x00 chunk column */
+    s8 row;       /* 0x01 chunk row */
+    s8 tileX;     /* 0x02 tile in the chunk, 0 to 19 */
+    s8 tileY;     /* 0x03 */
+    s16 x;        /* 0x04 offset in the tile, from its centre (0x400) */
+    s16 y;        /* 0x06 height */
+    s16 z;        /* 0x08 */
+} StagePlace;
 
 /* The cinematic of the day, as DreamSys_GetCinematic returns it: {category, variant}. */
 typedef struct CineRef {
@@ -44,7 +54,7 @@ typedef struct DreamRotation {
 /* One saved flashback, 0x24 bytes, 10 at DreamSys +0x470. */
 typedef struct Flashback {
     s32 stage;
-    DreamPlace place;
+    StagePlace place;
     union {
         DreamRotation rot;
         u8 bytes[12];
@@ -62,40 +72,11 @@ typedef struct DreamCamera {
     u32 unk24;
 } DreamCamera;
 
-/* The 0x28-byte block +0x14 points to at +0x44, saved at +0x8E0. */
-typedef struct DreamBodyExtra {
-    s32 unk[10];
-} DreamBodyExtra;
-
-/* The 0x50-byte block at +0x14, saved at +0x890 by func_8005B904. */
-typedef struct DreamBody {
-    s32 unk0;
-    u8 pad_04[0x18 - 0x04];
-    s32 unk18;
-    s32 unk1C;
-    u8 pad_20[0x44 - 0x20];
-    DreamBodyExtra *unk44;
-    u8 pad_48[0x50 - 0x48];
-} DreamBody;
-
 /* The object at +0x28: only its u16 at +0x36 is read. */
 typedef struct DreamSysObj28 {
     u8 pad_00[0x36];
     u16 unk36;
 } DreamSysObj28;
-
-/* The object at +0x58 (sprite or sound player, unknown): slots used here. */
-typedef struct DreamSysObj58Vtbl {
-    u8 pad_00[0x80];
-    s32 (*unk80)(struct DreamSysObj58 *, s32, s32, s32);
-    void (*unk84)(struct DreamSysObj58 *, s32);
-    u8 pad_88[0x9C - 0x88];
-    void (*unk9C)(struct DreamSysObj58 *, s32);
-} DreamSysObj58Vtbl;
-
-typedef struct DreamSysObj58 {
-    DreamSysObj58Vtbl *vt;
-} DreamSysObj58;
 
 /* What player slot 0x11C returns. */
 typedef struct DreamPlayerInfoSub {
@@ -111,7 +92,7 @@ typedef struct DreamPlayerInfo {
 /* The player object at +0x4C (discoveries: flashbacks need it): slots used here. */
 typedef struct DreamPlayerVtbl {
     u8 pad_00[0xD4];
-    DreamPlace *(*unkD4)(struct DreamPlayer *, s32 **);
+    StagePlace *(*unkD4)(struct DreamPlayer *, s32 **);
     u8 pad_D8[0xE8 - 0xD8];
     void (*unkE8)(struct DreamPlayer *, void *, void *);
     u8 pad_EC[0xF0 - 0xEC];
@@ -126,15 +107,40 @@ typedef struct DreamPlayer {
     DreamPlayerVtbl *vt;
 } DreamPlayer;
 
+/* The 0x700-byte block the memory card saves and loads: DreamSys +0x178 to +0x878 (DreamSys_GetSaveBlock,
+   SaveMenu_Save, menu.h Menu +0xBC). Offsets below are from the block; add 0x178 for DreamSys. */
+typedef struct SaveBlock {
+    s32 magic;              /* 0x000 "J01" (g_saveMagic) */
+    s32 year;               /* 0x004 */
+    s32 day;                /* 0x008 0 to 364 */
+    s32 unlockScore;        /* 0x00C navScore + instanceScore */
+    s32 navScore;           /* 0x010 Nav_CalcScore */
+    s32 instanceScore;      /* 0x014 */
+    MoodPoint graph[365];   /* 0x018 one point per day */
+    u8 pad_2F2[0x2F4 - 0x2F2];
+    s32 flashbackCount;     /* 0x2F4 */
+    Flashback flashbacks[10]; /* 0x2F8 */
+    u8 unk460;              /* 0x460 */
+    u8 pad_461[0x467 - 0x461];
+    u8 reelSeen;            /* 0x467 the secret video reel was played */
+    u8 navFlags[32];        /* 0x468 30 navigation flags (g_navFlags) */
+    s32 dynamicLinkCount;   /* 0x488 g_dynamicLinkCount */
+    u8 pad_48C[0x500 - 0x48C];
+    s32 shake;              /* 0x500 SHAKE option */
+    s32 unk504;
+    s32 unk508;
+    u8 unk50C[500];
+} SaveBlock;
+
 /* g_dreamSysVtbl. Slots named after their function; slot 0 holds 0x1F34. */
 typedef struct DreamSysVtbl {
     s32 unk0;                                                        /* 0x1F34 */
     void (*unk4)();                                                  /* 0x004 Object_Delete */
     void (*init)(struct DreamSys *, void **, s32, s32);              /* 0x008 DreamSys_Init */
     void (*unkC)();                                                  /* 0x00C SceneNode_Destroy */
-    void (*unk10)(struct DreamSys *, void *);                        /* 0x010 func_800570B4 */
-    void (*unk14)(struct DreamSys *, void *);                        /* 0x014 func_80057130 */
-    void (*unk18)();                                                 /* 0x018 func_800571A8 */
+    void (*watch)(struct DreamSys *, void *);                        /* 0x010 func_800570B4: Actor watch, keeps a watched map at +0x4C */
+    void (*unwatch)(struct DreamSys *, void *);                      /* 0x014 func_80057130: Actor unwatch */
+    void (*unwatchAll)();                                            /* 0x018 func_800571A8: Actor unwatch all */
     void (*unk1C)();                                                 /* 0x01C Object_NextWatched */
     void (*unk20)();                                                 /* 0x020 Object_AddWatcher */
     void (*unk24)();                                                 /* 0x024 Object_RemoveWatcher */
@@ -174,8 +180,8 @@ typedef struct DreamSysVtbl {
     void (*unkAC)();                                                 /* 0x0AC SceneNode_RayTestBoxes */
     void (*unkB0)();                                                 /* 0x0B0 0x00000000 */
     void (*unkB4)();                                                 /* 0x0B4 func_8001E4A4 */
-    void (*unkB8)(struct DreamSys *, void *);                        /* 0x0B8 Actor_SetPos */
-    void (*unkBC)(struct DreamSys *, s32 *);                         /* 0x0BC Actor_MovePos */
+    void (*setPosition)(struct DreamSys *, void *);                  /* 0x0B8 Actor_SetPos */
+    void (*move)(struct DreamSys *, s32 *);                          /* 0x0BC Actor_MovePos */
     void (*unkC0)();                                                 /* 0x0C0 func_80057444 */
     void (*unkC4)();                                                 /* 0x0C4 func_8005748C */
     void (*unkC8)();                                                 /* 0x0C8 func_800574C4 */
@@ -192,7 +198,7 @@ typedef struct DreamSysVtbl {
     void (*unkF4)();                                                 /* 0x0F4 func_80059148 */
     void (*unkF8)();                                                 /* 0x0F8 func_800591B4 */
     void (*unkFC)();                                                 /* 0x0FC func_80059310 */
-    void (*unk100)();                                                /* 0x100 func_8005931C */
+    s32 (*unk100)();                                                 /* 0x100 func_8005931C, returns DreamSys +0x74 */
     s32 (*swapTimeLimit)(struct DreamSys *, s32);                    /* 0x104 DreamSys_SwapTimeLimit */
     s32 (*getElapsedSeconds)(struct DreamSys *);                     /* 0x108 DreamSys_GetElapsedSeconds */
     void (*unk10C)();                                                /* 0x10C func_8005937C */
@@ -236,7 +242,7 @@ typedef struct DreamSysVtbl {
     s32 (*advanceDay)(struct DreamSys *);                            /* 0x1A4 DreamSys_AdvanceDay */
     void (*clearNeverSaved)(struct DreamSys *);                      /* 0x1A8 DreamSys_ClearNeverSaved */
     s32 (*isNeverSaved)(struct DreamSys *);                          /* 0x1AC DreamSys_IsNeverSaved */
-    void *(*getSaveBlock)(struct DreamSys *, s32 *);                 /* 0x1B0 DreamSys_GetSaveBlock */
+    SaveBlock *(*getSaveBlock)(struct DreamSys *, s32 *);            /* 0x1B0 DreamSys_GetSaveBlock */
     s32 (*startDay)(struct DreamSys *);                              /* 0x1B4 DreamSys_StartDay */
     s32 (*endDay)(struct DreamSys *, s32);                           /* 0x1B8 DreamSys_EndDay */
     CineRef (*getCinematic)(struct DreamSys *);                      /* 0x1BC DreamSys_GetCinematic */
@@ -256,7 +262,7 @@ typedef struct DreamSysVtbl {
     void (*logChunkMood)(struct DreamSys *, s8 *);                   /* 0x1F4 DreamSys_LogChunkMood */
     void (*logEntityMood)(struct DreamSys *, s32);                   /* 0x1F8 DreamSys_LogEntityMood */
     void (*computeDayPoint)(struct DreamSys *, struct MoodPoint *);  /* 0x1FC DreamSys_ComputeDayPoint */
-    void (*getDreamColor)(struct DreamSys *);                        /* 0x200 DreamSys_GetDreamColor */
+    s32 (*getDreamColor)(struct DreamSys *);                         /* 0x200 DreamSys_GetDreamColor: colour index 0 to 7 */
     void (*moodReset)(struct DreamSys *, struct MoodAccum *);        /* 0x204 Mood_Reset */
     void (*moodLog)(struct DreamSys *, struct MoodAccum *, struct MoodPoint *); /* 0x208 Mood_Log */
     void (*moodResolve)(struct DreamSys *, struct MoodAccum *, struct MoodPoint *); /* 0x20C Mood_Resolve */
@@ -275,9 +281,9 @@ typedef struct DreamSys {
     s32 unkC;
     u8 pad_10[0x14 - 0x10];
     union {
-        DreamBody *body;
+        Coord2 *coord;
         u8 *bytes;
-    } unk14;
+    } pos;                  /* 0x14 its GsCOORDINATE2 (gs.h), as for entities */
     u8 pad_18[0x24 - 0x18];
     u32 timer;              /* ticks of the dream, 15 per second (DreamSys_TickTimer) */
     DreamSysObj28 *unk28;
@@ -286,7 +292,7 @@ typedef struct DreamSys {
     u8 pad_48[0x4C - 0x48];
     DreamPlayer *player;
     u8 pad_50[0x58 - 0x50];
-    DreamSysObj58 *unk58;
+    SoundBank *soundBank;      /* 0x58 the model's sound bank (sound.h, Model +0x58), DreamSys_New's second argument */
     union {
         DreamCamera *obj;
         u8 *bytes;
@@ -341,43 +347,22 @@ typedef struct DreamSys {
             s16 variant;
         } id;
     } cinematic;
-    DreamPlace place;       /* where the player stands or arrives */
+    StagePlace place;       /* where the player stands or arrives */
     u8 pad_176[0x178 - 0x176];
-    /* The 0x700-byte save block starts here. */
-    s32 magic;              /* "J01" (g_saveMagic) */
-    s32 year;
-    s32 day;                /* 0 to 364 */
-    s32 unlockScore;        /* navScore + instanceScore */
-    s32 navScore;           /* Nav_CalcScore */
-    s32 instanceScore;
-    MoodPoint graph[365];   /* one point per day */
-    u8 pad_46A[0x46C - 0x46A];
-    s32 flashbackCount;
-    Flashback flashbacks[10];
-    u8 unk5D8;
-    u8 pad_5D9[0x5DF - 0x5D9];
-    u8 reelSeen;            /* the secret video reel was played */
-    u8 navFlags[32];        /* 30 navigation flags (g_navFlags) */
-    s32 dynamicLinkCount;   /* g_dynamicLinkCount */
-    u8 pad_604[0x678 - 0x604];
-    s32 shake;              /* SHAKE option */
-    s32 unk67C;
-    s32 unk680;
-    u8 unk684[500];
-    /* End of the save block. */
+    SaveBlock save;         /* 0x178 the 0x700 bytes the memory card saves (DreamSys_GetSaveBlock) */
     s32 neverSaved;         /* set by a new game, cleared by a save or a load */
     s32 nextFlashback;      /* playback index into flashbacks */
     s32 *unk880;
     u8 *unk884;
     u8 *unk888;
     s32 savedDay;           /* day at the start of the dream (DreamSys_StartDay) */
-    DreamBody bodyCopy;     /* func_8005B904 */
-    DreamBodyExtra bodyExtraCopy;
+    Coord2 coordCopy;       /* func_8005B904 saves pos and its param, func_8005B990 restores them */
+    Coord2Param paramCopy;
     s32 unk908;
     s32 unk90C;
     s32 (*linkStep)(struct DreamSys *); /* one of g_linkSteps, run until it returns 1 */
     s32 linkStepTick;
-    DreamPlace linkTarget;
+    StagePlace linkTarget;
     u8 pad_922[0x924 - 0x922];
     s32 unk924;
 } DreamSys;

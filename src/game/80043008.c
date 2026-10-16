@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/scene.h"
 
 /*
  * File loaders: TIX texture sets with their palette fades, TMD models, TOD animations, MOM and
@@ -13,22 +14,6 @@ typedef struct TixHeaderBytes {
 } TixHeaderBytes;
 
 /* The TIM image class (Tim_New, vtable 0x8006E558, 0x50 bytes) as this unit uses it */
-typedef struct TimObjectVtbl {
-    u8 pad_00[0x78];
-    void (*upload)();          /* 0x78 Tim_Upload: pixels and CLUT to VRAM */
-    u8 pad_7C[0x9C - 0x7C];
-    void (*getInfo)();         /* 0x9C Tim_GetInfo: GsGetTimInfo(data + 4, image) */
-} TimObjectVtbl;
-
-typedef struct TimObject {
-    TimObjectVtbl *vtbl;
-    u8 pad_04[0x10 - 0x04];
-    u8 *data;                  /* 0x10 */
-    s32 size;                  /* 0x14 */
-    u8 pad_18[0x4C - 0x18];
-    s32 fade;                  /* 0x4C address of the TixFade of its palette row */
-} TimObject;
-
 /* Psy-Q GsIMAGE, as slot 0x9C of a TIM fills it (0x1C bytes, 4 more reserved) */
 typedef struct GsImage {
     u32 pmode;
@@ -44,43 +29,6 @@ typedef struct GsImage {
     u32 *clut;
     u8 pad_1C[0x20 - 0x1C];
 } GsImage;
-
-/* The GPU object of Display_GetCurrent (src/game/800206E0.c) */
-typedef struct GfxVtbl {
-    u8 pad_00[0x58];
-    void (*loadImage)();       /* 0x58 (self, rect, pixels): Tim_Upload uploads TIMs with it */
-    u8 pad_5C[0x78 - 0x5C];
-    void (*unk_78)();
-} GfxVtbl;
-
-typedef struct GfxObject {
-    GfxVtbl *vtbl;
-} GfxObject;
-
-/* The stream class of Stream_New as the movie uses it */
-typedef struct MovieStreamVtbl {
-    s32 unk_00;
-    struct MovieStream *(*delete_)(); /* 0x04 */
-    u8 pad_08[0x40 - 0x08];
-    void (*setBuffer)();       /* 0x40 (self, buffer, 0x12000) */
-    s32 (*open)();             /* 0x44 (self, source, 100), 0 on success */
-    void (*unk_48)();          /* called by Movie_Stop */
-    u8 pad_4C[0x50 - 0x4C];
-    void (*unk_50)();          /* (self, 1, movie->unk_5C) */
-    void (*unk_54)();          /* called once getFrame reports the end */
-    void (*unk_58)();          /* called by Movie_Start */
-    u8 pad_5C[0x64 - 0x5C];
-    void (*unk_64)();          /* called when the last loop ends */
-    u8 pad_68[0x6C - 0x68];
-    s32 (*getFrame)();         /* 0x6C (self, &frame, &fresh, 0x800000): 0 none, < 0 the last one */
-    void (*releaseFrame)();    /* 0x70 (self, frame) */
-    u8 pad_74[0x7C - 0x74];
-    void (*setCallback)();     /* 0x7C (self, function, argument) */
-} MovieStreamVtbl;
-
-typedef struct MovieStream {
-    MovieStreamVtbl *vtbl;
-} MovieStream;
 
 /* Movie as Movie_OnSlice reads it: the two rects by u16 halves */
 typedef struct MovieSliceView {
@@ -146,8 +94,8 @@ ObjectVtbl *SceneNode_GetVtbl(void);
 ObjectVtbl *Object_GetBaseVtbl(void);
 extern void *ModelObject_Create(s32 tmdObject);
 s32 Tim_New(s32 path);
-GfxObject *Display_GetCurrent(void);
-MovieStream *Stream_New(void *arg0, s32 arg1, s32 arg2);
+Display *Display_GetCurrent(void);
+Stream *Stream_New(void *arg0, s32 arg1, s32 arg2);
 extern s32 DrawSync(s32 mode);
 extern void DecDCTReset(s32 mode);
 extern void DecDCToutCallback(void (*func)(void));
@@ -201,7 +149,7 @@ s32 g_movieRestartCounter;                /* calls of Movie_OnStopped since the 
 s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette index */
 s32 g_mdecReady;                /* 1 once DecDCTReset ran */
 s16 g_clutFadeShift;                /* 3: a palette fade has 1 << this rows */
-extern ColorRGB g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
+extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
 extern u8 D_8008A944[];
 
 /* ---- TIX texture set ---- */
@@ -355,7 +303,7 @@ void Tix_SetFadeShift(Tix *tix, s32 palette, u16 shift) {
     fade->rows = 1 << fade->shift;
 }
 
-void Tix_SetFadeColorAll(Tix *tix, ColorRGB *color) {
+void Tix_SetFadeColorAll(Tix *tix, Color3 *color) {
     s32 i;
 
     File_LockBackend();
@@ -365,7 +313,7 @@ void Tix_SetFadeColorAll(Tix *tix, ColorRGB *color) {
     File_UnlockBackend();
 }
 
-void Tix_SetFadeColor(Tix *tix, s32 palette, ColorRGB *color) {
+void Tix_SetFadeColor(Tix *tix, s32 palette, Color3 *color) {
     TixFade *fade;
 
     File_LockBackend();
@@ -586,23 +534,23 @@ void TimPack_Destroy(TimPack *timPack) {
  */
 void TimPack_OnLoaded(TimPack *timPack) {
     GsImage info;
-    TimObject **tims;
-    TimObject *tim;
-    TimObject **slot;
+    Tim **tims;
+    Tim *tim;
+    Tim **slot;
     s32 *offset;
     s32 i;
 
     if ((timPack->flags & 0x200) || timPack->data.words != NULL) {
         timPack->count = *timPack->data.words;
-        tims = (TimObject **)Heap_Alloc(*timPack->data.words * 4);
+        tims = (Tim **)Heap_Alloc(*timPack->data.words * 4);
         timPack->tims = tims;
         if (tims != NULL) {
             slot = tims;
             offset = timPack->data.words + 1;
             for (i = 0; i < timPack->count; i++) {
-                tim = (TimObject *)Tim_New(0);
+                tim = (Tim *)Tim_New(0);
                 *slot = tim;
-                tim->data = (u8 *)timPack->data.words + *offset;
+                tim->data = (u32 *)((u8 *)timPack->data.words + *offset);
                 (*slot)->size = 0;
                 offset++;
                 (*slot)->vtbl->getInfo(*slot, &info);
@@ -617,8 +565,8 @@ void TimPack_OnLoaded(TimPack *timPack) {
 
 void TimPack_UploadAll(TimPack *timPack) {
     s32 i;
-    TimObject **p;
-    TimObject *tim;
+    Tim **p;
+    Tim *tim;
     void (*upload)(void *tim);
 
     p = timPack->tims;
@@ -852,7 +800,7 @@ void Bg_SetScale(Bg *bg, s32 set, s16 *fractions) {
     }
 }
 
-void Bg_SetColor(Bg *bg, s32 set, ColorRGB *color) {
+void Bg_SetColor(Bg *bg, s32 set, Color3 *color) {
     if (set != 0) {
         bg->bg.color = *color;
     }
@@ -1319,7 +1267,7 @@ s32 Movie_Create(s32 rect, s32 streamArg, s32 skipAlloc) {
 
 /* Slot 0x08: the stream, the buffers, the MDEC callback; 0 on success */
 s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
-    MovieStream *stream;
+    Stream *stream;
 
     Object_GetBaseVtbl()->init(movie);
     movie->vtbl = Movie_GetVtbl();
@@ -1332,7 +1280,7 @@ s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
             }
             g_mdecReady = 1;
             DecDCToutCallback(Movie_OnMdecOut);
-            movie->stream->vtbl->setBuffer(movie->stream, movie->streamBuffer, 0x12000);
+            movie->stream->vtbl->setRing(movie->stream, movie->streamBuffer, 0x12000);
             movie->unk_50 = 0;
             movie->vtbl->setUnk68(movie, 1);
             return 0;
@@ -1343,7 +1291,7 @@ s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
 }
 
 void Movie_Destroy(Movie *movie) {
-    MovieStream *stream = movie->stream;
+    Stream *stream = movie->stream;
 
     movie->stream = stream->vtbl->delete_(stream);
     DecDCToutCallback(0);
@@ -1408,8 +1356,8 @@ void Movie_FreeBuffers(Movie *movie) {
 
 /* Slot 0x40: opens source on the stream and makes this the playing movie; 1 when it cannot */
 s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
-    MovieStream *stream;
-    GfxObject *gfx;
+    Stream *stream;
+    Display *gfx;
 
     if (g_activeMovie == NULL) {
         if (movie->unk_68 != 0) {
@@ -1427,7 +1375,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
             movie->repeat = repeat;
             movie->loops = loops;
             gfx = Display_GetCurrent();
-            gfx->vtbl->unk_78(gfx, D_8008A944, &movie->frame);
+            gfx->vtbl->clearImage(gfx, D_8008A944, &movie->frame);
             return 0;
         }
         return 1;
@@ -1442,7 +1390,7 @@ void func_800458AC(Movie *movie) {
 /* Slot 0x44: restarts the playing movie, with Movie_OnStreamCallback as the stream callback */
 void Movie_Start(Movie *movie) {
     Movie *active = g_activeMovie;
-    MovieStream *stream;
+    Stream *stream;
 
     if (active == movie) {
         stream = active->stream;
@@ -1454,7 +1402,7 @@ void Movie_Start(Movie *movie) {
         stream->vtbl->setCallback(stream, Movie_OnStreamCallback, active);
         stream = active->stream;
         active->unk_64 = 0;
-        stream->vtbl->unk_58(stream);
+        stream->vtbl->rewind(stream);
     }
 }
 
@@ -1468,10 +1416,10 @@ s32 Movie_Update(Movie *movie) {
 
     if (active == movie && (active->unk_50 != 0 || active->unk_64 != 0)) {
         if (active->unk_50 != 0) {
-            active->stream->vtbl->unk_50(active->stream, 1, active->unk_5C);
+            active->stream->vtbl->start(active->stream, 1, active->unk_5C);
             if (active->unk_50 < 0) {
                 if (active->loops == 0 || --active->loops == 0) {
-                    active->stream->vtbl->unk_64(active->stream);
+                    active->stream->vtbl->mute(active->stream);
                 }
             }
             movie->unk_50 = 0;
@@ -1485,13 +1433,13 @@ s32 Movie_Update(Movie *movie) {
 /* Slot 0x4C */
 void Movie_Stop(Movie *movie) {
     Movie *active = g_activeMovie;
-    MovieStream *stream;
+    Stream *stream;
 
     if (active == movie) {
         stream = active->stream;
         active->streamEnded = 1;
         active->repeat = 0;
-        stream->vtbl->unk_48(stream);
+        stream->vtbl->close(stream);
         active->stopped = 1;
         if (active->unk_64 == 0) {
             stream = active->stream;
@@ -1526,7 +1474,7 @@ s32 Movie_ReadFrame(Movie *movie) {
             movie->stream->vtbl->releaseFrame(movie->stream, frame);
             if (status < 0) {
                 movie->streamEnded = 1;
-                movie->stream->vtbl->unk_54(movie->stream);
+                movie->stream->vtbl->stop(movie->stream);
             }
             return 0;
         }
@@ -1539,7 +1487,7 @@ void func_80045BC0(void) {
 
 /* Slot 0x60, from the MDEC callback: loads the slice into VRAM and starts the next one */
 void Movie_OnSlice(MovieSliceView *movie) {
-    GfxObject *gfx;
+    Display *gfx;
     u16 x;
 
     gfx = Display_GetCurrent();

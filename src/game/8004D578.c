@@ -116,7 +116,7 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001149C);
 void Menu_Init(Menu *menu, DreamSys *dreamSys) {
     MenuScreen_GetVtbl()->init(menu, g_mainMenuDesc, "ETC\\ETCSE", 0);
     menu->vtbl = Menu_GetVtbl();
-    menu->sound->vt->unk9C(menu->sound, -1);
+    menu->sound->vtbl->setOctave(menu->sound, -1);
     menu->dreamSys = dreamSys;
     menu->card = 0;
     menu->saveBlock = dreamSys->vtbl->getSaveBlock(dreamSys, &menu->saveSize);
@@ -126,7 +126,7 @@ void Menu_Init(Menu *menu, DreamSys *dreamSys) {
 }
 
 /* FLASHBACK is drawn only with an unlock score above 9,999,999 and one flashback kept. */
-void Menu_UpdateFlashbackItem(Menu *menu, MenuDesc *desc, DreamSys *dreamSys) {
+void Menu_UpdateFlashbackItem(Menu *menu, MenuDef *desc, DreamSys *dreamSys) {
     SaveBlock *save = menu->saveBlock;
     s32 hidden = 1;
     if (save->unlockScore > 9999999) {
@@ -180,7 +180,7 @@ void Menu_End(Menu *menu) {
     u32 i;
 
     for (i = 0; i < 2; i++) {
-        menu->env->display->vt->clearImage(menu->env->display, menu->endColor, &g_menuFillRects[i]);
+        menu->env->display->vtbl->clearImage(menu->env->display, menu->endColor, &g_menuFillRects[i]);
     }
 }
 
@@ -195,7 +195,7 @@ void Menu_SetState(Menu *menu, s32 state) {
     }
     if (state == 0xA) {
         menu->vtbl->onCross(menu);
-        menu->vtbl->selectItem(menu, menu->desc->unk8, 1);
+        menu->vtbl->selectItem(menu, menu->desc->initialItem, 1);
         menu->vtbl->onCircle(menu);
     }
 }
@@ -241,7 +241,7 @@ void Menu_Close(Menu *menu) {
 }
 
 /* Menu slot 0xD8 (setMenu): makes the title label; a game never saved gets a blank comment and no letter. */
-void Menu_CreateTitleLabel(Menu *menu, MenuDesc *desc) {
+void Menu_CreateTitleLabel(Menu *menu, MenuDef *desc) {
     s32 size;
     s32 label;
     s32 text;
@@ -255,30 +255,30 @@ void Menu_CreateTitleLabel(Menu *menu, MenuDesc *desc) {
         text = Heap_Alloc(size);
         Text_Decode((s8 *)text, (u8 *)g_cardTitle);
         label = Label_Create(desc->font, size, text);
-        menu->titleLabel = (MenuLabel *)label;
-        menu->titleLabel->unkAB = 8;
-        menu->titleLabel->unkAC = 4;
-        menu->titleLabel->unkAA = 9;
+        menu->titleLabel = (Label *)label;
+        menu->titleLabel->shownCount = 8;
+        menu->titleLabel->firstShown = 4;
+        menu->titleLabel->gapAt = 9;
         Heap_Free(text);
     }
 }
 
 /* Menu slot 0xDC (freeMenu) */
 void Menu_FreeMenu(Menu *menu) {
-    MenuLabel *label;
+    Label *label;
 
     label = menu->titleLabel;
-    label->vt->delete_(label);
+    label->vtbl->delete_(label);
     MenuScreen_GetVtbl()->freeMenu(menu);
 }
 
 /* Menu slot 0xE0 (showItems) */
 void Menu_ShowItems(Menu *menu, s32 root) {
-    MenuLabel *label;
+    Label *label;
 
     MenuScreen_GetVtbl()->showItems(menu, root);
     label = menu->titleLabel;
-    label->vt->draw(label, root, &D_8008A9B4);
+    label->vtbl->show(label, root, &D_8008A9B4);
 }
 
 /*
@@ -311,7 +311,7 @@ void Menu_SetItemsColor(Menu *menu, MenuRgb *color) {
     if (++g_titleBlinkTick >= 0x101) {
         g_titleBlinkTick = 0;
     }
-    menu->titleLabel->vt->setColor(menu->titleLabel, &blink);
+    menu->titleLabel->vtbl->setColor(menu->titleLabel, &blink);
 }
 
 /*
@@ -325,9 +325,9 @@ void Menu_RefreshFromSave(Menu *menu) {
     s32 selected;
 
     selected = menu->selected;
-    text = Heap_Alloc(menu->titleLabel->capacity);
+    text = Heap_Alloc(menu->titleLabel->count);
     Text_Decode((s8 *)text, (u8 *)g_cardTitle);
-    menu->titleLabel->vt->setText(menu->titleLabel, text);
+    menu->titleLabel->vtbl->setText(menu->titleLabel, text);
     Heap_Free(text);
     Menu_UpdateFlashbackItem(menu, menu->desc, menu->dreamSys);
     menu->vtbl->showItems(menu, menu->root);
@@ -864,7 +864,7 @@ s32 Card_WaitAnyEvent(s32 *events, s32 count) {
 }
 
 /* Card slot 0x6C: the file name parts, the menu's pad, clock, root and sounds. */
-void Card_Open(Card *card, char *prefix, char **suffixes, void *pad, void *clock, s32 root, MenuSound *sound) {
+void Card_Open(Card *card, char *prefix, char **suffixes, void *pad, void *clock, s32 root, SoundBank *sound) {
     card->prefix = prefix;
     card->suffixes = suffixes;
     card->titles = 0;
@@ -1124,7 +1124,7 @@ void Card_ShowMessage(Card *card, s32 state) {
         message = ScreenSprite_Create(picture, D_80086EC4, 0);
         card->message = message;
         picture->vt->delete_(picture);
-        message->vt->draw(message, card->root, g_cardMessagePos);
+        message->vt->attach(message, card->root, g_cardMessagePos);
     }
 }
 
@@ -1149,9 +1149,9 @@ void Card_OnPad(Card *card, void *sender, s32 padCode) {
 
 /* Card slot 0x8C */
 void Card_PlaySound(Card *card, s32 sound) {
-    MenuSound *bank = card->sound;
+    SoundBank *bank = card->sound;
     if (bank != NULL) {
-        bank->vt->play(bank, sound, 0x7F, 0x7F);
+        bank->vtbl->playTone(bank, sound, 0x7F, 0x7F);
     }
 }
 

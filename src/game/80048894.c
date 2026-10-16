@@ -9,7 +9,7 @@
  * StageMap slot): a file object of src/game/80025F7C.c with a 0xB358-byte buffer that receives a
  * stage's STGxx\Mxxx.LBD chunk file (slot 0x78), then, when the header says so, a second read of
  * the chunk's entity part into its own heap block (slot 0x80). include/game/stage.h holds the
- * part of it StageMap reads (MapChunk); MapChunkFile below is the whole object.
+ * part of it StageMap reads (MapChunk); MapChunk below is the whole object.
  *
  * The path table g_pathTable: 0x1C-byte path entries, 560 counted by File_GetPathTable (sound banks, then per stage
  * TEXA to TEXD.TIX, BGA to BGE.SEQ and the Mxxx.LBD chunks from g_stageFirstPath[stage]), then the
@@ -28,64 +28,7 @@ extern s32 rand(void);
 void *File_GetPathTable(s32 *count);
 s32 Heap_Free(s32);
 
-/* The header of a chunk file (STGxx\Mxxx.LBD) as this unit reads it */
-typedef struct ChunkFileHeader {
-    u8 pad_00[2];
-    u16 hasEntities;         /* 0x02 non-zero: the file has an entity part (slot 0x80) */
-    s32 modelsOffset;        /* 0x04 MapChunkData.modelsOffset in include/game/stage.h */
-    s32 modelsSize;          /* 0x08 */
-    u8 pad_0C[0x10 - 0x0C];
-    s32 entitiesOffset;      /* 0x10 file offset of the entity part */
-    s32 entitiesSize;        /* 0x14 */
-} ChunkFileHeader;
-
-typedef struct MapChunkFile MapChunkFile;
-
-/* g_mapChunkVtbl: the file class slots (FileVtbl in include/game/loader.h), then the chunk's own */
-typedef struct MapChunkFileVtbl {
-    s32 unk_00;              /* 0x903 */
-    void *(*delete_)();      /* 0x04 File_Delete */
-    void (*init)();          /* 0x08 MapChunk_Init */
-    void (*destroy)();       /* 0x0C MapChunk_Destroy */
-    u8 pad_10[0x44 - 0x10];  /* Object methods, then 0 */
-    void (*open)();          /* 0x44 (self, path, 1, 0) */
-    void (*close)();         /* 0x48 */
-    void (*seek)();          /* 0x4C (self, offset, whence) */
-    u8 pad_50[0x54 - 0x50];
-    void (*read)();          /* 0x54 (self, buffer, size) */
-    u8 pad_58[0x5C - 0x58];
-    void (*freeData)();      /* 0x5C File_FreeData */
-    void (*unk_60)();        /* 0x60 func_80026C80, empty */
-    void (*onLoaded)();      /* 0x64 MapChunk_OnLoaded */
-    u8 pad_68[0x74 - 0x68];
-    void (*unload)();        /* 0x74 MapChunk_Unload, replaces the file class cancel slot */
-    void (*load)();          /* 0x78 MapChunk_Load (chunk, path) */
-    void (*clear)();         /* 0x7C MapChunk_Clear */
-    void (*loadEntities)();  /* 0x80 MapChunk_LoadEntities */
-    void (*freeEntities)();  /* 0x84 MapChunk_FreeEntities */
-    void (*setLoadEntities)(); /* 0x88 MapChunk_SetLoadEntities (chunk, flag) */
-} MapChunkFileVtbl;
-
-struct MapChunkFile {
-    MapChunkFileVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    ChunkFileHeader *data;   /* 0x10 the 0xB358-byte chunk buffer */
-    s32 size;                /* 0x14 0xB358 once the buffer exists */
-    u8 pad_18[0x24 - 0x18];
-    s32 flags;               /* 0x24 done file requests: 0x80 read */
-    u8 pad_28[0x2A - 0x28];
-    u16 state;               /* 0x2A 9 reading the chunk, 10 reading its entity part, 0 idle */
-    s16 loaded;              /* 0x2C */
-    s16 entitiesLoaded;      /* 0x2E StageMap_PollLoads clears it and sends map message 7 */
-    s16 index;               /* 0x30 chunk index in the stage grid, -1 when empty */
-    s16 id;                  /* 0x32 */
-    s32 entities;            /* 0x34 the entity part (heap), handed to Sym_SpawnOrSpy by Place_SpawnCell */
-    s32 loadEntities;        /* 0x38 read the entity part as soon as the chunk is in */
-};
-
-MapChunkFileVtbl *MapChunk_GetVtbl(void);
+MapChunkVtbl *MapChunk_GetVtbl(void);
 FileVtbl *File_GetBackendVtbl(void);
 s32 Heap_Alloc(s32 size);
 extern s16 g_stageFirstPath[];     /* first path of each stage in the path table */
@@ -108,7 +51,7 @@ s32 Rand_SeedAndNext();
 u8 *Stage_GetTrackPaths(s32 stage);
 u8 *Stage_GetTexturePaths(s32 stage);
 u8 *Music_GetBanks(void);
-extern u8 g_mapChunkVtbl[];      /* MapChunkFileVtbl */
+extern u8 g_mapChunkVtbl[];      /* MapChunkVtbl */
 void *g_rootDir;            /* "CDI\\", the root directory of every path */
 extern u8 g_musicBanks[];      /* the 7 sound bank paths, SND\AMBIENT to SND\STANDERD */
 extern s32 g_effectsBank[];     /* points to "SND\\SE" */
@@ -125,7 +68,7 @@ s32 MapChunk_New(void) {
 }
 
 /* Slot 0x08 */
-void MapChunk_Init(MapChunkFile *chunk) {
+void MapChunk_Init(MapChunk *chunk) {
     File_GetBackendVtbl()->init(chunk);
     chunk->vtbl = MapChunk_GetVtbl();
     chunk->index = -1;
@@ -141,13 +84,13 @@ void MapChunk_Init(MapChunkFile *chunk) {
 }
 
 /* Slot 0x0C */
-void MapChunk_Destroy(MapChunkFile *chunk) {
+void MapChunk_Destroy(MapChunk *chunk) {
     chunk->vtbl->freeEntities(chunk);
     File_GetBackendVtbl()->destroy(chunk);
 }
 
 /* Slot 0x64, after each finished file request */
-void MapChunk_OnLoaded(MapChunkFile *chunk) {
+void MapChunk_OnLoaded(MapChunk *chunk) {
     u16 state;
 
     state = chunk->state;
@@ -174,12 +117,12 @@ void MapChunk_OnLoaded(MapChunkFile *chunk) {
 void MapChunk_Unload(MapChunk *chunk) {
     File_GetBackendVtbl()->cancel(chunk);
     chunk->loaded = 0;
-    chunk->unk2E = 0;
-    chunk->unk2A = 0;
+    chunk->entitiesLoaded = 0;
+    chunk->state = 0;
 }
 
 /* Slot 0x78: reads the chunk file at path into the buffer */
-void MapChunk_Load(MapChunkFile *chunk, s32 path) {
+void MapChunk_Load(MapChunk *chunk, s32 path) {
     if ((chunk->data != NULL) && (path != 0)) {
         if (chunk->state == 0) {
             chunk->loaded = 0;
@@ -194,14 +137,14 @@ void MapChunk_Load(MapChunkFile *chunk, s32 path) {
 }
 
 /* Slot 0x7C */
-void MapChunk_Clear(MapChunkFile *chunk) {
+void MapChunk_Clear(MapChunk *chunk) {
     chunk->vtbl->freeData();
     chunk->loaded = 0;
     chunk->index = -1;
 }
 
 /* Slot 0x80: reads the entity part of the chunk file into a new heap block; 1 when started */
-s32 MapChunk_LoadEntities(MapChunkFile *chunk) {
+s32 MapChunk_LoadEntities(MapChunk *chunk) {
     s32 size;
     s32 entities;
 
@@ -221,7 +164,7 @@ s32 MapChunk_LoadEntities(MapChunkFile *chunk) {
 }
 
 /* Slot 0x84 */
-void MapChunk_FreeEntities(MapChunkFile *chunk) {
+void MapChunk_FreeEntities(MapChunk *chunk) {
     s32 entities;
 
     entities = chunk->entities;
@@ -232,12 +175,12 @@ void MapChunk_FreeEntities(MapChunkFile *chunk) {
 }
 
 /* Slot 0x88 */
-void MapChunk_SetLoadEntities(MapChunkFile *chunk, s32 loadEntities) {
+void MapChunk_SetLoadEntities(MapChunk *chunk, s32 loadEntities) {
     chunk->loadEntities = loadEntities;
 }
 
-MapChunkFileVtbl *MapChunk_GetVtbl(void) {
-    return (MapChunkFileVtbl *)g_mapChunkVtbl;
+MapChunkVtbl *MapChunk_GetVtbl(void) {
+    return (MapChunkVtbl *)g_mapChunkVtbl;
 }
 
 void *File_GetRootDir(void) {

@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/dreamsys.h"
+#include "game/scene.h"
 
 /*
  * The main menu (START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE) and the memory card object it
@@ -63,16 +64,6 @@
 #define CARD_OP_LOAD 1
 #define CARD_OP_SAVE 2
 
-/* The 0x700-byte save block (DreamSys +0x178, DreamSys_GetSaveBlock), as the menu reads it. */
-typedef struct SaveBlock {
-    s32 magic;          /* 0x000 "J01" */
-    s32 year;           /* 0x004 */
-    s32 day;            /* 0x008 */
-    s32 unlockScore;    /* 0x00C DreamSys +0x184 */
-    u8 pad_10[0x2F4 - 0x10];
-    s32 flashbackCount; /* 0x2F4 DreamSys +0x46C */
-} SaveBlock;
-
 /* One full-width (Shift-JIS) character of the card title. */
 typedef struct SjisChar {
     s8 hi;
@@ -97,16 +88,6 @@ typedef struct CardTitle {
     SjisChar comment[19]; /* 0x18 typed on the comment keyboard, blank for a new game */
 } CardTitle;
 
-/* The menu description at 0x80086D44 (menu +0x4C), read by the base class. */
-typedef struct MenuDesc {
-    char *fontPath;  /* 0x00 "ETC\FONTICON.TIM" */
-    s32 font;        /* 0x04 the font picture once loaded */
-    s32 unk8;        /* 0x08 item selected when the menu opens */
-    u8 pad_0C[0x18 - 0x0C];
-    s32 *hidden;     /* 0x18 one word per item, not 0: the item is not drawn */
-    char **labels;   /* 0x1C START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE */
-} MenuDesc;
-
 typedef struct MenuRgb {
     s8 r, g, b;
 } MenuRgb;
@@ -117,55 +98,6 @@ typedef struct MenuFillRect {
     s32 w;
     s32 h;
 } MenuFillRect;
-
-/* The display (src/game/800206E0.c): slot 0x78 clears a rectangle to a colour (ClearImage). */
-typedef struct MenuDisplayVtbl {
-    u8 pad_00[0x78];
-    void (*clearImage)(void *self, void *color, MenuFillRect *rect);
-} MenuDisplayVtbl;
-
-typedef struct MenuDisplay {
-    MenuDisplayVtbl *vt;
-} MenuDisplay;
-
-/* The screen environment at menu +0x0C (ScreenEnv in include/game/scene.h): the fields used here. */
-typedef struct MenuEnv {
-    MenuDisplay *display; /* 0x00 */
-    void *pad;            /* 0x04 the pad, class 2 */
-} MenuEnv;
-
-/* The sound effects of ETC\ETCSE (menu +0x48, card +0x6C); slot 0x80 plays one. */
-typedef struct MenuSoundVtbl {
-    u8 pad_00[0x80];
-    void (*play)(void *self, s32 sound, s32 left, s32 right);
-    u8 pad_84[0x9C - 0x84];
-    void (*unk9C)(void *self, s32 arg1);
-} MenuSoundVtbl;
-
-typedef struct MenuSound {
-    MenuSoundVtbl *vt;
-} MenuSound;
-
-/* A text label made by Label_Create: the save title shown on the menu (menu +0xB0). */
-typedef struct MenuLabelVtbl {
-    u8 pad_00[0x4];
-    void (*delete_)(void *self);
-    u8 pad_08[0x4C - 0x08];
-    void (*draw)(void *self, s32 root, void *pos);
-    u8 pad_50[0xB8 - 0x50];
-    void (*setColor)(void *self, MenuRgb *color);
-    u8 pad_BC[0xCC - 0xBC];
-    void (*setText)(void *self, s32 text);
-} MenuLabelVtbl;
-
-typedef struct MenuLabel {
-    MenuLabelVtbl *vt;
-    u8 pad_04[0xA9 - 0x04];
-    u8 capacity;     /* 0xA9 bytes setText takes */
-    u8 unkAA;
-    u8 unkAB;
-    u8 unkAC;
-} MenuLabel;
 
 /* A picture object (Tim_New); slot 0x4 deletes it. */
 typedef struct MenuPictureVtbl {
@@ -212,7 +144,7 @@ typedef struct MenuVtbl {
     void (*close)(struct Menu *);                        /* 0x094 Menu_Close */
     u8 pad_98[0xD4 - 0x98];
     void (*setPicture)(struct Menu *, char *, s32);      /* 0x0D4 MenuScreen_SetPicture */
-    void (*setMenu)(struct Menu *, MenuDesc *);          /* 0x0D8 Menu_CreateTitleLabel */
+    void (*setMenu)(struct Menu *, MenuDef *);          /* 0x0D8 Menu_CreateTitleLabel */
     void (*freeMenu)(struct Menu *);                     /* 0x0DC Menu_FreeMenu */
     void (*showItems)(struct Menu *, s32);               /* 0x0E0 Menu_ShowItems (menu, root) */
     void (*setItemsColor)(struct Menu *, MenuRgb *);     /* 0x0E4 Menu_SetItemsColor */
@@ -233,7 +165,7 @@ typedef struct MenuVtbl {
 typedef struct Menu {
     MenuVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];
-    MenuEnv *env;         /* 0x0C */
+    ScreenEnv *env;       /* 0x0C display and pad (scene.h) */
     void *clock;          /* 0x10 class 5, handed to the card with env->pad */
     s32 root;             /* 0x14 the scene node the texts are shown under */
     u8 pad_18[0x2C - 0x18];
@@ -243,8 +175,8 @@ typedef struct Menu {
     s32 result;           /* 0x38 what the screen returns: 0 START or FLASHBACK, 2 GRAPH */
     s32 focus;            /* 0x3C 0 none, 1 items, 2 option list (scene.h MENU_FOCUS_*) */
     u8 pad_40[0x48 - 0x40];
-    MenuSound *sound;     /* 0x48 ETC\ETCSE */
-    MenuDesc *desc;       /* 0x4C */
+    SoundBank *sound;     /* 0x48 ETC\ETCSE, the menu sound effects */
+    MenuDef *desc;        /* 0x4C g_mainMenuDesc 0x80086D44 (scene.h MenuDef): ETC\FONTICON.TIM; START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE */
     u8 pad_50[0x58 - 0x50];
     s32 selected;         /* 0x58 selected item, MENU_ITEM_* */
     u8 pad_5C[0x60 - 0x5C];
@@ -255,7 +187,7 @@ typedef struct Menu {
     DreamSys *dreamSys;   /* 0xA4 */
     MenuPicture *fileIcon; /* 0xA8 CARD\FILEICN1.TIM, the icon of the save file */
     struct Card *card;    /* 0xAC made on the first SAVE or LOAD */
-    MenuLabel *titleLabel; /* 0xB0 the save title drawn on the menu */
+    Label *titleLabel;    /* 0xB0 the save title drawn on the menu (scene.h Label) */
     u8 pad_B4[0xBC - 0xB4];
     SaveBlock *saveBlock; /* 0xBC DreamSys_GetSaveBlock */
     s32 saveSize;         /* 0xC0 0x700 */
@@ -283,7 +215,7 @@ typedef struct CardMessageVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(struct CardMessage *);
     u8 pad_08[0x4C - 0x08];
-    void (*draw)(struct CardMessage *, s32, s32 *);
+    void (*attach)(struct CardMessage *, s32, s32 *); /* 0x4C ScreenSprite_Attach (sprite, parent, 2D position) */
     u8 pad_50[0x78 - 0x50];
     void (*unk78)(struct CardMessage *);
 } CardMessageVtbl;
@@ -317,7 +249,7 @@ typedef struct CardVtbl {
     s32 (*hasSpace)(struct Card *, s32, s32);                           /* 0x60 Card_HasSpace */
     s32 (*readFile)(struct Card *, char *, void *, s32);                /* 0x64 Card_ReadFile */
     s32 (*writeFile)(struct Card *, char *, char *, u8, MenuPicture *, void *, s32); /* 0x68 Card_WriteFile */
-    void (*open)(struct Card *, char *, char **, void *, void *, s32, MenuSound *); /* 0x6C Card_Open */
+    void (*open)(struct Card *, char *, char **, void *, void *, s32, SoundBank *); /* 0x6C Card_Open */
     void (*close)(struct Card *);                                       /* 0x70 Card_Close */
     void (*load)(struct Card *, char *, char *, void *, s32);           /* 0x74 Card_Load */
     void (*save)(struct Card *, char *, char *, s32, s32, MenuPicture *, void *, s32); /* 0x78 Card_Save */
@@ -363,7 +295,7 @@ typedef struct Card {
     void *pad;              /* 0x60 class 2, the menu's env->pad */
     void *clock;            /* 0x64 class 5, the menu's clock */
     s32 root;               /* 0x68 the menu's root, where the pictures and dialogs are shown */
-    MenuSound *sound;       /* 0x6C */
+    SoundBank *sound;       /* 0x6C */
     CardMessage *message;   /* 0x70 */
     s32 ownsDialog;         /* 0x74 the keyboard or chooser was made here and is deleted on close */
     CardDialog *keyboard;   /* 0x78 class 0x10 */

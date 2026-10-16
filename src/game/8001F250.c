@@ -1,27 +1,6 @@
 #include "common.h"
 #include "game/heap.h"
-
-/* 16-byte value at +0x14 of a ModelObject, copied in by ModelObject_SetValue */
-typedef struct ModelObjectValue {
-    s32 unk_00;
-    s32 unk_04;
-    s32 unk_08;
-    s32 unk_0C;
-} ModelObjectValue;
-
-/*
- * One model object: the 0x24-byte Object subclass made by ModelObject_Create, one per TMD object.
- * Its vtable is g_modelObjectVtbl (g_modelObjectVtbl). The first three fields are the Object root
- * of heap.h, kept as s32 because the constructor stores an s32 in them (see the report).
- */
-typedef struct ModelObject {
-    s32 vtbl;               /* +0x00 ObjectVtbl * in heap.h */
-    ListNode *watched;      /* +0x04 */
-    ListNode *watchers;     /* +0x08 */
-    s32 tmdObjectBase;      /* +0x0C tmdObject - 0xC, see ModelObject_GetObjectAt */
-    s32 tmdObject;          /* +0x10 address of the TMD object entry */
-    ModelObjectValue value; /* +0x14 */
-} ModelObject;
+#include "game/scene.h"
 
 /* ModelObject_MapModelingData reads +0x0C as a u32 pointer for GsMapModelingData, see the report */
 typedef struct ModelObjectMapView {

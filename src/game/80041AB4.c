@@ -75,11 +75,6 @@ typedef struct SpriteTim {
 } SpriteTim;
 
 /* The rotation a scene node takes (base slot 0x44): 3 angles in degrees, each a fraction. */
-typedef struct Fraction {
-    s16 num;
-    s16 den;
-} Fraction;
-
 typedef struct NodeAngles {
     Fraction x;
     Fraction y;
@@ -166,33 +161,6 @@ typedef struct SeqFile {
     s32 loaded;             /* 0x2C set by SeqFile_OnLoaded */
 } SeqFile;
 
-/* The messages a clock step sends to its watchers. */
-#define CLOCK_MSG_TICK 2
-#define CLOCK_MSG_PAUSED 3
-#define CLOCK_MSG_STOPPED 4
-
-struct ClockObject;
-
-/* scene.h Clock with all its slots and fields (see work/readable/X1-report.md, header requests). */
-typedef struct ClockObjectVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *);                     /* 0x08 Clock_Init */
-    u8 pad_0C[0x30 - 0x0C];
-    void (*notify)(void *, s32);              /* 0x30 Clock_Notify */
-    u8 pad_34[0x40 - 0x34];
-    void (*reset)(void *, s32);               /* 0x40 Clock_Reset */
-} ClockObjectVtbl;
-
-typedef struct ClockObject {
-    ClockObjectVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 ticks;              /* 0x0C steps counted while running */
-    s32 paused;             /* 0x10 */
-    s32 stopped;            /* 0x14 */
-    ListNode *notifyIter;   /* 0x18 the watcher list cursor while Clock_Notify runs */
-} ClockObject;
-
 typedef struct RootNodeVtbl {
     u8 pad_00[0x08];
     void (*init)(void *);                     /* 0x08 RootNode_Init */
@@ -233,7 +201,7 @@ ScreenSpriteVtbl *ScreenSprite_GetVtbl(void);
 void SpriteNode_FillSprite();
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 FileVtbl *SeqFile_GetVtbl(void);
-ClockObjectVtbl *Clock_GetVtbl(void);
+ClockVtbl *Clock_GetVtbl(void);
 RootNodeVtbl *RootNode_GetVtbl(void);
 
 extern GlyphVtbl g_glyphVtbl;
@@ -242,7 +210,7 @@ extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 extern FileVtbl g_seqFileVtbl;
-extern ClockObjectVtbl g_clockVtbl;
+extern ClockVtbl g_clockVtbl;
 extern RootNodeVtbl g_rootNodeVtbl;
 
 /* Glyph */
@@ -522,8 +490,8 @@ void *Clock_Create(void) {
 }
 
 /* Slot 0x08 */
-void Clock_Init(ClockObject *clock) {
-    ClockObjectVtbl *vtbl;
+void Clock_Init(Clock *clock) {
+    ClockVtbl *vtbl;
 
     Object_GetBaseVtbl()->init(clock);
     vtbl = Clock_GetVtbl();
@@ -532,12 +500,12 @@ void Clock_Init(ClockObject *clock) {
 }
 
 /* Slot 0x0C */
-void Clock_Destroy(ClockObject *clock) {
+void Clock_Destroy(Clock *clock) {
     Object_GetBaseVtbl()->destroy(clock);
 }
 
 /* Slot 0x24: a watcher removed while Clock_Notify runs moves its cursor past it. */
-void Clock_RemoveWatcher(ClockObject *clock, s32 watcher) {
+void Clock_RemoveWatcher(Clock *clock, s32 watcher) {
     ListNode *node;
 
     node = clock->notifyIter;
@@ -548,7 +516,7 @@ void Clock_RemoveWatcher(ClockObject *clock, s32 watcher) {
 }
 
 /* Slot 0x30: Object_Notify with its cursor in the clock. */
-void Clock_Notify(ClockObject *clock, s32 message) {
+void Clock_Notify(Clock *clock, s32 message) {
     Object *watcher;
 
     clock->notifyIter = clock->watchers;
@@ -561,7 +529,7 @@ void Clock_Notify(ClockObject *clock, s32 message) {
 }
 
 /* Slot 0x40 */
-void Clock_Reset(ClockObject *clock, s32 ticks) {
+void Clock_Reset(Clock *clock, s32 ticks) {
     clock->ticks = ticks;
     clock->stopped = 0;
     clock->paused = 0;
@@ -569,7 +537,7 @@ void Clock_Reset(ClockObject *clock, s32 ticks) {
 }
 
 /* Slot 0x44 */
-void Clock_Step(ClockObject *clock) {
+void Clock_Step(Clock *clock) {
     s32 message = CLOCK_MSG_STOPPED;
 
     if (clock->stopped == 0) {
@@ -583,31 +551,31 @@ void Clock_Step(ClockObject *clock) {
 }
 
 /* Slot 0x48 */
-s32 Clock_GetTicks(ClockObject *clock) {
+s32 Clock_GetTicks(Clock *clock) {
     return clock->ticks;
 }
 
 /* Slot 0x4C */
-void Clock_Pause(ClockObject *clock) {
+void Clock_Pause(Clock *clock) {
     clock->paused = 1;
 }
 
 /* Slot 0x50 */
-void Clock_Resume(ClockObject *clock) {
+void Clock_Resume(Clock *clock) {
     clock->paused = 0;
 }
 
 /* Slot 0x54 */
-s32 Clock_IsPaused(ClockObject *clock) {
+s32 Clock_IsPaused(Clock *clock) {
     return clock->paused;
 }
 
 /* Slot 0x58 */
-void Clock_Stop(ClockObject *clock) {
+void Clock_Stop(Clock *clock) {
     clock->stopped = 1;
 }
 
-ClockObjectVtbl *Clock_GetVtbl(void) {
+ClockVtbl *Clock_GetVtbl(void) {
     return &g_clockVtbl;
 }
 

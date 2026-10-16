@@ -3,70 +3,11 @@
 #include "game/loader.h"
 #include "game/scene.h"
 
-/*
- * The TIM image class (vtable g_timVtbl, 0x50 bytes, Tim_New): a file object
- * (include/game/loader.h) holding one TIM. Slot 0x78 uploads its pixels and its CLUT to VRAM
- * through the current display; slots 0x7C to 0x94 are empty. A TimPack makes one per image of
- * a TIX and points +0x4C at the fade of its palette row (src/game/80043008.c).
- */
-typedef struct TimVtbl {
-    FileVtbl base;
-    void (*upload)();         /* 0x78 Tim_Upload */
-    void (*unk7C)();          /* 0x7C to 0x94: empty */
-    void (*unk80)();
-    void (*unk84)();
-    void (*unk88)();
-    void (*unk8C)();
-    void (*unk90)();
-    void (*unk94)();
-    void (*setUnk48)();       /* 0x98 func_8003B5E4: +0x48 = 1 */
-    void (*getInfo)(void *, void *); /* 0x9C Tim_GetInfo: GsGetTimInfo into a GsIMAGE */
-} TimVtbl;
-
-/* PSY-Q GsIMAGE as this unit reads it (loader.h GsImage has s16 positions and pointers) */
-typedef struct TimImage {
-    u32 pmode;                /* 0x00 bit 3: the TIM has a CLUT */
-    u16 px;
-    u16 py;
-    u16 pw;
-    u16 ph;
-    s32 pixel;                /* 0x0C */
-    u16 cx;
-    u16 cy;
-    u16 cw;
-    u16 ch;
-    s32 clut;                 /* 0x18 */
-} TimImage;
-
-typedef struct Tim {
-    TimVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    u32 *data;                /* 0x10 the TIM file: id word, then the TIM */
-    u8 pad_14[0x2C - 0x14];   /* file fields (loader.h) */
-    TimImage image;           /* 0x2C filled by getInfo before each upload */
-    s32 unk48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
-    s32 fade;                 /* 0x4C address of the TixFade of its palette row, 0 at init */
-} Tim;
-
-/* The current display (Display_GetCurrent, src/game/800206E0.c): the two slots used here */
-typedef struct TimDisplayVtbl {
-    u8 pad_00[0x58];
-    void (*loadImage)(void *, void *, s32);           /* 0x58 (display, rect, pixels): LoadImage */
-    u8 pad_5C[0x64 - 0x5C];
-    void (*moveImage)(void *, void *, s32, s32);      /* 0x64 (display, rect, x, y): MoveImage */
-} TimDisplayVtbl;
-
-typedef struct TimDisplay {
-    TimDisplayVtbl *vtbl;
-} TimDisplay;
-
 extern void GsGetTimInfo(u32 *im, void *tim);
 FileVtbl *File_GetBackendVtbl(void);
 void *Heap_Alloc(s32 size);
 TimVtbl *Tim_GetVtbl(void);
-TimDisplay *Display_GetCurrent(void);
+Display *Display_GetCurrent(void);
 extern u8 g_timVtbl[];
 
 Tim *Tim_New(char *path) {
@@ -96,7 +37,7 @@ void Tim_Destroy(Tim *tim) {
 }
 
 void Tim_Upload(Tim *tim) {
-    TimDisplay *display;
+    Display *display;
     TimImage *image;
     MovieRect rect;
 
@@ -161,7 +102,7 @@ TimVtbl *Tim_GetVtbl(void) {
 void Display_RotateRect(ScreenRect *rect, s32 count, ScreenRect *spare) {
     MovieRect move;
     s32 i;
-    TimDisplay *display;
+    Display *display;
     void (*moveImage)(void *, void *, s32, s32);
 
     display = Display_GetCurrent();

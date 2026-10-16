@@ -15,7 +15,7 @@ struct CommentWidgetVtbl {
     s32 unk_00;
     void *(*delete_)(CommentWidget *);       /* 0x04 same slot as scene.h WidgetVtbl delete_ */
     u8 pad_08[0x4C - 0x08];
-    void (*show)(CommentWidget *, s32, void *);  /* 0x4C same slot as scene.h show, called by buildWidgets */
+    void (*attach)(CommentWidget *, s32, void *); /* 0x4C SceneNode_Attach and its overrides (ScreenSprite_Attach, Label_Show): parent, position */
     u8 pad_50[0x78 - 0x50];
     void (*unk_78)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
     u8 pad_7C[0x80 - 0x7C];
@@ -124,20 +124,8 @@ struct StringList {
     s32 unk_50;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
 };
 
-/* Base Object vtable as used by this unit. Only the slots below are called here. */
-typedef struct ObjectBaseVtbl {
-    u8 pad_00[0x08];                         /* 0x00 to 0x07 not used by this unit */
-    void (*init)(void *);                    /* 0x08 base init, called by CommentObject_Init and StringList_Init */
-    void (*destroy)(void *);                 /* 0x0C base destroy, called by CommentObject_Destroy and StringList_Destroy */
-    void (*watch)(void *, s32 **);           /* 0x10 base watch, called by CommentObject_Watch and StringList_Watch */
-    void (*unwatch)(void *, s32 **);         /* 0x14 base unwatch, called by CommentObject_Unwatch and StringList_Unwatch */
-    void (*unwatchAll)(void *);              /* 0x18 base unwatchAll, called by CommentObject_UnwatchAll and StringList_UnwatchAll */
-    u8 pad_1C[0x38 - 0x1C];                  /* 0x1C to 0x37 not called by this unit */
-    void (*onNotify)(void *, s32 **, s32);   /* 0x38 base onNotify, called by CommentObject_OnNotify and StringList_OnNotify */
-} ObjectBaseVtbl;
-
 extern void Heap_Free(s32);
-extern ObjectBaseVtbl *Object_GetBaseVtbl(void);
+extern ObjectVtbl *Object_GetBaseVtbl(void);
 extern void *Heap_Alloc(s32 size);
 CommentVtbl *CommentObject_GetVtbl(void);
 s8 *Text_Decode(s8 *dst, u8 *src);
@@ -284,18 +272,18 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
         obj->unk_48 = ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
         inputWidget->vtbl->delete_(inputWidget);
         widget = obj->unk_48;
-        widget->vtbl->show(widget, enable, g_inputShowArg);
+        widget->vtbl->attach(widget, enable, g_inputShowArg);
         fontWidget = Tim_New((s32)File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->unk_78(fontWidget);
         obj->unk_44 = (CommentWidget *)Label_Create((s32)fontWidget, obj->textLength, (s32)obj->textBuf);
         obj->unk_40 = Glyph_Create((s32)fontWidget, 0x5F);
         fontWidget->vtbl->delete_(fontWidget);
         widget = obj->unk_44;
-        widget->vtbl->show(widget, enable, g_fontShowArg);
+        widget->vtbl->attach(widget, enable, g_fontShowArg);
         widget = obj->unk_44;
         widget->vtbl->setColor(widget, g_glyphColor);
         widget = obj->unk_40;
-        widget->vtbl->show(widget, enable, &g_commentOriginX);
+        widget->vtbl->attach(widget, enable, &g_commentOriginX);
     }
 }
 

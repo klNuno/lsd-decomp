@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/stage.h"
+#include "game/scene.h"
 
 /*
  * Stage tables, the dream runner, the Task base class and the stage map (types in game/stage.h).
@@ -28,25 +29,7 @@ extern s32 D_800869CC;
 extern u8 D_800869D8[];
 extern char g_mapTileVtbl[];
 
-/* The PSY-Q MATRIX of RotMatrix and ApplyMatrixLV. */
-typedef struct GteMatrix {
-    s16 m[3][3];
-    s32 t[3];
-} GteMatrix;
-extern GteMatrix D_8008E98C;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
-
-/* The actor base class (SceneNode_GetVtbl, vtable 0x8006B5CC) and the map's base (RootNode_GetVtbl): slots chained to here. */
-typedef struct ActorVtbl {
-    u8 pad_00[0x08];
-    void (*init)();             /* 0x08 */
-    void (*destroy)();          /* 0x0C */
-    u8 pad_10[0x38 - 0x10];
-    void (*onNotify)();         /* 0x38 */
-    u8 pad_3C[0x88 - 0x3C];
-    void (*onSlotMessage)();    /* 0x88 */
-    u8 pad_8C[0x9C - 0x8C];
-    void (*unk9C)();            /* 0x9C */
-} ActorVtbl;
+extern Matrix D_8008E98C;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
 
 /* What StageMap slot 0xB8 (RootNode_GetLight) returns. */
 typedef struct MapChildVtbl {
@@ -147,8 +130,8 @@ TaskBaseVtbl *Screen_GetVtbl(void);
 TaskVtbl *Task_GetVtbl(void);
 DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 StageMapVtbl *StageMap_GetVtbl(void);
-ActorVtbl *SceneNode_GetVtbl(void);
-ActorVtbl *RootNode_GetVtbl(void);
+SceneNodeVtbl *SceneNode_GetVtbl(void);
+SceneNodeVtbl *RootNode_GetVtbl(void);
 RenderObjVtbl *View_GetVtbl(void);
 RenderObjVtbl *func_8004D37C(void);
 MapTileVtbl *MapTile_GetVtbl(void);
@@ -328,8 +311,8 @@ void DreamRunner_Run(DreamRunner *runner) {
     DreamSys *dreamSys;
 
     dreamSys = runner->dreamSys;
-    dreamSys->vtbl->unk10(dreamSys, runner->context->unk4);
-    dreamSys->vtbl->unk10(dreamSys, runner->context->unk8);
+    dreamSys->vtbl->watch(dreamSys, runner->context->unk4);
+    dreamSys->vtbl->watch(dreamSys, runner->context->unk8);
     dreamSys->vtbl->unk110(dreamSys, runner->context->unk10);
     Task_GetVtbl()->run(runner, runner->context, 0);
 }
@@ -340,8 +323,8 @@ void func_80049AC0(DreamRunner *runner) {
     dreamSys = runner->dreamSys;
     Task_GetVtbl()->unk48(runner);
     dreamSys->vtbl->unk110(dreamSys, 0);
-    dreamSys->vtbl->unk14(dreamSys, runner->context->unk4);
-    dreamSys->vtbl->unk14(dreamSys, runner->unk10);
+    dreamSys->vtbl->unwatch(dreamSys, runner->context->unk4);
+    dreamSys->vtbl->unwatch(dreamSys, runner->unk10);
 }
 
 void DreamRunner_Start(DreamRunner *runner) {
@@ -627,11 +610,11 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
     for (i = 0; i < 7; i++) {
         slot = &map->slots[i];
         slot->chunk = MapChunk_New();
-        slot->chunk->unk20 = (slot->chunk->data != 0);
+        slot->chunk->keepData = (slot->chunk->data != 0);
         slot->chunk->id = i;
         chunk = slot->chunk;
-        chunk->vtbl->unk88(chunk, arg2);
-        slot->unk14 = 0;
+        chunk->vtbl->setLoadEntities(chunk, arg2);
+        slot->spawned = 0;
         slot->unk18 = 0;
         slot->index = i;
         slot->loading = 0;
@@ -723,12 +706,12 @@ void StageMap_Reset(StageMap *map) {
 void StageMap_OnSlotMessage(StageMap *map, s32 message, MapSlot *slot) {
     Object *obj;
 
-    SceneNode_GetVtbl()->onSlotMessage(map, message);
+    SceneNode_GetVtbl()->sendBoxes(map, message);
     switch (message) {
     case 6:
-        obj = slot->unk14;
+        obj = slot->spawned;
         if (obj != NULL) {
-            slot->unk14 = obj->vtbl->delete_(obj);
+            slot->spawned = obj->vtbl->delete_(obj);
         }
         /* fallthrough */
     case 7:
@@ -767,7 +750,7 @@ void StageMap_ClearSlots(StageMap *map) {
             models->tmd = models->tmd->vtbl->delete_(models->tmd);
         }
         map->vtbl->onSlotMessage(map, 6, slot, i);
-        slot->chunk->vtbl->unk84(slot->chunk);
+        slot->chunk->vtbl->freeEntities(slot->chunk);
     }
     map->ready = 0;
     map->pendingSlots = 0;
@@ -832,7 +815,7 @@ s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
     Vec3 *pos;
 
     if (sender->attached != 0) {
-        pos = &sender->coord->workT;
+        pos = &sender->coord->workm.t;
     } else {
         pos = NULL;
     }
@@ -1082,13 +1065,13 @@ void StageMap_LoadAround(StageMap *map, s32 chunkIndex, Vec3 *center, NeighborUs
                 offset = &g_chunkNeighborOffsets[use->neighbor];
                 coord = slot->root->coord;
                 if (map->grid->stacked == 0) {
-                    coord->t.x = center->x + offset->x;
-                    coord->t.y = center->y;
-                    coord->t.z = center->z + offset->z;
+                    coord->coord.t.x = center->x + offset->x;
+                    coord->coord.t.y = center->y;
+                    coord->coord.t.z = center->z + offset->z;
                 } else {
-                    coord->t.x = center->x - 0x5000;
-                    coord->t.y = center->y + offset->y;
-                    coord->t.z = center->z - 0x5000;
+                    coord->coord.t.x = center->x - 0x5000;
+                    coord->coord.t.y = center->y + offset->y;
+                    coord->coord.t.z = center->z - 0x5000;
                 }
                 slot->root->coord->flg = 0;
                 StageMap_RequestNeighbor(map, &requests[count], cols, oddRow, chunkIndex, mask, use->neighbor);
@@ -1192,7 +1175,7 @@ void StageMap_AssignChunks(StageMap *map, ChunkRequest *request, s32 count) {
             if (slot->chunk->loaded != 0) {
                 map->vtbl->hideSlot(map, slot);
             }
-            if (slot->chunk->unk2A != 0) {
+            if (slot->chunk->state != 0) {
                 slot->chunk->vtbl->unload(slot->chunk);
                 slot->loading = 0;
             }
@@ -1225,8 +1208,8 @@ void StageMap_PollLoads(StageMap *map, s32 sender, s32 message) {
         for (i = 0; i < 7; i++) {
             slot = &map->slots[i];
             chunk = slot->chunk;
-            if (chunk->unk2E != 0) {
-                chunk->unk2E = 0;
+            if (chunk->entitiesLoaded != 0) {
+                chunk->entitiesLoaded = 0;
                 map->vtbl->onSlotMessage(map, 7, slot, i);
             }
             swapping = map->swapping;
@@ -1243,7 +1226,7 @@ void StageMap_PollLoads(StageMap *map, s32 sender, s32 message) {
                         map->swapping = 0;
                         map->ready = swapping;
                     }
-                } else if (chunk->unk2A == 0) {
+                } else if (chunk->state == 0) {
                     slot->loading = 0;
                 }
             }
@@ -1304,11 +1287,11 @@ void StageMap_BuildTiles(StageMap *map, MapSlot *slot) {
             (*tile)->model = model;
             (*tile)->tmd = (*tile)->model->tmd;
             GsLinkObject4((*tile)->model->tmd, &(*tile)->attribute, 0);
-            (*tile)->coord->t = record.pos;
+            (*tile)->coord->coord.t = record.pos;
             param = (*tile)->coord->param;
-            param->rotate[0] = 0;
-            param->rotate[1] = record.rotY;
-            param->rotate[2] = 0;
+            param->rotate.axis[0] = 0;
+            param->rotate.axis[1] = record.rotY;
+            param->rotate.axis[2] = 0;
             (*tile)->flags = record.flags;
             (*tile)->coord->flg = 0;
             (*tile)->attribute |= MAP_TILE_HIDDEN;
@@ -1327,7 +1310,7 @@ void StageMap_HideSlot(StageMap *map, MapSlot *slot) {
     MapTile **end;
 
     if (slot->chunk->index >= 0) {
-        slot->chunk->vtbl->unk7C(slot->chunk);
+        slot->chunk->vtbl->clear(slot->chunk);
         end = slot->tiles + MAP_SLOT_TILES;
         for (p = slot->tiles; p < end; p++) {
             (*p)->attribute = (*p)->attribute | MAP_TILE_HIDDEN;
@@ -1339,7 +1322,7 @@ void StageMap_HideSlot(StageMap *map, MapSlot *slot) {
 
 /* The kept location; with out, first locates the target into out and returns NULL when that fails. */
 void *StageMap_GetLocation(StageMap *map, MapLocation *out, s32 **outPos) {
-    s32 *pos = &map->target->coord->t.x;
+    s32 *pos = &map->target->coord->coord.t.x;
 
     if (outPos != NULL) {
         *outPos = pos;
@@ -1366,20 +1349,20 @@ s32 StageMap_Locate(StageMap *map, MapLocation *out, s32 *pos) {
         StageMap_ChunkColRow(map, &out->at.place, chunkIndex);
         idSlot = map->vtbl->slotById(map, slot->chunk->id);
         coord = idSlot->root->coord;
-        out->chunkCenter.x = coord->t.x + 0x5000;
-        out->chunkCenter.y = coord->t.y;
-        out->chunkCenter.z = coord->t.z + 0x5000;
+        out->chunkCenter.x = coord->coord.t.x + 0x5000;
+        out->chunkCenter.y = coord->coord.t.y;
+        out->chunkCenter.z = coord->coord.t.z + 0x5000;
         slotCoord = slot->root->coord;
         out->offset.x = pos[0] - out->chunkCenter.x;
         out->offset.y = pos[1];
         out->offset.z = pos[2] - out->chunkCenter.z;
-        out->at.place.tileX = (pos[0] - slotCoord->t.x) / 2048;
-        out->at.place.tileY = (pos[2] - slotCoord->t.z) / 2048;
+        out->at.place.tileX = (pos[0] - slotCoord->coord.t.x) / 2048;
+        out->at.place.tileY = (pos[2] - slotCoord->coord.t.z) / 2048;
         x = (u16)pos[0] - 0x400;
-        out->at.place.x = x - ((u16)slotCoord->t.x + out->at.place.tileX * 2048);
+        out->at.place.x = x - ((u16)slotCoord->coord.t.x + out->at.place.tileX * 2048);
         out->at.place.y = (u16)pos[1];
         z = (u16)pos[2] - 0x400;
-        out->at.place.z = z - ((u16)slotCoord->t.z + out->at.place.tileY * 2048);
+        out->at.place.z = z - ((u16)slotCoord->coord.t.z + out->at.place.tileY * 2048);
         out->slot = slot;
         return 0;
     }
@@ -1414,7 +1397,7 @@ MapSlot *StageMap_SlotAt(StageMap *map, s32 *pos) {
     for (i = 0; i < 7; i++) {
         MapSlot *slot = map->vtbl->slotById(map, i);
         Coord2 *coord = slot->root->coord;
-        if (pos[0] >= coord->t.x && pos[0] < coord->t.x + 0xA000 && pos[2] >= coord->t.z && pos[2] < coord->t.z + 0xA000) {
+        if (pos[0] >= coord->coord.t.x && pos[0] < coord->coord.t.x + 0xA000 && pos[2] >= coord->coord.t.z && pos[2] < coord->coord.t.z + 0xA000) {
             if (map->grid->stacked == 0) {
                 return slot;
             }
@@ -1478,7 +1461,7 @@ void StageMap_UpdateView(StageMap *map) {
  */
 void StageMap_ComputeFlatView(StageMap *map, s32 width, s32 depth) {
     s8 location[0x30];
-    GteMatrix mat;
+    Matrix mat;
     Coord2Param *param;
     s16 *rot;
     u16 angle;
@@ -1488,34 +1471,34 @@ void StageMap_ComputeFlatView(StageMap *map, s32 width, s32 depth) {
     s32 alongX;
 
     param = map->target->coord->param;
-    rot = param->rotate;
+    rot = param->rotate.axis;
     map->vtbl->getLocation(map, location, 0);
     x = location[2];
     y = location[3];
-    angle = param->rotate[1];
-    if (param->rotate[1] < 0) {
+    angle = param->rotate.axis[1];
+    if (param->rotate.axis[1] < 0) {
         angle += 0x1000;
     }
     mat = D_8008E98C;
-    mat.t[0] = 0;
-    mat.t[1] = 0;
-    mat.t[2] = map->viewDistance;
+    mat.t.x = 0;
+    mat.t.y = 0;
+    mat.t.z = map->viewDistance;
     RotMatrix(rot, &mat);
-    ApplyMatrixLV((s32 *)&mat, mat.t, mat.t);
+    ApplyMatrixLV((s32 *)&mat, &mat.t, &mat.t);
 
     if ((angle >= 0x200 && angle < 0x600) || (angle >= 0xA00 && angle < 0xE00)) {
-        d = mat.t[2];
+        d = mat.t.z;
         map->viewCols = depth;
         map->viewRows = width;
-        map->viewX = (mat.t[0] > 0) ? x : x - width + 1;
-        map->viewY = (mat.t[2] > 0) ? y - (u16)map->viewHalf - 1 : y - (u16)map->viewHalf + 1;
+        map->viewX = (mat.t.x > 0) ? x : x - width + 1;
+        map->viewY = (mat.t.z > 0) ? y - (u16)map->viewHalf - 1 : y - (u16)map->viewHalf + 1;
         alongX = 0;
     } else if ((angle >= 0x600 && angle < 0xA00) || (angle < 0x200 || angle >= 0xE00)) {
-        d = mat.t[0];
+        d = mat.t.x;
         map->viewCols = width;
         map->viewRows = depth;
-        map->viewX = (mat.t[0] > 0) ? x - (u16)map->viewHalf - 1 : x - (u16)map->viewHalf + 1;
-        map->viewY = (mat.t[2] > 0) ? y : y - depth + 1;
+        map->viewX = (mat.t.x > 0) ? x - (u16)map->viewHalf - 1 : x - (u16)map->viewHalf + 1;
+        map->viewY = (mat.t.z > 0) ? y : y - depth + 1;
         alongX = 1;
     }
     d = d >> 11;
@@ -1887,7 +1870,7 @@ void func_8004D434(MapTile *tile, u8 **message) {
 }
 
 void func_8004D47C(MapTile *tile, void *sender, s32 message) {
-    SceneNode_GetVtbl()->unk9C(tile, sender, message);
+    SceneNode_GetVtbl()->onNode(tile, sender, message);
     if (message < 9) {
         if (message >= 5) {
             tile->vtbl->unkA0(tile, sender, message);

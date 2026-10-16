@@ -547,11 +547,11 @@ void *DreamSys_New(s32 arg0, s32 arg1, s32 arg2) {
 void DreamSys_Init(DreamSys *dreamSys, void **arg1, s32 arg2, s32 camera) {
     func_80057C84()->unk8(dreamSys);
     dreamSys->vtbl = (DreamSysVtbl *)DreamSys_GetVtable();
-    dreamSys->unk58 = arg2;
+    dreamSys->soundBank = arg2;
     dreamSys->camera.obj = camera;
     dreamSys->unk64 = 0;
     dreamSys->unk60 = arg1;
-    dreamSys->vtbl->unk10(dreamSys, ((Unk_800587F0_ArgVtbl *)*arg1)->unk80(arg1, 0));
+    dreamSys->vtbl->watch(dreamSys, ((Unk_800587F0_ArgVtbl *)*arg1)->unk80(arg1, 0));
     dreamSys->vtbl->swapTimeLimit(dreamSys, -1);
     dreamSys->unk70 = 1;
     dreamSys->unk6C = 0;
@@ -580,9 +580,9 @@ void func_80058968(DreamSys *dreamSys, void **arg1) {
 
     ((Unk_80058968_ArgVtbl *)*arg1)->unkE4(arg1, sp10, dreamSys, (u8 *)dreamSys + 0x16C);
     ((Unk_80058968_RetVtbl *)func_80057C84())->unk4C(dreamSys, arg1, sp10);
-    dreamSys->vtbl->unk10(dreamSys, arg1);
+    dreamSys->vtbl->watch(dreamSys, arg1);
     if (dreamSys->transition == 0xE) {
-        elem = &dreamSys->flashbacks[dreamSys->nextFlashback];
+        elem = &dreamSys->save.flashbacks[dreamSys->nextFlashback];
         dreamSys->vtbl->unk44(dreamSys, 1, elem->rotation.bytes);
         dreamSys->vtbl->swapTimeLimit(dreamSys, elem->length + 4);
         dreamSys->nextFlashback++;
@@ -600,7 +600,7 @@ void func_80058A94(DreamSys *dreamSys) {
 
     player = dreamSys->player;
     player->vt->unkF0(player);
-    dreamSys->vtbl->unk14(dreamSys, dreamSys->player);
+    dreamSys->vtbl->unwatch(dreamSys, dreamSys->player);
     func_80057C84()->unk50(dreamSys);
 }
 
@@ -627,7 +627,7 @@ void func_80058B08(DreamSys *dreamSys, s32 arg1) {
         return;
     case -2:
         player2 = dreamSys->player;
-        if (player2->vt->unk11C(player2, dreamSys->unk14.bytes + 0x18)->unk4->unk2C == 2) {
+        if (player2->vt->unk11C(player2, dreamSys->pos.bytes + 0x18)->unk4->unk2C == 2) {
             player = dreamSys->player;
             dreamSys->vtbl->unk1D4(dreamSys, player->vt->unk10C(player, 0, 0));
         } else {
@@ -730,7 +730,7 @@ void func_80058F18(DreamSys *dreamSys, s32 **sender, s32 message) {
 
 void DreamSys_OnWallTouch(DreamSys *dreamSys, s32 **sender, s32 message) {
     DreamPlayer *player;
-    DreamPlace *src;
+    StagePlace *src;
 
     func_80057C84()->unkE0(dreamSys, sender, message);
     if (message == 4 && dreamSys->transition == 0) {
@@ -753,7 +753,7 @@ s32 DreamSys_SetFlashbackMode(DreamSys *dreamSys, s32 *colorOut, s32 mode) {
 
     oldMode = dreamSys->flashbackMode;
     if (mode < 0) {
-        *colorOut = Mood_GetColor((s16 *)((u8 *)dreamSys + (dreamSys->day * 2 + 0x190)));
+        *colorOut = Mood_GetColor((s16 *)((u8 *)dreamSys + (dreamSys->save.day * 2 + 0x190)));
     } else {
         dreamSys->flashbackMode = mode;
     }
@@ -832,7 +832,7 @@ u32 DreamSys_GetElapsedSeconds(DreamSys *dreamSys) {
 }
 
 void func_8005937C(DreamSys *dreamSys, s32 value) {
-    dreamSys->unk58 = value;
+    dreamSys->soundBank = value;
 }
 
 void func_80059384(DreamSys *dreamSys, s32 value) {
@@ -868,7 +868,7 @@ s32 func_8005942C(DreamSys *dreamSys, Unk_8005942C_Vec *arg1, s32 arg2, s32 *arg
     SceneNode_LocalToWorld(dreamSys, &sp10, &D_80087EE8[-2], 0);
     temp_v0 = func_8005950C((Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x14), (Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x20), arg2);
     if (dreamSys->unkC != 0) {
-        temp = (s32 *)(dreamSys->unk14.bytes + 0x38);
+        temp = (s32 *)(dreamSys->pos.bytes + 0x38);
     } else {
         temp = NULL;
     }
@@ -961,7 +961,7 @@ void func_800596E8(DreamSys *dreamSys, s32 mode) {
         dreamSys->unkC4 = 1;
         dreamSys->unkC8 = 1;
         dreamSys->unk98 = handler;
-        func_8002CC34(dreamSys->unk58, dreamSys->unkCC.bytes, 1, dreamSys, temp_v1->unk194);
+        func_8002CC34(dreamSys->soundBank, dreamSys->unkCC.bytes, 1, dreamSys, temp_v1->unk194);
         return;
     }
     }
@@ -1110,7 +1110,7 @@ s32 func_80059BE0(DreamSys *dreamSys, void *arg1) {
             dreamSys->vtbl->unk168(dreamSys);
         }
         camera = dreamSys->camera.obj;
-        if (camera != 0 && dreamSys->shake != 0 && arg1 != 0) {
+        if (camera != 0 && dreamSys->save.shake != 0 && arg1 != 0) {
             step = -0x32;
             if (dreamSys->unkB4 >= 3) {
                 step = 0x32;
@@ -1129,35 +1129,35 @@ s32 func_80059BE0(DreamSys *dreamSys, void *arg1) {
 }
 
 void func_80059D1C(DreamSys *dreamSys) {
-    DreamSysObj58 *obj = dreamSys->unk58;
+    SoundBank *obj = dreamSys->soundBank;
     s32 idx = dreamSys->unkB8;
-    DreamSysObj58Vtbl *vt = obj->vt;
+    SoundBankVtbl *vt = obj->vtbl;
     s32 t;
 
     if (idx != 0) {
         t = D_80087EB0[idx] * 0x10;
-        vt->unk9C(obj, D_80087EC8[idx]);
-        dreamSys->unkBC = vt->unk80(obj, t, 0x6E, 0x6E);
+        vt->setOctave(obj, D_80087EC8[idx]);
+        dreamSys->unkBC = vt->playTone(obj, t, 0x6E, 0x6E);
         if (dreamSys->unkB8 != 0x16) {
             dreamSys->unkBC = -1;
         }
         if (dreamSys->unkB8 == 0xB) {
-            vt->unk9C(obj, 1);
-            vt->unk80(obj, t, 0x6E, 0x6E);
-            vt->unk9C(obj, 2);
-            vt->unk80(obj, 0x90, 0x6E, 0x6E);
+            vt->setOctave(obj, 1);
+            vt->playTone(obj, t, 0x6E, 0x6E);
+            vt->setOctave(obj, 2);
+            vt->playTone(obj, 0x90, 0x6E, 0x6E);
         }
     }
 }
 
 void func_80059E3C(DreamSys *dreamSys) {
     s32 temp_a1;
-    DreamSysObj58 *temp_a0;
+    SoundBank *temp_a0;
 
     temp_a1 = dreamSys->unkBC;
     if (temp_a1 >= 0) {
-        temp_a0 = dreamSys->unk58;
-        temp_a0->vt->unk84(temp_a0, temp_a1);
+        temp_a0 = dreamSys->soundBank;
+        temp_a0->vtbl->stopVoice(temp_a0, temp_a1);
         dreamSys->unkBC = -1;
     }
 }
@@ -1166,7 +1166,7 @@ void func_80059E98(DreamSys *dreamSys, s32 arg1) {
     s32 temp_s3;
     s32 place;
     DreamPlayer *player;
-    DreamBody *body;
+    Coord2 *body;
 
     if (arg1 != 0) {
         temp_s3 = D_80087E34[arg1] * D_80087E20[dreamSys->unkAC];
@@ -1177,13 +1177,13 @@ void func_80059E98(DreamSys *dreamSys, s32 arg1) {
             dreamSys->vtbl->unk220(dreamSys);
             D_80087E3C[arg1](dreamSys, temp_s3, dreamSys->unk90C == 0);
             if (dreamSys->stage == 0) {
-                body = dreamSys->unk14.body;
-                if (body->unk1C < -0x7D0 && body->unk18 >= -0x1F3) {
+                body = dreamSys->pos.coord;
+                if (body->coord.t.y < -0x7D0 && body->coord.t.x >= -0x1F3) {
                     dreamSys->vtbl->onWallTouch(dreamSys, dreamSys, 4);
                 }
             }
         }
-        dreamSys->unk14.body->unk0 = 0;
+        dreamSys->pos.coord->flg = 0;
     }
 }
 
@@ -1201,12 +1201,12 @@ void func_8005A0B0(DreamSys *dreamSys) {
     DreamCamera *camera;
 
     if (dreamSys->unkC4 != 0) {
-        dreamSys->vtbl->unkBC(dreamSys, D_80087EA4);
+        dreamSys->vtbl->move(dreamSys, D_80087EA4);
         camera = dreamSys->camera.obj;
         camera->unk24 = camera->unk24 - 0x258;
     }
     if (dreamSys->unkC8 != 0) {
-        func_8002CD08((s32) dreamSys->unk58, dreamSys->unkCC.bytes);
+        func_8002CD08((s32) dreamSys->soundBank, dreamSys->unkCC.bytes);
     }
 }
 
@@ -1214,7 +1214,7 @@ void func_8005A134(DreamSys *dreamSys, s32 arg1) {
     dreamSys->unkC4 = 0;
     dreamSys->unkC8 = arg1;
     if (arg1 != 0) {
-        func_8002CC84(dreamSys->unk58, dreamSys->unkCC.bytes);
+        func_8002CC84(dreamSys->soundBank, dreamSys->unkCC.bytes);
     }
 }
 
@@ -1276,43 +1276,43 @@ void func_8005A1F4(s32 arg0, S *arg1) {
 }
 
 void DreamSys_InitNewGame(DreamSys *dreamSys) {
-    dreamSys->magic = g_saveMagic;
-    dreamSys->year = 0;
-    dreamSys->day = 0;
-    dreamSys->unlockScore = 0;
-    dreamSys->navScore = 0;
-    dreamSys->instanceScore = 0;
-    dreamSys->flashbackCount = 0;
-    dreamSys->reelSeen = 0;
-    dreamSys->unk5D8 = 0;
-    dreamSys->shake = 1;
-    dreamSys->unk67C = 0;
-    dreamSys->unk680 = 0;
-    Nav_InitFlags(dreamSys->navFlags, &dreamSys->dynamicLinkCount);
-    memset(dreamSys->unk684, 0, 0x1F4);
+    dreamSys->save.magic = g_saveMagic;
+    dreamSys->save.year = 0;
+    dreamSys->save.day = 0;
+    dreamSys->save.unlockScore = 0;
+    dreamSys->save.navScore = 0;
+    dreamSys->save.instanceScore = 0;
+    dreamSys->save.flashbackCount = 0;
+    dreamSys->save.reelSeen = 0;
+    dreamSys->save.unk460 = 0;
+    dreamSys->save.shake = 1;
+    dreamSys->save.unk504 = 0;
+    dreamSys->save.unk508 = 0;
+    Nav_InitFlags(dreamSys->save.navFlags, &dreamSys->save.dynamicLinkCount);
+    memset(dreamSys->save.unk50C, 0, 0x1F4);
 }
 
 void DreamSys_SwapShake(DreamSys *dreamSys, s32 *shake) {
     s32 old;
 
-    old = dreamSys->shake;
-    dreamSys->shake = *shake;
+    old = dreamSys->save.shake;
+    dreamSys->save.shake = *shake;
     *shake = old;
 }
 
 s32 DreamSys_GetDayNumber(DreamSys *dreamSys, s32 *yearOut) {
     if (yearOut != NULL) {
-        *yearOut = dreamSys->year;
+        *yearOut = dreamSys->save.year;
     }
-    return dreamSys->day + 1;
+    return dreamSys->save.day + 1;
 }
 
 s32 DreamSys_AdvanceDay(DreamSys *dreamSys) {
-    if (++dreamSys->day >= 365) {
-        dreamSys->day = 0;
-        dreamSys->year++;
+    if (++dreamSys->save.day >= 365) {
+        dreamSys->save.day = 0;
+        dreamSys->save.year++;
     }
-    return dreamSys->day;
+    return dreamSys->save.day;
 }
 
 void DreamSys_ClearNeverSaved(DreamSys *dreamSys) {
@@ -1335,12 +1335,12 @@ s32 DreamSys_StartDay(DreamSys *dreamSys) {
 
     dreamSys->nextFlashback = 0;
     dreamSys->timer = 0;
-    dreamSys->savedDay = dreamSys->day;
+    dreamSys->savedDay = dreamSys->save.day;
     if (dreamSys->flashbackMode != 0) {
         dreamSys->vtbl->loadNextFlashback(dreamSys, 1);
         return dreamSys->stage;
     }
-    temp = Day_FindSpecial(dreamSys->cinematic.bytes, dreamSys->day + 1);
+    temp = Day_FindSpecial(dreamSys->cinematic.bytes, dreamSys->save.day + 1);
     dreamSys->vtbl->resetMoodAccumulators(dreamSys, temp);
     if (temp == 0) {
         dreamSys->vtbl->chooseStart(dreamSys);
@@ -1350,10 +1350,10 @@ s32 DreamSys_StartDay(DreamSys *dreamSys) {
 }
 
 s32 DreamSys_EndDay(DreamSys *dreamSys, s32 reason) {
-    dreamSys->day = dreamSys->savedDay;
+    dreamSys->save.day = dreamSys->savedDay;
     if (dreamSys->flashbackMode == 0 && reason == 0) {
         dreamSys->vtbl->calcUnlockScore(dreamSys);
-        dreamSys->vtbl->computeDayPoint(dreamSys, &dreamSys->graph[dreamSys->day]);
+        dreamSys->vtbl->computeDayPoint(dreamSys, &dreamSys->save.graph[dreamSys->save.day]);
         dreamSys->vtbl->advanceDay(dreamSys);
     } else if (reason == 2) {
         dreamSys->vtbl->initNewGame(dreamSys);
@@ -1371,7 +1371,7 @@ void DreamSys_ChooseStart(DreamSys *dreamSys) {
     s32 seconds;
 
     dreamSys->vtbl->getPreviousPoint(dreamSys, &prevPoint, 1);
-    dreamSys->stage = Spawn_PickFromMood(&dreamSys->place, &seconds, &prevPoint, dreamSys->day);
+    dreamSys->stage = Spawn_PickFromMood(&dreamSys->place, &seconds, &prevPoint, dreamSys->save.day);
     seconds = dreamSys->vtbl->swapTimeLimit(dreamSys, seconds);
     dreamSys->transition = 0xB;
 }
@@ -1401,13 +1401,13 @@ s32 DreamSys_LoadNextFlashback(DreamSys *dreamSys, s32 arg1) {
     s32 idx;
 
     idx = dreamSys->nextFlashback;
-    if (idx < dreamSys->flashbackCount) {
+    if (idx < dreamSys->save.flashbackCount) {
         dreamSys->transition = 0xE;
-        elem = &dreamSys->flashbacks[idx];
+        elem = &dreamSys->save.flashbacks[idx];
         if (arg1 == 0) {
             dreamSys->vtbl->unk30(dreamSys, 0xE);
         }
-        dreamSys->day = elem->day;
+        dreamSys->save.day = elem->day;
         dreamSys->stage = elem->stage;
         dreamSys->place = elem->place;
         return 1;
@@ -1464,7 +1464,7 @@ s32 func_8005A82C(DreamSys *dreamSys, void *arg1) {
         if (DreamSys_ExecuteLink(dreamSys, newStage, 0x11, 0) != 0) {
             dreamSys->transition = 0;
             dreamSys->player->vt->unkE8(dreamSys->player, sp10, &dreamSys->place);
-            dreamSys->vtbl->unkB8(dreamSys, sp10);
+            dreamSys->vtbl->setPosition(dreamSys, sp10);
             if (bonusSeconds != 0 && dreamSys->flashbackMode == 0) {
                 dreamSys->vtbl->swapTimeLimit(dreamSys, dreamSys->vtbl->getElapsedSeconds(dreamSys) + bonusSeconds);
             }
@@ -1485,13 +1485,13 @@ s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition, s32 a
         dreamSys->timer = 0;
     }
     if (arg3 != 0) {
-        DreamSysObj58 *obj = dreamSys->unk58;
-        obj->vt->unk80(obj, 0x90, 0x6E, 0x6E);
+        SoundBank *obj = dreamSys->soundBank;
+        obj->vtbl->playTone(obj, 0x90, 0x6E, 0x6E);
     }
     return 1;
 }
 
-s32 func_8005A9CC(DreamSys *dreamSys, DreamPlace *target) {
+s32 func_8005A9CC(DreamSys *dreamSys, StagePlace *target) {
     s32 sp10[4];
 
     if (dreamSys->transition == 0) {
@@ -1527,7 +1527,7 @@ s32 func_8005AB2C(DreamSys *dreamSys) {
     s32 temp_v1;
 
     if (dreamSys->linkStepTick == 0) {
-        func_8005AF64(dreamSys, D_8008ABC0, dreamSys->linkTarget.vec);
+        func_8005AF64(dreamSys, D_8008ABC0, &dreamSys->linkTarget.x);
     }
     if (dreamSys->unkAC != 4) {
         temp_v1 = dreamSys->linkStepTick;
@@ -1555,7 +1555,7 @@ s32 func_8005AC24(DreamSys *dreamSys) {
     s32 flag;
 
     if (dreamSys->linkStepTick == 0) {
-        func_8005AF64(dreamSys, D_8008ABC8, dreamSys->linkTarget.vec);
+        func_8005AF64(dreamSys, D_8008ABC8, &dreamSys->linkTarget.x);
     }
     if (dreamSys->unkAC != 4) {
         if (dreamSys->linkStepTick >= 0x95) {
@@ -1584,7 +1584,7 @@ s32 func_8005AC24(DreamSys *dreamSys) {
 
 s32 func_8005AD68(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
-        func_8005AF64(dreamSys, D_8008ABD0, dreamSys->linkTarget.vec);
+        func_8005AF64(dreamSys, D_8008ABD0, &dreamSys->linkTarget.x);
     }
     if (dreamSys->unkAC != 4) {
         if (dreamSys->linkStepTick > 100) {
@@ -1611,7 +1611,7 @@ s32 func_8005AE40(DreamSys *dreamSys) {
     s32 var;
 
     if (dreamSys->linkStepTick == 0) {
-        func_8005AF64(dreamSys, D_8008ABD8, dreamSys->linkTarget.vec);
+        func_8005AF64(dreamSys, D_8008ABD8, &dreamSys->linkTarget.x);
     }
     if (dreamSys->unkAC != 4) {
         temp_v1 = dreamSys->linkStepTick;
@@ -1647,7 +1647,7 @@ void func_8005AF64(DreamSys *dreamSys, s16 *from, s16 *to) {
     delta[1] = from[1] - to[1];
     delta[2] = from[2] - to[2];
     delta[1] = 0;
-    dreamSys->vtbl->unkBC(dreamSys, delta);
+    dreamSys->vtbl->move(dreamSys, delta);
 }
 
 s32 DreamSys_GetStage(DreamSys *dreamSys) {
@@ -1671,7 +1671,7 @@ void DreamSys_OnEntityEvent(DreamSys *dreamSys, Unk_8005B03C_ObjVtbl **entity, s
         case 9:
             if (dreamSys->flashbackMode == 0) {
                 dreamSys->vtbl->logEntityMood(dreamSys, (*entity)->unk14C(entity));
-                dreamSys->instanceScore = (*entity)->unk150(entity) + dreamSys->instanceScore;
+                dreamSys->save.instanceScore = (*entity)->unk150(entity) + dreamSys->save.instanceScore;
                 dreamSys->vtbl->maybeSaveFlashback(dreamSys, 0, 0x10);
                 return;
             }
@@ -1710,17 +1710,17 @@ void DreamSys_GetPreviousPoint(DreamSys *dreamSys, MoodPoint *out, s32 yesterday
     MoodPoint *p;
 
     if (yesterday != 0) {
-        if (dreamSys->year != 0 || dreamSys->day != 0) {
-            sum0 = dreamSys->graph[dreamSys->day - 1].x;
-            sum1 = dreamSys->graph[dreamSys->day - 1].y;
+        if (dreamSys->save.year != 0 || dreamSys->save.day != 0) {
+            sum0 = dreamSys->save.graph[dreamSys->save.day - 1].x;
+            sum1 = dreamSys->save.graph[dreamSys->save.day - 1].y;
         }
     } else {
         count = 365;
-        if (dreamSys->year == 0) {
-            count = dreamSys->day;
+        if (dreamSys->save.year == 0) {
+            count = dreamSys->save.day;
         }
         if (count != 0) {
-            p = dreamSys->graph;
+            p = dreamSys->save.graph;
             for (i = 0; i < count; i++, p++) {
                 sum0 += p->x;
                 sum1 += p->y;
@@ -1837,24 +1837,24 @@ s32 Mood_CalcAxis(s32 last, s32 sum, s32 count) {
 void DreamSys_CalcUnlockScore(DreamSys *dreamSys) {
     s32 temp;
 
-    dreamSys->navScore = Nav_CalcScore();
-    temp = dreamSys->instanceScore;
+    dreamSys->save.navScore = Nav_CalcScore();
+    temp = dreamSys->save.instanceScore;
     if (temp < 0) {
-        dreamSys->instanceScore = 0;
+        dreamSys->save.instanceScore = 0;
     } else if (temp > 0x02FAF080) {
-        dreamSys->instanceScore = 0x02FAF080;
+        dreamSys->save.instanceScore = 0x02FAF080;
     }
-    dreamSys->unlockScore = dreamSys->navScore + dreamSys->instanceScore;
+    dreamSys->save.unlockScore = dreamSys->save.navScore + dreamSys->save.instanceScore;
 }
 
-void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, DreamPlace *place, DreamRotation *rotation, s32 arg4, s32 length, s32 day) {
+void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, DreamRotation *rotation, s32 arg4, s32 length, s32 day) {
     Flashback *ent;
     s32 n;
 
-    ent = dreamSys->flashbacks;
-    n = dreamSys->flashbackCount;
+    ent = dreamSys->save.flashbacks;
+    n = dreamSys->save.flashbackCount;
     if (n < 10) {
-        dreamSys->flashbackCount = n + 1;
+        dreamSys->save.flashbackCount = n + 1;
         ent += n;
     } else {
         ent += dreamSys->timer % 9;
@@ -1877,28 +1877,28 @@ void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
             player = dreamSys->player;
             place = player->vt->unk10C(player, 0, 0);
             SceneNode_GetRotation(dreamSys, rotation);
-            dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, place, rotation, arg1, length, dreamSys->day);
+            dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, place, rotation, arg1, length, dreamSys->save.day);
         }
     }
 }
 
 void DreamSys_ClearFlashbacks(DreamSys *dreamSys) {
-    dreamSys->flashbackCount = 0;
+    dreamSys->save.flashbackCount = 0;
 }
 
 void func_8005B904(DreamSys *dreamSys) {
-    DreamBody *src = dreamSys->unk14.body;
+    Coord2 *src = dreamSys->pos.coord;
 
-    dreamSys->bodyCopy = *src;
-    dreamSys->bodyExtraCopy = *src->unk44;
+    dreamSys->coordCopy = *src;
+    dreamSys->paramCopy = *src->param;
 }
 
 void func_8005B990(DreamSys *dreamSys) {
-    DreamBody *dst = dreamSys->unk14.body;
+    Coord2 *dst = dreamSys->pos.coord;
 
-    *dst = dreamSys->bodyCopy;
-    *dst->unk44 = dreamSys->bodyExtraCopy;
-    dst->unk0 = 0;
+    *dst = dreamSys->coordCopy;
+    *dst->param = dreamSys->paramCopy;
+    dst->flg = 0;
 }
 
 s32 func_8005BA20(DreamSys *dreamSys, s32 value) {

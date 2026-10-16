@@ -124,13 +124,6 @@ typedef struct ActorVtbl {
     void (*unkE8)();
 } ActorVtbl;
 
-/* The block at +0x14 (as for entities, entity.h EntityPos): a word cleared after each move, the position at +0x18. */
-typedef struct ActorPos {
-    s32 unk0;
-    u8 pad_04[0x18 - 0x04];
-    Vec3 pos;
-} ActorPos;
-
 /* The vtable of the class SceneNode_GetVtbl returns (src/game/8001CA94.c), base of Actor. */
 typedef struct ActorBaseVtbl {
     u8 pad_00[0x08];
@@ -148,7 +141,7 @@ typedef struct ActorBaseVtbl {
 typedef struct Actor {
     ActorVtbl *vt;
     u8 pad_04[0x14 - 0x04];
-    ActorPos *posBlock;   /* 0x14 */
+    Coord2 *posBlock;     /* 0x14 its GsCOORDINATE2 (gs.h): flg cleared after each move */
     u8 pad_18[0x20 - 0x18];
     s32 unk20;            /* 0x20 tested by ModelObject_IsReady */
     u8 pad_24[0x28 - 0x24];
@@ -225,32 +218,6 @@ typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32,
  * The contact search of func_80057668 over the map's grid: 20 x 20 entry words per cell
  * (GridCell), each a chain of objects; the query gives the cell and the actor's x, y in it.
  */
-typedef struct GridRange {
-    u8 pad_00[2];
-    s16 count;            /* 0x2 slots of the cell */
-    s32 mode;             /* 0x4 1: the slots above and below are searched too */
-} GridRange;
-
-typedef struct GridSlotInfo {
-    u8 pad_00[0x2C];
-    s16 unk2C;            /* 0x2C a slot is searched only when it is not 0 */
-    u8 pad_2E[0x32 - 0x2E];
-    s16 index;            /* 0x32 */
-} GridSlotInfo;
-
-typedef struct GridSlot {
-    u8 pad_00[4];
-    GridSlotInfo *info;
-} GridSlot;
-
-typedef struct GridQuery {
-    u8 pad_00[2];
-    s8 x;                 /* 0x2 0 to 0x13 */
-    s8 y;                 /* 0x3 0 to 0x13 */
-    u8 pad_04[0x24 - 0x04];
-    GridSlot *slot;       /* 0x24 */
-} GridQuery;
-
 typedef struct GridRect {
     s16 left;
     s16 top;
@@ -258,7 +225,6 @@ typedef struct GridRect {
     s32 height;
 } GridRect;
 
-typedef struct GridMap GridMap;
 typedef struct GridActor GridActor;
 
 typedef struct GridActorVtbl {
@@ -276,20 +242,7 @@ struct GridActor {
     u8 pad_18[0x28 - 0x18];
     s32 contact;
     u8 pad_2C[0x4C - 0x2C];
-    GridMap *map;
-};
-
-typedef struct GridMapVtbl {
-    u8 pad_00[0x110];
-    s32 (*query)(GridMap *, void *, u8 *);    /* 0x110 0 when the position is on the grid */
-    u8 pad_114[0x118 - 0x114];
-    GridSlot *(*slotAt)(GridMap *, s32);      /* 0x118 */
-} GridMapVtbl;
-
-struct GridMap {
-    GridMapVtbl *vt;
-    u8 pad_04[0x68 - 0x04];
-    GridRange *range;
+    StageMap *map;        /* 0x4C */
 };
 
 /* One word of g_sceneryParams, as func_8005511C writes unk1C and unk20. */
@@ -537,7 +490,7 @@ extern s32 D_8008AB98[];
 extern s16 D_8008AB94[];
 PlaceObj *D_8008ACA4;
 void *D_8008ACA8;
-PlaceView *D_8008ACAC;
+View *D_8008ACAC;
 void ModelObject_SetClut(void *, void *);
 void func_80052E7C(Place *place, s32 result, s32 arg2, s32 arg3);
 PlaceVtbl *Place_GetVtbl(void);
@@ -569,7 +522,7 @@ extern void *func_80057C94(s32 index, s32 arg1, s32 font);
 extern s32 rand(void);
 extern u8 D_8008788C[];
 extern s8 D_80087324[];
-void func_80056F5C(s32 family, PlaceObj *models, void *font, PlaceView *view);
+void func_80056F5C(s32 family, PlaceObj *models, void *font, View *view);
 s32 *func_80054DA4(s32 *out, s32 count, void *origin);
 s32 *func_80054F30(s32 *out, s32 count, void *origin);
 s32 *func_80054FD8(s32 *out, s32 origin);
@@ -638,7 +591,7 @@ extern u8 D_800879C4[];
 extern s32 D_8008780C[];
 extern Vec3 D_8008782C;
 extern s32 D_80087838[];
-extern void Sym_InitStage(s32 stage, PlaceMap *map, DreamSys *dreamSys, PlaceObj *arg3, PlaceObj *arg4);
+extern void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, PlaceObj *arg3, PlaceObj *arg4);
 extern void *Stage_GetGrid(s32 stage);
 extern s32 D_8008715C[];
 extern s32 D_80087168[];
@@ -1075,15 +1028,15 @@ void func_80052EBC(Place *place) {
  * (Scenery_Begin, which gives the ambience) and sets the state to 5.
  */
 void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
-    PlaceView *view;
+    View *view;
     s32 mode;
 
     view = place->view;
-    view->vt->unk74(view);
+    view->vtbl->detach(view);
     place->texLoading = 1;
     place->music->vt->unk5C(place->music, Music_PickTrack(place->stage, 0));
     place->texLoader = Tix_Create(Stage_PickTexturePath(place->stage, 0, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0)));
-    view->vt->unk70(view, place->dreamSys, D_8008715C, D_80087168, 0);
+    view->vtbl->setCamera(view, place->dreamSys, D_8008715C, D_80087168, 0);
     place->refs.view = view;
     place->ambience = Scenery_Begin((s32)place->map, place->stage, &place->refs, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0), 0);
     if (ambience != 0) {
@@ -1100,12 +1053,12 @@ void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
         if (place->stage == 3) {
             mode = 1;
         }
-        place->map->vt->unk134(place->map, NULL);
+        place->map->vtbl->unk134(place->map, NULL);
     } else {
         place->unk40 = 0x10;
         place->unk44 = 2;
         mode = 1;
-        place->map->vt->unk134(place->map, D_80087150);
+        place->map->vtbl->unk134(place->map, D_80087150);
     }
     place->unk48 = arg1;
     if (arg1 == 0) {
@@ -1169,7 +1122,7 @@ void Place_CheckTextureLoad(void *arg0, void *arg1) {
             return;
         }
     }
-    if (place->map->unk1B4 == 0 && place->started == 0) {
+    if (place->map->pendingSlots == 0 && place->started == 0) {
         place->ready = 1;
         place->vt->start(place);
     }
@@ -1232,28 +1185,28 @@ void func_800534C0(void) {
 
 /* Slot 0x80, after the texture set: hands the stage to the spawn code (Sym_InitStage) and sets up the map. */
 void func_800534C8(Place *place) {
-    PlaceView *view;
-    PlaceMap *map;
+    View *view;
+    StageMap *map;
     Ambience *ambience;
     PlaceObj *first;
     DreamSys *dreamSys;
 
     view = place->view;
     ambience = place->ambience;
-    view->vt->unk74(view);
+    view->vtbl->detach(view);
     first = *place->unkC;
-    view->vt->unk54(view, ((((s32) *first->vt->unk7C(first, 0) / 2) * 5) / 3) + D_8008AB34);
-    view->vt->unk70(view, place->dreamSys, D_8008715C, D_80087168, 0);
+    view->vtbl->setProjection(view, ((((s32) *first->vt->unk7C(first, 0) / 2) * 5) / 3) + D_8008AB34);
+    view->vtbl->setCamera(view, place->dreamSys, D_8008715C, D_80087168, 0);
     Sym_InitStage(place->stage, place->map, place->dreamSys, place->unk34, place->unk10);
     map = place->map;
     place->vt->watch(place, map);
-    map->vt->unkBC(map, ambience->unk8, 0);
-    map->vt->unkC4(map, 3, ambience->unk0, ambience->unk4);
-    map->vt->unkE0(map, Stage_GetGrid(place->stage));
+    map->vtbl->setAmbient(map, ambience->unk8, 0);
+    map->vtbl->unkC4(map, 3, ambience->unk0, ambience->unk4);
+    map->vtbl->setGrid(map, Stage_GetGrid(place->stage));
     dreamSys = place->dreamSys;
     dreamSys->vtbl->unk4C(dreamSys, map);
-    map->vt->unkDC(map, place->unk48);
-    map->vt->unkCC(map, D_8008710C);
+    map->vtbl->setViewDistance(map, place->unk48);
+    map->vtbl->setMessageFilter(map, D_8008710C);
 }
 
 /* Slot 0x84 */
@@ -1261,7 +1214,7 @@ void func_800536B0(Place *place) {
     place->vt->closePause(place);
     place->dreamSys->vtbl->unkFC(place->dreamSys);
     place->dreamSys->vtbl->unk50(place->dreamSys);
-    place->view->vt->unk74(place->view);
+    place->view->vtbl->detach(place->view);
     place->vt->unwatch(place, place->map);
 }
 
@@ -1269,36 +1222,36 @@ void func_800536B0(Place *place) {
 void Place_Start(Place *place) {
     s32 color;
     DreamSys *dreamSys;
-    PlaceMap *map;
-    PlaceView *view;
+    StageMap *map;
+    View *view;
     Ambience *ambience;
-    PlaceFader *fader;
+    Fade *fader;
     s32 flashbackMode;
 
     place->started = 1;
     place->dreamSys->vtbl->unkF8(place->dreamSys, place->unk44, place->unk40);
     map = place->map;
-    map->vt->unkEC(map);
+    map->vtbl->activate(map);
     view = place->view;
     ambience = place->ambience;
-    view->vt->unk60(view, 1);
-    view->vt->unk64(view, ambience->colorA);
-    view->vt->unk6C(view, ambience->depth);
-    view->vt->unk68(view, ambience->mode != 1 ? ambience->colorB : ambience->colorA);
-    view->vt->unkB0(view, 0);
-    view->vt->unkB4(view, 1);
-    fader = view->vt->getFader(view);
+    view->vtbl->setLightMode(view, 1);
+    view->vtbl->setClearColor(view, ambience->colorA);
+    view->vtbl->setFogNear(view, ambience->depth);
+    view->vtbl->setFogColor(view, ambience->mode != 1 ? ambience->colorB : ambience->colorA);
+    view->vtbl->setUnkB4(view, 0);
+    view->vtbl->setUnkB8(view, 1);
+    fader = view->vtbl->getOverlay(view);
     place->vt->watch(place, fader);
     dreamSys = place->dreamSys;
     flashbackMode = dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
-    fader->vt->unkF0(fader, flashbackMode, flashbackMode != 0 ? 3 : 0);
-    fader->vt->unkD4(fader, place->unk10, flashbackMode != 0 ? color : -1, 0);
+    fader->vtbl->setTint(fader, flashbackMode, flashbackMode != 0 ? 3 : 0);
+    fader->vtbl->startIn(fader, place->unk10, flashbackMode != 0 ? color : -1, 0);
 }
 
 /* Slot 0x8C, every tick while not paused: the scenery tick at the map's position. */
 void func_8005393C(Place *place) {
-    PlaceMap *map = place->map;
-    Scenery_Tick(map->vt->unk10C(map, 0, 0), 0, 0);
+    StageMap *map = place->map;
+    Scenery_Tick((s32)map->vtbl->getLocation(map, 0, 0), 0, 0);
 }
 
 /* Slot 0x90: DreamSys messages 10 to 17 go to slots 0x94 to 0xAC while the state is 0. */
@@ -1384,7 +1337,7 @@ void func_80053BE8(Place *place) {
     } else {
         place->state = 5;
         dreamSys = place->dreamSys;
-        Place_StartFade(place, ((s32 (*)(DreamSys *))dreamSys->vtbl->getDreamColor)(dreamSys), 0, 0xA, 1);
+        Place_StartFade(place, dreamSys->vtbl->getDreamColor(dreamSys), 0, 0xA, 1);
         dreamSys = place->dreamSys;
         dreamSys->vtbl->unkFC(dreamSys);
     }
@@ -1396,7 +1349,7 @@ void func_80053C94(Place *place) {
 
     dreamSys = place->dreamSys;
     place->state = 6;
-    Place_StartFade(place, ((s32 (*)(DreamSys *))dreamSys->vtbl->getDreamColor)(dreamSys), 0, 0x1E, 1);
+    Place_StartFade(place, dreamSys->vtbl->getDreamColor(dreamSys), 0, 0x1E, 1);
     dreamSys = place->dreamSys;
     dreamSys->vtbl->unkFC(dreamSys);
 }
@@ -1437,22 +1390,22 @@ void func_80053E84(Place *place) {
 /* Start the view's fader towards a colour index (0 to 7), watched when asked. */
 void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch) {
     Place *place = arg0;
-    PlaceView *view;
-    PlaceFader *fader;
+    View *view;
+    Fade *fader;
 
     view = place->view;
-    fader = view->vt->getFader(view);
+    fader = view->vtbl->getOverlay(view);
     if (duration != 0) {
-        fader->vt->unkD0(fader, duration);
+        fader->vtbl->setStep(fader, duration);
     }
     if (watch != 0) {
         place->vt->watch(place, fader);
     }
-    fader->vt->unkD8(fader, place->unk10, color, arg2);
+    fader->vtbl->startOut(fader, place->unk10, color, arg2);
 }
 
 /* Slot 0xB0: the fader is done (5: back to state 0; 6: its colour goes to the view, state 10 becomes 4). */
-void func_80053F84(Place *place, PlaceFader *fader, s32 message) {
+void func_80053F84(Place *place, Fade *fader, s32 message) {
     void *color;
 
     switch (message) {
@@ -1463,8 +1416,8 @@ void func_80053F84(Place *place, PlaceFader *fader, s32 message) {
         break;
     case 6:
         place->vt->unwatch(place, fader);
-        color = fader->vt->unkE4(fader);
-        place->view->vt->unk64(place->view, color);
+        color = fader->vtbl->getColor(fader);
+        place->view->vtbl->setClearColor(place->view, color);
         if (place->state == 5 || place->state == 8) {
         } else if (place->state == 10) {
             place->dreamSys->vtbl->unk17C(place->dreamSys, 1);
@@ -1486,24 +1439,24 @@ void func_800540E8(Place *place, s32 sender, s32 message) {
 /* Slot 0xB8: spawn the characters of the map cell under the dreamer (Sym_SpawnOrSpy, discoveries "Grey Man spawn"). */
 s32 Place_SpawnCell(Place *place) {
     s32 chunkKey;
-    PlaceMap *map;
+    StageMap *map;
     DreamSys *dreamSys;
-    MapCellOwner *owner;
-    MapCell *cell;
+    MapChunk *chunk;
+    MapSlot *slot;
     s32 dayNumber;
     s32 spawned;
 
     map = place->map;
-    cell = map->vt->cellAt(map, &chunkKey);
+    slot = map->vtbl->currentSlot(map, &chunkKey);
     dreamSys = place->dreamSys;
     dayNumber = dreamSys->vtbl->getDayNumber(dreamSys, 0);
-    spawned = Sym_SpawnOrSpy(cell->owner->unk34, &chunkKey, dayNumber);
-    cell->spawned = spawned;
+    spawned = Sym_SpawnOrSpy(slot->chunk->entities, &chunkKey, dayNumber);
+    slot->spawned = (Object *)spawned;
     if (spawned != 0) {
         return 0;
     }
-    owner = cell->owner;
-    owner->vt->unk84(owner);
+    chunk = slot->chunk;
+    chunk->vtbl->freeEntities(chunk);
     return 1;
 }
 
@@ -1551,7 +1504,7 @@ void Place_UpdatePause(Place *place) {
     }
     place->pauseOpen = ticks + 1;
     if (ticks == 4) {
-        place->view->vt->unkB4(place->view, 0);
+        place->view->vtbl->setUnkB8(place->view, 0);
         place->unk10->vt->unk4C(place->unk10);
         place->music->vt->unk4C(place->music);
         place->unk34->vt->unk88(place->unk34);
@@ -1566,7 +1519,7 @@ void Place_ClosePause(Place *place) {
     place->unk34->vt->unk8C(place->unk34);
     place->music->vt->unk50(place->music);
     place->unk10->vt->unk50(place->unk10);
-    place->view->vt->unkB4(place->view, 1);
+    place->view->vtbl->setUnkB8(place->view, 1);
     place->pauseOpen = 0;
 }
 
@@ -1628,7 +1581,7 @@ void Ambience_Fill(Ambience *ambience, AmbienceRecord *record) {
 /* The extra ambience object, when the record's depth is 4 or more. */
 void func_80054660(void) {
     AmbienceBand *band;
-    PlaceView *view;
+    View *view;
 
     if (D_8008AB54 != 0) {
         band = Box_Create((s32)D_8008AB60, D_8008AB54, 0);
@@ -1636,7 +1589,7 @@ void func_80054660(void) {
         band->vt->unk64(band, 1);
         D_8008AC94->vt->unk68(D_8008AC94, 0);
         view = g_placeRefs->view;
-        D_8008AC94->vt->attach(D_8008AC94, view->vt->getFader(view), D_8008AB58);
+        D_8008AC94->vt->attach(D_8008AC94, view->vtbl->getOverlay(view), D_8008AB58);
     }
 }
 
@@ -1686,7 +1639,7 @@ void func_80054850(void) {
     Point layout[2];
     s32 i;
     AmbienceBand *band;
-    PlaceView *view;
+    View *view;
 
     if (D_8008AB50 != 0) {
         layout[0] = D_8008AB68;
@@ -1703,7 +1656,7 @@ void func_80054850(void) {
             layout[1].y -= 7;
         }
         view = g_placeRefs->view;
-        g_ambienceBands[0]->vt->attach(g_ambienceBands[0], view->vt->getFader(view), layout);
+        g_ambienceBands[0]->vt->attach(g_ambienceBands[0], view->vtbl->getOverlay(view), layout);
     }
 }
 
@@ -1711,7 +1664,7 @@ void func_80054850(void) {
 void func_800549A8(void) {
     u8 rgb[8];
     Point pos;
-    PlaceView *view;
+    View *view;
     AmbienceBand **band;
     s32 shift;
     s32 off;
@@ -1721,7 +1674,7 @@ void func_800549A8(void) {
         return;
     }
     view = g_placeRefs->view;
-    shift = ((view->unk18 - view->unk24) / 600) * 3;
+    shift = ((view->viewpoint.y - view->refPoint.y) / 600) * 3;
     if (shift > 0) {
         pos = D_8008AB68;
         i = 0;
@@ -1740,7 +1693,7 @@ void func_800549A8(void) {
             band++;
         }
         func_80054B1C(rgb, D_8008AC90, shift);
-        view->vt->unk64(view, rgb);
+        view->vtbl->setClearColor(view, rgb);
     }
 }
 
@@ -2366,7 +2319,7 @@ void func_80056520(void *self, s32 map, s32 origin) {
     Vec3 pos;
     s32 kind;
 
-    D_8008ACB0 = D_8008ACAC->unk18;
+    D_8008ACB0 = D_8008ACAC->viewpoint.y;
     func_80056794(&pos, (Vec3 *)origin, &scenery->offset);
     func_800567D4(self, map, &pos, scenery->unk64, (s32)scenery->unk68);
     kind = scenery->kind;
@@ -2391,7 +2344,7 @@ void func_80056640(Scenery *scenery, Vec3 *origin) {
     Vec3 pos;
 
     func_80056794(&pos, origin, &scenery->offset);
-    pos.y += D_8008ACAC->unk18 - D_8008ACB0;
+    pos.y += D_8008ACAC->viewpoint.y - D_8008ACB0;
     scenery->vt->setPos(scenery, &pos);
     switch (scenery->kind) {
     case 0:
@@ -2613,7 +2566,7 @@ SceneryVtbl *Scenery_GetVtbl(void) {
 }
 
 /* Keep the place's models, font and view for the scenery, and prepare models D_8008AB98[0..1]. */
-void func_80056F5C(s32 family, PlaceObj *models, void *font, PlaceView *view) {
+void func_80056F5C(s32 family, PlaceObj *models, void *font, View *view) {
     s32 i;
 
     D_8008ACA4 = models;
@@ -2742,15 +2695,15 @@ void Actor_MovePos(void *actor, s32 *delta) {
 
 void func_800573CC(void *self, s32 set, s32 *vec) {
     Actor *actor = self;
-    ActorPos *block = actor->posBlock;
+    Coord2 *block = actor->posBlock;
     if (set != 0) {
-        block->pos = *(Vec3 *)vec;
+        block->coord.t = *(Vec3 *)vec;
     } else {
-        block->pos.x += vec[0];
-        block->pos.y += vec[1];
-        block->pos.z += vec[2];
+        block->coord.t.x += vec[0];
+        block->coord.t.y += vec[1];
+        block->coord.t.z += vec[2];
     }
-    actor->posBlock->unk0 = 0;
+    actor->posBlock->flg = 0;
 }
 
 /* Slot 0xC0 */
@@ -2818,7 +2771,7 @@ s32 func_80057668(GridActor *actor) {
 
     if (actor->map != NULL) {
         pos = actor->posBlock + 0x18;
-        if (actor->map->vt->query(actor->map, cell, pos) == 0) {
+        if (actor->map->vtbl->locate(actor->map, cell, pos) == 0) {
             found = func_80057784(actor, rects, cells, cell, 1);
             found = func_80057954((s32)actor, (s32)delta, (s32)pos, found, (s32)rects, cells);
             actor->contact = found;
@@ -2835,12 +2788,12 @@ s32 func_80057668(GridActor *actor) {
 
 /* The rectangles of cells to search: the cell itself and the slots above and below it (n == 1), else the n x n square clipped to the 20 x 20 grid. */
 s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size) {
-    GridSlot **cells;
+    MapSlot **cells;
     GridRect *rects;
-    GridQuery *in = cellInfo;
+    MapLocation *in = cellInfo;
     s32 n = size;
-    s32 x = in->x;
-    s32 y = in->y;
+    s32 x = in->at.place.tileX;
+    s32 y = in->at.place.tileY;
     s32 left, top, w, h, count;
 
     rects = outRects;
@@ -2856,9 +2809,9 @@ s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s
     count = 1;
     top = y;
     if (n == 1) {
-        GridMap *map;
-        GridSlot *slot;
-        GridRange *range;
+        StageMap *map;
+        MapSlot *slot;
+        StageGrid *grid;
         s16 idx;
 
         rects[0].left = left;
@@ -2868,18 +2821,18 @@ s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s
         slot = in->slot;
         cells[0] = slot;
         map = ((GridActor *) actor)->map;
-        range = map->range;
-        if (range->mode != 1) {
+        grid = map->grid;
+        if (grid->stacked != 1) {
             return 1;
         }
-        idx = slot->info->index;
-        if (idx + 1 < range->count) {
-            cells[1] = map->vt->slotAt(map, idx + 1);
+        idx = slot->chunk->id;
+        if (idx + 1 < grid->rows) {
+            cells[1] = map->vtbl->slotById(map, idx + 1);
             count = 2;
             rects[1] = rects[0];
         }
         if (idx - 1 >= 0) {
-            cells[count] = map->vt->slotAt(map, idx - 1);
+            cells[count] = map->vtbl->slotById(map, idx - 1);
             rects[count] = rects[0];
             count++;
         }
@@ -2911,14 +2864,14 @@ s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s
 
 s32 func_80057954(s32 actor, s32 delta, s32 pos, s32 count, s32 rects, void **cells) {
     s32 found;
-    GridSlot *cell;
+    MapSlot *cell;
     s32 i;
 
     i = 0;
     while (i < count) {
         cell = *cells;
         i += 1;
-        if (cell->info->unk2C != 0) {
+        if (cell->chunk->loaded != 0) {
             found = func_80057A18(actor, delta, pos, rects, cell);
             if (found != 0) {
                 return found;

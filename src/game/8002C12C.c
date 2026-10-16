@@ -1,4 +1,5 @@
 #include "common.h"
+#include "game/sound.h"
 
 /*
  * Sound: the PSY-Q sound bank (VAB) that a model holds at +0x58, its tone table, and the handler
@@ -45,51 +46,6 @@ extern ModelSetVtbl D_8006D940;
 ModelSetVtbl *func_8002C3A8(void);
 
 /* One tone of a program: 0x20 bytes, the layout SsUtGetVagAtr fills (center and fine are read here). */
-typedef struct SoundTone {
-    u8 pad_00[4];
-    u8 center;   /* 0x04 passed to SsUtKeyOn as the note */
-    u8 fine;     /* 0x05 passed to SsUtKeyOn as the fine tuning */
-    u8 pad_06[0x1A];
-} SoundTone;
-
-/* Vtable of the sound bank class at D_8006DA34 (Sound_GetBankClass); slots 0x80, 0x84, 0x9C are the sound calls. */
-typedef struct SoundBankVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *bank, s32 param);                                     /* 0x08 Sound_CreateBank */
-    u8 pad_0C[0x4C];
-    void (*unk_58)(void *bank, void *fullPath, s32 vabBuffer);               /* 0x58 */
-    void (*unk_5C)(void);                                                    /* 0x5C */
-    u8 pad_60[0xC];
-    void (*unk_6C)(void *bank, s8 *fullPath);                                /* 0x6C */
-    u8 pad_70[0x8];
-    void (*unk_78)(void *bank, s32 param);                                   /* 0x78 */
-    void (*unk_7C)(void *bank);                                              /* 0x7C */
-    s32 (*playTone)(void *bank, s32 sound, s32 volume, s32 endVolume);      /* 0x80 Sound_PlayTone */
-    s32 (*stopVoice)(void *bank, s32 voice);                                 /* 0x84 Sound_StopVoice */
-    u8 pad_88[0x14];
-    void (*setOctave)(void *bank, s32 octave);                               /* 0x9C Sound_SetOctave */
-} SoundBankVtbl;
-
-/* The sound bank: 0x64 bytes, allocated by Sound_CreateBank with the class vtable at D_8006DA34. */
-typedef struct SoundBank {
-    /* 0x00 */ SoundBankVtbl *vt;
-    /* 0x04 */ u8 pad_04[0xC];
-    /* 0x10 */ s32 vabBuffer;     /* VAB data being loaded; g_vabBuffer keeps it between calls */
-    /* 0x14 */ u8 pad_14[0x10];
-    /* 0x24 */ s32 unk_24;        /* flags: bit 0x200 means the file has been read */
-    /* 0x28 */ u8 pad_28[0x2];
-    /* 0x2A */ u16 state;         /* 0 idle, 1 open the VAB header, 6 transfer the body */
-    /* 0x2C */ u8 pad_2C[0x20];   /* the VAB header, see SoundBankVab */
-    /* 0x4C */ s32 toneData;      /* SoundBankVab: u8 *, one 0x20-byte tone per entry */
-    /* 0x50 */ s32 programTones;  /* SoundBankVab: u8 **, SoundBankTones: SoundTone ** */
-    /* 0x54 */ s16 vabId;
-    /* 0x56 */ s16 muted;         /* 1 after SsSetMute(1) */
-    /* 0x58 */ u16 transferDone;  /* 1 once SsVabTransCompleted has run */
-    /* 0x5A */ u16 transferring;  /* 1 while the VAB body is sent */
-    /* 0x5C */ s32 path;          /* heap copy of the file path given to Sound_InitBank */
-    /* 0x60 */ s32 noteShift;     /* octave * 12 - 24, set by Sound_SetOctave */
-} SoundBank;
-
 /* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
 typedef struct SoundBankVab {
     SoundBankVtbl *vt;
@@ -131,26 +87,6 @@ s32 D_8008A8CC;
 extern s8 D_8008A8D0[];
 extern s8 D_8008A8D4[];
 extern u8 D_8006D9BC[];
-
-/* One voice of a handler node (5 words, 0x14 bytes); see 8005C508.c HandlerVoice. */
-typedef struct HandlerVoice {
-    s32 voice;     /* 0x00 SPU voice playing, -1 none */
-    s32 sound;     /* 0x04 sound to start this tick, -1 none, -2 stops the voice */
-    s32 octave;    /* 0x08 bank slot 0x9C: notes shift by octave * 12 - 24 */
-    s32 volume;    /* 0x0C start volume, 0x7F by default */
-    s32 endVolume; /* 0x10 volume the fade slides to, 0x40 by default */
-} HandlerVoice;
-
-/* A handler node (0x54 bytes), the second argument of a handler; see 8005C508.c HandlerNode. */
-typedef struct HandlerNode {
-    s32 id;                  /* 0x00 entity type + 1 while running, 0 once stopped */
-    s32 tick;                /* 0x04 runs so far, counted by func_8002CD08 */
-    s32 owner;               /* 0x08 the entity, the handler's first argument */
-    s32 handler;             /* 0x0C the handler function */
-    s32 fade;                /* 0x10 set by the handler, lowers both volumes by volume / fadeSteps */
-    s32 fadeSteps;           /* 0x14 10 */
-    HandlerVoice voices[3];  /* 0x18 */
-} HandlerNode;
 
 /* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through unk_08. */
 typedef struct GridRecord {
@@ -375,12 +311,12 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     s8 *pathCopy;
 
     ((ObjectRootVtbl *)File_GetBackendVtbl())->init(bank);
-    bank->vt = Sound_GetBankClass();
+    bank->vtbl = Sound_GetBankClass();
     bank->toneData = 0;
     bank->programTones = 0;
     bank->vabId = 0;
     bank->muted = 0;
-    bank->vt->setOctave(bank, 0);
+    bank->vtbl->setOctave(bank, 0);
     bank->transferDone = 0;
     bank->transferring = 0;
     bank->path = 0;
@@ -402,7 +338,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
             strcpy(pathCopy, path);
             File_JoinPath(fullPath, pathCopy, (s8 *)0, D_8008A8D0);
             bank->state = 1;
-            bank->vt->unk_6C(bank, fullPath);
+            bank->vtbl->unk_6C(bank, fullPath);
         }
     }
 }
@@ -441,7 +377,7 @@ void Sound_UpdateBank(SoundBank *bank) {
                 oldVabBuffer = bank->vabBuffer;
                 bank->vabBuffer = 0;
                 g_vabBuffer = oldVabBuffer;
-                bank->vt->unk_58(bank, fullPath, oldVabBuffer);
+                bank->vtbl->unk_58(bank, fullPath, oldVabBuffer);
                 if (bank->path != 0) {
                     Heap_Free(bank->path);
                     bank->path = 0;
@@ -454,7 +390,7 @@ void Sound_UpdateBank(SoundBank *bank) {
                 bank->vabId = ret;
                 if (ret != -1) {
                     bank->transferring = 1;
-                    bank->vt->unk_78(bank, 1);
+                    bank->vtbl->unk_78(bank, 1);
                 }
             }
             break;
@@ -469,7 +405,7 @@ s32 Sound_PollTransfer(SoundBank *bank, s32 allowFinish) {
             SsVabTransCompleted(1);
             bank->transferring = 0;
             bank->transferDone = 1;
-            bank->vt->unk_7C(bank);
+            bank->vtbl->unk_7C(bank);
             ret = 1;
         }
     }
@@ -614,7 +550,7 @@ void func_8002CC84(SoundBank *bank, HandlerNode *node) {
     voice = node->voices;
     for (i = 0; i < 3; i++, voice++) {
         if (voice->voice >= 0) {
-            voice->voice = bank->vt->stopVoice(bank, voice->voice);
+            voice->voice = bank->vtbl->stopVoice(bank, voice->voice);
         }
     }
     node->id = 0;
@@ -643,14 +579,14 @@ void func_8002CD08(SoundBank *bank, HandlerNode *node) {
                 if (voice->sound >= 0) {
                     activeVoice = voice->voice;
                     if (activeVoice >= 0) {
-                        bank->vt->stopVoice(bank, activeVoice);
+                        bank->vtbl->stopVoice(bank, activeVoice);
                     }
-                    bank->vt->setOctave(bank, voice->octave);
-                    voice->voice = bank->vt->playTone(bank, voice->sound << 4, voice->volume - (voice->volume / node->fadeSteps) * node->fade, voice->endVolume - (voice->endVolume / node->fadeSteps) * node->fade);
+                    bank->vtbl->setOctave(bank, voice->octave);
+                    voice->voice = bank->vtbl->playTone(bank, voice->sound << 4, voice->volume - (voice->volume / node->fadeSteps) * node->fade, voice->endVolume - (voice->endVolume / node->fadeSteps) * node->fade);
                 } else if (voice->sound == -2) {
                     activeVoice = voice->voice;
                     if (activeVoice >= 0) {
-                        bank->vt->stopVoice(bank, activeVoice);
+                        bank->vtbl->stopVoice(bank, activeVoice);
                     }
                 }
             }

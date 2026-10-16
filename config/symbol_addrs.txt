@@ -1267,3 +1267,4 @@ Label_GetVtbl = 0x80040FB0; // type:func size:0x10 // returns D_8006EB90, the vt
 g_labelVtbl = 0x8006EB90; // class word 0x11144, the glyph slots with the row slots 0xC4 to 0xD4 (set char, set text, set spacing)
 Label_Init = 0x80040A88; // type:func size:0x60 // slot 0x40 of g_labelVtbl, spacing 7 then setText with the text of Label_Construct
 Label_Hide = 0x80040C00; // type:func size:0xD0 // slot 0x50 of g_labelVtbl (hide in WidgetVtbl), hides each shown glyph then the label
+View_SetScreenSize = 0x8003EA0C; // type:func size:0x18 // View vtable slot 0x44, stores the ScreenPoint at View +0x34 that Scene_DrawNode in 80012064 halves to size boxes and sprites

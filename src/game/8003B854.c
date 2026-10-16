@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/loader.h"
+#include "game/sound.h"
 
 /*
  * Screens and the view (include/game/scene.h): VideoScreen (VideoScreen_New to VideoScreen_GetVtbl),
@@ -14,32 +16,6 @@
 #define PAD_PRESSED_CROSS 0x17
 #define PAD_PRESSED_CIRCLE 0x19
 #define PAD_PRESSED_START 0x21
-
-/* The sound bank of a menu (src/game/8002C12C.c): a VAB opened from a path. */
-typedef struct SoundBankVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();
-    u8 pad_08[0x80 - 0x08];
-    void (*playTone)(); /* 0x80 Sound_PlayTone (bank, tone, volume, volume): SsUtKeyOn */
-} SoundBankVtbl;
-
-typedef struct SoundBank {
-    SoundBankVtbl *vtbl;
-} SoundBank;
-
-/* An image loaded from a TIM (Tim_New, src/game/8003B39C.c): a screen's picture or a menu font. */
-typedef struct ImageVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();
-    u8 pad_08[0x5C - 0x08];
-    void (*unk5C)();
-    u8 pad_60[0x78 - 0x60];
-    void (*unk78)();
-} ImageVtbl;
-
-typedef struct Image {
-    ImageVtbl *vtbl;
-} Image;
 
 /* Bg, BgMap and BgCells (src/game/80043008.c, include/game/loader.h): the slots this unit calls. */
 typedef struct ScreenBgVtbl {
@@ -100,10 +76,10 @@ SceneNode *SceneNode_New(void);
 void *Clock_Create(void);
 void *RootNode_Create(void);
 SoundBank *Sound_CreateBank(char *path);
-Image *Tim_New(char *path);
+Tim *Tim_New(char *path);
 void *Fade_Create(s32, s32, s32);
 extern void *Box_Create(s32, s32, s32);
-Widget *Label_Create(Image *font, s32 length, u8 *text);
+Widget *Label_Create(Tim *font, s32 length, u8 *text);
 ScreenBg *Bg_Create(ScreenBg *, s32);
 ScreenBg *BgMap_Create(s32, ScreenBg *);
 ScreenBg *BgCells_Create(s32);
@@ -337,7 +313,7 @@ void MenuScreen_Destroy(MenuScreen *screen) {
         screen->sound->vtbl->delete_(screen->sound);
     }
     if (screen->picturePath != 0) {
-        screen->picture->vtbl->delete_(screen->picture);
+        screen->picture->vtbl->base.delete_(screen->picture);
     }
     screen->vtbl->freeMenu(screen);
     Screen_GetVtbl()->destroy(screen);
@@ -696,20 +672,20 @@ s32 MenuScreen_FadeOutStep(MenuScreen *screen) {
     return (u8)level > 0x80;
 }
 
-void MenuScreen_SetPicture(MenuScreen *screen, char *path, Image *image) {
-    Image *picture;
-    Image *loaded;
+void MenuScreen_SetPicture(MenuScreen *screen, char *path, Tim *image) {
+    Tim *picture;
+    Tim *loaded;
 
     if (path != 0) {
         if (screen->picturePath != 0) {
             picture = screen->picture;
-            picture->vtbl->delete_(picture);
+            picture->vtbl->base.delete_(picture);
         }
         loaded = Tim_New(path);
         screen->picture = loaded;
-        loaded->vtbl->unk78(loaded);
+        loaded->vtbl->upload(loaded);
         picture = screen->picture;
-        picture->vtbl->unk5C(picture);
+        picture->vtbl->base.freeData(picture);
     } else {
         screen->picture = image;
     }
@@ -724,7 +700,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
     s32 size;
     OptionListDef *options;
     Widget **items;
-    Image *font;
+    Tim *font;
 
     screen->menu = menu;
     if (menu != NULL) {
@@ -742,8 +718,8 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
         screen->itemCount = count;
         if (menu->fontPath != 0) {
             font = Tim_New(menu->fontPath);
-            font->vtbl->unk78(font);
-            font->vtbl->unk5C(font);
+            font->vtbl->upload(font);
+            font->vtbl->base.freeData(font);
         } else {
             font = menu->font;
         }
@@ -773,13 +749,13 @@ void MenuScreen_FreeMenu(MenuScreen *screen) {
     MenuDef *menu;
     Widget **items;
     Widget *widget;
-    Image *font;
+    Tim *font;
 
     menu = screen->menu;
     if (menu != NULL) {
         if (menu->fontPath != 0) {
             font = menu->font;
-            font->vtbl->delete_(font);
+            font->vtbl->base.delete_(font);
         }
         widget = screen->optionBox;
         i = 0;
@@ -901,7 +877,7 @@ s32 MenuScreen_GetSelectedItem(MenuScreen *screen) {
 }
 
 /* The option texts of the selected item. */
-void MenuScreen_MakeOptions(MenuScreen *screen, OptionListDef *list, Image *font) {
+void MenuScreen_MakeOptions(MenuScreen *screen, OptionListDef *list, Tim *font) {
     u8 **text;
     s32 count;
     s32 index;
@@ -1149,7 +1125,7 @@ void Screen_OnNotify(Screen *screen, Object *sender, s32 message) {
     s32 type;
 
     Object_GetBaseVtbl()->onNotify(screen, sender, message);
-    type = sender->vtbl->unk_00 & 0xF;
+    type = sender->vtbl->classWord & 0xF;
     if (type == 1) {
         screen->vtbl->onDisplay(screen, sender, message);
     } else if (type == 2) {
@@ -1298,7 +1274,7 @@ View *View_New(void) {
 }
 
 void View_Init(View *view) {
-    Widget *overlay;
+    Fade *overlay;
 
     Object_GetBaseVtbl()->init(view);
     view->vtbl = View_GetVtbl();
@@ -1327,7 +1303,7 @@ void View_Watch(View *view, Object *other) {
     s32 type;
 
     Object_GetBaseVtbl()->watch(view, other);
-    type = other->vtbl->unk_00 & 0xF;
+    type = other->vtbl->classWord & 0xF;
     if (type == 4) {
         view->node = (SceneNode *)other;
         view->super = ((SceneNode *)other)->coord;
@@ -1339,7 +1315,7 @@ void View_Watch(View *view, Object *other) {
 void View_Unwatch(View *view, Object *other) {
     s32 type;
 
-    type = other->vtbl->unk_00 & 0xF;
+    type = other->vtbl->classWord & 0xF;
     if (type == 4) {
         view->super = 0;
         view->node = 0;
@@ -1360,7 +1336,7 @@ void View_OnNotify(View *view, Object *sender, s32 message) {
     s32 type;
 
     Object_GetBaseVtbl()->onNotify(view, sender, message);
-    type = sender->vtbl->unk_00 & 0xF;
+    type = sender->vtbl->classWord & 0xF;
     if (type == 5) {
         view->vtbl->onClock(view, sender, message);
     } else if (type == 1) {
@@ -1371,7 +1347,7 @@ void View_OnNotify(View *view, Object *sender, s32 message) {
 void View_Reset(View *view) {
     view->clockCount = 0;
     view->otReady = 0;
-    view->unk34 = D_8008A8FC;
+    view->screenSize = D_8008A8FC;
     view->otBits = 0xD;
     view->packetCount = 0x7D0;
     view->packetSize = 0x40;
@@ -1386,8 +1362,8 @@ void View_Reset(View *view) {
     view->unkB8 = 1;
 }
 
-void func_8003EA0C(View *view, ScreenPoint *value) {
-    view->unk34 = *value;
+void View_SetScreenSize(View *view, ScreenPoint *value) {
+    view->screenSize = *value;
 }
 
 void View_SetOtBits(View *view, s32 otBits) {
@@ -1558,7 +1534,7 @@ void View_Render(View *view) {
             SetFogNear(view->fogNear, view->projection);
         }
         GsSetRefView2(&view->viewpoint);
-        *view->super = 0;
+        view->super->flg = 0;
         view->unk98 = ((u32)(view->unk50 - view->unk4C) / (u32)(1 << view->otBits)) + 1;
         func_8003FBE4(view->packets[view->buffer]);
         GsClearOt(0, 0, view->ot[view->buffer]);
@@ -1589,8 +1565,8 @@ void View_Present(View *view) {
     }
 }
 
-void View_SetOverlay(View *view, Widget *overlay) {
-    Widget *previous;
+void View_SetOverlay(View *view, Fade *overlay) {
+    Fade *previous;
 
     if (view->node == 0) {
         previous = view->overlay;
@@ -1604,7 +1580,7 @@ void View_SetOverlay(View *view, Widget *overlay) {
     }
 }
 
-Widget *View_GetOverlay(View *view) {
+Fade *View_GetOverlay(View *view) {
     return view->overlay;
 }
 

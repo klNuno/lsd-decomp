@@ -1,5 +1,6 @@
 #include "common.h"
 #include "gte.h"
+#include "game/gs.h"
 #include "game/heap.h"
 
 extern void free(void *);
@@ -34,7 +35,6 @@ typedef struct Rgbc { u8 r, g, b, cd; } Rgbc;
 typedef struct Bytes8 { u8 b[8]; } Bytes8;
 typedef struct ScreenXY { s16 x; s16 y; } ScreenXY;
 typedef struct TmdRgb { s8 r, g, b; } TmdRgb;
-typedef struct TmdMatrix { s16 m[3][3]; s32 t[3]; } TmdMatrix;
 
 /* The first 8 bytes of every GPU packet: OT tag (word count in byte 3), colour, code in byte 7 */
 typedef struct PrimHeader {
@@ -87,7 +87,7 @@ typedef struct TmdCtx {
         s32 addr;
     } otEntry;               /* 0x30 &ot[otz >> shift] */
     TmdRgb baseRgb;          /* 0x34 g_texturedRgb, light colour of the textured groups */
-    TmdMatrix savedRot;      /* 0x38 */
+    Matrix savedRot;      /* 0x38 */
     u8 pad_58[4];
     s32 gteFlag;             /* 0x5C */
     union {
@@ -195,13 +195,6 @@ typedef struct PolyGT4 {
 
 /* The scene node's model reference: same layout as the coordinate system that
    Scene_DrawNode passes to GsGetLs, and the model's vertex, normal and primitive tables */
-typedef struct TmdCoord {
-    s32 flg;
-    TmdMatrix coord;
-    TmdMatrix workm;
-    void *param;
-    struct TmdCoord *super;
-} TmdCoord;
 typedef struct TmdModel {
     u8 *vertices;
     s32 unk_04;
@@ -212,7 +205,7 @@ typedef struct TmdModel {
 } TmdModel;
 typedef struct TmdObject {
     u32 attribute;           /* bit 31 skips the object; bits 3-4, 5, 6, 9-11 read below */
-    TmdCoord *coord;
+    Coord2 *coord;
     TmdModel *model;
 } TmdObject;
 typedef struct TmdOt {

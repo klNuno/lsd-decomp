@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/entity.h"
+#include "game/scene.h"
 
 /*
  * Scene nodes: the class of vtable g_sceneNodeVtbl (SceneNode_GetVtbl, tag 4, 0x44 bytes, made by
@@ -15,13 +16,6 @@
  */
 
 /* A PSY-Q SVECTOR: three shorts and a pad. */
-typedef struct SVector {
-    s16 vx;
-    s16 vy;
-    s16 vz;
-    s16 pad;
-} SVector;
-
 /* Three shorts: a box corner, a point of a ray. */
 typedef struct SVec3 {
     s16 x;
@@ -42,107 +36,6 @@ typedef struct NodeBoxList {
     s32 pad_34;
 } NodeBoxList;
 
-/* PSY-Q GsCOORD2PARAM, 0x28 bytes, allocated by SceneNode_Init. */
-typedef struct NodeCoordParam {
-    s32 scale[4];   /* 0x00 VECTOR, 4096 = 1.0 (SceneNode_SetScale) */
-    SVector rotate; /* 0x10 SVECTOR, 4096 = 360 degrees (SceneNode_SetRotation) */
-    s32 trans[4];   /* 0x18 VECTOR */
-} NodeCoordParam;
-
-/* PSY-Q GsCOORDINATE2, 0x50 bytes, allocated by SceneNode_Init. */
-typedef struct NodeCoord {
-    s32 flg;                 /* 0x00 cleared after each change, 1 after reset */
-    s16 m[3][3];             /* 0x04 coord: local matrix */
-    u8 pad_16[0x18 - 0x16];
-    Vec3 t;                  /* 0x18 position relative to the parent */
-    s16 workm[3][3];         /* 0x24 workm: world matrix */
-    u8 pad_36[0x38 - 0x36];
-    Vec3 workT;              /* 0x38 world position */
-    NodeCoordParam *param;   /* 0x44 */
-    struct NodeCoord *super; /* 0x48 the parent's coordinate */
-    struct NodeCoord *sub;   /* 0x4C */
-} NodeCoord;
-
-/* A one-entry fraction, num / den; three of them give a rotation in degrees or a scale. */
-typedef struct Fraction {
-    s16 num;
-    s16 den;
-} Fraction;
-
-/* The view of a model object (src/game/8001F250.c) this unit needs: its TMD object. */
-typedef struct ModelObject {
-    u8 pad_00[0xC];
-    s32 tmdObjectBase; /* 0x0C tmdObject - 0xC */
-    s32 tmdObject;     /* 0x10 address of the TMD object entry */
-} ModelObject;
-
-/* Vtable g_sceneNodeVtbl; the Object slots 0x04 to 0x38 as in heap.h. Slots are left unprototyped. */
-typedef struct SceneNodeVtbl {
-    s32 tag;                  /* 0x00 4: sender type scene node */
-    void *(*delete_)();       /* 0x04 Object_Delete */
-    void *(*init)();          /* 0x08 SceneNode_Init, returns the node or NULL */
-    void (*destroy)();        /* 0x0C SceneNode_Destroy */
-    void (*watch)();          /* 0x10 SceneNode_Watch */
-    void (*unwatch)();        /* 0x14 SceneNode_Unwatch */
-    void (*unwatchAll)();     /* 0x18 SceneNode_UnwatchAll */
-    void (*nextWatched)();    /* 0x1C Object_NextWatched */
-    void (*addWatcher)();     /* 0x20 Object_AddWatcher */
-    void (*removeWatcher)();  /* 0x24 Object_RemoveWatcher */
-    void (*freeWatchers)();   /* 0x28 Object_FreeWatchers */
-    void (*nextWatcher)();    /* 0x2C Object_NextWatcher */
-    void (*notify)();         /* 0x30 Object_Notify */
-    void (*unk34)();          /* 0x34 func_80018350, empty */
-    void (*onNotify)();       /* 0x38 SceneNode_OnNotify */
-    void (*unk3C)();          /* 0x3C 0 */
-    void (*reset)();          /* 0x40 SceneNode_Reset */
-    void (*setRotation)();    /* 0x44 SceneNode_SetRotation (node, assign, Fraction[3] degrees) */
-    void (*setScale)();       /* 0x48 SceneNode_SetScale (node, assign, Fraction[3]) */
-    void (*attach)();         /* 0x4C SceneNode_Attach (node, parent, position) */
-    void (*detach)();         /* 0x50 SceneNode_Detach */
-    void (*detachChildren)(); /* 0x54 SceneNode_DetachChildren */
-    void (*nextChild)();      /* 0x58 SceneNode_NextChild (node, &child, &iter) */
-    void (*unk5C)();          /* 0x5C func_8001D33C, empty */
-    s32 (*setVisible)();      /* 0x60 SceneNode_SetVisible, GsDOFF */
-    void (*setSemiTrans)();   /* 0x64 SceneNode_SetSemiTrans, GsALON */
-    void (*setBlendRate)();   /* 0x68 SceneNode_SetBlendRate, GsAZERO to GsATHREE */
-    void (*setLit)();         /* 0x6C SceneNode_SetLit, GsLOFF */
-    void (*setLightFlags)();  /* 0x70 SceneNode_SetLightFlags, GsFOG, GsMATE, GsLLMOD */
-    void (*setDim)();         /* 0x74 SceneNode_SetDim, GsLDIM0 to GsLDIM7 */
-    s32 (*setZSort)();        /* 0x78 SceneNode_SetZSort, GsZIGNR */
-    void (*setDivision)();    /* 0x7C SceneNode_SetDivision, GsDIV1 to GsDIV5 */
-    s32 (*setBackfaceClip)(); /* 0x80 SceneNode_SetBackfaceClip, GsNBACKC */
-    void (*getRotMatrix)();   /* 0x84 SceneNode_GetRotMatrix (node, matrix, invert) */
-    void (*sendBoxes)();      /* 0x88 SceneNode_SendBoxes (node, message) */
-    void (*getBoxList)();     /* 0x8C SceneNode_GetBoxList (node, box list) */
-    void (*sendShape)();      /* 0x90 SceneNode_SendShape (node, box list, message) */
-    void (*onPad)();          /* 0x94 SceneNode_OnPad, empty: messages of a pad (sender type 2) */
-    void (*onClock)();        /* 0x98 SceneNode_OnClock, empty: messages of a clock (sender type 5) */
-    void (*onNode)();         /* 0x9C SceneNode_OnNode: messages of another node (sender type 4) */
-    void (*checkContact)();   /* 0xA0 SceneNode_CheckContact (node, sender) */
-    void (*worldToLocal)();   /* 0xA4 SceneNode_WorldToLocal (node, offset, dst, src, count) */
-    s32 (*boxesOverlap)();    /* 0xA8 SceneNode_BoxesOverlap (node, box list, offset) */
-    s32 (*rayTestBoxes)();    /* 0xAC SceneNode_RayTestBoxes (node, &sender hit mask, hit position, box list) */
-    void (*unkB0)();          /* 0xB0 func_8001E49C, empty */
-    void (*unkB4)();          /* 0xB4 func_8001E4A4 */
-} SceneNodeVtbl;
-
-typedef struct SceneNodeObj {
-    SceneNodeVtbl *vtbl;
-    ListNode *watched;           /* 0x04 objects this one watches: its children among them */
-    ListNode *watchers;          /* 0x08 */
-    struct SceneNodeObj *parent; /* 0x0C */
-    s32 attribute;               /* 0x10 GsDOBJ2.attribute: bit 31 GsDOFF hides the node */
-    NodeCoord *coord;            /* 0x14 GsDOBJ2.coord2 */
-    s32 tmd;                     /* 0x18 GsDOBJ2.tmd */
-    s32 id;                      /* 0x1C GsDOBJ2.id */
-    ModelObject *model;          /* 0x20 the watched model object (sender type 9) */
-    s32 unk24;                   /* 0x24 cleared by reset */
-    struct SceneNodeObj *contact; /* 0x28 the last node that hit this one (message 4) */
-    s32 hitMask;                 /* 0x2C boxes hit by the last test, one bit per box */
-    s32 *boxList;                /* 0x30 the box list being sent, NULL otherwise */
-    u8 pad_34[0x44 - 0x34];
-} SceneNodeObj;
-
 /* Message a node sends to the node it hit, and that the hit node keeps as contact. */
 #define NODE_MSG_CONTACT 4
 
@@ -152,8 +45,8 @@ ObjectVtbl *Object_GetBaseVtbl(void);
 void Object_NextWatcher(Object *self, s32 *value, s32 *more);
 void List_Next(s32 *value, ListNode **iter);
 SceneNodeVtbl *SceneNode_GetVtbl(void);
-void SceneNode_LinkModel(SceneNodeObj *node, ModelObject *model);
-void SceneNode_UnlinkModel(SceneNodeObj *node);
+void SceneNode_LinkModel(SceneNode *node, ModelObject *model);
+void SceneNode_UnlinkModel(SceneNode *node);
 s32 Fraction_ToFixed(Fraction *fraction);
 s32 ModelBox_OutCode(NodeBox *box, SVec3 *point);
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
@@ -167,7 +60,7 @@ void ModelObject_UpdateBox(ModelObject *model);
 NodeBox *ModelObject_GetBox(ModelObject *model, s32 index);
 void ModelObject_GetBoxList(ModelObject *model, s32 *boxList);
 s32 ModelObject_RayTest(ModelObject *model, s32 *hitDist, SVec3 *hitPos, s32 *hitHeight, SVec3 *start, SVec3 *end);
-void GsInitCoordinate2(NodeCoord *super, NodeCoord *coord);
+void GsInitCoordinate2(Coord2 *super, Coord2 *coord);
 extern void GsLinkObject4(u32 *src, void *dst, s32 id);
 void RotMatrix(SVector *r, void *m);
 void MulMatrix2(s32 *m0, s32 *m1);
@@ -188,8 +81,8 @@ typedef struct WatcherVtbl {
 } WatcherVtbl;
 
 /* New scene node: 0x44 bytes from the heap, initialized through slot 0x08. */
-SceneNodeObj *SceneNode_New(void) {
-    SceneNodeObj *node;
+SceneNode *SceneNode_New(void) {
+    SceneNode *node;
 
     node = Heap_Alloc(0x44);
     if (node == NULL) {
@@ -203,9 +96,9 @@ SceneNodeObj *SceneNode_New(void) {
 }
 
 /* Slot 0x08: allocates the GsCOORDINATE2 and its GsCOORD2PARAM, then resets the node. */
-SceneNodeObj *SceneNode_Init(SceneNodeObj *node) {
-    NodeCoord *coord;
-    NodeCoordParam *param;
+SceneNode *SceneNode_Init(SceneNode *node) {
+    Coord2 *coord;
+    Coord2Param *param;
 
     coord = Heap_Alloc(0x50);
     node->coord = coord;
@@ -228,7 +121,7 @@ SceneNodeObj *SceneNode_Init(SceneNodeObj *node) {
 }
 
 /* Slot 0x0C: leaves the parent, drops the children, frees the coordinate. */
-void SceneNode_Destroy(SceneNodeObj *node) {
+void SceneNode_Destroy(SceneNode *node) {
     node->vtbl->detach(node);
     node->vtbl->detachChildren(node);
     node->vtbl->unk5C(node, 0);
@@ -238,33 +131,33 @@ void SceneNode_Destroy(SceneNodeObj *node) {
 }
 
 /* Slot 0x10: watching a model object (sender type 9) links its TMD object to the GsDOBJ2. */
-void SceneNode_Watch(SceneNodeObj *node, Object *other) {
+void SceneNode_Watch(SceneNode *node, Object *other) {
     Object_GetBaseVtbl()->watch(node, other);
-    if ((other->vtbl->unk_00 & 0xF) == 9) {
+    if ((other->vtbl->classWord & 0xF) == 9) {
         SceneNode_LinkModel(node, (ModelObject *)other);
     }
 }
 
 /* Slot 0x14 */
-void SceneNode_Unwatch(SceneNodeObj *node, Object *other) {
-    if ((other->vtbl->unk_00 & 0xF) == 9) {
+void SceneNode_Unwatch(SceneNode *node, Object *other) {
+    if ((other->vtbl->classWord & 0xF) == 9) {
         SceneNode_UnlinkModel(node);
     }
     Object_GetBaseVtbl()->unwatch(node, other);
 }
 
 /* Slot 0x18 */
-void SceneNode_UnwatchAll(SceneNodeObj *node) {
+void SceneNode_UnwatchAll(SceneNode *node) {
     SceneNode_UnlinkModel(node);
     Object_GetBaseVtbl()->unwatchAll(node);
 }
 
 /* Slot 0x38: dispatches on the sender type: 2 pad, 5 clock, 4 scene node. */
-void SceneNode_OnNotify(SceneNodeObj *node, Object *sender, s32 message) {
+void SceneNode_OnNotify(SceneNode *node, Object *sender, s32 message) {
     s32 senderType;
 
     Object_GetBaseVtbl()->onNotify(node, sender, message);
-    senderType = sender->vtbl->unk_00 & 0xF;
+    senderType = sender->vtbl->classWord & 0xF;
     if (senderType == 2) {
         node->vtbl->onPad(node, sender, message);
     } else if (senderType == 5) {
@@ -275,7 +168,7 @@ void SceneNode_OnNotify(SceneNodeObj *node, Object *sender, s32 message) {
 }
 
 /* Slot 0x40: no parent coordinate, rotation 0, scale 1 (g_nodeZeroRotation and g_nodeUnitScale are Fraction[3]). */
-void SceneNode_Reset(SceneNodeObj *node) {
+void SceneNode_Reset(SceneNode *node) {
     node->unk24 = 0;
     node->attribute = 0;
     GsInitCoordinate2(0, node->coord);
@@ -285,10 +178,10 @@ void SceneNode_Reset(SceneNodeObj *node) {
 }
 
 /* Slot 0x44: sets (assign != 0) or adds the rotation, three fractions of degrees. */
-void SceneNode_SetRotation(SceneNodeObj *node, s32 assign, Fraction *degrees) {
+void SceneNode_SetRotation(SceneNode *node, s32 assign, Fraction *degrees) {
     s32 angles[3];
     s32 i;
-    NodeCoordParam *param;
+    Coord2Param *param;
     s16 *p;
     s16 *cur;
 
@@ -299,11 +192,11 @@ void SceneNode_SetRotation(SceneNodeObj *node, s32 assign, Fraction *degrees) {
     angles[1] /= 0x168;
     angles[2] /= 0x168;
     param = node->coord->param;
-    p = &param->rotate.vx;
+    p = &param->rotate.vec.vx;
     if (assign != 0) {
-        param->rotate.vx = angles[0];
-        param->rotate.vy = angles[1];
-        param->rotate.vz = angles[2];
+        param->rotate.vec.vx = angles[0];
+        param->rotate.vec.vy = angles[1];
+        param->rotate.vec.vz = angles[2];
     } else {
         for (i = 0; i < 3; i++) {
             cur = p;
@@ -315,7 +208,7 @@ void SceneNode_SetRotation(SceneNodeObj *node, s32 assign, Fraction *degrees) {
 }
 
 /* Slot 0x48: sets (assign != 0) or adds the scale, three fractions. */
-void SceneNode_SetScale(SceneNodeObj *node, s32 assign, Fraction *factors) {
+void SceneNode_SetScale(SceneNode *node, s32 assign, Fraction *factors) {
     s32 x;
     s32 y;
     s32 z;
@@ -338,8 +231,8 @@ void SceneNode_SetScale(SceneNodeObj *node, s32 assign, Fraction *factors) {
 }
 
 /* Slot 0x4C: hangs the node from parent at pos (or at the parent's origin); the parent watches it. */
-SceneNodeObj *SceneNode_Attach(SceneNodeObj *node, SceneNodeObj *parent, Vec3 *pos) {
-    NodeCoord *coord;
+SceneNode *SceneNode_Attach(SceneNode *node, SceneNode *parent, Vec3 *pos) {
+    Coord2 *coord;
 
     if (node->parent == NULL) {
         node->parent = parent;
@@ -347,13 +240,13 @@ SceneNodeObj *SceneNode_Attach(SceneNodeObj *node, SceneNodeObj *parent, Vec3 *p
         parent->vtbl->watch(parent, node);
         coord = node->coord;
         if (pos != NULL) {
-            coord->t.x = pos->x;
-            coord->t.y = pos->y;
-            coord->t.z = pos->z;
+            coord->coord.t.x = pos->x;
+            coord->coord.t.y = pos->y;
+            coord->coord.t.z = pos->z;
         } else {
-            coord->t.x = 0;
-            coord->t.y = 0;
-            coord->t.z = 0;
+            coord->coord.t.x = 0;
+            coord->coord.t.y = 0;
+            coord->coord.t.z = 0;
         }
         node->coord->flg = 0;
     }
@@ -361,8 +254,8 @@ SceneNodeObj *SceneNode_Attach(SceneNodeObj *node, SceneNodeObj *parent, Vec3 *p
 }
 
 /* Slot 0x50 */
-SceneNodeObj *SceneNode_Detach(SceneNodeObj *node) {
-    SceneNodeObj *parent;
+SceneNode *SceneNode_Detach(SceneNode *node) {
+    SceneNode *parent;
 
     parent = node->parent;
     if (parent != NULL) {
@@ -374,8 +267,8 @@ SceneNodeObj *SceneNode_Detach(SceneNodeObj *node) {
 }
 
 /* Slot 0x54 */
-void SceneNode_DetachChildren(SceneNodeObj *node) {
-    SceneNodeObj *child;
+void SceneNode_DetachChildren(SceneNode *node) {
+    SceneNode *child;
     s32 more;
 
     child = NULL;
@@ -388,8 +281,8 @@ void SceneNode_DetachChildren(SceneNodeObj *node) {
 }
 
 /* Slot 0x58: the next watched scene node whose parent is this node, NULL at the end. */
-void SceneNode_NextChild(SceneNodeObj *node, SceneNodeObj **child, ListNode **iter) {
-    SceneNodeObj *obj;
+void SceneNode_NextChild(SceneNode *node, SceneNode **child, ListNode **iter) {
+    SceneNode *obj;
 
     do {
         if (*child == NULL) {
@@ -397,7 +290,7 @@ void SceneNode_NextChild(SceneNodeObj *node, SceneNodeObj **child, ListNode **it
         }
         List_Next((s32 *)child, iter);
         obj = *child;
-        if (obj != NULL && (obj->vtbl->tag & 0xF) == 4 && obj->parent == node) {
+        if (obj != NULL && (obj->vtbl->classWord & 0xF) == 4 && obj->parent == node) {
             return;
         }
     } while (*iter != NULL);
@@ -410,68 +303,68 @@ void func_8001D33C(void) {
 /* Slots 0x60 to 0x80 set the GsDOBJ2 attribute bits (PSY-Q libgs.h names). */
 
 /* Slot 0x60: GsDOFF = !visible, returns whether the node was visible. */
-s32 SceneNode_SetVisible(SceneNodeObj *node, s32 visible) {
+s32 SceneNode_SetVisible(SceneNode *node, s32 visible) {
     return Bits_SetField(&node->attribute, 0x1F, 1, visible == 0) == 0;
 }
 
 /* Slot 0x64: GsALON */
-void SceneNode_SetSemiTrans(SceneNodeObj *node, s32 semiTrans) {
+void SceneNode_SetSemiTrans(SceneNode *node, s32 semiTrans) {
     Bits_SetField(&node->attribute, 0x1E, 1, semiTrans != 0);
 }
 
 /* Slot 0x68: semi-transparency rate, GsAZERO to GsATHREE */
-void SceneNode_SetBlendRate(SceneNodeObj *node, s32 rate) {
+void SceneNode_SetBlendRate(SceneNode *node, s32 rate) {
     Bits_SetField(&node->attribute, 0x1C, 2, rate);
 }
 
 /* Slot 0x6C: GsLOFF = !lit */
-void SceneNode_SetLit(SceneNodeObj *node, s32 lit) {
+void SceneNode_SetLit(SceneNode *node, s32 lit) {
     Bits_SetField(&node->attribute, 6, 1, lit == 0);
 }
 
 /* Slot 0x70: GsFOG, GsMATE and GsLLMOD as one 3-bit value */
-void SceneNode_SetLightFlags(SceneNodeObj *node, s32 flags) {
+void SceneNode_SetLightFlags(SceneNode *node, s32 flags) {
     Bits_SetField(&node->attribute, 3, 3, flags);
 }
 
 /* Slot 0x74: GsLDIM0 to GsLDIM7 */
-void SceneNode_SetDim(SceneNodeObj *node, s32 dim) {
+void SceneNode_SetDim(SceneNode *node, s32 dim) {
     Bits_SetField(&node->attribute, 0, 3, dim);
 }
 
 /* Slot 0x78: GsZIGNR = !value, returns the previous value */
-s32 SceneNode_SetZSort(SceneNodeObj *node, s32 zSort) {
+s32 SceneNode_SetZSort(SceneNode *node, s32 zSort) {
     return Bits_SetField(&node->attribute, 7, 1, zSort == 0) == 0;
 }
 
 /* Slot 0x7C: polygon division, GsDIV1 to GsDIV5 */
-void SceneNode_SetDivision(SceneNodeObj *node, s32 division) {
+void SceneNode_SetDivision(SceneNode *node, s32 division) {
     Bits_SetField(&node->attribute, 9, 3, division);
 }
 
 /* Slot 0x80: GsNBACKC = !value, returns the previous value */
-s32 SceneNode_SetBackfaceClip(SceneNodeObj *node, s32 backfaceClip) {
+s32 SceneNode_SetBackfaceClip(SceneNode *node, s32 backfaceClip) {
     return Bits_SetField(&node->attribute, 8, 1, backfaceClip == 0) == 0;
 }
 
 /* Slot 0x84: the rotation matrix of the node's own rotation, or of its inverse angles. */
-void SceneNode_GetRotMatrix(SceneNodeObj *node, void *matrix, s32 invert) {
+void SceneNode_GetRotMatrix(SceneNode *node, void *matrix, s32 invert) {
     SVector rot;
-    NodeCoordParam *param;
+    Coord2Param *param;
 
     param = node->coord->param;
     if (invert != 0) {
-        rot.vx = -param->rotate.vx;
-        rot.vy = -param->rotate.vy;
-        rot.vz = -param->rotate.vz;
+        rot.vx = -param->rotate.vec.vx;
+        rot.vy = -param->rotate.vec.vy;
+        rot.vz = -param->rotate.vec.vz;
     } else {
-        rot = param->rotate;
+        rot = param->rotate.vec;
     }
     RotMatrix(&rot, matrix);
 }
 
 /* Slot 0x88: for messages 2 and 3, sends the model's box list to the watchers. */
-void SceneNode_SendBoxes(SceneNodeObj *node, s32 message) {
+void SceneNode_SendBoxes(SceneNode *node, s32 message) {
     s32 boxList[14];
     ModelObject *model;
 
@@ -487,12 +380,12 @@ void SceneNode_SendBoxes(SceneNodeObj *node, s32 message) {
 }
 
 /* Slot 0x8C: the model's box list: one box, 8 corners. */
-void SceneNode_GetBoxList(SceneNodeObj *node, s32 *boxList) {
+void SceneNode_GetBoxList(SceneNode *node, s32 *boxList) {
     ModelObject_GetBoxList(node->model, boxList);
 }
 
 /* Slot 0x90: moves the box list into world space and notifies the watchers with it. */
-void SceneNode_SendShape(SceneNodeObj *node, s32 *boxList, s32 message) {
+void SceneNode_SendShape(SceneNode *node, s32 *boxList, s32 message) {
     Render_TransformVectors((SVec3 *)(boxList + 1), (SVec3 *)(boxList + 1), boxList[0] * 8, &node->coord->workm);
     node->contact = NULL;
     node->hitMask = 0;
@@ -508,7 +401,7 @@ void SceneNode_OnClock(void) {
 }
 
 /* Slot 0x9C: messages 2 and 3 run the contact test against the sender, 4 records a hit. */
-void SceneNode_OnNode(SceneNodeObj *node, SceneNodeObj *sender, s32 message) {
+void SceneNode_OnNode(SceneNode *node, SceneNode *sender, s32 message) {
     switch (message) {
         case 2:
         case 3:
@@ -525,7 +418,7 @@ void SceneNode_OnNode(SceneNodeObj *node, SceneNodeObj *sender, s32 message) {
  * 0x4000 on each axis, the sender's boxes are brought into this node's frame, then a box
  * overlap and the ray tests must both pass: the sender becomes the contact and gets message 4.
  */
-void SceneNode_CheckContact(SceneNodeObj *node, SceneNodeObj *sender) {
+void SceneNode_CheckContact(SceneNode *node, SceneNode *sender) {
     Vec3 offset;
     u16 localOffset[3];
     u8 unused[0x20];
@@ -537,12 +430,12 @@ void SceneNode_CheckContact(SceneNodeObj *node, SceneNodeObj *sender) {
     if (node->model != NULL && ModelObject_IsReady(node->model) != 0) {
         senderPos = NULL;
         if (sender->parent != NULL) {
-            senderPos = &sender->coord->workT;
+            senderPos = &sender->coord->workm.t;
         }
         offset = *senderPos;
         pos = NULL;
         if (node->parent != NULL) {
-            pos = &node->coord->workT;
+            pos = &node->coord->workm.t;
         }
         offset.x -= pos->x;
         offset.y -= pos->y;
@@ -569,10 +462,10 @@ void SceneNode_CheckContact(SceneNodeObj *node, SceneNodeObj *sender) {
  * Slot 0xA4: rotates count short vectors from world axes into the node's axes (the inverse
  * rotations of the node and of every parent), and the offset with them when there is one.
  */
-void SceneNode_WorldToLocal(SceneNodeObj *node, SVec3 *offset, SVec3 *dst, SVec3 *src, s32 count) {
+void SceneNode_WorldToLocal(SceneNode *node, SVec3 *offset, SVec3 *dst, SVec3 *src, s32 count) {
     s32 parentMtx[8];
     s32 worldMtx[8];
-    SceneNodeObj *parent;
+    SceneNode *parent;
 
     node->vtbl->getRotMatrix(node, worldMtx, 1);
     for (parent = node->parent; parent != NULL; parent = parent->parent) {
@@ -589,7 +482,7 @@ void SceneNode_WorldToLocal(SceneNodeObj *node, SVec3 *offset, SVec3 *dst, SVec3
  * Slot 0xA8: moves the box list by offset and tests the bounding box of all its corners
  * against the bounding box of the node model's boxes.
  */
-s32 SceneNode_BoxesOverlap(SceneNodeObj *node, NodeBoxList *boxList, SVec3 *offset) {
+s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, SVec3 *offset) {
     NodeBox own;
     NodeBox other;
     u8 *end;
@@ -645,7 +538,7 @@ s32 SceneNode_BoxesOverlap(SceneNodeObj *node, NodeBoxList *boxList, SVec3 *offs
  * node->hitMask, a sender box that hit sets its bit in *senderHits. With g_rayHeightCheck set,
  * a hit counts only when the ray test's height output is 0x201 or more (always for edges).
  */
-s32 SceneNode_RayTestBoxes(SceneNodeObj *node, s32 *senderHits, SVec3 *hitPos, NodeBoxList *boxList) {
+s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, SVec3 *hitPos, NodeBoxList *boxList) {
     SVec3 axis[2];
     NodeBox unused[2];
     s32 hitDist;
@@ -824,7 +717,7 @@ void func_8001E4A4(s32 arg0, Object *object) {
     do {
         for (;;) {
             Object_NextWatcher(object, (s32 *)&watcher, &more);
-            if (watcher != NULL && (watcher->vtbl->unk_00 & 0xF) == 4) {
+            if (watcher != NULL && (watcher->vtbl->classWord & 0xF) == 4) {
                 break;
             }
             if (more == 0) {
@@ -846,7 +739,7 @@ SceneNodeVtbl *SceneNode_GetVtbl(void) {
 }
 
 /* Rotates a short vector by the node's own rotation into dst (no translation, no parents). */
-void SceneNode_RotateVector(SceneNodeObj *node, Vec3 *dst, SVec3 *src) {
+void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, SVec3 *src) {
     s32 rotMtx[8];
 
     node->vtbl->getRotMatrix(node, rotMtx, 0);
@@ -857,7 +750,7 @@ void SceneNode_RotateVector(SceneNodeObj *node, Vec3 *dst, SVec3 *src) {
 }
 
 /* Rotates src by the node's own rotation and adds the node's world position. */
-void SceneNode_LocalToWorld(SceneNodeObj *node, Vec3 *dst, Vec3 *src) {
+void SceneNode_LocalToWorld(SceneNode *node, Vec3 *dst, Vec3 *src) {
     s32 rotMtx[8];
     Vec3 *worldPos;
 
@@ -865,42 +758,42 @@ void SceneNode_LocalToWorld(SceneNodeObj *node, Vec3 *dst, Vec3 *src) {
     Render_TransformLongVectors(dst, src, 1, rotMtx);
     worldPos = NULL;
     if (node->parent != NULL) {
-        worldPos = &node->coord->workT;
+        worldPos = &node->coord->workm.t;
     }
     dst->x += worldPos->x;
     worldPos = NULL;
     if (node->parent != NULL) {
-        worldPos = &node->coord->workT;
+        worldPos = &node->coord->workm.t;
     }
     dst->y += worldPos->y;
     worldPos = NULL;
     if (node->parent != NULL) {
-        worldPos = &node->coord->workT;
+        worldPos = &node->coord->workm.t;
     }
     dst->z += worldPos->z;
 }
 
 /* The rotation as three fractions of degrees, each over 1 (the inverse of slot 0x44). */
-void SceneNode_GetRotation(SceneNodeObj *node, Fraction *degrees) {
-    NodeCoordParam *param;
+void SceneNode_GetRotation(SceneNode *node, Fraction *degrees) {
+    Coord2Param *param;
 
     param = node->coord->param;
-    degrees[0].num = (param->rotate.vx * 45) >> 9;
+    degrees[0].num = (param->rotate.vec.vx * 45) >> 9;
     degrees[0].den = 1;
-    degrees[1].num = (param->rotate.vy * 45) >> 9;
+    degrees[1].num = (param->rotate.vec.vy * 45) >> 9;
     degrees[1].den = 1;
-    degrees[2].num = (param->rotate.vz * 45) >> 9;
+    degrees[2].num = (param->rotate.vec.vz * 45) >> 9;
     degrees[2].den = 1;
 }
 
 /* Links the model object's TMD object to the node's GsDOBJ2 (GsLinkObject4). */
-void SceneNode_LinkModel(SceneNodeObj *node, ModelObject *model) {
+void SceneNode_LinkModel(SceneNode *node, ModelObject *model) {
     node->model = model;
     node->tmd = model->tmdObject;
     GsLinkObject4((u32 *)(node->model->tmdObjectBase + 0xC), &node->attribute, 0);
 }
 
-void SceneNode_UnlinkModel(SceneNodeObj *node) {
+void SceneNode_UnlinkModel(SceneNode *node) {
     node->tmd = 0;
     node->model = NULL;
 }
@@ -910,31 +803,31 @@ void SceneNode_UnlinkModel(SceneNodeObj *node) {
  * model; on a hit, *offset = hit position - point and returns 1. A hidden node (GsDOFF) is not
  * drawn, so its world position is first rebuilt from its parents' positions.
  */
-s32 SceneNode_ProbeHeight(SceneNodeObj *node, Vec3 *offset, Vec3 *point) {
+s32 SceneNode_ProbeHeight(SceneNode *node, Vec3 *offset, Vec3 *point) {
     SVec3 from;
     SVec3 to;
     SVec3 hit;
     s32 dist;
     Vec3 *base;
-    SceneNodeObj *n;
+    SceneNode *n;
 
     if (node->model == NULL) {
         return 0;
     }
     if (node->attribute < 0 && node->parent != NULL) {
-        if (&node->coord->workT != NULL) {
-            node->coord->workT = node->coord->t;
+        if (&node->coord->workm.t != NULL) {
+            node->coord->workm.t = node->coord->coord.t;
             for (n = node->parent; n != NULL; n = n->parent) {
-                (node->parent != NULL ? &node->coord->workT : NULL)->x =
-                    (node->parent != NULL ? &node->coord->workT : NULL)->x + n->coord->t.x;
-                (node->parent != NULL ? &node->coord->workT : NULL)->y =
-                    (node->parent != NULL ? &node->coord->workT : NULL)->y + n->coord->t.y;
-                (node->parent != NULL ? &node->coord->workT : NULL)->z =
-                    (node->parent != NULL ? &node->coord->workT : NULL)->z + n->coord->t.z;
+                (node->parent != NULL ? &node->coord->workm.t : NULL)->x =
+                    (node->parent != NULL ? &node->coord->workm.t : NULL)->x + n->coord->coord.t.x;
+                (node->parent != NULL ? &node->coord->workm.t : NULL)->y =
+                    (node->parent != NULL ? &node->coord->workm.t : NULL)->y + n->coord->coord.t.y;
+                (node->parent != NULL ? &node->coord->workm.t : NULL)->z =
+                    (node->parent != NULL ? &node->coord->workm.t : NULL)->z + n->coord->coord.t.z;
             }
         }
     }
-    base = node->parent != NULL ? &node->coord->workT : NULL;
+    base = node->parent != NULL ? &node->coord->workm.t : NULL;
     to.x = point->x - base->x;
     to.y = point->y - base->y;
     to.z = point->z - base->z;
@@ -964,15 +857,15 @@ void func_8001EA8C(Vec3 *out, SVec3 *from, SVec3 *to) {
  * Turns entity toward target (docs/discoveries.md, touch range): yaw and pitch from ratan2 in
  * degrees; noPitch keeps it level, facing == 0 turns it away (yaw + 180), extra is added after.
  */
-void Entity_FaceDreamer(Entity *entity, SceneNodeObj *target, s32 noPitch, s32 facing, Fraction *extra) {
+void Entity_FaceDreamer(Entity *entity, SceneNode *target, s32 noPitch, s32 facing, Fraction *extra) {
     Fraction rot[3];
     Vec3 *targetPos;
     Vec3 *pos;
     s32 yaw;
 
-    pos = &entity->pos.block->pos;
+    pos = &entity->pos.coord->coord.t;
     if (target->parent != NULL) {
-        targetPos = &target->coord->workT;
+        targetPos = &target->coord->workm.t;
     } else {
         targetPos = NULL;
     }
@@ -999,9 +892,9 @@ void Entity_FaceDreamer(Entity *entity, SceneNodeObj *target, s32 noPitch, s32 f
     if (facing == 0) {
         rot[1].num = yaw + 0xB4;
     }
-    entity->vt->unk44(entity, 1, rot);
+    entity->vt->rotate(entity, 1, rot);
     if (extra != 0) {
-        entity->vt->unk44(entity, 0, extra);
+        entity->vt->rotate(entity, 0, extra);
     }
 }
 
