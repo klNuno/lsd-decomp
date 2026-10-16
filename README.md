@@ -6,7 +6,7 @@ The goal is to understand how the game works: the dream graph, links, special da
 
 ## Status
 
-All 1,458 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 613 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. Most names are still addresses (`func_8001XXXX`): a name needs evidence.
+All 1,458 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 613 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: shared structs in `include/game/`, and 1,824 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 65 functions still named by address are empty vtable slots and setters nothing reads.
 
 The findings page holds 42 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
 

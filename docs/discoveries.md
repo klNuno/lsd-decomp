@@ -51,30 +51,42 @@ The Grey Man
 - 🔄 [Who can meet the Grey Man, and where](#-who-can-meet-the-grey-man-and-where): he only replaces odd-day characters, and six places never get him.
 
 Rare sights
-- ✅ [The flying train: a pink day and a long dream](#-the-flying-train-a-pink-day-and-a-long-dream): on an odd pink day Happy Town's train stops at the opera pillar, honks and flies off, if the dream lasts long enough.
-- ✅ [The astronaut lands at the bar on a pink day](#-the-astronaut-lands-at-the-bar-on-a-pink-day): on an even pink day it dives into the cottage's yard and stands at the bar; the day number does not matter.
-- 🧩 [A red day fills a Happy Town street with gunmen](#-a-red-day-fills-a-happy-town-street-with-gunmen): one gunman becomes nine, and the question mark in the sky goes away.
+- 🧩 [The flying train: a pink day and a long dream](#-the-flying-train-a-pink-day-and-a-long-dream): waking Happy Town's odd-day train turns your day pink, and it flies off from the opera pillar if the dream did not start in Happy Town.
+- ✅ [The astronaut lands at the bar on a pink day](#-the-astronaut-lands-at-the-bar-on-a-pink-day): on an even pink day it dives into the cottage's yard and stands at the bar; a walk in Happy Town then a wall gets you there 7 times in 48.
+- 🔄 [A red day fills the Maze of Questions with rainbow penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins): one penguin becomes nine and the question mark goes away; 1 in 5 lone penguins is a giant. They are not gunmen.
 - 🧩 [Three minotaur rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto): one rickshaw becomes three on an odd yellow day.
 - 🆕 [Three purple beasts on a yellow day: our best match for the special lions](#-three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions): a lone beast of Pit & Temple gets three walking companions.
 - 🧩 [A red day puts a geisha on a Kyoto bridge](#-a-red-day-puts-a-geisha-on-a-kyoto-bridge): she stands still on the red bridge, and her link goes to Black Space.
+- 🧩 [A green day sends a file of Buddha statues through Kyoto](#-a-green-day-sends-a-file-of-buddha-statues-through-kyoto): four statues walk in single file; the wiki's odd-day four are another group.
+- 🧩 [A white day brings two more red-headed runners to a Kyoto plaza](#-a-white-day-brings-two-more-red-headed-runners-to-a-kyoto-plaza): three figures on an even white day, and a link to the Long Hallway.
+- 🔄 [A yellow day gives Black Space's walker a giant twin](#-a-yellow-day-gives-black-spaces-walker-a-giant-twin): the giant comes with a yellow day, not with any Black Space start.
+- 🆕 [A blue day sends four more fetuses down the Flesh Tunnels](#-a-blue-day-sends-four-more-fetuses-down-the-flesh-tunnels): one fetus becomes five, each worth -100,000 points.
+- 🔄 [Happy Town's flowers and mushrooms grow with the day number](#-happy-towns-flowers-and-mushrooms-grow-with-the-day-number): giant flowers on days 4, 10, 16, tall mushrooms on days 8, 20, 26; not a seed.
+- 🧩 [Tiny lips walk toward you in Happy Town](#-tiny-lips-walk-toward-you-in-happy-town): the floating lips at 1/32 size, on even days.
 
 Characters and events
 - 🧩 [The hidden rules that decide which characters appear](#-the-hidden-rules-that-decide-which-characters-appear): day cycles, your mood so far, and groups that show up only once.
 - 🧩 [The character record: mood, points, waking up and leaving](#-the-character-record-mood-points-waking-up-and-leaving): 130 character types, and the five that end the dream on a video.
 - 🧩 [Signals from characters and objects](#-signals-from-characters-and-objects): touching, forced links, forced endings and event videos.
+- 🧩 [More characters that change size](#-more-characters-that-change-size): the bunny, the Buddha statues and a dozen more, by day or by chance.
+- 🧩 [Four characters stretch or flatten the whole place](#-four-characters-stretch-or-flatten-the-whole-place): in Kyoto, Violence District and Monument Park the scenery grows or flattens until you leave.
+- 🧩 [Characters that answer to CIRCLE](#-characters-that-answer-to-circle): the train driver players know, and two more characters whose ending depends on the button.
 
 Textures
-- 🧩 [Glitch textures: a texture set that failed to load](#-glitch-textures-a-texture-set-that-failed-to-load): the place is drawn with leftovers, and the dream ends 30 seconds later.
+- 🧩 [Glitch textures: a texture set that failed to load](#-glitch-textures-a-texture-set-that-failed-to-load): the place is drawn with leftovers, and the dream ends 30 seconds later; a 20 KB leak is enough, and the "location time" recipe makes one.
 - ✅ [The 40-day texture cycle](#-the-40-day-texture-cycle): the later in a 40-day cycle, the more texture sets a place can wear.
+- 🆕 [Three quiet rules for the look of a place](#-three-quiet-rules-for-the-look-of-a-place): scenery in rows on days divisible by 7, scrolling palettes, a tint on flashback days.
 
 Links between places
 - 🆕 [Fixed links are the navigation goals, and one can never be completed](#-fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): 29 of the 30 goals can be reached, so the big bonus never pays out.
 - 🔄 [Where a random link sends you](#-where-a-random-link-sends-you): the place after yours comes up twice as often as the others.
 - 🔄 [Fixed links do not change with visits, but some depend on who showed up](#-fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up): no visit counter; four characters switch on extra links.
+- 🆕 [Falling off an edge, walls and the cottage's walking squares](#-falling-off-an-edge-walls-and-the-cottages-walking-squares): an odd timer drops you in Black Space, a wall links only 1 tick in 16.
 
-Music
+Music and sound
 - ✅ [A Clockwork Machines track that can never play](#-a-clockwork-machines-track-that-can-never-play): the dice can pick it, but the game plays the next track instead.
 - 🆕 [A switch to pin the music that nobody pulls](#-a-switch-to-pin-the-music-that-nobody-pulls): a leftover way to force one sound bank and one track.
+- 🆕 [Places have fixed sound sources](#-places-have-fixed-sound-sources): 56 spots on the maps play their own sounds as you walk near.
 
 Memory card
 - 🧩 [Everything the game remembers fits in one block](#-everything-the-game-remembers-fits-in-one-block): 1,792 bytes, starting with the letters J01, with the SHAKE option and the video reel flag.
@@ -450,22 +462,27 @@ Status: 📖 read in the code only (the rule that lets him spawn was seen workin
 
 ## Rare sights
 
-The rare events players hunt for are ordinary characters with a condition attached. Most of the conditions are the colour of your day so far: the game cuts [your graph point](#-how-a-day-becomes-a-point-on-the-graph) into a 3 by 3 grid and gives each part one of 8 colours, and some characters only come out, or only act differently, in one of them. The ones below were all seen in the emulator. To reach them quickly we wrote the day number, yesterday's point and, for most of them, the colour into memory; what the characters did on screen was the game's own code.
+The rare events players hunt for are ordinary characters with a condition attached. Most of the conditions are the colour of your day so far: the game cuts [your graph point](#-how-a-day-becomes-a-point-on-the-graph) into a 3 by 3 grid and gives each part one of 8 colours, and some characters only come out, or only act differently, in one of them. The ones below were all seen in the emulator. To reach them quickly we wrote the day number, yesterday's point and, for most of them, the colour into memory, and often moved the camera to wake the characters; what the characters did on screen was the game's own code. Some characters also change size by the day or by chance.
 
-### ✅ The flying train: a pink day and a long dream
+### 🧩 The flying train: a pink day and a long dream
 
 On odd-numbered days, Happy Town's slow train (a green locomotive and one wagon) starts rolling along its track once you have looked toward its spot on the rails from far away. Standing close to that spot and looking at it does nothing. This is the code behind the players' "it spawns when you look at a certain spot of the railroad".
 
-If your day is pink at the moment it starts, the train does not vanish at the end of its run. It stops beside the opera singer's pillar, waits about 40 seconds, honks, sets off again and climbs into the sky. Pink is the graph's upper-right corner. The same pink colour brings four opera singers down to the foot of the pillar, so the two sights come together.
+If your day is pink at the moment it starts, the train does not vanish at the end of its run. It stops beside the opera singer's pillar, waits about 27 seconds of dream time, honks, sets off again and climbs into the sky. Pink is the graph's upper-right corner. The same pink colour brings four opera singers down to the foot of the pillar, so the two sights come together.
 
-The catch is time. In the emulator the train took a little over three minutes after it started to reach the pillar, and a dream that starts in Happy Town ends before that. The dream has to start in a place with a longer clock, reach Happy Town early, on an odd day, with a pink day, and you have to wake the train quickly. On a day of any other colour, the code makes the train vanish just after the point where the pink train stops, near the same pillar (not filmed).
+You rarely have to bring the pink yourself: the train does it. Waking it counts as touching it, and its mood sits so far to the left of the graph that it flips over to the far right. So in most dreams your day turns pink at the very moment the train starts. Stand about 30 tiles south of its spot and look north: from the north it drives straight at you, runs you over and sends you to the Natural World.
 
-Status: 🎮 checked in the game: the odd day, the start square, the pink colour and a longer dream were forced, and the player was moved to look at the spot, then kept beside the train. The stop, the honk and the flight were the game's own.
+The catch is time. The train stops at the pillar about 2 minutes 24 seconds of dream time after it wakes and lifts off about 3 minutes 7 seconds after. A dream that starts in Happy Town lasts 2 minutes, so it can never even see the stop. The dream has to start in a place with a longer clock (the Natural World, Kyoto, Monument Park or Violence District; Bright Moon Cottage only if you wake the train within its first minute), reach Happy Town early on an odd day, and you have to wake the train quickly. On a day of any other colour, the code makes the train vanish just after the point where the pink train stops, near the same pillar (not filmed).
+
+Status: 🎮 checked in the game. Hunt 5 forced the pink colour. Hunt 6 forced only the day number and yesterday's point, then moved the player once inside Happy Town to the viewing spot: the two random links that led there, the pink day and the flight were the game's own.
 
 <p>
-<img src="img/game/flying-train-rolling.png" alt="Happy Town's slow train, a green locomotive and one wagon, rolling along the track in front of a wall of colourful tiles" width="32%">
-<img src="img/game/flying-train-pillar.png" alt="The train reaching the opera singer's pillar, with the singer on top and the four pink-day singers standing on the ground in front" width="32%">
-<img src="img/game/flying-train-sky.png" alt="The train in the sky above Happy Town's roofs, its wheels off the ground" width="32%">
+<img src="img/game/flying-train-wake-spot.png" alt="The viewing spot south of the train: the rails run north to the horizon, the train small at the end of them just after it woke" width="49%">
+<img src="img/game/flying-train-rolling.png" alt="Happy Town's slow train, a green locomotive and one wagon, rolling along the track in front of a wall of colourful tiles" width="49%">
+</p>
+<p>
+<img src="img/game/flying-train-pillar.png" alt="The train reaching the opera singer's pillar, with the singer on top and the four pink-day singers standing on the ground in front" width="49%">
+<img src="img/game/flying-train-sky.png" alt="The train in the sky above Happy Town's roofs, its wheels off the ground" width="49%">
 </p>
 
 <details><summary>Technical details</summary>
@@ -475,10 +492,12 @@ Status: 🎮 checked in the game: the odd day, the start square, the pink colour
 - Handler: at tick +0xFC = 0 it asks DreamSys slot 0x200 (`GetDreamColor`); colour 5 (pink) sets +0x44 = 11. Normal run: `Behavior_TrainRun(.., 0x1E1, 0x884, -0x3C)`, forward at speed 0x3C, three turns of 1 degree per tick about y (rotation table `g_rotY1`, slot 0x44) in tick windows from 481 (first read as a horn; corrected while naming the code, 2026-10-16), sound 4 on its three voices at the start, and at tick 0x884 = 2,180 slot 0x160 (leave). Pink run: the same until tick 0x870 = 2,160, then slot 0x130 (stop); tick 0xA00 = 2,560 calls slot 0x12C (play an animation), with sound 5 on voice 0 from tick 0x9F6 to 0x9FF (the honk); from tick 0xA03 it rolls again with the leave tick moved to 0xFA0 = 4,000, and from tick 0xAF1 = 2,801 slot 0xCC with -0x20 every tick lifts it (PS1 y points down).
 - Opera singers: stage 4 square (col 1, row 0), slot 0 (every day): group 0 is the singer on the pillar (type 38), group 28 is type 112 at places 137 to 140 with rule 17 (`SPECIAL_COLORS[7]` = 5, pink).
 - In game: yes, interpreter (`work/hunt5/C/r5.log`). Forced: day +0x180 = 4 (day number 5), yesterday's point +0x196 = (-2, 7) (start on square (1, 1)), mood accumulator (6, 5) at each spot check (colour 5), time limit +0x134 = 200,000 at vsync 3600, player moved at vsync 3600 to 30,720 units behind the spot facing it, then put back every 10 vsyncs 14,000 units south of the train. Spawned at vsync 3488, woke at 3603, +0x44 = 11 from the first tick, stopped at tick 2,160 at (-59117, 0, -70763), 4,100 units from the pillar and next to the four type 112 singers; still from vsync 14,800 to 17,100; moving again at tick 2,642; y left 0 between ticks 2,787 and 2,837 and reached -9,088 at tick 3,085. Control `r4.log`: 12,000 units from the spot, facing it, it never woke in 13,000 vsyncs.
-- Why it is rare: the train's ticks ran at about 0.175 per vsync, so the stop came about 11,200 vsyncs after it woke; a dream that started in Happy Town (120 s limit in `g_stageTimeLimits`) ended at vsync 12,091 in `r4.log`, about 8,600 vsyncs after it began. Measured in the emulator only; a console's frame rate may differ.
-- Not seen: the normal train leaving at tick 2,180 and the pink train leaving at tick 4,000 (code only). Types 41 and 49 share its model (Happy Town squares (3, 3) and (5, 3)) and may be the fast even-day train players describe; not run.
-- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
-- Before us: the fandom wiki (Train, Rare Events) already had the odd-day slow train woken by looking at a spot, its stop at the opera pillar, the honk and the flight on a pink chart point (x 4 to 9, y 3 to 9); we confirm it in the emulator and show why the dream is usually too short.
+- Waking is touching: record 111 has wake range +5 = 15 and touch range +6 = 15 with range parameter +9 = 3, so `Entity_CheckWake` and `Entity_CheckTouch` pass in the same tick (both through `Entity_IsInRange` @0x8005D714). The touch sends event 9; `DreamSys_OnEntityEvent` @0x8005B03C logs the record mood (-9, 5) in the touched-characters accumulator (+0x154). `Mood_CalcAxis` gives x = -9 + (-9 / 3) = -12, below -9, flipped to 9; y = 5 + 5 / 3 = 6. `DreamSys_ComputeDayPoint` averages it with the squares' result (c_x, c_y): ((c_x + 9) / 2, (c_y + 6) / 2), pink whenever c_x >= -1 and c_y >= 2 with nobody touched before; every Happy Town square has y from 7 to 9. The handler asks the colour at its tick 0, after that log.
+- Natural route, hunt 6 (`work/hunt6/A/t1.log`, `t3.log`, interpreter): forced day +0x180 = 4 (day number 5) and yesterday's point +0x196 = (6, 2) only; the dream started on Natural World square (11, 11) (clock 6,300 ticks); a wall gave a random link to Kyoto, a Kyoto wall a random link to Happy Town square (0, 0) at timer 565 (both the emulator's own dice); the player was then moved once to (-93184, -29696), 30,720 south of the train, and turned by pad. Logged `ent (-9,5)` in the wake vsync, colour point (6, 6), +0x44 = 11 from the first tick; it stood at (-59117, 0, -70763) from tick 2,403 to 2,503, moved again at tick 2,569 and reached y -13,056 at tick 3,209 (timer 3,879 of 6,300). From the north (`t2.log`) the train drove at the player and its touch linked him to the Natural World square (9, 14).
+- Why it is rare: the train counter +0xFC and the dream timer +0x24 advance together, one per game frame (`t3.log`: train 7 to 3,209 while the timer went 646 to 3,879); hunt 5's "0.175 per vsync" was the emulator's frame rate in that scene, not another clock. Latest wake to see the stop = start clock - 2,160, to see the lift-off = start clock - 2,801 (`g_stageTimeLimits`, seconds x 15): Happy Town (stage 4), stages 6 and 12 (1,800 or less): never; stages 1 and 11 (2,700): the stop only, if woken by tick 540; stage 0 (3,600): lift-off by tick 799; stage 3 (6,300): 3,499; stages 2 and 13 (7,200): 4,399; stage 5 (9,000): 6,199. From a long-clock place a wall with no fixed link lands in Happy Town 2 times in 6 from the Natural World and 1 in 6 from stages 0, 1, 2 and 5 ([random links](#-where-a-random-link-sends-you)).
+- Not seen: the normal train leaving at tick 2,180 and the pink train leaving at tick 4,000 (code only). Types 41 and 49 share its model (Happy Town squares (3, 3) and (5, 3)); type 49's handler, fast and carrying the dreamer to Kyoto on CIRCLE, matches the even-day fast train players describe ([CIRCLE](#-characters-that-answer-to-circle)); not run. A route walked by pad through Happy Town's streets to the viewing spot was not played.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15, natural route 2026-10-16.
+- Before us: the fandom wiki (Train, Rare Events) already had the odd-day slow train woken by looking at a spot, its stop at the opera pillar, the honk and the flight on a pink chart point (x 4 to 9, y 3 to 9); new here: the train makes the pink point itself when it wakes, why a dream started in Happy Town can never see it fly, and the emulator proof.
 
 </details>
 
@@ -486,13 +505,16 @@ Status: 🎮 checked in the game: the odd day, the start square, the pink colour
 
 On even-numbered days a giant astronaut floats over Bright Moon Cottage, out and back, playing its trumpet. If your day is pink at the moment it appears, it turns out of its flight path, dives into the yard, walks to the cottage's bar and stays standing beside the counter, and the trumpet stops. On any other colour it never comes down.
 
-Nothing in its code looks at the day number beyond odd or even, so the "days 200 to 300" players repeat is [a myth](#-myth-the-astronaut-lands-only-between-days-200-and-300): it landed on day 4. It appears once per dream. A dream that starts in the cottage probably cannot do it, since the cottage's own squares do not reach pink; the pink has to come from earlier in the dream (our guess from the squares' moods, not played).
+Nothing in its code looks at the day number beyond odd or even, so the "days 200 to 300" players repeat is [a myth](#-myth-the-astronaut-lands-only-between-days-200-and-300): it landed on day 4. It appears once per dream. A dream that starts in the cottage cannot do it: the first place a dream logs is its start square, and no cottage square leans far enough to the right.
 
-Status: 🎮 checked in the game: the even day, the start square and the pink colour were forced; the turn, the dive, the walk to the bar and the stop were the game's own. With the natural colour it kept flying.
+A recipe that works: on an even day, start the dream in Happy Town's upper street, walk west along it for two blocks, then push into a wall. When the random link drops you anywhere in Bright Moon Cottage except the yard itself, your day is still pink, the astronaut appears over the yard and lands. A wall in Happy Town sends you to the cottage 1 time in 6, and 7 of the cottage's 8 arrival spots keep the pink: 7 chances in 48 per wall. A dream that starts in Happy Town lasts long enough, since the landing takes about 40 seconds.
+
+Status: 🎮 checked in the game. Hunt 5 forced the even day, the start square and the pink colour; with the natural colour it kept flying. Hunt 6 played the recipe with the day number, yesterday's point and the dice of the one random link forced, and the walk in Happy Town was a straight line that ignored walls; the pink, the dive and the stop at the bar were the game's own, and the next morning the graph showed the pink point.
 
 <p>
-<img src="img/game/astronaut-dive.png" alt="The giant astronaut in a green sky over the cottage's roof, turned head-down at the start of its dive" width="49%">
-<img src="img/game/astronaut-at-the-bar.png" alt="The astronaut standing beside the cottage's bar: bottle shelves and the counter on the left, the garden behind" width="49%">
+<img src="img/game/astronaut-dive.png" alt="The giant astronaut in a green sky over the cottage's roof, turned head-down at the start of its dive" width="32%">
+<img src="img/game/astronaut-at-the-bar.png" alt="The astronaut standing beside the cottage's bar: bottle shelves and the counter on the left, the garden behind" width="32%">
+<img src="img/game/astronaut-next-morning-graph.png" alt="The graph screen the next morning: the new point of that day sits in the upper right, the pink corner" width="32%">
 </p>
 
 <details><summary>Technical details</summary>
@@ -501,35 +523,49 @@ Status: 🎮 checked in the game: the even day, the start square and the pink co
 - Handler: at its first tick it reads DreamSys slot 0x200 (`GetDreamColor`); 5 (pink) sets +0x44 = 100. Normal: trumpet every 10 ticks, `unkC4(+0x32)` for 1,200 ticks then `unkC4(-0x32)` for 1,200 ticks, and at tick 2,400 the counter restarts. Landing: forward for 100 ticks, then `unkBC(g_moveY64ZNeg64)` = (0, 0x40, -0x40) until tick 250 (the dive), sound only before tick 250, walk `unkC4(-0x32)` with the absolute rotation `g_rotYNeg120` (0, -120, 0) degrees from tick 261 to 567, then the absolute rotation `g_astronautBarPose` (50, -120, 30) degrees from tick 569.
 - No day rule: the only day-of-year rules in the spawn code are the 30-day "month" rules 2 to 4 (another square of stage 0, another model); the [40-day cycle](#-the-40-day-texture-cycle) changes only textures; the ambience pick `Ambience_PickFamily` feeds only rule 7, used by one group of stage 3.
 - In game: yes, interpreter. Pink runs `work/hunt5/C/r6-astro-pink.log`, `r14`, `r16`: colour point (8, 6) at vsync 3463, +0x44 = 100 from the first tick; y went from -9,216 to 384 between ticks 68 and 308, then it reached (-5104, 384, -5328) and stayed there from tick 588 to the end of the run (tick 866). Control `r6b-astro-ctl.log`: natural colour point (-6, -9), +0x44 = 0, y stayed -9,216, still flying at tick 508. Forced: day +0x180 = 3 (day number 4), yesterday's point +0x194 = (-5, -7), mood (6, 5) at spot checks, limit +0x134 = 200,000, camera kept 4,000 to 5,000 units behind it; in `r16` the player's height was set to the astronaut's minus 1,000 after its tick 600 to see the ground floor. In `r16` the camera touched it at vsync 3500 (instance score +20,000, no link); its landing had been decided at its first tick.
-- Not played: the natural route (a link into the cottage's yard square with a pink day). The cottage squares carry moods from (-5, -7) to (1, 1), hence the guess above.
-- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
-- Before us: the fandom wiki (Floating Astronaut, Rare Events) already gives even days, a pink chart point when it appears and no landing in a dream started in the cottage; we confirm the colour rule in the code and the emulator.
+- The recipe, hunt 6 (`work/hunt6/A/a2.log`, `a3.log`, interpreter): forced day +0x180 = 3 (day number 4), yesterday's point +0x194 = (7, 7) (start on Happy Town square (2, 0)), the player moved west along Happy Town row 0 at walking pace ignoring walls (vsyncs 3,500 to 6,500), rand state 0xD at the one `Spawn_PickRandom` call (cottage, arrival 5 of 8). All five cottage slots load on arrival (keys 0 to 1024 at f 7,758 to 7,800), so the astronaut reads the colour right after arrival. Square moods logged: (7, 7) (the start square (2, 0)), (5, 8), (5, 9), then (0, 0) on arrival: (17, 24) / 4 + (0, 0) / 3 = (4, 6), pink; +0x44 = 100 from its first tick; y from -9,216 to 384 between ticks 89 and 318, then it stood at (-5104, 384, -5328) from tick 634 to the end of the dream (tick 751, timer 1,801). Next morning (`a5.log`, no camera follow): +0x196 = (4, 6), shown on the graph screen.
+- The other arrivals, same Happy Town squares before: cottage rows 0 to 3 give (4, 4) or (4, 6), pink; row 4, the yard (-5, -7), gives (2, 2), not pink: 1 in 6 for the cottage times 7 of 8 arrival points = 7 in 48 per wall bump. Bumping a wall at once, with only the start square logged, only row 1 keeps pink. A cottage start: every cottage square has x from -5 to 1, so the day's x is at most 1 when the yard loads.
+- Not played: Happy Town's row 0 walked by pad (whether it is one open street from (2, 0) to (0, 0)), and the cottage link without forcing the dice.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15, recipe 2026-10-16.
+- Before us: the fandom wiki (Floating Astronaut, Rare Events) already gives even days, a pink chart point when it appears and no landing in a dream started in the cottage; we confirm the colour rule in the code and the emulator, and the Happy Town recipe with its odds is new.
 
 </details>
 
-### 🧩 A red day fills a Happy Town street with gunmen
+### 🔄 A red day fills the Maze of Questions with rainbow penguins
 
-In Happy Town there is a street square where, on odd-numbered days, a single figure with a long gun stands and a big question mark floats in the sky. If the colour of your day so far is red when that square loads, the question mark is gone and eight more gunmen stand there, nine in all. Touching one flashes the screen red and sends you to another corner of Happy Town, a grey courtyard with a blue and white checkered floor.
+In Happy Town's "Maze of Questions", on odd-numbered days, a single rainbow penguin stands in the maze and a big question mark spins in the sky above the walls. If the colour of your day so far is red when that square loads, the question mark is gone and eight more penguins stand there, nine in all. Touching one flashes the screen red and sends you to another corner of Happy Town, a grey courtyard with a blue and white checkered floor.
 
-Red is the bottom middle part of the colour grid: neither static nor dynamic, and downer. The easiest way in is to end a day on the point (2, 8), near the top of the graph. If the next day has an odd number, the dream starts on that very square, and the square's own mood plus the game's bonus for the last place visited pushes your point past the top edge. It flips to the bottom of the graph: red, and the gunmen come out.
+Red is the bottom middle part of the colour grid: neither static nor dynamic, and downer. The easiest way in is to end a day on the point (2, 8), near the top of the graph. If the next day has an odd number, the dream starts on that very square, and the square's own mood plus the game's bonus for the last place visited pushes your point past the top edge. It flips to the bottom of the graph: red, and the penguins come out.
 
-Status: 🎮 checked in the game: only the day number and yesterday's point were written in; the red colour and the crowd came from the game itself.
+The lone penguin has a trick of its own: one time in five, when it wakes up, it is six times bigger and towers over the maze walls. The roll is made once per wake, whatever the colour of the day.
+
+Our first version of this finding called these figures gunmen. They are the maze penguins: the same character, square and spawn as the wiki's rainbow penguin, as a closer look in the emulator showed. So the community's "multiple gunmen" sighting is not matched by anything we found any more.
+
+Status: 🎮 checked in the game. The crowd: only the day number and yesterday's point were written in; the red colour and the nine penguins came from the game itself. The giant: the dice were forced at its wake-up to get the 1 in 5 roll.
 
 <p>
-<img src="img/game/gunmen-red-day.png" alt="Happy Town on a red day: six of the gunmen stand together on the patterned floor, in front of a striped wall" width="32%">
-<img src="img/game/gunmen-question-mark.png" alt="The same square on a day of another colour: one gunman far away and a big question mark floating in the sky" width="32%">
-<img src="img/game/gunman-link-courtyard.png" alt="Where touching a gunman sends you: a grey courtyard with a blue and white checkered floor, still in Happy Town" width="32%">
+<img src="img/game/penguins-red-day.png" alt="The maze on a red day: six small rainbow penguins stand together on the patterned floor, in front of a striped wall" width="32%">
+<img src="img/game/penguin-question-mark.png" alt="The same square on a day of another colour: one penguin far away and a big question mark floating in the sky" width="32%">
+<img src="img/game/penguin-link-courtyard.png" alt="Where touching a penguin sends you: a grey courtyard with a blue and white checkered floor, still in Happy Town" width="32%">
+</p>
+<p>
+<img src="img/game/penguin-normal-maze.png" alt="A maze corridor with the normal penguin, a small dark figure at the far end" width="32%">
+<img src="img/game/penguin-giant-maze.png" alt="The same corridor and frame with the giant roll: the penguin fills the end of the corridor, flippers spread, taller than everything around" width="32%">
+<img src="img/game/penguin-giant-profile.png" alt="The giant rainbow penguin in profile, beak and flipper, towering over the yellow maze wall" width="32%">
 </p>
 
 <details><summary>Technical details</summary>
 
-Square: stage 4 (Happy Town), column 0 row 4 (key 0x400, `STG04\N1\M024.LBD`, mood (2, 8)). Its spawn slot 16 (day flag 1: odd day numbers only) lists groups 13 (type 51, rule always, place 81), 22 (type 54, model 1, place 84: the question mark) and 25 (type 113). `Sym_PickSlotVariant` swaps slot 16 for slot 21 when the stage is 4 and `GetDreamColor` (DreamSys vtable 0x200) returns 4; it compares the colour with the stage number, which happens to be 4. Slot 21 holds groups 13, 26 and 27; the last two are type 114 with rule 11 (`SPECIAL_COLORS[1]` = 4), 4 places each (129 to 136), and `Sym_SpawnGroup` spawns a group at each listed place. Types 51 and 114 use the same model (model 0 of the square's MML) and the same record (touch range 6, link -5 → stage ~(-5) = 4 with +8 = 1, so they link as soon as the player is close); only the handler differs (`Behavior_Type51` vs `Behavior_RedDayGunman`, which picks random animations).
+Square: stage 4 (Happy Town), column 0 row 4 (key 0x400, `STG04\N1\M024.LBD`, mood (2, 8)). Its spawn slot 16 (day flag 1: odd day numbers only) lists groups 13 (type 51, rule always, place 81), 22 (type 54, model 1, place 84: the question mark) and 25 (type 113). `Sym_PickSlotVariant` swaps slot 16 for slot 21 when the stage is 4 and `GetDreamColor` (DreamSys vtable 0x200) returns 4; it compares the colour with the stage number, which happens to be 4. Slot 21 holds groups 13, 26 and 27; the last two are type 114 with rule 11 (`SPECIAL_COLORS[1]` = 4), 4 places each (129 to 136), and `Sym_SpawnGroup` spawns a group at each listed place. Types 51 and 114 use the same model (model 0 of the square's MML) and the same record (touch range 6, link -5 → stage ~(-5) = 4 with +8 = 1, so they link as soon as the player is close); only the handler differs (`Behavior_MazePenguin` @0x80060D80 vs `Behavior_RedDayPenguin` @0x800650F4, which picks random animations; the code names predate the penguin and are kept for now). Type 113 runs the same handler as 51 (`Behavior_Type113` only calls it).
 
 - Colour at the start: the chunk accumulator holds only (2, 8); `Mood_CalcAxis` gives x = 2 + 2 / 3 = 2 and y = 8 + 8 / 3 = 10 (integer division), flipped to -9; `Mood_GetColor` bands (2, -9) to [1][0] of `g_moodColors` = 4 (red in lsddecomp's colour enum). The link flash uses `g_fadePalette[4]` = (255, 0, 0).
-- Proof: `Sym_PickSlotVariant`, `Sym_SpawnGroup`, `Sym_CheckRule`, `Sym_CheckColorRule`, `Mood_GetColor`, `Mood_CalcAxis` @0x8005B66C, spawn dump `work/hunt3/spawns.txt`.
-- In game: yes, interpreter (`work/hunt4/A/q12.lua`, breakpoints on `Sym_SpawnOrSpy`, `Sym_CheckRule`, `Sym_SpawnAtPlace`, `Mood_GetColor`). Forced: +0x180 = 4 (day number 5) and yesterday's point +0x196 = (2, 8) at vsync 2100, nothing else. Log `work/hunt4/A/ht1.log`: colour point (2, -9) at 3420, type 51 at place 81, then type 114 at places 129 to 136; six of them in one frame while turning (run `ht-pan`). Control `ht-ctl.log`: the chunk accumulator forced to (0, 0) at every slot check (colour 7): types 51 and 54 only, and the question mark floats over the square. Touch (`ht-red.log`): walking forward from 4400 met a gunman, red screen from 4700 to 5000, then the grey checkered courtyard at 5100, still stage 4.
-- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
-- Before us: the community notes list "multiple gunmen" as a rare sight with unknown conditions, and the fandom wiki (Gunman) only covers Violence District's gunman; new here: the street square, the red-day rule and the nine figures.
+- Giant: at its first tick (`handlerTicks` +0xFC = 0 after it wakes) `Behavior_MazePenguin` does `if (rand() % 5 == 0 && state == 0)`: `SceneNode_SetScale` (entity slot 0x48) with `g_scaleSix` @0x80089E38 = (6, 6, 6), then 0x320 units down (PS1 y points down) and state 11.
+- Proof: `Sym_PickSlotVariant`, `Sym_SpawnGroup`, `Sym_CheckRule`, `Sym_CheckColorRule`, `Mood_GetColor`, `Mood_CalcAxis` @0x8005B66C, `Behavior_MazePenguin` @0x80060D80, spawn dump `work/hunt3/spawns.txt`.
+- In game, the crowd: yes, interpreter (`work/hunt4/A/q12.lua`, breakpoints on `Sym_SpawnOrSpy`, `Sym_CheckRule`, `Sym_SpawnAtPlace`, `Mood_GetColor`). Forced: +0x180 = 4 (day number 5) and yesterday's point +0x196 = (2, 8) at vsync 2100, nothing else. Log `work/hunt4/A/ht1.log`: colour point (2, -9) at 3420, type 51 at place 81, then type 114 at places 129 to 136; six of them in one frame while turning (run `ht-pan`). Control `ht-ctl.log`: the chunk accumulator forced to (0, 0) at every slot check (colour 7): types 51 and 54 only, and the question mark floats over the square. Touch (`ht-red.log`): walking forward from 4400 met a penguin, red screen from 4700 to 5000, then the grey checkered courtyard at 5100, still stage 4.
+- In game, the giant: yes, interpreter (`work/hunt7/G1/r5-gunman-giant.log`): same day and yesterday's point, limit +0x134 = 200,000, `g_randState` 0x8008AC68 = 0 at the first entry of `Behavior_MazePenguin` (rand() returns 0), camera kept 9,000 to 35,000 units behind it. Logged `setscale type=51 table=0x80089e38 (6/1, 6/1, 6/1)` at f 3,453, scale vector (24576, 24576, 24576). Control `r8-gunman-ctl.log`: rand state 1 (rand() = 16838, % 5 = 3), no resize, (4096, 4096, 4096). Hunt 7 ran the very spawn of hunt 4 (stage 4, square (0, 4), slot 16, group 13, place 81, type 51): the pictures show the rainbow penguin; the small figures of hunt 4's red-day picture are the same penguins.
+- Not checked: whether the red-day crowd is the wiki's "dancing penguins" (a group of smaller penguins in the maze that do not move): the handler of type 114 picks random animations and has no resize call, so "smaller" would come from distance. The 1 in 5 giant without forcing the dice.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15, corrected and giant added 2026-10-16.
+- Before us: the fandom wiki (Penguins, Happy Town) already had the rainbow penguin of the Maze of Questions on A-type (odd) days with the spinning question mark over the maze, a rare group of "dancing penguins" with no condition given, and pictures of a giant penguin; our earlier text misread the penguin as a gunman. New here: the red-day rule that brings the nine penguins and removes the question mark, and the 1 in 5 roll at wake-up behind the giant.
 
 </details>
 
@@ -601,15 +637,168 @@ Status: 🎮 checked in the game: the start square and the red colour were force
 
 </details>
 
+### 🧩 A green day sends a file of Buddha statues through Kyoto
+
+When your day is green as one square of Kyoto loads, four standing Buddha statues appear one behind the other and walk north through the town together, under the torii. On an even day the statue that is always there on even days joins the end of the file, five in all. On an odd day the four odd-day statues walk too, so Kyoto has eight walking statues. Green is the graph's upper-left corner.
+
+The odd-day statues are a different show: four of them on every odd day, whatever the colour, each woken on its own and walking alone in a straight line from four corners of the town toward the same crossing, two of them along the same street toward each other. Players describe four Buddha statues walking on A-type days, which are odd days: that is this odd-day group. The single-file parade is the green-day one.
+
+You have to look at them from far away to wake them: a statue starts walking when it stands about 12 tiles straight ahead of you. Standing next to one does nothing, and asleep it is not drawn at all, so the street looks empty. Walking into one sends you to Pit & Temple.
+
+No dream that starts in Kyoto can be green there, since the squares around it lean to the right of the graph; the green has to be carried in from places on the upper left of the graph, like some squares of the Natural World.
+
+Status: 🎮 checked in the game: the day number, yesterday's point and the green colour were forced, and the camera was moved to wake the file, then to follow it. The walk was the game's own. The natural way to green, the touch and the link are read in the code only.
+
+<p>
+<img src="img/game/buddhas-green-file.png" alt="Kyoto on a green day: four Buddha statues walking north in single file along a street, a house on the right" width="32%">
+<img src="img/game/buddhas-green-torii.png" alt="The head of the green file walking under a red torii, the three others hidden behind it" width="32%">
+<img src="img/game/buddha-odd-day-alone.png" alt="An odd day of another colour: one odd-day statue walking alone in an open street" width="32%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 2 (Kyoto), square (col 3, row 1), slot 2 (key 259, every day): group 13 rule 20 (even days) type 20 at place 61; group 18 rule 15 (`SPECIAL_COLORS[5]` = 2, green) type 20 at places 122 to 125; group 25 rule 21 (odd days) type 20 at places 216 to 219. Every group of a slot whose rule passes spawns (`Sym_SpawnSlot`).
+- Record 20 (0x80089FE4): mood (0, -4), +8,000 points, wake range +5 = 12 (the box of record +9 = 3, so +/- 6,144 units, around the point 24,576 units ahead of the player: `Entity_IsInRange` @0x8005D714), leaves after 180 x 15 = 2,700 ticks, touch box 10,240 ahead (+6 = 5), link -2 = stage 1 (Pit & Temple) within 1 << 9 = 512 units (`Entity_CheckLinkRadius`). Handler `Behavior_Type20` @0x8005EFF4: a footstep every 4 ticks, `moveZ(-0x64)` each tick, and 1 chance in 7 at its first tick to be twice as tall (`g_scaleTallTwo` @0x80089E50 = (1, 2, 1)).
+- In game: yes, interpreter (`work/hunt7/G2/`). Green runs `k-green2.log`, `k-green-side.log`: forced day number 5, yesterday's point (3, 1), mood accumulator (-7, 7) at each slot check, so colour point (-9, 9) at f 3,460; the four at (-18432, -400, z) for z = -66,560 to -72,704, 2,048 apart; with the camera 24,576 units in front of the second one at f 3,600 all four woke on the same tick and walked north at 100 units per tick, still 2,048 apart (head z -58,260 at f 4,100, -33,260 at f 5,600). Even day `k-green-even.log`, `k-green5-even.log` (day number 4): five in one line, place 61 at the tail. Control `k-odd-ctl.log` (day number 5, natural colour black): the four odd-day statues only, woken one by one, walking from (19456, -66560) west, from (-50176, -66560) east, and from z near -43,000 south. Hunt 6 lane D had the spawn log but never woke the statues: in `k-green.log` the player stood 856 to 7,000 units from them for 2,700 vsyncs and none woke.
+- Natural green, read in the code: every square around (3, 1) has x >= 1, so a Kyoto start is never green there. Example: five squares at (-7, 7) then an arrival on Kyoto square (2, 0), mood (2, 5): (-33, 40) / 6 + (2, 5) / 3 = (-5, 7), green; Natural World squares (5, 4) at (-6, 7) and (15, 3) at (-7, 6) carry such moods (`work/hunt7/G2/firstchunk.py`). Not played.
+- Not triggered: the touch, the link to Pit & Temple and the 1 in 7 tall statue.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Kyoto) says Buddha statues walk through Kyoto, sometimes in pairs, one or more stretched, and link to Pit & Temple, and it describes four statues walking on A-type days; which group those writers saw is our reading of their words. New here: the green-day file, the odd-day rule behind the four, the 1 in 7 stretch and the far-away wake-up.
+
+</details>
+
+### 🧩 A white day brings two more red-headed runners to a Kyoto plaza
+
+On even days a figure with a red head and outstretched arms walks around one Kyoto plaza. If your day is white as that square loads, two more come with it, three in all. Walking into any of them sends you to the Long Hallway. White is the centre of the graph, so this one is easy: end a day near (2, -1) or (-2, 0), and if the next day is even, the dream starts next to the plaza, already white.
+
+Our best match for them is the wiki's tengu, red faces running through Kyoto, several at once, with a link to the Long Hallway; the match is by look and link, not proven.
+
+In the code the usual figure has one more trick: on a day that is not white, when its first animation ends, it has 1 chance in 2 to become six times bigger. The white-day trio never does. We did not see it grow.
+
+Status: 🎮 checked in the game: only the day number and yesterday's point were written in; the white colour, the trio and the link to the Long Hallway (one of them walked into the camera) were the game's own. The giant figure is read in the code only.
+
+<p>
+<img src="img/game/red-heads-white-day.png" alt="Kyoto on an even white day: two of the three red-headed figures with outstretched arms in the street by a red and white wall" width="49%">
+<img src="img/game/red-head-alone.png" alt="The same street on a red day: one figure far down the street" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 2 (Kyoto), square (col 0, row 3), slot 8 (key 768, day flag 2: even day numbers only): group 6 rule 6 (day % 3 != 0) type 94 at place 62; group 20 rule 13 (`SPECIAL_COLORS[3]` = 7, white) type 94 at places 144 and 145.
+- Record 94 (0x8008A484): mood (0, 5), +100,000 points, awake at spawn, leaves after 40 x 15 = 600 ticks, touch box 16,384 units ahead, link -11 = stage 10 (the Long Hallway in the community numbering) within 3 << 9 = 1,536 units. Handler `Behavior_Type94` @0x80064294: at its first tick, a colour other than white (`getDreamColor`, DreamSys slot 0x200) sets state 11; when its first animation ends, state 11 and `!(rand() & 1)` call `scale(g_scaleSix)` = (6, 6, 6) and `moveY(0x800)`; then 1 in 3 turns 180 degrees; it walks at 0x80 per tick.
+- In game: yes, interpreter. White runs `work/hunt7/G2/k-white-nat-even.log`, `k-white2.log`: forced day number 4 and yesterday's point (2, -1) only; colour point (2, -1) at f 3,462; type 94 at places 62, 144, 145, at (-117760, -200, 13312), (-114688, -200, 17408), (-115712, -200, 21504). One walked into the camera at f ~4,100 and the dream went to stage 10. Control `k-white-ctl2.log`: yesterday's point (0, -5), natural red, type 94 at place 62 only, its height -200 in every log line (no growth seen). Odd day `k-white-nat.log`: the slot ran no group. Hunt 6 lane D had forced red and green instead of white.
+- Not seen: the six-times growth of the usual figure on a non-white day.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Kyoto) lists tengu that run through Kyoto, several at once, linking to the Long Hallway, and a "Giant Geisha" and "Giant Minotaur" but no giant tengu; new here: the white-day trio, the even-day square and the code's giant figure.
+
+</details>
+
+### 🔄 A yellow day gives Black Space's walker a giant twin
+
+In Black Space a small dark figure always walks on the white floor. On a yellow day a twin six times taller comes out on the same spot, and the two walk side by side, the small one between the giant's feet. Players know a "larger mirrored version" that sometimes appears, and say it comes when your dream starts in Black Space. The code is more precise: it comes on a yellow day. A dream that starts on the square fed by the point (-6, -5) is yellow from the start and gets the giant; one started on the square fed by (-6, 5) is green and does not.
+
+Status: 🎮 checked in the game: only the day number and yesterday's point were written in; the yellow colour, the giant and its walk were the game's own. Control: a green start, no giant.
+
+<p>
+<img src="img/game/black-space-giant-yellow.png" alt="Black Space on a yellow day: a giant dark figure seen from behind walking on the white floor, the normal small figure between its feet" width="49%">
+<img src="img/game/black-space-walker-alone.png" alt="Black Space on a green day: the small figure alone on the white floor" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 12 (Black Space), square (col 1, row 2), slot 0 (key 513, every day): group 0 rule 1 type 71 at place 0; group 1 rule 10 (`SPECIAL_COLORS[0]` = 6, yellow) type 108 at place 0, the same model of the same square.
+- Records 71 and 108 are identical: mood (9, 0), +100,000 points, wake 6 tiles ahead, leave after 2,700 ticks, link -3 = stage 2 (Kyoto) within 512 units. Only the handler differs: `Behavior_Type108` @0x80064CA4 calls `Behavior_Type71` @0x80062570 (a sideways shift of 0, 1 or 2 times 0xC800 at its first tick, a slow walk, facing you after tick 2,401) and then rescales by `g_scaleSix` (6, 6, 6) every tick.
+- In game: yes, interpreter. Yellow runs `work/hunt7/G2/s12-yellow-nat.log`, `s12-yellow2.log`: forced day number 5 and yesterday's point (-6, -5) only; the dream started on square (0, 2), colour point (-8, -6) at f 3,308; types 71 and 108 both at (-19456, -200, 1024); woken from 12,288 units, both walked south side by side (z 364 at f 3,700, -10,826 at f 5,200); the giant's matrix column read (0, 24576), six times 4,096. Control `s12-ctl2.log`: start square (1, 2), mood (-6, 5), colour point (-8, 6) green, type 71 only.
+- Stage 12's clock is 1,800 ticks (120 s), so a dream started there gives the giant two minutes.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Black Space) says there can be two Hoop and Stick Girls, the second a larger mirrored version, and that a large one appears if your dream starts in Black Space; the start is only half of it: the rule is a yellow day, and only one of the Black Space starts we ran is yellow.
+
+</details>
+
+### 🆕 A blue day sends four more fetuses down the Flesh Tunnels
+
+The red tunnel of the Flesh Tunnels has one fetus figure, wearing a bib with the character 胎 ("womb"), that comes out only once per dream. On a blue day four more come out on the same spot and walk up and down the tunnel. Touching one costs 100,000 points, among the worst touches in the game, and sends you nowhere. Blue is the top middle of the graph.
+
+No dream that starts in the Flesh Tunnels is blue, so the blue has to come from earlier places that day.
+
+Status: 🎮 checked in the game: the day number, yesterday's point and the blue colour were forced; the four extra fetuses and their walk were the game's own. Control with the natural colour (white): one fetus. The natural way to blue is read in the code only.
+
+<p>
+<img src="img/game/fetuses-blue-day.png" alt="The red tunnel on a blue day: a fetus with a red bib marked with a kanji walks at the camera, three more behind it" width="49%">
+<img src="img/game/fetus-alone.png" alt="The same tunnel on a white day: one fetus" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Spawn: stage 8, square (col 0, row 1), slot 1 (key 256, every day): group 1 rule -1 ("once") type 95 at place 48; group 4 rule 16 (`SPECIAL_COLORS[6]` = 1, blue) type 95 at places 117 to 120. Slot 2 (square (0, 2)) always adds eight type 96.
+- Record 95 (0x8008A494): mood (4, 2), -100,000 points, wakes 3 tiles ahead, leaves after 300 ticks, touch box 2,048 ahead, no link, no video. Handler `Behavior_Type95` @0x80064450: animation 3, then animation 1 walking at 0x80 per tick.
+- In game: yes, interpreter. Blue run `work/hunt7/G2/s8-blue.log`: forced day number 5, yesterday's point (-7, 0) (start on square (0, 1)), accumulator (0, 6) at each slot check, colour point (0, 8) at f 3,311; five type 95 at (-16384, 2048), (-15360, 2048), (-16896, 0), (-18432, -3584), (-17408, 1024); two walked in opposite directions along the tunnel between f 4,100 and 4,900, two stood. Control `s8-ctl.log`: point (-9, 0), white, type 95 at place 48 only. Hunt 6 lane D had forced (-9, 0), white, not blue.
+- Natural blue, read in the code: the stage 8 start squares (7, 0), (-7, 0), (-7, 1) give black or white; example: three squares at (0, 7) then an arrival on square (0, 1): (-7, 21) / 4 + (-7, 0) / 3 = (-3, 5), blue. Which links lead into stage 8 was not checked.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: nothing on a blue-day group of fetuses in the pages we read (the community notes, the fandom wiki pages copied in `work/hunt7/G1/wiki/`); the wiki's own Flesh Tunnels page could not be opened on 2026-10-16, so a player sighting may exist.
+
+</details>
+
+### 🔄 Happy Town's flowers and mushrooms grow with the day number
+
+Two Happy Town sights change size by the day number, not by chance. Both come on even days only.
+
+The eight smiling flowers near the castle are six times bigger, all of them, on days 4, 10, 16, 22 and so on (even days that leave 1 when divided by 3). On even days that are multiples of 3 (6, 12, 18) each flower has 1 chance in 3. On the others (8, 14, 20) they are never giant.
+
+The eight rainbow mushrooms by the rails are four times taller, all of them, on days 8, 20, 26, 32 and so on (even days that leave 2 when divided by 3; days 2 and 14 would count, but they are special days with no dream). On even multiples of 3 each mushroom has 1 chance in 3. On the others (4, 10, 16) they stay short.
+
+Status: 🎮 checked in the game: only the day number and yesterday's point were written in, plus the camera position; nothing random was forced. The 1 in 3 days were not run.
+
+<p>
+<img src="img/game/flowers-day-8.png" alt="Day 8: two small white flowers with faces, knee-high, on the Happy Town floor" width="49%">
+<img src="img/game/flowers-giant-day-10.png" alt="Day 10, seen from 25,000 units: two giant white flowers with faces rise from the horizon about halfway up a green sky" width="49%">
+</p>
+<p>
+<img src="img/game/mushrooms-day-4.png" alt="Day 4: the row of rainbow mushrooms by the rails, short" width="49%">
+<img src="img/game/mushrooms-tall-day-8.png" alt="Day 8, same spot and same moment: the mushrooms four times taller, their caps above the wall line" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Flowers: type 46, `Behavior_Flower` @0x80060800; at its first tick (`handlerTicks` +0xFC = 0 after it wakes), `getDayNumber % 3`: 1 → `SceneNode_SetScale` (entity slot 0x48) with `g_scaleSix` @0x80089E38 = (6, 6, 6); 0 → the same if `rand() % 3 == 0`; 2 → nothing; then it faces the player. Spawn: stage 4, square (col 3, row 2) (key 0x203), slot 10, day flag 2 (even days), groups 8 (places 73 to 76) and 24 (places 77 to 80).
+- Mushrooms: type 39, `Behavior_Mushroom` @0x8005FF7C; first tick, `getDayNumber % 3`: 2 → scale table 0x80089E5C = (1, 4, 1), height only; 0 → the same if `rand() % 3 == 0`; 1 → nothing. Spawn: stage 4, square (col 4, row 0) (key 4), slot 1, day flag 2, groups 1 (places 73 to 76) and 23 (places 77 to 80).
+- In game, flowers: interpreter, `work/hunt7/G1/r2-t46-day10.log` (+0x180 = 9, day 10, yesterday's point (-2, 9), start on the flower square): `setscale type=46 table=0x80089e38 (6/1, 6/1, 6/1)` for the two flowers that woke, scale (24576, ...) at vsync 4,600. Control `r6-t46-day8-ctl.log` (day 8): the same two flowers, (4096, 4096, 4096). Wide picture: run `r11`, same forcing.
+- In game, mushrooms: `r9b-t39-day8.log` (+0x180 = 7, day 8, yesterday's point (3, 7)): `setscale type=39 table=0x80089e5c (1/1, 4/1, 1/1)`, six of the eight awake with scale (4096, 16384, 4096) at vsync 4,600. Control `r10-t39-day4-ctl.log` (day 4): six awake, (4096, 4096, 4096). They wake when they stand about 20 tiles ahead (wake range 20): the player stood 41,000 units behind the first one at vsync 3,450, then 24,000 and 14,000.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Flowers, Happy Town) says the flowers can be small or extremely large and shows "8 Giant Flowers"; its Mushrooms page says their size "is directed by the current dream seed". The size follows the day number (day % 3), the same for all eight, with a die only on even multiples of 3.
+
+</details>
+
+### 🧩 Tiny lips walk toward you in Happy Town
+
+On even days, near the Happy Town maze, a pair of lips 32 times smaller than the usual floating lips walks toward you along the floor. It is easy to miss: 500 units away it is smaller than one floor tile. It is the same model as the big floating lips on the same square, drawn at 1/32 every tick.
+
+Status: 🎮 checked in the game: the day number, yesterday's point and the camera position were written in; the size and the walk were the game's own. Its link is read in the code only.
+
+<p>
+<img src="img/game/lips-tiny.png" alt="The tiny lips on the patterned floor, 500 units away, smaller than one floor tile" width="49%">
+<img src="img/game/lips-normal.png" alt="The normal floating lips from 1,500 units: they fill the screen" width="49%">
+</p>
+
+<details><summary>Technical details</summary>
+
+- Type 128, `Behavior_TinyLips` @0x800654A0: every tick it faces the player, scales by (1/32, 1/32, 1/32) (0x80089E80) and moves forward (`moveZ(-0x1E)`). Spawn: stage 4, square (col 0, row 3) (key 0x300), slot 12 (every day), group 29 rule 20 (even days), places 205 and 206. It uses model 0 of that square, like type 48 (`Behavior_FloatingLips`, group 10, every day), whose record links to stage 8. Record 128 links to stage 13 (link -14, Monument Park).
+- In game: interpreter, `work/hunt7/G1/r7-lips-day8.log` (+0x180 = 7, day 8, yesterday's point (1, 9)): `setscale type=128 table=0x80089e80 (1/32, 1/32, 1/32)`, scale (128, 128, 128) at vsync 4,600; camera 3,000, then 1,500, 800 and 500 units behind it. Control `r12-lips48-day8.log`: type 48 on the same square and day kept (4096, 4096, 4096).
+- Not tested: touching it.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Floating Lips) says they come in small and large versions and that the small ones cannot be linked with; the code gives the small one a link to Monument Park through its record (not tested), and the 1/32 size, the even-day rule and the walk are new.
+
+</details>
+
 ## Characters and events
 
 ### 🧩 The hidden rules that decide which characters appear
 
-Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: that is the ["many gunmen" sighting, now seen in the game](#-a-red-day-fills-a-happy-town-street-with-gunmen). The "many minotaurs" work the same way: [three rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto).
+Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: [the red-day crowd of maze penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins), seen in the game (we first took them for the community's "many gunmen", wrongly). The "many minotaurs" work the same way: [three rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto).
 
 The colour table players know from lsddecomp as `SPECIAL_COLORS` is part of these rules: for 8 of them it names the colour your day must be in for a group to come out (yellow, red, cyan, white, black, green, blue, pink, one each). It has nothing to do with links.
 
-A character's look comes from the map square it stands on, not from its type: each square's file carries one to three models, and a group only says "model 0, 1 or 2 of this square". So a "rare version" of a character is often the same model with another behaviour swapped in by a day or colour rule. The Happy Town gunman is one (types 51 and 114). Another: in stage 1, a creature that normally stands alone comes as three on a yellow day, walking, and sends you elsewhere in stage 1 as soon as you come near ([now seen on screen](#-three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)). All the sights of [Rare sights](#rare-sights) come from these rules or from a character that checks the colour itself.
+A character's look comes from the map square it stands on, not from its type: each square's file carries one to three models, and a group only says "model 0, 1 or 2 of this square". So a "rare version" of a character is often the same model with another behaviour swapped in by a day or colour rule. The rainbow penguin of Happy Town's maze is one (types 51 and 114). Another: in stage 1, a creature that normally stands alone comes as three on a yellow day, walking, and sends you elsewhere in stage 1 as soon as you come near ([now seen on screen](#-three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)). All the sights of [Rare sights](#rare-sights) come from these rules or from a character that checks the colour itself.
 
 Status: 📖 read in the code only, except the colour rules shown in [Rare sights](#rare-sights), which are checked in the game.
 
@@ -622,7 +811,7 @@ A slot lists up to 3 groups; `Sym_SpawnSlot` tries each group in turn. Groups ar
 Models: `Sym_SpawnGroup` gets the model with `chunk->vt->unk88(chunk, group.model)` on the square's LBD object (`Mml_Create`), then creates the entity with the group's type (`Sym_SpawnAtPlace` → `Entity_Create(type, ...)`). The square file's MML (offset at LBD +0x10) holds the models; every group's model index exists in its square's file (all 14 stages, `work/hunt4/A/mml.py`, list `work/hunt4/A/models.txt`). Stage 1, square (col 1, row 1), model 0 is shared by type 8 (rule always, place 24, wake mode 3, handler `Behavior_PurpleBeast` stands still) and type 109 (rule 10 = yellow, places 110 to 112, awake at spawn, link -2 → stage 1 with +8 = 4, handler `Behavior_YellowDayBeast` walks).
 
 - Proof: `Sym_SpawnSlot`, `Sym_SpawnGroup`, `Sym_CheckRule`, `Sym_CheckMonthRule`, `Sym_CheckColorRule`, `Sym_PickSlotVariant`, `Sym_SpawnAtPlace` (all matched C), `DreamSys_GetDreamColor`, `Mood_GetColor`, tables 0x80089A44, 0x80089A7C, 0x80088D16, 0x80087E14.
-- In game: the stage 4 colour rule ([the gunmen](#-a-red-day-fills-a-happy-town-street-with-gunmen)), the stage 2 rules 10 and 11 ([the minotaurs](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto), [the geisha](#-a-red-day-puts-a-geisha-on-a-kyoto-bridge)) and the stage 4 rule 17 (the opera singers of [the flying train](#-the-flying-train-a-pink-day-and-a-long-dream)). The stage 1 yellow trio, first in the spawn log: interpreter, +0x180 = 4, yesterday's point +0x196 = (0, -9) (the dream starts on that square), chunk accumulator forced to (-6, -6) at each slot check (colour 6): `work/hunt4/A/ly.log` shows type 8 at place 24 and type 109 at places 110 to 112; control `lc.log` (natural colour blue): type 8 only. Hunt 5 brought them into view ([the purple beasts](#-three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)); whether they are the community's "special lions" is not proven.
+- In game: the stage 4 colour rule ([the maze penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins)), the stage 2 rules 13 and 15 ([the Buddha statues](#-a-green-day-sends-a-file-of-buddha-statues-through-kyoto), [the red-headed runners](#-a-white-day-brings-two-more-red-headed-runners-to-a-kyoto-plaza)), the stage 8 rule 16 ([the fetuses](#-a-blue-day-sends-four-more-fetuses-down-the-flesh-tunnels)), the stage 12 rule 10 ([the Black Space giant](#-a-yellow-day-gives-black-spaces-walker-a-giant-twin)), the stage 2 rules 10 and 11 ([the minotaurs](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto), [the geisha](#-a-red-day-puts-a-geisha-on-a-kyoto-bridge)) and the stage 4 rule 17 (the opera singers of [the flying train](#-the-flying-train-a-pink-day-and-a-long-dream)). The stage 1 yellow trio, first in the spawn log: interpreter, +0x180 = 4, yesterday's point +0x196 = (0, -9) (the dream starts on that square), chunk accumulator forced to (-6, -6) at each slot check (colour 6): `work/hunt4/A/ly.log` shows type 8 at place 24 and type 109 at places 110 to 112; control `lc.log` (natural colour blue): type 8 only. Hunt 5 brought them into view ([the purple beasts](#-three-purple-beasts-on-a-yellow-day-our-best-match-for-the-special-lions)); whether they are the community's "special lions" is not proven.
 - Questions: [12](mysteries.md#events-and-hidden-content), [3](mysteries.md#graph-and-dream-start). Found 2026-10-15.
 - Before us: the fandom wiki (Rare Events, Linking) tied rare events to zones of the chart and knew the A and B days, and lsddecomp noted that `SPECIAL_COLORS` is compared with the dream colour; new here: the full rule list (day cycles, 30-day months, "once" groups) and what the table does.
 
@@ -630,13 +819,13 @@ Models: `Sym_SpawnGroup` gets the model with `chunk->vt->unk88(chunk, group.mode
 
 ### 🧩 The character record: mood, points, waking up and leaving
 
-Every character type, 130 of them, has a 16-byte record. It gives the mood logged when you touch it, the points it is worth (from -100,000 to +100,000), when it wakes up, when it leaves, how close you must be to touch it, and where it sends you or which video it plays. A character can wake up when you come near or when you walk away. Three types (7 and 8 in stage 1, 102 in stage 6) also need luck: near you, they have 1 chance in 128 per tick to wake. Type 102 is the only character of stage 6 and sends you to stage 12. The characters that end the dream on a video are type 13 (stage 2, always there), type 11 (stage 2, even days), type 47 (stage 4), type 79 (stage 9, rule "once") and type 89 (stage 5, rule "once"). Type 12 in stage 2 ends the dream without a video.
+Every character type, 130 of them, has a 16-byte record. It gives the mood logged when you touch it, the points it is worth (from -100,000 to +100,000), when it wakes up, when it leaves, how close you must be to touch it, and where it sends you or which video it plays. A character can wake up when you come near or when you walk away. Three types (7 and 8 in stage 1, 102 in stage 6) also need luck: near you, they have 1 chance in 128 per tick to wake. Type 102 is the only character of stage 6 and sends you to stage 12. The characters that end the dream on a video are type 13 (stage 2, always there), type 11 (stage 2, even days), type 47 (stage 4), type 79 (stage 9, rule "once") and type 89 (stage 5, rule "once"). Type 12 in stage 2 ends the dream without a video, and type 85 in stage 5 does so 1 time in 5 ([the CIRCLE characters](#-characters-that-answer-to-circle)).
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Record `g_entityRecords + 16 * type`: +0/+1 s8 mood (returned whole by vtable 0x14C `Entity_GetRecord`), +2 s8 points / 1000 (0x150 `Entity_GetPoints`), +3 wake mode (`Entity_CheckWake`, 0x170: 0 at spawn via `Entity_Attach`, 1 in range, 2 out of range, 3 in range then `(rand() & 0x7F) == 0`, 4 `(rand() & 0x7F) == 0` anywhere), +4 sleep mode (`Entity_CheckSleep`: 1 in range, 2 out of range, >= 10 after `mode * 15` ticks), +5 wake range, +6 touch range (`Entity_CheckTouch`; negative also makes it face or follow the player through `Entity_FaceDreamer`), +7 link (0x154 `Entity_GetLinkStage`: v > 0 → stage v - 1, v < 0 → stage ~v, sent as message 10; when v < 0 and +8 != 0, `Entity_CheckLinkRadius` links as soon as the player is within +8 << 9), +8 video + 1 (0x158 `Entity_GetVideo`, message 11), +9 range parameter, +0xB another range (0x168), +0xC handler run each tick (`Entity_StartHandler` registers it). Message 11 senders: handlers of types 11 (`Behavior_WalkingGeisha`, video 3), 13 (`Behavior_Type13`, video 3), 47 (`Behavior_Type47`, 11 or 12, video 1), 79 (`Behavior_Type79`, video 0), 89 (`Behavior_Type89`, video 4); message 12 from type 12 (`Behavior_Type12`) and 47. Six `FILM\EVENTn.STR` paths sit 0x1C apart at 0x80085829; which video number maps to which file was not checked. Types 98 and 100 have mood (-10, -10), types 99 and 101 have (10, 10) and (9, 9); type 99 would be the dog (the loader's `i + 0x62` loop), and its record has no handler.
+Record `g_entityRecords + 16 * type`: +0/+1 s8 mood (returned whole by vtable 0x14C `Entity_GetRecord`), +2 s8 points / 1000 (0x150 `Entity_GetPoints`), +3 wake mode (`Entity_CheckWake`, 0x170: 0 at spawn via `Entity_Attach`, 1 in range, 2 out of range, 3 in range then `(rand() & 0x7F) == 0`, 4 `(rand() & 0x7F) == 0` anywhere), +4 sleep mode (`Entity_CheckSleep`: 1 in range, 2 out of range, >= 10 after `mode * 15` ticks), +5 wake range, +6 touch range (`Entity_CheckTouch`; negative also makes it face or follow the player through `Entity_FaceDreamer`), +7 link (0x154 `Entity_GetLinkStage`: v > 0 → stage v - 1, v < 0 → stage ~v, sent as message 10; when v < 0 and +8 != 0, `Entity_CheckLinkRadius` links as soon as the player is within +8 << 9), +8 video + 1 (0x158 `Entity_GetVideo`, message 11), +9 range parameter, +0xB another range (0x168), +0xC handler run each tick (`Entity_StartHandler` registers it). Message 11 senders: handlers of types 11 (`Behavior_WalkingGeisha`, video 3), 13 (`Behavior_Type13`, video 3), 47 (`Behavior_Type47`, 11 or 12, video 1), 79 (`Behavior_Type79`, video 0), 89 (`Behavior_Type89`, video 4); message 12 from type 12 (`Behavior_Type12`), 47 and 85 (`Behavior_Type85` @0x80063874, `rand() % 5 ? 10 : 12`). Six `FILM\EVENTn.STR` paths sit 0x1C apart at 0x80085829; which video number maps to which file was not checked. Types 98 and 100 have mood (-10, -10), types 99 and 101 have (10, 10) and (9, 9); type 99 would be the dog (the loader's `i + 0x62` loop), and its record has no handler.
 
 - Proof: behaviour vtable 0x80089AD4 (slots 0x14C to 0x17C), the functions above (matched C), dump `work/hunt3/recs.txt`.
 - In game: only type 98 ([the Grey Man](#-the-grey-man-flips-your-graph-and-wipes-your-memories)).
@@ -653,12 +842,102 @@ Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos. Message 11 comes from the handlers of types 11, 13, 47, 79 and 89, message 12 from types 12 and 47 (record dump `work/hunt3/recs.txt`); the flying train is type 111, the astronaut type 0 and the purple beasts type 109 (matched on screen in hunt 5, see [Rare sights](#rare-sights)), and none of them sends message 11 or 12.
+Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignored while +0x44 is set: 4 calls the entity's slot 0x38; 9 (touch) logs the entity mood (0x14C), adds its slot 0x150 to the instance score and may save a flashback; 10 links to the fixed stage given by slot 0x154 (through `Spawn_PickRandom` @0x8005BB30 with a negative argument); 11 ends the dream (timer = limit) and queues the entity's video (+0x168 = -1, +0x16A = slot 0x158), played by the category -1 branch of `Cine_GetPath` @0x80049334 (`Cine_GetEventPath` @0x80049270); 12 ends the dream. 9, 11 and 12 do nothing in flashback mode. These are the forced endings and event videos. Message 11 comes from the handlers of types 11, 13, 47, 79 and 89, message 12 from types 12, 47 and 85 (record dump `work/hunt3/recs.txt`); the flying train is type 111, the astronaut type 0 and the purple beasts type 109 (matched on screen in hunt 5, see [Rare sights](#rare-sights)), and none of them sends message 11 or 12.
 
 - Proof: `DreamSys_OnEntityEvent` @0x8005B03C, `Cine_GetEventPath` @0x80049270 (matched C), `DreamSys_ExecuteLink` @0x8005A928.
 - In game: no.
 - Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 - Before us: lsddecomp's DreamTimer.md knew that some characters end the dream (lions, Ferris wheel, Kyoto old ladies) and the fandom wiki (Clips) lists the event videos; new here: the signal system behind them and that flashback mode ignores them.
+
+</details>
+
+### 🧩 More characters that change size
+
+Many more characters are resized by their own code, by the day, by the day's colour or by chance at the moment they wake up. Some players have seen: Happy Town's bunny and teddy bear each have 1 chance in 5 to be stretched three times wider and 3 in 10 to slide away; Kyoto's Buddha statues have 1 in 7 to be twice as tall; a Bright Moon Cottage character, probably the two-faced figure in the bar, has 1 in 2 to freeze, thin and twice as tall. Others nobody has matched yet: a Natural World character that is always resized, either twice or six times bigger, three Natural World characters fixed at six times or a quarter, a Violence District one six times bigger, one in Temple Dojo that has 1 in 3 to shrink to half and rise a little, and a Happy Town train that flickers flat 1 time in 5.
+
+Status: 📖 read in the code only. The ones checked in the game have their own entries: [the giant maze penguin](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins), [the flowers and mushrooms](#-happy-towns-flowers-and-mushrooms-grow-with-the-day-number), [the tiny lips](#-tiny-lips-walk-toward-you-in-happy-town) and [the Black Space giant](#-a-yellow-day-gives-black-spaces-walker-a-giant-twin).
+
+<details><summary>Technical details</summary>
+
+Every resize goes through entity slot 0x48 `SceneNode_SetScale` @0x8001D008: three {num, den} fractions turned into 20.12 fixed point and written (first argument 1) or added (0) to the model's scale. "First tick" is `handlerTicks` +0xFC = 0 after the character wakes, so a random size is rolled once per wake. Tables read from the executable (`work/hunt7/G1-findings.md` section 0).
+
+| Type | Where | Handler | Rule |
+|---|---|---|---|
+| 43, 44 | Happy Town, square (1, 2), even days (bunny and teddy bear; which is which not checked) | `Behavior_RollWideOrSlide` @0x80060710 | first tick `rand() % 10`: 8 or 9 → three times wider (0x80089E8C); 5 to 7 → slides away (0x80089DC0 each tick) after tick 200 |
+| 36 | Natural World, every day, place 69 | `Behavior_Type36` @0x8005FDFC | first tick `rand() & 1` → x2 (0x80089DF0), else x6 |
+| 118 | Natural World, day % 3 == 1, once | @0x800651D0 | x6 every tick |
+| 119 | Natural World, yellow days, 2 places | @0x8005F6D4 | x6 every tick |
+| 121 | Natural World, red days, 2 places | @0x80065204 | 1/4 every tick |
+| 29 | Natural World, rule 7 | @0x8005F708 | white day: x3 and 30,720 units up |
+| 81, 120 | Natural World | @0x80063144 | in one state adds 8/7 to its scale each tick while facing you, until within 512 units |
+| 20 | Kyoto | `Behavior_Type20` @0x8005EFF4 | first tick 1 in 7 → (1, 2, 1) |
+| 94 | Kyoto | `Behavior_Type94` @0x80064294 | non-white day, end of its first animation, 1 in 2 → x6 |
+| 17 | Kyoto, every day, place 16 | @0x8005EF20 | 1/2 every tick |
+| 125 | Kyoto, odd days, 4 places | @0x8006536C | 0.4 (0x80089E44); 1 in 4 goes back to sleep at once |
+| 55 | Violence District, every day, place 25 | @0x80061070 | first tick 1 in 3 → twice as tall |
+| 117 | Violence District, day % 3 == 1, once | @0x8006519C | x6 every tick |
+| 65 | Temple Dojo, day % 3 != 0, once | @0x80061F30 | first tick 1 in 3 → half size, 300 units up, turned 90 degrees |
+| 104 | Temple Dojo, once, 3 places | @0x80064AA4 | 1/4 |
+| 106 | Bright Moon Cottage, day % 3 == 2, place 105 | @0x80064B80 | first tick 1 in 2 → animation stopped, (1/8, 2, 1/8) |
+| 91, 92 | Bright Moon Cottage, day % 3 == 1 / 2, once | @0x80063ED4, @0x80064078 | (4/5, 6/5, 1) every tick |
+| 41 | Happy Town, square (3, 3), even days (the train model) | @0x800602AC | 1 in 5 (state 14): after tick 320, every 4 ticks depth = 1 / (1 + rand() % 32) |
+
+- Proof: the handlers above in `src/game/8005C508.c` (C, names as they stand), spawn dump `work/hunt3/spawns.txt`.
+- In game: no, for this table.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Bunny, Kyoto, Bright Moon Cottage) describes the bunny that may flee or stretch width-ways "by the dream seed", stretched Buddha statues and a stretched "Doubleface in the bar" (our likely match for type 106, not checked); new here: the odds and the rules in the code, and the unmatched resizes.
+
+</details>
+
+### 🧩 Four characters stretch or flatten the whole place
+
+A few characters do not change themselves: they stretch every piece of scenery around you. The whole place grows taller, or flattens, and stays that way until you leave it.
+
+- In Kyoto, one character, half the time, waits until you come close, then the whole town doubles in height in a blink, and five seconds later (300 ticks) the dream ends. This is very likely the old woman of the wiki, whose approach "can sometimes cause everything in Kyoto to stretch upwards", and one of the "Kyoto old ladies" lsddecomp lists among the characters that end the dream; the match is not proven.
+- In Violence District, one character doubles the scenery's height in a blink at a fixed moment of its routine, and another, when you first come close, has 1 chance in 4 to flatten the whole place to nothing over about 4 seconds.
+- In Monument Park, one character has two chances, at two fixed moments, of 1 in 5 each to make the scenery grow slowly to five times its height. If both fire, the place can reach nine times its height.
+
+Status: 📖 read in the code only, never seen in the emulator.
+
+<details><summary>Technical details</summary>
+
+StageMap slot 0x138 `StageMap_StartTileStretch` @0x8004CFB8 (count, fast) picks a step for the y scale of every tile model of the loaded chunks: `g_tileStretchFastUp` (+1/4), `g_tileStretchSlowUp` (+1/64), `g_tileStretchFastDown` (-1/4) or `g_tileStretchSlowDown` (-1/64), for denominator x |count| ticks, so the y scale moves by exactly count. Each tick `StageMap_StepTileStretch` adds the step to every tile (`SceneNode_SetScale` in add mode). The scale comes back to 1 only when the map clears its slots (`StageMap_ResetTileScale`). A second call before the first ends replaces the counter, so steps stack in the scale.
+
+| Type | Stage | Handler | When | Call |
+|---|---|---|---|---|
+| 12 | 2 (Kyoto) | `Behavior_Type12` @0x8005EA94 | first tick `!(rand() & 1)` → state 11; when within 0xA00 units | (1, fast): x2 in 4 ticks; 300 ticks later event 12 (dream ends, no video) |
+| 59 | 5 (Violence District) | `Behavior_Type59` @0x80061A90 | state 12, its tick 300 | (1, fast): x2 in 4 ticks |
+| 62 | 5 | `Behavior_Type62` @0x80061C2C | first time within 0x400 units: 1 in 2 picks sound 6, then 1 in 2 | (-1, slow): 1 to 0 over 64 ticks |
+| 103 | 13 (Monument Park) | `Behavior_Type103` @0x80064928 | ticks 100 and 800, `rand() % 5 == 0` each | (4, slow): 1 to 5 over 256 ticks |
+
+- Proof: `StageMap_StartTileStretch`, `StageMap_StepTileStretch`, `StageMap_ResetTileScale`, the four handlers (C), types and stages from `work/hunt3/recs.txt` and `spawns.txt`. Source: naming report `work/readable/N4-report.md`, rechecked against the C.
+- In game: no. Worth a run: spawn type 103 in stage 13 and watch a tile's y scale.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Kyoto, Violence District) describes a "Stretching Objects" event near Kyoto's old woman and in Violence District, sometimes more than once, and lsddecomp's DreamTimer.md says the Kyoto old ladies end the dream; new here: the four characters behind it, their odds, the flattening and the Monument Park growth.
+
+</details>
+
+### 🧩 Characters that answer to CIRCLE
+
+Players know one: press CIRCLE as Happy Town's fast train comes out of its tunnel and you ride it as its driver before it takes you to Kyoto. The code has two more characters that give you a choice through the same button.
+
+- The fast train: once it touches you, you have 10 ticks to press CIRCLE. Then you are put on the train and carried for about 7 seconds, and it links you to Kyoto. Without CIRCLE it links you right away.
+- In Happy Town, another character starts a short window when you touch it, about 2 seconds (30 ticks). Press CIRCLE inside it and you float up into the sky for about 7 seconds, then the dream ends with no video. Do nothing and the dream ends on its video. One character, two endings.
+- In Violence District, a character finishes its first animation and turns for 10 ticks. Press CIRCLE then and it tilts over and stops. Otherwise it comes at you, the screen flashes, your view rolls slowly for 6 seconds (90 ticks), and you are sent to Clockwork Machines, or 1 time in 5 the dream simply ends. Three of them stand on one Violence District square on even days; on an even cyan day four more stand in a row next to them, seven in all.
+
+Status: 📖 read in the code only, except the cyan-day row of the Violence District character, seen in the spawn log of the emulator (not on screen: the place is dark and our camera did not wake them).
+
+<details><summary>Technical details</summary>
+
+CIRCLE is DreamSys slot 0x100 (+0x74, `circlePressed` in the naming notes), set by the dream's pad handler (static read, not tried with the pad).
+
+- Type 49 (stage 4, square (5, 3), the train's model), `Behavior_Type49` @0x80060B34: moves at -0x100 per tick with sound 4 on three voices; once touched, state 10: at its tick 10 event 10 (the record's link, -3 = stage 2, Kyoto); before that, slot 0x100 non-zero → the dreamer is put on its position every tick, turned by `g_rotYNeg90`, slot 0x130 with 0, and at tick 100 event 10.
+- Type 47 (stage 4, always), `Behavior_Type47` @0x8006090C: once touched, state 12 for 30 ticks; slot 0x100 non-zero inside → slot 0x130 with 0 and state 11: the dreamer moves -100 in y (up) each tick, and at tick 100 event 12 (end, no video); after 30 ticks without it, event 11 (end on its video, video 1 in the record). Which Happy Town character it is was not identified.
+- Type 85 (stage 5), `Behavior_Type85` @0x80063874: after its first animation, 10 ticks of turning (`g_rotY9`); slot 0x100 inside → it rolls by `g_rotZNeg9` for 10 ticks and stops its handler. Otherwise slot 0x130 with 1, it faces you and steps 30 ticks toward you, a flash (`Entity_StartEffect`, colour 7), the dreamer's view rolls 1 degree per tick about z for 90 ticks, then a turn of 180 degrees and event `rand() % 5 ? 10 : 12`: the record's link (-10, stage 9) 4 times in 5, the end of the dream 1 time in 5. Record 85 (0x8008A3F4): mood (3, 0), +20,000 points, wakes 8 tiles ahead, never leaves, link within 1,536 units.
+- Spawn: stage 5, square (col 4, row 3), slot 11 (key 772, day flag 2, even days): group 12 rule 1 type 85 at places 30, 163, 200; group 22 rule 12 (`SPECIAL_COLORS[2]` = 3, cyan) type 85 at places 159 to 162. In game (`work/hunt7/G2/s5-cyan-even.log`, `s5-cyan2.log`, interpreter): forced day number 4, yesterday's point (-3, -8) (start on that square), colour point (8, -8); seven type 85, the cyan four in a row 2,048 apart at z 76,800. Controls `s5-ctl-even.log`, `s5-ctl2.log` (natural point (-4, 9), green): three. Odd day `s5-cyan.log`: the slot ran no group. No picture: the cyan row was never woken.
+- Source: naming report `work/readable/N1-report.md`, rechecked against the C.
+- Question: [12](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: the fandom wiki (Train) describes the fast train's "train conductor" scene, started with the O button and ending in Kyoto, which type 49 matches; lsddecomp's DreamTimer.md and the wiki list characters that end the dream, but nothing we read describes the CIRCLE windows of types 47 and 85 or the cyan-day row.
 
 </details>
 
@@ -668,23 +947,34 @@ Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignor
 
 After long sessions, players see places drawn with the wrong textures: grey walls covered in scraps of the menu and "me me me" letters. This is what happens when the game fails to load a place's texture set. It does not stop: it draws the place with whatever is left in video memory, and sets the dream to end 30 seconds later. Each new place that fails the same way pushes the end to 30 seconds after that link, which is why the dream timer seems to grow at every link in that state.
 
-The load fails when the game finds no free memory for the textures. What uses that memory up over a long session was not found.
+The margin is thin. Every time a place loads, its texture set needs about 200 KB of memory in one piece, and the game has only about 20 KB more than that free at that moment. So anything that stays behind or cuts the free memory into pieces, even 20 KB worth, makes every later texture load fail. Nothing frees it but turning the console off.
 
-Status: 🎮 checked in the game, with the failure forced (the slow memory exhaustion behind it is read in the code only).
+The community's recipe works, and now we know why: setting the place's "location time" counter back to 0 again and again makes the game build the place's scenery objects again on every tick without throwing away the old ones. About 60 KB pile up in a few seconds, the next place loads without its textures, and from then on every dream fails at its first place, with nothing more forced, until power-off. What leaks in ordinary play is still not found: five dreams in a row and one long dream with 74 links left the memory exactly as it was.
+
+Status: 🎮 checked in the game, with the failure forced, then with the community's leak forced: the failures in the following dreams came on their own. A leak in natural play was not found.
 
 <p>
 <img src="img/game/glitch-textures.png" alt="The first room with no texture set: grey walls, leftover menu letters and the words me me me" width="49%">
 <img src="img/game/first-dream.png" alt="The same room drawn normally" width="49%">
 </p>
+<p>
+<img src="img/game/glitch-leak-control.png" alt="Pit and Temple drawn normally: green grass, red-brown speckled walls, black sky" width="49%">
+<img src="img/game/glitch-leak-pit-temple.png" alt="The same spot after the leak: a leaf-patterned floor and pale walls borrowed from the first room, grey sky" width="49%">
+</p>
 
 <details><summary>Technical details</summary>
 
-When a stage loads, `Place_Load` @0x80052F10 starts a texture-set loader (`Tix_Create`, class `g_tixVtbl`, 0x84 bytes) at stage +0x58 and sets +0x60. On every tick `Place_CheckTextureLoad` checks it: when the loader's +0x80 is set, it destroys the loader without applying anything and calls DreamSys slot 0x104 `DreamSys_SwapTimeLimit` with slot 0x108 `DreamSys_GetElapsedSeconds` + 0x1E, so the limit becomes elapsed + 30 s. The loader sets +0x80 only in its fail branch (`Tix_OnReadDone`), when the heap allocator `Heap_Alloc` returns 0 for the file list or the data buffer. That fits "after long sessions until power-off" (heap exhaustion or fragmentation); the allocator and the per-dream frees were not audited.
+When a stage loads, `Place_Load` @0x80052F10 starts a texture-set loader (`Tix_Create`, class `g_tixVtbl`, 0x84 bytes) at stage +0x58 and sets +0x60. On every tick `Place_CheckTextureLoad` @0x800531CC checks it: when the loader's +0x80 is set, it destroys the loader without applying anything and calls DreamSys slot 0x104 `DreamSys_SwapTimeLimit` with slot 0x108 `DreamSys_GetElapsedSeconds` + 0x1E, so the limit becomes elapsed + 30 s. The loader sets +0x80 only in its fail branch (`Tix_OnReadDone` @0x80043200), when `Heap_Alloc` returns 0 for the file list or the data buffer.
 
-- Proof: `Place_Load`, `Place_CheckTextureLoad`, `Tix_Create`, `Tix_OnReadDone`, `Heap_Alloc`, `DreamSys_SwapTimeLimit` @0x80059328.
-- In game: yes, forced. Interpreter (`work/hunt4/B-texfail.lua`): at the first check (vsync 2891, stage 0, day 1) the loader's +0x80 was written to 1. The tatami room came up untextured with leftover menu graphics, and the limit +0x134 read 450 (30 s x 15) instead of the normal 3600. Forced: the loader's failure flag only. Not tried: a real long session, and the community's "zero the frame counters" recipe.
-- Question: [11](mysteries.md#days-textures-randomness). Found 2026-10-15.
-- Before us: the fandom wiki (Textures, Data Analysis) and the LSD Revamped docs (Dynamic Analysis findings) saw it after long sessions or after editing the timers in RAM; new here: the failed texture load behind it and the 30-second end.
+- The heap: one pool of 0x166C00 bytes (1,469,440), made once at boot (`main` @0x800118DC calls `Heap_Create` @0x80017A20) and never reset until power-off. `Heap_Alloc` @0x80017B34 is first fit from the head of a doubly linked free list and splits the low end; `Heap_Free` @0x80017CFC merges both neighbours. No bug found in the allocator.
+- The margin: the loader asks for the file list (16 bytes), then a buffer as large as the set's largest file: 198,656 bytes at every load measured (stages 0 to 5). Largest free block at that request over 37 loads in one dream (`work/hunt6/F/A.log`): 215,856 to 222,032 bytes, a margin of 17,200 to 23,376. About 1,245,276 bytes are in use at every load.
+- No natural leak (interpreter and dynarec, `r1.log`, `B.log`, `B2.log`, `A.log`): 5 dreams ended early, each menu back to one free block (the 32 bytes more per menu are the menu's own nodes); one dream of 32,700 vsyncs with 74 forced dynamic links and 37 place loads: no allocation failure, largest free block never below 215,856. Forced: the timer or the limit, and the links. Not tried: full-length dreams, days past 6 (sets B to D), flashbacks, videos, special days, stages 6 to 13.
+- The leak: "location_time" is `D_8008AC70`. `Scenery_Begin` @0x800544E4 sets it to 0 when a place starts; `Scenery_Tick` @0x800558F0 runs the first-tick setup only when it reads 0 (`if (D_8008AC70++ == 0)`): `Ambience_CreateTint` @0x80054660 (one object), `Ambience_CreateBands` @0x80054850 (18 objects) and `Scenery_CreateAll` @0x80054B84 (the scenery objects). Each run overwrites the pointers; `Scenery_Teardown` @0x80054D30 frees only the last set. The counter is an s32 counted once per tick, so only a RAM write brings it back to 0. Run `z1.log`: 0x8008AC70 written to 0 every 2 vsyncs from vsync 3,200 to 3,480 in the first room; used heap rose from about 1,315,000 to 1,378,664; at the second forced link `ALLOCFAIL f=4112 size=198656` with a largest block of 102,384, the limit fell to elapsed + 30 s and Pit & Temple came up with the first room's textures. Control `z0.log`: same links, same rand state 0x343D7141, texture loaded (largest 215,856).
+- Until power-off (`z1c.log`): only dream 1 forced; menu after it 150,452 bytes in use instead of 89,944, 91 free pieces instead of 1; dream 2 (nothing forced but the limit) `ALLOCFAIL f=11864`, limit 450 (30 s x 15); dream 3 `ALLOCFAIL f=15570`. Dream 2 started in the same room with the same set still in video memory, so it looked normal: the glitch only shows when the leftovers belong to another place or to the menu.
+- In game, the first forced failure: interpreter (`work/hunt4/B-texfail.lua`): at the first check (vsync 2,891, stage 0, day 1) the loader's +0x80 was written to 1; the tatami room came up untextured with leftover menu graphics, limit +0x134 = 450 instead of 3,600.
+- Not tried: the fandom "game_time" zeroing (0x80090B74 is libgs' own frame counter, read by `GsGetLw` and `GsGetLs`; from the code it can disturb drawing, not memory). Read only: `Tix_Init` leaves +0x80 uninitialised when its first small allocation fails, and `Place_CheckTextureLoad` reads +0x80 of a NULL loader if the loader itself could not be allocated.
+- Question: [11](mysteries.md#days-textures-randomness). Found 2026-10-15, memory hunt 2026-10-16.
+- Before us: the fandom wiki (Textures, Data Analysis) and the LSD Revamped docs (Dynamic Analysis findings) saw it after long sessions, until power-off, or after zeroing timers such as "location_time" in RAM; new here: the failed texture load behind it, the 30-second end, the 20 KB margin, why the "location_time" recipe leaks, and that the leak survives every later dream.
 
 </details>
 
@@ -709,6 +999,28 @@ Texture set: when a stage loads, `Place_Load` calls `Stage_PickTexturePath @0x80
 - In game: yes, forced. PCSX-Redux interpreter, same room and spot at the dream start: +0x180 = 4 (day 5) loads set A; +0x180 = 32 (day 33) with the rand state forced to 3 at `Stage_PickTexturePath` (rand % 4 = 3) loads set D, the photo collage. Day 33 rather than 35 because 35 is a special day. Log `work/shots/manifest.md`.
 - Question: [9](mysteries.md#days-textures-randomness). Found 2026-10-15.
 - Before us: the fandom wiki (Textures) and compu-lsd (Textures) already describe a 40-day cycle with a set added every 10 days; we confirm it in the code and the emulator, with each allowed set equally likely.
+
+</details>
+
+### 🆕 Three quiet rules for the look of a place
+
+Three small rules in the code change how a place looks, none of them seen in the emulator yet.
+
+- On days whose number divides by 7, the floating scenery objects some places scatter around you are put in one straight row at a fixed spot of the place instead of at random around you. The row moves with the day: day 7, 14 and 21 each use another line. The multiples of 7 up to day 126 are all [special days](#-the-42-special-days) with no dream, so the rows can only show from day 133 on.
+- In Kyoto, the Natural World, Happy Town and Violence District, the game shifts one row of palette colours by one step every frame, which makes some colours scroll. Which surfaces use that row was not checked.
+- On a flashback day, the coloured fade that opens each place stops a third of the way, so the colour stays over the screen as a tint for the whole visit.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+- Day 7 rows: `Scenery_CreateKind0` picks `Scenery_RandomizeParamsDay7` @0x80055410 when `g_placeDayNumber % 7 == 0`, else `Scenery_RandomizeParams` @0x80055258 (random x and z within 22 tiles of the dreamer). The day-7 version ignores the dreamer: x = (rand() % 20) << 11 (0 to 19 tiles), z = 0xA000, then -0xA000 when day % 3 == 1 or 0x800 when day % 3 == 2, height `g_sceneryHeights1`. Kind 0 scenery exists only in places whose ambience record allows scenery (`g_ambienceFamily` >= 0), 0, 3, 8 or 16 objects by `rand() & 3`; they stand still for 500 ticks, then spin and drift. Special days from `g_specialDays` (weekly run 7 to 126, then 134 to 204).
+- Palette cycling: each tick `Scenery_Tick` @0x800558F0 (from `Place_Update`) calls `Stage_CyclePalettes` @0x80055A24, which calls `Display_RotateRect` @0x8003B624 on `g_clutCycleRectA` (CLUT rows at y 0x1F0) in stage 2 and on `g_clutCycleRectB` (y 0x1F8) in stages 3 to 5: the VRAM rect turns one column right through a spare column.
+- Flashback tint: `Place_Start` @0x80053764 calls the fader's `setTint` (`Fade_SetTint` @0x800404B4) with (flashback mode, 3) and starts the fade in with the flashback colour; with the flag set the fade runs ticks - ticks / 3 and `Fade_Stop` @0x800402F0 keeps the box shown.
+- Sources: naming reports `work/readable/N2-report.md` (rows), `X4-report.md` (palette), `X7-report.md` (tint), rechecked against the C.
+- In game: no.
+- Question: none. Found 2026-10-16.
+- Before us: nothing on the day-7 rows or the palette cycling in the pages we read (the fandom wiki pages copied in `work/hunt7/G1/wiki/`, the community notes, lsddecomp); the flashback tint may be familiar to players, but we found no page explaining it.
 
 </details>
 
@@ -752,13 +1064,13 @@ Links: a wall touch (`DreamSys_OnWallTouch` @0x80058FAC, message 4, no transitio
 
 ### 🔄 Fixed links do not change with visits, but some depend on who showed up
 
-A fixed link always leads to the same place: the game does not count visits and does not read the day when it looks one up. One extra list of walk-through links is switched on only in stages 3 and 11, or once a character of type 11, 56, 78 or 93 has appeared in that dream. Those characters follow [the day rules](#-the-hidden-rules-that-decide-which-characters-appear): type 11 is in stage 2 on even days, 56 in stage 5, 78 in stage 8 when the day is a multiple of 3, and 93 in stage 0 under the "once" rule. So when a fixed link seems to change from day to day, the day number is behind it through who appeared, not through visit counts. One more link routine, used only from stages 1, 3, 5, 9 and 12, sends you to stage 12 instead of its usual pick about half the time, depending on the dream timer; what you do to trigger it was not found.
+A fixed link always leads to the same place: the game does not count visits and does not read the day when it looks one up. One extra list of walk-through links is switched on only in stages 3 and 11, or once a character of type 11, 56, 78 or 93 has appeared in that dream. Those characters follow [the day rules](#-the-hidden-rules-that-decide-which-characters-appear): type 11 is in stage 2 on even days, 56 in stage 5, 78 in stage 8 when the day is a multiple of 3, and 93 in stage 0 under the "once" rule. So when a fixed link seems to change from day to day, the day number is behind it through who appeared, not through visit counts. One more link routine, used only from stages 1, 3, 5, 9 and 12, sends you to stage 12 instead of its usual pick about half the time, depending on the dream timer; it runs when you [fall off an edge](#-falling-off-an-edge-walls-and-the-cottages-walking-squares).
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-`Link_Find` compares only (chunk, tile) (tile -1 is a wildcard) and stores the match in `g_linkFromStage`, `g_linkFromIndex`, `g_linkToStage`, `g_linkToIndex`; it reads neither the day nor a counter. The extra list (`Link_FindExtra`, tables 0x80088B5C, 0x80088B24, 0x80088A80, run by `DreamSys_LinkExtra`, DreamSys vtable 0x1D8) is used only while `g_extraListOn` is set: `Sym_InitExtraList` sets it to (stage == 11 or stage == 3) at stage load, and `Sym_CheckExtraListType` sets it to 1 when a group of type 0xB, 0x38, 0x4E or 0x5D passes its rule in `Sym_SpawnGroup`. Also in the link code: `Link_PickFallStage` (vtable 0x1D4) only works from stages 1, 3, 5, 9 and 12 and, when the dream timer is odd, sends the player to stage 12 instead of the usual pick; which player action calls it was not traced.
+`Link_Find` compares only (chunk, tile) (tile -1 is a wildcard) and stores the match in `g_linkFromStage`, `g_linkFromIndex`, `g_linkToStage`, `g_linkToIndex`; it reads neither the day nor a counter. The extra list (`Link_FindExtra`, tables 0x80088B5C, 0x80088B24, 0x80088A80, run by `DreamSys_LinkExtra`, DreamSys vtable 0x1D8) is used only while `g_extraListOn` is set: `Sym_InitExtraList` sets it to (stage == 11 or stage == 3) at stage load, and `Sym_CheckExtraListType` sets it to 1 when a group of type 0xB, 0x38, 0x4E or 0x5D passes its rule in `Sym_SpawnGroup`. Also in the link code: `Link_PickFallStage` (vtable 0x1D4) only works from stages 1, 3, 5, 9 and 12 and, when the dream timer is odd, sends the player to stage 12 instead of the usual pick; it is called by `DreamSys_LinkFall` when the ground probe finds nothing (traced while naming the code, 2026-10-16).
 
 - Proof: `Link_Find`, `Link_FindExtra`, `Sym_InitExtraList`, `Sym_CheckExtraListType`, `Link_PickFallStage` (matched C).
 - In game: no.
@@ -767,7 +1079,29 @@ Status: 📖 read in the code only.
 
 </details>
 
-## Music
+### 🆕 Falling off an edge, walls and the cottage's walking squares
+
+Three rules decide what happens when you hit the edge of the world.
+
+- Falling: in Pit & Temple, the Natural World, Violence District, Clockwork Machines and Black Space, stepping off some edges, where the game finds no ground under you, takes you to another place as the view tilts and you sink (at other edges it just puts you back). When the dream timer happens to be odd you land in Black Space; otherwise a random place, as for a wall. This is the "stage 12 depending on the timer" link the [fixed links entry](#-fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up) left unexplained. In Clockwork Machines it also fires on solid ground once you are high enough.
+- Walls: pushing into a wall gives a random link only on 1 tick in 16. Pushing on another tick does nothing, so a random link comes within about a second of pressing against the wall.
+- Bright Moon Cottage has 8 squares that take over: step on one facing the right way while walking forward, and the game locks your pad and walks you along one of 4 scripted paths.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+- Fall: after each walk step the actor code probes the ground (`DreamSys_OnGroundProbe`, case -2: no ground). When the map object under the new position reports state 2 (+0x2C of the probe result, meaning not traced), DreamSys slot 0x1D4 `DreamSys_LinkFall` @0x8005A7A0 runs; otherwise the dreamer is put back (`DreamSys_RestorePosition`). `Link_PickFallStage` @0x8005BE90 returns -1 except in stages 1, 3, 5, 9 and 12; stage 5 also needs a height below -0xFFF or one place (`g_fallPlace5`); in stage 9 it is also called on ground (case -1) and fires when the height is 0x800 or more. An odd timer turns the stage into -12, so `Spawn_PickRandom` returns stage 12; else it draws as for a wall. The link runs with transition 0x10; during the fade `DreamSys_TickFall` @0x8005A0B0 moves the dreamer 0x200 along y per tick and tilts the camera.
+- Walls: `DreamSys_TickBegin` @0x80059394 sets the dynamic-link flag every tick to `timer % 16 == 0` (`Place_Start` sets the period to 16), and a wall touch links dynamically only while it is set ([random links](#-where-a-random-link-sends-you)).
+- Cottage: `Link_FindScripted` @0x8005BFDC matches 8 tiles of stage 0; on one, facing its heading and walking forward, one of the 4 scripts of `g_linkSteps` @0x80087EEC turns and walks the dreamer with the pad locked (shorter when running). In stage 0 `DreamSys_Walk` @0x80059E98 also gives a wall-touch link when the dreamer's y is below -2000 and x >= -499.
+- Source: naming report `work/readable/N3-report.md`, rechecked against the C for the fall.
+- In game: no.
+- Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-16.
+- Before us: compu-lsd (Linking) said random links depend on how long the game and the place have been running, which the 1-in-16 rule partly explains; the fandom wiki (Black Space) lists the ways into Black Space without a fall; the fall rule, the 16-tick window and the cottage scripts are new as far as we read.
+
+</details>
+
+## Music and sound
 
 ### ✅ A Clockwork Machines track that can never play
 
@@ -800,6 +1134,23 @@ Status: 📖 read in the code only.
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 - Before us: nothing on it in the fandom wiki (Music), compu-lsd, the LSD Revamped docs (static analysis, music research) or lsddecomp; new.
+
+</details>
+
+### 🆕 Places have fixed sound sources
+
+Besides the music, some places have sounds tied to fixed spots on the map. Walk near one and you hear it, louder as you come closer; walk away and it stops. At most two play at a time. They come from the game's own sound effects, so the music the dream picked does not change them. The Natural World has 29 of them, Kyoto and Violence District 9 each, Happy Town 5, and Bright Moon Cottage, the Long Hallway, Sun Faces Heave and Monument Park 1 each. The other places have none.
+
+Status: 📖 read in the code only.
+
+<details><summary>Technical details</summary>
+
+- Spots: `g_stageSoundSpots[stage]` @0x800876B4, 8-byte records (map tile, type 1 to 14), counts in `g_stageSoundSpotCounts` @0x800876EC: stage 0: 1, 2: 9, 3: 29, 4: 5, 5: 9, 10: 1, 11: 1, 13: 1, others 0. Each tick the place takes the first free spots within the type's range (`SoundSpot_FindInRange`, `SoundSpot_Acquire`) into two slots, and drops a spot once the dreamer leaves its range (`SoundSpot_IsInRange`, `SoundSpot_Release`). Volume: `SoundSpot_CalcFade` @0x8005627C, distance / (range / fadeSteps). Bank: `SND\SE`.
+- Patterns: 14 handlers `SoundSpot_Type1` to `SoundSpot_Type14`; for example type 1 plays one sound at ticks 0, 2 and 5; type 4 (8 spots in Kyoto) one sound every 20 ticks, a second every 400 and a third every tick; type 12 (most Natural World spots) adds three sounds on a 70-tick cycle.
+- Source: naming report `work/readable/N2-report.md`, rechecked against the symbol table.
+- In game: no.
+- Question: none. Found 2026-10-16.
+- Before us: nothing on fixed sound spots in the pages we read (the fandom wiki pages copied in `work/hunt7/G1/wiki/`, the community notes, lsddecomp).
 
 </details>
 

@@ -306,7 +306,7 @@ typedef struct BehaviorEntity {
 
 extern void Object_DeleteArray(void *, s32);
 extern EntityRecord g_entityRecords[];
-extern void Behavior_Type51();
+extern void Behavior_MazePenguin();
 void Actor_ApplyPos(void *arg0, s32 arg1, s32 *arg2);
 extern s8 g_entityRecordVideo[];
 extern void Scenery_CreateSpriteParts(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
@@ -2115,7 +2115,7 @@ void Behavior_Type50(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void Behavior_Type51(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_MazePenguin(BehaviorEntity *entity, HandlerNode *node) {
     void *turn;
     s32 roll;
 
@@ -3436,10 +3436,10 @@ void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, 
 }
 
 void Behavior_Type113(BehaviorEntity *entity, HandlerNode *node) {
-    Behavior_Type51(entity, node);
+    Behavior_MazePenguin(entity, node);
 }
 
-void Behavior_RedDayGunman(BehaviorEntity *entity) {
+void Behavior_RedDayPenguin(BehaviorEntity *entity) {
     s16 *angles;
 
     if (rand() % 3 == 0) {

@@ -19,7 +19,7 @@ Starting point, from the planning notes of 2026-10-14. "Code" means read in code
 | Texture sets | 4 sets per zone (normal, kanji, downer, upper); new sets after days 10, 20 and 30, on a 40-day cycle | observed | compu-lsd Textures, fandom Textures |
 | Glitch textures | Appear after long sessions until power-off; reproducible by zeroing the frame counters in RAM | observed | fandom Data Analysis |
 | Generation seed | A debug picture shows "World: 17464 0 36838"; said to be fed by loads, timers and menus | observed | fandom Generation |
-| Rare events | Flying train in Happy Town, giant astronaut bar (days 200 to 300), special lions near Temple Dojo, multiple gunmen or minotaurs; conditions unknown | observed | fandom Train, LSD Revamped docs |
+| Rare events | Flying train in Happy Town, giant astronaut bar (days 200 to 300), special lions near Temple Dojo, multiple gunmen or minotaurs; conditions unknown. Our check: the figures we first took for the gunmen are the maze penguins, so the gunmen sighting is unmatched ([discoveries](discoveries.md#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins)) | observed | fandom Train, LSD Revamped docs |
 | Cut content | Unused grey dog (`SYMDOG.MOM`), Bright Moon WC room, alternate Asmik logo, unused Clockwork Machines track; a 1997 demo had a debug menu | rumour | TCRF |
 | Myths | Hidden ending if the graph is full, "over 500 tracks", no Grey Man after day 365, legends about the diary's author | rumour | compu-lsd |
 
