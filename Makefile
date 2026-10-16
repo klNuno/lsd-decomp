@@ -74,6 +74,7 @@ $(BUILD)/asm/%.s.o: asm/%.s
 split linker/lsd.ld: $(SPLAT) config/symbol_addrs.txt config/symbol_addrs.psyq.txt | $(EXTRACT)/$(EXE)
 	rm -rf asm linker
 	$(PYTHON) -m splat split $(SPLAT)
+	$(PYTHON) -I tools/postsplit.py
 
 extract: $(EXTRACT)/$(EXE)
 

@@ -213,9 +213,10 @@ Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
    middle of it, and give a string or a label that data points at its own entry in
    `config/symbol_addrs.txt` (Sony ones in the hand-kept block of `symbol_addrs.psyq.txt`), so that
    `linker/undefined_syms_auto.txt` keeps only `D_7FFFFF`. A label splat writes at an address that is
-   not word aligned needs `defined:True`, or splat also writes it there as a fixed number. 13 raw
-   words are left on 2026-10-16: the 10 of Sony's startup (`asm/psyq/80011994.s`, written as
-   `.word` because the function ends in a table), the header's initial pc and .text size, and the
-   numeric `_gp` in `linker/lsd.ld`. Fixing them needs a Makefile change (a post-split step for the
-   startup and the header, an extra linker script for `_gp`); until then, adding a byte anywhere
-   before the end of the startup code crashes the game on its first instruction.
+   not word aligned needs `defined:True`, or splat also writes it there as a fixed number. `tools/rawscan.py
+   --max 0` must exit 0: the count is 0 since 2026-10-16. The last raw words were in files splat
+   writes: Sony's startup (`asm/psyq/80011994.s`, written as `.word` because the function ends in a
+   table) and the header's initial pc and .text size. `make split` runs `tools/postsplit.py` after
+   splat to write them as symbols, and `_gp` comes from `ld_gp_expression` in `config/splat.yaml`.
+   A build with 0x100 bytes of code added before `main` plays like the retail game (logos, title, a
+   dream, its links and the fall, pixel for pixel).

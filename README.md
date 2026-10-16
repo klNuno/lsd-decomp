@@ -10,6 +10,8 @@ All 1,458 game functions are C that rebuilds the retail executable byte for byte
 
 [![Progress map: one rectangle per function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
 
+The build is also shiftable: every address in it is a symbol, so code can be added or removed and the game still runs (`tools/rawscan.py` relinks it at another address and finds 0 fixed addresses; a build with 0x100 extra bytes before `main` plays the same dream as the retail one in an emulator).
+
 Since every game byte already rebuilds from C, the map measures understanding: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. `tools/progress_map.py` redraws it after a green `make check` and writes the per-function data to `docs/progress/progress.json`.
 
 The findings page holds 54 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
