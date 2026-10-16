@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "commit": "e1605f4",
+ "commit": "60f783a",
  "tracked_tree_dirty": false,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
@@ -10,23 +10,23 @@
   "game_bytes_in_c": 210172,
   "levels": {
    "address": {
-    "functions": 19,
-    "bytes": 204
+    "functions": 13,
+    "bytes": 132
    },
    "named": {
-    "functions": 139,
-    "bytes": 33032
+    "functions": 31,
+    "bytes": 9116
    },
    "read": {
-    "functions": 1300,
-    "bytes": 176936
+    "functions": 1414,
+    "bytes": 200924
    }
   },
   "unknowns": {
-   "unk_fields": 199,
-   "m2c_names": 25,
-   "unk_types": 3,
-   "d_globals": 14
+   "unk_fields": 44,
+   "m2c_names": 5,
+   "unk_types": 1,
+   "d_globals": 1
   },
   "functions_in_findings": 230,
   "sony_symbols": 627,
@@ -135,11 +135,11 @@
      "name": "Scene_DrawNode",
      "address": "0x80012064",
      "bytes": 1796,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     }
    ],
@@ -983,14 +983,14 @@
      "in_findings": true
     },
     {
-     "name": "func_80018350",
+     "name": "Object_EmptySlot34",
      "address": "0x80018350",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -1074,7 +1074,7 @@
      "unk_fields": 1,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 3,
+     "d_globals": 0,
      "level": "named",
      "in_findings": true
     },
@@ -1225,22 +1225,22 @@
      "name": "Render_AddPolyG3",
      "address": "0x8001989C",
      "bytes": 336,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Render_AddPolyFT3",
      "address": "0x800199EC",
      "bytes": 312,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -1258,44 +1258,44 @@
      "name": "Render_AddPolyG4",
      "address": "0x80019C04",
      "bytes": 384,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Render_AddPolyFT4",
      "address": "0x80019D84",
      "bytes": 352,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Render_AddPolyGT3",
      "address": "0x80019EE4",
      "bytes": 384,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Render_AddPolyGT4",
      "address": "0x8001A064",
      "bytes": 448,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -1605,11 +1605,11 @@
      "name": "SceneNode_Reset",
      "address": "0x8001CE30",
      "bytes": 132,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -1947,10 +1947,10 @@
      "address": "0x8001E4A4",
      "bytes": 216,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -3738,14 +3738,14 @@
      "in_findings": true
     },
     {
-     "name": "func_80025E14",
+     "name": "Pad_EmptySlot4C",
      "address": "0x80025E14",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -3760,14 +3760,14 @@
      "in_findings": true
     },
     {
-     "name": "func_80025E94",
+     "name": "Pad_EmptySlot54",
      "address": "0x80025E94",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -3969,11 +3969,11 @@
      "name": "Scene_RunDream",
      "address": "0x80026698",
      "bytes": 228,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -4073,14 +4073,14 @@
      "in_findings": false
     },
     {
-     "name": "func_80026C80",
+     "name": "File_EmptySlot60",
      "address": "0x80026C80",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -4142,7 +4142,7 @@
      "name": "File_CopyIoSlots",
      "address": "0x80026D88",
      "bytes": 132,
-     "unk_fields": 3,
+     "unk_fields": 2,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
@@ -4428,11 +4428,11 @@
      "name": "File_ServiceQueue",
      "address": "0x80027A24",
      "bytes": 604,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -5251,11 +5251,11 @@
      "name": "MapModels_Init",
      "address": "0x8002C18C",
      "bytes": 116,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -5273,18 +5273,18 @@
      "name": "MapModels_OnLoaded",
      "address": "0x8002C238",
      "bytes": 64,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "MapModels_NextModel",
      "address": "0x8002C278",
      "bytes": 304,
-     "unk_fields": 17,
+     "unk_fields": 2,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
@@ -5531,11 +5531,11 @@
      "name": "Sound_InitBank",
      "address": "0x8002C4E0",
      "bytes": 344,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -5553,11 +5553,11 @@
      "name": "Sound_UpdateBank",
      "address": "0x8002C6FC",
      "bytes": 296,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -5575,11 +5575,11 @@
      "name": "Sound_LoadProgramTable",
      "address": "0x8002C890",
      "bytes": 428,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -6113,8 +6113,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 4,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -6168,8 +6168,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -7691,7 +7691,7 @@
      "name": "VideoScreen_Reset",
      "address": "0x8003BA38",
      "bytes": 32,
-     "unk_fields": 2,
+     "unk_fields": 1,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
@@ -7702,22 +7702,22 @@
      "name": "VideoScreen_Play",
      "address": "0x8003BA58",
      "bytes": 92,
-     "unk_fields": 1,
-     "m2c_names": 1,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "VideoScreen_Begin",
      "address": "0x8003BAB4",
      "bytes": 168,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -7735,11 +7735,11 @@
      "name": "VideoScreen_SetState",
      "address": "0x8003BC14",
      "bytes": 224,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -7812,11 +7812,11 @@
      "name": "VideoScreen_Close",
      "address": "0x8003BDF4",
      "bytes": 104,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -7867,11 +7867,11 @@
      "name": "VideoScreen_SetCloseAtOnce",
      "address": "0x8003BE7C",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -8488,22 +8488,22 @@
      "name": "Screen_Run",
      "address": "0x8003E10C",
      "bytes": 372,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Screen_Finish",
      "address": "0x8003E280",
      "bytes": 408,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -8661,11 +8661,11 @@
      "name": "View_Reset",
      "address": "0x8003E968",
      "bytes": 164,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -8914,22 +8914,22 @@
      "name": "View_Render",
      "address": "0x8003EEC0",
      "bytes": 396,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "View_Present",
      "address": "0x8003F04C",
      "bytes": 348,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -8958,22 +8958,22 @@
      "name": "View_SetExtraSwap",
      "address": "0x8003F23C",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "View_SetPresentEnabled",
      "address": "0x8003F244",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9129,22 +9129,22 @@
      "name": "Fade_Init",
      "address": "0x8003FED8",
      "bytes": 108,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Fade_Step",
      "address": "0x8003FF44",
      "bytes": 216,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9163,10 +9163,10 @@
      "address": "0x80040024",
      "bytes": 140,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9174,21 +9174,21 @@
      "address": "0x800400B0",
      "bytes": 164,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Fade_Begin",
      "address": "0x80040154",
      "bytes": 412,
-     "unk_fields": 2,
-     "m2c_names": 1,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -9774,10 +9774,10 @@
      "address": "0x80041C9C",
      "bytes": 124,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9785,10 +9785,10 @@
      "address": "0x80041D18",
      "bytes": 140,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9859,10 +9859,10 @@
      "address": "0x80041EE8",
      "bytes": 160,
      "unk_fields": 0,
-     "m2c_names": 2,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -9870,10 +9870,10 @@
      "address": "0x80041F88",
      "bytes": 164,
      "unk_fields": 0,
-     "m2c_names": 2,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -11327,11 +11327,11 @@
      "name": "Movie_Init",
      "address": "0x800454C4",
      "bytes": 272,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -11371,66 +11371,66 @@
      "name": "Movie_Open",
      "address": "0x800457C0",
      "bytes": 236,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Movie_RequestStart",
      "address": "0x800458AC",
      "bytes": 12,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Movie_Start",
      "address": "0x800458B8",
      "bytes": 132,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Movie_OnStreamCallback",
      "address": "0x8004593C",
      "bytes": 12,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Movie_Update",
      "address": "0x80045948",
      "bytes": 240,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Movie_Stop",
      "address": "0x80045A38",
      "bytes": 144,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -11533,14 +11533,14 @@
      "in_findings": false
     },
     {
-     "name": "func_80045E3C",
+     "name": "Movie_SetAutoStart",
      "address": "0x80045E3C",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -11723,7 +11723,7 @@
      "name": "Stream_Init",
      "address": "0x80046F88",
      "bytes": 236,
-     "unk_fields": 2,
+     "unk_fields": 1,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
@@ -11910,11 +11910,11 @@
      "name": "Stream_NotifyEnd",
      "address": "0x80047810",
      "bytes": 96,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -12599,32 +12599,32 @@
      "address": "0x80049608",
      "bytes": 124,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "DreamRunner_Init",
      "address": "0x80049684",
      "bytes": 428,
-     "unk_fields": 5,
-     "m2c_names": 1,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
      "name": "DreamRunner_Destroy",
      "address": "0x80049830",
      "bytes": 296,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -12653,44 +12653,44 @@
      "name": "DreamRunner_Run",
      "address": "0x80049A1C",
      "bytes": 164,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "DreamRunner_Finish",
      "address": "0x80049AC0",
      "bytes": 148,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "DreamRunner_Start",
      "address": "0x80049B54",
      "bytes": 252,
-     "unk_fields": 8,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "DreamRunner_End",
      "address": "0x80049C50",
      "bytes": 88,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -12764,10 +12764,10 @@
      "address": "0x8004A070",
      "bytes": 192,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     }
    ],
@@ -12827,21 +12827,21 @@
      "address": "0x8004A2C4",
      "bytes": 96,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Task_Finish",
      "address": "0x8004A324",
      "bytes": 56,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -12923,18 +12923,18 @@
      "address": "0x8004A4C8",
      "bytes": 108,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "StageMap_Init",
      "address": "0x8004A534",
      "bytes": 652,
-     "unk_fields": 4,
-     "m2c_names": 1,
+     "unk_fields": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
      "level": "named",
@@ -12955,11 +12955,11 @@
      "name": "StageMap_OnNotify",
      "address": "0x8004A984",
      "bytes": 140,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -12988,11 +12988,11 @@
      "name": "StageMap_Tick",
      "address": "0x8004AB24",
      "bytes": 100,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13010,22 +13010,22 @@
      "name": "StageMap_ClearSlots",
      "address": "0x8004ABD0",
      "bytes": 296,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "StageMap_SetLights",
      "address": "0x8004ACF8",
      "bytes": 204,
-     "unk_fields": 3,
-     "m2c_names": 2,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13109,11 +13109,11 @@
      "name": "MapTile_Tell",
      "address": "0x8004B2D4",
      "bytes": 72,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13296,11 +13296,11 @@
      "name": "StageMap_BuildTiles",
      "address": "0x8004BE54",
      "bytes": 600,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13420,8 +13420,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13516,55 +13516,55 @@
      "name": "StageMap_StartTileStretch",
      "address": "0x8004CFB8",
      "bytes": 112,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
      "name": "StageMap_StepTileStretch",
      "address": "0x8004D028",
      "bytes": 96,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
      "name": "StageMap_ResetTileScale",
      "address": "0x8004D088",
      "bytes": 72,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
      "name": "StageMap_AddTileStretchStep",
      "address": "0x8004D0D0",
      "bytes": 56,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "StageMap_ResetOneTileScale",
      "address": "0x8004D108",
      "bytes": 56,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13623,11 +13623,11 @@
      "name": "DreamView_Init",
      "address": "0x8004D2A4",
      "bytes": 84,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13645,11 +13645,11 @@
      "name": "DreamView_Render",
      "address": "0x8004D300",
      "bytes": 92,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13752,22 +13752,22 @@
      "name": "MapTile_OnNode",
      "address": "0x8004D434",
      "bytes": 72,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "MapTile_OnActorMessage",
      "address": "0x8004D47C",
      "bytes": 132,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13805,10 +13805,10 @@
      "address": "0x8004D518",
      "bytes": 96,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -13950,8 +13950,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14472,11 +14472,11 @@
      "name": "Card_Save",
      "address": "0x8004F8A4",
      "bytes": 308,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14516,11 +14516,11 @@
      "name": "Card_ShowMessage",
      "address": "0x8004FE24",
      "bytes": 284,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14560,11 +14560,11 @@
      "name": "Card_OnConfirm",
      "address": "0x80050034",
      "bytes": 444,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14593,55 +14593,55 @@
      "name": "Card_OpenKeyboard",
      "address": "0x80050340",
      "bytes": 208,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Card_CloseKeyboard",
      "address": "0x80050410",
      "bytes": 192,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Card_OnKeyboard",
      "address": "0x800504D0",
      "bytes": 216,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Card_OpenChooser",
      "address": "0x800505A8",
      "bytes": 200,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "Card_CloseChooser",
      "address": "0x80050670",
      "bytes": 192,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14898,11 +14898,11 @@
      "name": "CommentObject_BuildWidgets",
      "address": "0x80050F98",
      "bytes": 476,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14920,11 +14920,11 @@
      "name": "CommentObject_WatchPair",
      "address": "0x80051200",
      "bytes": 112,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -14964,22 +14964,22 @@
      "name": "CommentObject_OnKey",
      "address": "0x800513D0",
      "bytes": 588,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
-     "name": "CommentObject_SetBoxValue",
+     "name": "CommentObject_PlayTone",
      "address": "0x8005161C",
      "bytes": 64,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15030,11 +15030,11 @@
      "name": "CommentObject_ToggleFlag",
      "address": "0x800517EC",
      "bytes": 40,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15126,11 +15126,11 @@
      "name": "StringList_ClearSenders",
      "address": "0x80051C74",
      "bytes": 16,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15170,33 +15170,33 @@
      "name": "StringList_UnwatchAll",
      "address": "0x80051E20",
      "bytes": 68,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "StringList_OnNotify",
      "address": "0x80051E64",
      "bytes": 176,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
      "name": "StringList_Reset",
      "address": "0x80051F14",
      "bytes": 16,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15277,14 +15277,14 @@
      "in_findings": false
     },
     {
-     "name": "StringList_SetBoxValue",
+     "name": "StringList_PlayTone",
      "address": "0x800523F0",
      "bytes": 64,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15442,11 +15442,11 @@
      "name": "Place_Construct",
      "address": "0x80052C10",
      "bytes": 200,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -15472,7 +15472,7 @@
      "in_findings": false
     },
     {
-     "name": "Place_Stub40",
+     "name": "Place_EmptySlot40",
      "address": "0x80052DE0",
      "bytes": 8,
      "unk_fields": 0,
@@ -15593,7 +15593,7 @@
      "in_findings": false
     },
     {
-     "name": "Place_Stub7C",
+     "name": "Place_EmptySlot7C",
      "address": "0x800534C0",
      "bytes": 8,
      "unk_fields": 0,
@@ -15607,11 +15607,11 @@
      "name": "Place_Setup",
      "address": "0x800534C8",
      "bytes": 488,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -15780,7 +15780,7 @@
      "in_findings": true
     },
     {
-     "name": "Place_StubBC",
+     "name": "Place_EmptySlotBC",
      "address": "0x800541CC",
      "bytes": 8,
      "unk_fields": 0,
@@ -15838,11 +15838,11 @@
      "name": "Place_UpdatePause",
      "address": "0x800542D0",
      "bytes": 300,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -16371,11 +16371,11 @@
      "name": "Scenery_Construct",
      "address": "0x800563C0",
      "bytes": 164,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -16621,11 +16621,11 @@
      "name": "Actor_Construct",
      "address": "0x80057044",
      "bytes": 112,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -16676,11 +16676,11 @@
      "name": "Actor_SendBoxes",
      "address": "0x800571F8",
      "bytes": 296,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -16805,7 +16805,7 @@
      "in_findings": false
     },
     {
-     "name": "Actor_StubD8",
+     "name": "Actor_EmptySlotD8",
      "address": "0x80057610",
      "bytes": 8,
      "unk_fields": 0,
@@ -16915,7 +16915,7 @@
      "in_findings": false
     },
     {
-     "name": "Actor_StubE8",
+     "name": "Actor_EmptySlotE8",
      "address": "0x80057C74",
      "bytes": 8,
      "unk_fields": 0,
@@ -17000,7 +17000,7 @@
      "in_findings": false
     },
     {
-     "name": "SceneryPart_Stub98",
+     "name": "SceneryPart_EmptySlot98",
      "address": "0x80057F38",
      "bytes": 8,
      "unk_fields": 0,
@@ -17011,7 +17011,7 @@
      "in_findings": false
     },
     {
-     "name": "SceneryPart_StubBC",
+     "name": "SceneryPart_EmptySlotBC",
      "address": "0x80057F40",
      "bytes": 8,
      "unk_fields": 0,
@@ -17022,7 +17022,7 @@
      "in_findings": false
     },
     {
-     "name": "SceneryPart_StubC0",
+     "name": "SceneryPart_EmptySlotC0",
      "address": "0x80057F48",
      "bytes": 8,
      "unk_fields": 0,
@@ -17033,7 +17033,7 @@
      "in_findings": false
     },
     {
-     "name": "SceneryPart_StubC4",
+     "name": "SceneryPart_EmptySlotC4",
      "address": "0x80057F50",
      "bytes": 8,
      "unk_fields": 0,
@@ -17987,11 +17987,11 @@
      "name": "DreamSys_LinkFall",
      "address": "0x8005A7A0",
      "bytes": 140,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -18432,14 +18432,14 @@
      "in_findings": true
     },
     {
-     "name": "func_8005BF48",
+     "name": "Link_GetFallTurn",
      "address": "0x8005BF48",
      "bytes": 32,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "address",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -18610,9 +18610,9 @@
      "bytes": 104,
      "unk_fields": 0,
      "m2c_names": 0,
-     "unk_types": 1,
+     "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -18718,22 +18718,22 @@
      "name": "Sym_SpawnAtPlace",
      "address": "0x8005CDF8",
      "bytes": 316,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
      "name": "Sym_SpawnSpy",
      "address": "0x8005CF34",
      "bytes": 168,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     }
    ],
@@ -18759,11 +18759,11 @@
      "name": "Entity_Construct",
      "address": "0x8005D068",
      "bytes": 160,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -18781,11 +18781,11 @@
      "name": "Entity_Destruct",
      "address": "0x8005D1EC",
      "bytes": 140,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     },
     {
@@ -19818,8 +19818,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": false
     },
     {
@@ -20705,9 +20705,9 @@
      "bytes": 16,
      "unk_fields": 0,
      "m2c_names": 0,
-     "unk_types": 1,
+     "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
     }
    ],
