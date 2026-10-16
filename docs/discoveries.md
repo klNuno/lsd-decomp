@@ -309,7 +309,7 @@ Status: 📖 read in the code only (the content a special day shows is checked, 
 
 <details><summary>Technical details</summary>
 
-Special days: `DreamSys_StartDay` @0x8005A368 calls `Day_FindSpecial @0x8005C438(+0x168, day number)`, which searches the 42 s16 days of `g_specialDays` @0x80088CCC. On a match it writes {index % 12, rand() % 6} at +0x168, the dream gets mood (0,0) from `D_8008ABF4` and no spawn is chosen. Day 126 is listed twice (indexes 5 and 30), so index 30 is unreachable.
+Special days: `DreamSys_StartDay` @0x8005A368 calls `Day_FindSpecial @0x8005C438(+0x168, day number)`, which searches the 42 s16 days of `g_specialDays` @0x80088CCC. On a match it writes {index % 12, rand() % 6} at +0x168, the dream gets mood (0,0) from `g_specialDayPoint` and no spawn is chosen. Day 126 is listed twice (indexes 5 and 30), so index 30 is unreachable.
 
 Table order: indexes 0 to 12 are 2, 15, 43, 81, 120, 126, 202, 259, 267, 284, 308, 328, 358; indexes 13 to 30 are 7 to 126 in steps of 7; indexes 31 to 41 are 134 to 204 in steps of 7 (133 is not listed). Read from the executable by `work/findings/charts.py --check`.
 

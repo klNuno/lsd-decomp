@@ -115,7 +115,13 @@ def main():
         if re.search(r"\b" + re.escape(new) + r"\b", body):
             restore()
             sys.exit(f"{f}: struct {st} already has a member {new}")
-        nb, k = re.subn(r"\b" + re.escape(old) + r"\b", new, body)
+        # rename the member in code only: comments of the struct may mention the old name
+        parts = re.split(r"(/\*.*?\*/|//[^\n]*)", body, flags=re.S)
+        k = 0
+        for i in range(0, len(parts), 2):
+            parts[i], n = re.subn(r"\b" + re.escape(old) + r"\b", new, parts[i])
+            k += n
+        nb = "".join(parts)
         if k != 1:
             restore()
             sys.exit(f"{f}: struct {st}: member {old} found {k} times")
@@ -126,8 +132,14 @@ def main():
 
     # 2. accesses, driven by the compiler
     fixed = 0
+    multi = set()
     for rnd in range(40):
         errs = compile_errors(units, cmds)
+        for file, ln, name in errs:
+            rel = str(pathlib.Path(file).resolve().relative_to(ROOT)) if file.startswith("/") else file
+            if any(m[0] == rel and m[1] == ln and m[2] == name for m in multi):
+                restore()
+                sys.exit(f"{rel}:{ln}: several accesses on this line, not all of the renamed struct: fix it by hand")
         other = [e for e in errs if e[2].startswith("OTHER")]
         miss = [e for e in errs if not e[2].startswith("OTHER")]
         if other and not miss:
@@ -145,9 +157,13 @@ def main():
             lines = path.read_text(errors="surrogateescape").split("\n")
             src = lines[ln - 1]
             hits = re.findall(r"(?:->|\.)\s*" + re.escape(name) + r"\b", src)
-            if len(hits) != 1:
+            if not hits:
                 restore()
-                sys.exit(f"{rel}:{ln}: {len(hits)} accesses of {name} on one line, fix it by hand:\n  {src.strip()}")
+                sys.exit(f"{rel}:{ln}: no access of {name} found on the line cc1 names:\n  {src.strip()}")
+            if len(hits) > 1:
+                # all of them are rewritten; if one belonged to another struct, the next round
+                # reports "no member named NEW" on this line and the batch is refused
+                multi.add((rel, ln, new))
             save(rel)
             lines[ln - 1] = re.sub(r"((?:->|\.)\s*)" + re.escape(name) + r"\b", r"\g<1>" + new, src)
             path.write_text("\n".join(lines), errors="surrogateescape")

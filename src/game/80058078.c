@@ -86,7 +86,7 @@ s32 Day_FindSpecial(void *cinematic, s32 dayNumber);
 extern s32 g_graphReelColor;
 extern s32 rand(void);
 extern s16 g_specialDays[42];
-extern s32 D_8008ABF4;
+extern s32 g_specialDayPoint;
 /* DreamSys +0x168 as Day_FindSpecial writes it: {category, variant} (dreamsys.h cinematic.id). */
 typedef struct SpecialCine {
     s16 category;
@@ -432,25 +432,25 @@ void DreamSys_Init(DreamSys *dreamSys, void **tmd, s32 soundBank, s32 camera) {
     dreamSys->vtbl = (DreamSysVtbl *)DreamSys_GetVtable();
     dreamSys->soundBank = soundBank;
     dreamSys->camera.obj = camera;
-    dreamSys->unk64 = 0;
-    dreamSys->unk60 = tmd;
+    dreamSys->etcTim = 0;
+    dreamSys->tmd = tmd;
     dreamSys->vtbl->watch(dreamSys, ((TmdModelVtbl *)*tmd)->getModel(tmd, 0));
     dreamSys->vtbl->swapTimeLimit(dreamSys, -1);
-    dreamSys->unk70 = 1;
-    dreamSys->unk6C = 0;
+    dreamSys->controlsLocked = 1;
+    dreamSys->autoWalk = 0;
     dreamSys->neverSaved = 1;
     dreamSys->vtbl->initNewGame(dreamSys);
-    dreamSys->vtbl->unk40(dreamSys);
+    dreamSys->vtbl->reset(dreamSys);
 }
 
 void DreamSys_Reset(DreamSys *dreamSys) {
-    dreamSys->vtbl->unk60(dreamSys, 0);
-    dreamSys->vtbl->unk44(dreamSys, 1, g_dreamerStartRotation);
-    dreamSys->unk80 = 0;
-    dreamSys->unk98 = 0;
-    dreamSys->unkCC.word = 0;
-    dreamSys->unk908 = 0;
-    dreamSys->unk90C = 0;
+    dreamSys->vtbl->setVisible(dreamSys, 0);
+    dreamSys->vtbl->setRotation(dreamSys, 1, g_dreamerStartRotation);
+    dreamSys->lookHandler = 0;
+    dreamSys->moveHandler = 0;
+    dreamSys->fallSound.word = 0;
+    dreamSys->ignorePad = 0;
+    dreamSys->skipMoveBoxes = 0;
     dreamSys->linkStep = 0;
     dreamSys->unk78 = 0;
     dreamSys->unk924 = 0;
@@ -466,14 +466,14 @@ void DreamSys_EnterMap(DreamSys *dreamSys, void **map) {
     dreamSys->vtbl->watch(dreamSys, map);
     if (dreamSys->transition == 0xE) {
         elem = &dreamSys->save.flashbacks[dreamSys->nextFlashback];
-        dreamSys->vtbl->unk44(dreamSys, 1, elem->rotation.bytes);
+        dreamSys->vtbl->setRotation(dreamSys, 1, elem->rotation.bytes);
         dreamSys->vtbl->swapTimeLimit(dreamSys, elem->length + 4);
         dreamSys->nextFlashback++;
     }
-    if (dreamSys->unk6C != 0) {
-        arrivalHeading = dreamSys->unk888;
+    if (dreamSys->autoWalk != 0) {
+        arrivalHeading = dreamSys->arrivalHeading;
         if (arrivalHeading != 0) {
-            dreamSys->vtbl->unk44(dreamSys, 1, arrivalHeading);
+            dreamSys->vtbl->setRotation(dreamSys, 1, arrivalHeading);
         }
     }
 }
@@ -481,9 +481,9 @@ void DreamSys_EnterMap(DreamSys *dreamSys, void **map) {
 void DreamSys_LeaveMap(DreamSys *dreamSys) {
     DreamPlayer *map;
 
-    map = dreamSys->player;
-    map->vt->unkF0(map);
-    dreamSys->vtbl->unwatch(dreamSys, dreamSys->player);
+    map = dreamSys->map;
+    map->vt->deactivate(map);
+    dreamSys->vtbl->unwatch(dreamSys, dreamSys->map);
     Actor_GetVtbl()->detach(dreamSys);
 }
 
@@ -495,76 +495,76 @@ void DreamSys_OnGroundProbe(DreamSys *dreamSys, s32 message) {
     ((ActorBoxesVtbl *)Actor_GetVtbl())->sendBoxes(dreamSys, message);
     switch (message) {
     case -1:
-        groundSound = dreamSys->unk28->unk36 & 0x7F;
-        dreamSys->unkB8 = groundSound;
+        groundSound = dreamSys->contact->flags & 0x7F;
+        dreamSys->stepSound = groundSound;
         if (groundSound >= 0x18) {
-            dreamSys->unkB8 = 0;
+            dreamSys->stepSound = 0;
         }
-        if (dreamSys->transition == 0xF && dreamSys->unkB8 == 0) {
-            dreamSys->unkB8 = 2;
+        if (dreamSys->transition == 0xF && dreamSys->stepSound == 0) {
+            dreamSys->stepSound = 2;
         }
         if (dreamSys->stage == 9) {
-            map = dreamSys->player;
-            dreamSys->vtbl->unk1D4(dreamSys, map->vt->unk10C(map, 0, 0));
+            map = dreamSys->map;
+            dreamSys->vtbl->linkFall(dreamSys, map->vt->getLocation(map, 0, 0));
         }
         return;
     case -2:
-        map2 = dreamSys->player;
-        if (map2->vt->unk11C(map2, dreamSys->pos.bytes + 0x18)->unk4->unk2C == 2) {
-            map = dreamSys->player;
-            dreamSys->vtbl->unk1D4(dreamSys, map->vt->unk10C(map, 0, 0));
+        map2 = dreamSys->map;
+        if (map2->vt->slotAt(map2, dreamSys->pos.bytes + 0x18)->chunk->loaded == 2) {
+            map = dreamSys->map;
+            dreamSys->vtbl->linkFall(dreamSys, map->vt->getLocation(map, 0, 0));
         } else {
-            dreamSys->vtbl->unk224(dreamSys);
+            dreamSys->vtbl->restorePosition(dreamSys);
         }
         return;
     }
 }
 
 void DreamSys_OnPad(DreamSys *dreamSys, s32 sender, s32 code) {
-    if (dreamSys->unk6C == 0 && dreamSys->unk70 == 0) {
+    if (dreamSys->autoWalk == 0 && dreamSys->controlsLocked == 0) {
         code -= 2;
-        if (dreamSys->unk908 == 0) {
+        if (dreamSys->ignorePad == 0) {
             switch (code) {
                 case 0:
-                    dreamSys->unkA0 = 1;
+                    dreamSys->walkDirection = 1;
                     break;
                 case 1:
-                    dreamSys->unkA0 = 2;
+                    dreamSys->walkDirection = 2;
                     break;
                 case 2:
-                    dreamSys->unkA4 = 1;
+                    dreamSys->turnInput = 1;
                     break;
                 case 3:
-                    dreamSys->unkA4 = 2;
+                    dreamSys->turnInput = 2;
                     break;
                 case 4:
-                    dreamSys->unk88 = 1;
+                    dreamSys->pitchInput = 1;
                     break;
                 case 5:
-                    if (dreamSys->unkA0 == 1) {
-                        dreamSys->vtbl->unk184(dreamSys, 4);
+                    if (dreamSys->walkDirection == 1) {
+                        dreamSys->vtbl->pushSpeed(dreamSys, 4);
                     }
                     break;
                 case 6:
-                    dreamSys->unk88 = 2;
+                    dreamSys->pitchInput = 2;
                     break;
                 case 11:
-                    dreamSys->unk90 = 2;
+                    dreamSys->lookBackInput = 2;
                     break;
                 case 12:
-                    dreamSys->unkA0 = 4;
+                    dreamSys->walkDirection = 4;
                     break;
                 case 13:
-                    dreamSys->unk90 = 1;
+                    dreamSys->lookBackInput = 1;
                     break;
                 case 14:
-                    dreamSys->unkA0 = 3;
+                    dreamSys->walkDirection = 3;
                     break;
                 case 23:
-                    dreamSys->unk74 = 1;
+                    dreamSys->circlePressed = 1;
                     break;
                 case 32:
-                    dreamSys->vtbl->unk188(dreamSys, sender, code);
+                    dreamSys->vtbl->popSpeed(dreamSys, sender, code);
                     break;
                 case 47:
                     break;
@@ -589,18 +589,18 @@ void DreamSys_TickTimer(DreamSys *dreamSys, s32 sender, s32 message) {
             } else {
                 dreamSys->vtbl->maybeSaveFlashback(dreamSys, 0, 0x10);
             }
-            dreamSys->vtbl->unk30(dreamSys, 0xA);
+            dreamSys->vtbl->notify(dreamSys, 0xA);
             goto reset;
         }
-        dreamSys->vtbl->unk118(dreamSys);
-        dreamSys->vtbl->unk11C(dreamSys);
+        dreamSys->vtbl->tickBegin(dreamSys);
+        dreamSys->vtbl->tickHandlers(dreamSys);
     }
 }
 
 void DreamSys_RouteMapMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
     Actor_GetVtbl()->onNode(dreamSys, sender, message);
     if ((**sender & 0xFFF) == 0x114) {
-        dreamSys->vtbl->unk1E4(dreamSys, sender, message);
+        dreamSys->vtbl->onMapMessage(dreamSys, sender, message);
     }
 }
 
@@ -617,18 +617,18 @@ void DreamSys_OnWallTouch(DreamSys *dreamSys, s32 **sender, s32 message) {
 
     Actor_GetVtbl()->onNode24(dreamSys, sender, message);
     if (message == 4 && dreamSys->transition == 0) {
-        map = dreamSys->player;
-        touched = map->vt->unkD4(map, sender);
+        map = dreamSys->map;
+        touched = map->vt->getTellKey(map, sender);
         dreamSys->place = *touched;
         if (dreamSys->vtbl->linkStatic(dreamSys, &dreamSys->place) == 0 && dreamSys->dynamicLinkOn != 0) {
             dreamSys->vtbl->linkDynamic(dreamSys);
         }
-        dreamSys->vtbl->unk224(dreamSys);
-        dreamSys->vtbl->unkE8(dreamSys);
+        dreamSys->vtbl->restorePosition(dreamSys);
+        dreamSys->vtbl->afterWallTouch(dreamSys);
     }
 }
 
-void func_800590E0(void) {
+void DreamSys_EmptySlotE8(void) {
 }
 
 s32 DreamSys_SetFlashbackMode(DreamSys *dreamSys, s32 *colorOut, s32 mode) {
@@ -646,12 +646,12 @@ s32 DreamSys_SetFlashbackMode(DreamSys *dreamSys, s32 *colorOut, s32 mode) {
 void DreamSys_SetAutoWalk(DreamSys *dreamSys, s32 mode) {
     s32 heading;
 
-    dreamSys->unk6C = mode;
+    dreamSys->autoWalk = mode;
     if (mode != 0) {
-        dreamSys->vtbl->unk180(dreamSys, 1);
-        heading = dreamSys->unk884;
+        dreamSys->vtbl->swapSpeed(dreamSys, 1);
+        heading = dreamSys->linkHeading;
         if (heading != 0) {
-            dreamSys->vtbl->unk44(dreamSys, 1, heading);
+            dreamSys->vtbl->setRotation(dreamSys, 1, heading);
         }
     }
 }
@@ -660,40 +660,40 @@ void DreamSys_StartPlace(DreamSys *dreamSys, s32 speed, s32 linkPeriod) {
     RotationDegrees rotation;
 
     dreamSys->vtbl->logChunkMood(dreamSys, &dreamSys->place);
-    dreamSys->vtbl->unk138(dreamSys, 1);
-    dreamSys->vtbl->unk13C(dreamSys, 1);
-    dreamSys->vtbl->unk180(dreamSys, speed);
-    dreamSys->unkBC = -1;
-    dreamSys->unkB4 = 0;
-    dreamSys->unkB8 = 0;
-    dreamSys->unkA0 = 0;
-    dreamSys->unkA4 = 0;
-    dreamSys->unk88 = 0;
-    dreamSys->unk90 = 0;
-    dreamSys->unk8C = 0;
-    dreamSys->unk94 = 0;
-    dreamSys->vtbl->unk18C(dreamSys, 0, 1, 1, 1);
-    dreamSys->vtbl->unk190(dreamSys, linkPeriod);
+    dreamSys->vtbl->setLookMode(dreamSys, 1);
+    dreamSys->vtbl->setMoveMode(dreamSys, 1);
+    dreamSys->vtbl->swapSpeed(dreamSys, speed);
+    dreamSys->stepVoice = -1;
+    dreamSys->stepTick = 0;
+    dreamSys->stepSound = 0;
+    dreamSys->walkDirection = 0;
+    dreamSys->turnInput = 0;
+    dreamSys->pitchInput = 0;
+    dreamSys->lookBackInput = 0;
+    dreamSys->pitch = 0;
+    dreamSys->lookBackYaw = 0;
+    dreamSys->vtbl->setLinkFlags(dreamSys, 0, 1, 1, 1);
+    dreamSys->vtbl->setLinkPeriod(dreamSys, linkPeriod);
     dreamSys->cinematic.id.variant = -1;
-    dreamSys->unk70 = 0;
+    dreamSys->controlsLocked = 0;
     dreamSys->transition = 0;
-    dreamSys->unk74 = 0;
-    dreamSys->unk908 = 0;
-    dreamSys->unk90C = 0;
+    dreamSys->circlePressed = 0;
+    dreamSys->ignorePad = 0;
+    dreamSys->skipMoveBoxes = 0;
     dreamSys->linkStep = 0;
     dreamSys->unk78 = 0;
     SceneNode_GetRotation(dreamSys, (s32 *)&rotation);
     rotation.zNum = 0;
     rotation.zDen = 1;
-    dreamSys->vtbl->unk44(dreamSys, 1, &rotation);
+    dreamSys->vtbl->setRotation(dreamSys, 1, &rotation);
 }
 
 void DreamSys_LockControls(DreamSys *dreamSys) {
-    dreamSys->unk70 = 1;
+    dreamSys->controlsLocked = 1;
 }
 
 s32 DreamSys_WasCirclePressed(DreamSys *dreamSys) {
-    return dreamSys->unk74;
+    return dreamSys->circlePressed;
 }
 
 s32 DreamSys_SwapTimeLimit(DreamSys *dreamSys, s32 seconds) {
@@ -723,22 +723,22 @@ void DreamSys_SetCamera(DreamSys *dreamSys, s32 value) {
 }
 
 void DreamSys_SetEtcTim(DreamSys *dreamSys, s32 value) {
-    dreamSys->unk64 = value;
+    dreamSys->etcTim = value;
 }
 
 void DreamSys_TickBegin(DreamSys *dreamSys) {
-    if (dreamSys->unk70 == 0) {
-        dreamSys->unk74 = 0;
-        dreamSys->dynamicLinkOn = dreamSys->timer % dreamSys->unk120 == 0;
+    if (dreamSys->controlsLocked == 0) {
+        dreamSys->circlePressed = 0;
+        dreamSys->dynamicLinkOn = dreamSys->timer % dreamSys->linkPeriod == 0;
     }
 }
 
 void DreamSys_TickHandlers(DreamSys *dreamSys) {
-    if (dreamSys->unk80 != NULL) {
-        dreamSys->unk80();
+    if (dreamSys->lookHandler != NULL) {
+        dreamSys->lookHandler();
     }
-    if (dreamSys->unk98 != NULL) {
-        dreamSys->unk98(dreamSys);
+    if (dreamSys->moveHandler != NULL) {
+        dreamSys->moveHandler(dreamSys);
     }
 }
 
@@ -750,7 +750,7 @@ s32 DreamSys_TestPointAhead(DreamSys *dreamSys, Vec3 *pointOut, s32 distance, s3
     g_pointAheadZ[0] = distance;
     SceneNode_LocalToWorld(dreamSys, &point, &g_pointAheadZ[-2], 0);
     height = DreamSys_GetSightHeight((ScreenVec *)(dreamSys->camera.bytes + 0x14), (ScreenVec *)(dreamSys->camera.bytes + 0x20), distance);
-    if (dreamSys->unkC != 0) {
+    if (dreamSys->parent != 0) {
         worldPos = (s32 *)(dreamSys->pos.bytes + 0x38);
     } else {
         worldPos = NULL;
@@ -784,38 +784,38 @@ void func_80059598(DreamSys *dreamSys) {
     dreamSys->unk78 = 0;
 }
 
-s32 func_800595A0(void) {
+s32 DreamSys_EmptySlot12C(void) {
     return 0;
 }
 
 void DreamSys_StopControls(DreamSys *dreamSys, s32 stopLook) {
-    dreamSys->vtbl->unk13C(dreamSys, 0);
+    dreamSys->vtbl->setMoveMode(dreamSys, 0);
     if (stopLook != 0) {
-        dreamSys->vtbl->unk138(dreamSys, 0);
+        dreamSys->vtbl->setLookMode(dreamSys, 0);
     }
 }
 
 void DreamSys_SetControls(DreamSys *dreamSys, s32 moveMode, s32 lookMode) {
-    dreamSys->vtbl->unk13C(dreamSys);
-    dreamSys->vtbl->unk138(dreamSys, lookMode);
+    dreamSys->vtbl->setMoveMode(dreamSys);
+    dreamSys->vtbl->setLookMode(dreamSys, lookMode);
 }
 
 void DreamSys_SetLookMode(DreamSys *dreamSys, s32 mode) {
     DreamSysVtbl *vtbl = dreamSys->vtbl;
 
-    dreamSys->unk84 = mode;
+    dreamSys->lookMode = mode;
     switch (mode) {
     case 0:
-        dreamSys->unk80 = 0;
+        dreamSys->lookHandler = 0;
         return;
     case 1:
-        dreamSys->unk80 = vtbl->unk140;
+        dreamSys->lookHandler = vtbl->tickLook;
         return;
     case 2:
-        dreamSys->unk80 = vtbl->unk14C;
+        dreamSys->lookHandler = vtbl->tickLookMode2;
         return;
     case 3:
-        dreamSys->unk80 = vtbl->unk150;
+        dreamSys->lookHandler = vtbl->tickLookMode3;
         return;
     }
 }
@@ -824,35 +824,35 @@ void DreamSys_SetMoveMode(DreamSys *dreamSys, s32 mode) {
     DreamSysVtbl *vt;
 
     vt = dreamSys->vtbl;
-    if (dreamSys->unk9C == 2) {
-        vt->unk17C(dreamSys, 0);
+    if (dreamSys->moveMode == 2) {
+        vt->endFall(dreamSys, 0);
     }
-    dreamSys->unk9C = mode;
+    dreamSys->moveMode = mode;
     switch (mode) {
     case 0:
-        dreamSys->unk98 = 0;
+        dreamSys->moveHandler = 0;
         return;
     case 1:
-        dreamSys->unk98 = vt->unk154;
+        dreamSys->moveHandler = vt->tickMove;
         return;
     case 2: {
         s32 handler;
         DreamSysVtbl *vtblAgain;
 
-        handler = vt->unk178;
+        handler = vt->tickFall;
         vtblAgain = dreamSys->vtbl;
-        dreamSys->unkC4 = 1;
-        dreamSys->unkC8 = 1;
-        dreamSys->unk98 = handler;
-        HandlerNode_Start(dreamSys->soundBank, dreamSys->unkCC.bytes, 1, dreamSys, vtblAgain->unk194);
+        dreamSys->falling = 1;
+        dreamSys->fallSoundOn = 1;
+        dreamSys->moveHandler = handler;
+        HandlerNode_Start(dreamSys->soundBank, dreamSys->fallSound.bytes, 1, dreamSys, vtblAgain->fallSoundHandler);
         return;
     }
     }
 }
 
 void DreamSys_TickLook(DreamSys *dreamSys) {
-    dreamSys->vtbl->unk144(dreamSys);
-    dreamSys->vtbl->unk148(dreamSys);
+    dreamSys->vtbl->tickPitch(dreamSys);
+    dreamSys->vtbl->tickLookBack(dreamSys);
 }
 
 void DreamSys_TickPitch(DreamSys *dreamSys) {
@@ -864,28 +864,28 @@ void DreamSys_TickPitch(DreamSys *dreamSys) {
     DreamCamera *camera;
     s32 input;
 
-    input = dreamSys->unk88;
+    input = dreamSys->pitchInput;
     if (input != 0) {
         step = g_pitchSteps[input];
         limit = g_pitchLimits[input];
-        newPitch = step + dreamSys->unk8C;
+        newPitch = step + dreamSys->pitch;
         if ((newPitch < 0 ? ~newPitch + 1 : newPitch) < limit) {
             camera = dreamSys->camera.obj;
-            camera->unk24 = (u32) (step + camera->unk24);
-            dreamSys->unk8C = newPitch;
+            camera->refPointY = (u32) (step + camera->refPointY);
+            dreamSys->pitch = newPitch;
         }
-        dreamSys->unk88 = 0;
+        dreamSys->pitchInput = 0;
         return;
     }
-    pitch = dreamSys->unk8C;
+    pitch = dreamSys->pitch;
     if (pitch != 0) {
         step = -0x258;
         if (pitch < 0) {
             step = 0x258;
         }
         camera2 = dreamSys->camera.obj;
-        camera2->unk24 = (u32) (step + camera2->unk24);
-        dreamSys->unk8C = (s32) (step + dreamSys->unk8C);
+        camera2->refPointY = (u32) (step + camera2->refPointY);
+        dreamSys->pitch = (s32) (step + dreamSys->pitch);
     }
 }
 
@@ -894,23 +894,23 @@ void DreamSys_TickLookBack(DreamSys *dreamSys) {
     s32 sum;
     s32 lim;
 
-    dreamSys->unkA8 = dreamSys->unkA0 == 1;
-    if (dreamSys->unk90 != 0) {
-        step = g_lookBackSteps[dreamSys->unk90];
-        sum = step + dreamSys->unk94;
-        lim = g_lookBackLimits[dreamSys->unk90];
+    dreamSys->walkingForward = dreamSys->walkDirection == 1;
+    if (dreamSys->lookBackInput != 0) {
+        step = g_lookBackSteps[dreamSys->lookBackInput];
+        sum = step + dreamSys->lookBackYaw;
+        lim = g_lookBackLimits[dreamSys->lookBackInput];
         if ((sum < 0 ? ~sum + 1 : sum) < lim) {
             g_turnRotationYaw[0] = step;
-            dreamSys->vtbl->unk44(dreamSys, 0, &g_turnRotationYaw[-2]);
-            dreamSys->unk94 = sum;
+            dreamSys->vtbl->setRotation(dreamSys, 0, &g_turnRotationYaw[-2]);
+            dreamSys->lookBackYaw = sum;
         }
-        dreamSys->unk90 = 0;
+        dreamSys->lookBackInput = 0;
         DreamSys_ReverseDirection(dreamSys);
-    } else if (dreamSys->unk94 != 0) {
-        step = dreamSys->unk94 < 0 ? 0x2D : -0x2D;
+    } else if (dreamSys->lookBackYaw != 0) {
+        step = dreamSys->lookBackYaw < 0 ? 0x2D : -0x2D;
         g_turnRotationYaw[0] = step;
-        dreamSys->vtbl->unk44(dreamSys, 0, &g_turnRotationYaw[-2]);
-        dreamSys->unk94 += step;
+        dreamSys->vtbl->setRotation(dreamSys, 0, &g_turnRotationYaw[-2]);
+        dreamSys->lookBackYaw += step;
         DreamSys_ReverseDirection(dreamSys);
     }
 }
@@ -919,52 +919,52 @@ void DreamSys_ReverseDirection(DreamSys *dreamSys) {
     s32 direction;
     s32 reversed;
 
-    direction = dreamSys->unkA0;
-    dreamSys->unkA8 = 0;
+    direction = dreamSys->walkDirection;
+    dreamSys->walkingForward = 0;
     if (direction != 0) {
         if (direction & 1) {
             reversed = direction + 1;
         } else {
             reversed = direction - 1;
         }
-        dreamSys->unkA0 = reversed;
+        dreamSys->walkDirection = reversed;
     }
 }
 
-void func_80059A48(void) {
+void DreamSys_EmptySlot14C(void) {
 }
 
-void func_80059A50(void) {
+void DreamSys_EmptySlot150(void) {
 }
 
 void DreamSys_TickMove(DreamSys *dreamSys) {
-    if (dreamSys->unk6C == 0) {
-        dreamSys->vtbl->unk174(dreamSys);
-        dreamSys->vtbl->unk158(dreamSys);
-    } else if (dreamSys->unk6C == 2) {
-        dreamSys->vtbl->unk160(dreamSys);
+    if (dreamSys->autoWalk == 0) {
+        dreamSys->vtbl->tickTurn(dreamSys);
+        dreamSys->vtbl->tickWalk(dreamSys);
+    } else if (dreamSys->autoWalk == 2) {
+        dreamSys->vtbl->setForward(dreamSys);
     } else {
-        dreamSys->vtbl->unk15C(dreamSys);
+        dreamSys->vtbl->tickAutoWalk(dreamSys);
     }
 }
 
 void DreamSys_TickWalk(DreamSys *dreamSys) {
-    if (dreamSys->unk70 == 0) {
-        dreamSys->vtbl->unk170(dreamSys, dreamSys->vtbl->unk164(dreamSys, 1));
+    if (dreamSys->controlsLocked == 0) {
+        dreamSys->vtbl->walk(dreamSys, dreamSys->vtbl->tickStep(dreamSys, 1));
     }
 }
 
 void DreamSys_TickAutoWalk(DreamSys *dreamSys) {
-    dreamSys->unkA0 = 1;
-    if (dreamSys->unk70 == 0) {
-        dreamSys->vtbl->unk170(dreamSys, dreamSys->vtbl->unk164(dreamSys, 1));
+    dreamSys->walkDirection = 1;
+    if (dreamSys->controlsLocked == 0) {
+        dreamSys->vtbl->walk(dreamSys, dreamSys->vtbl->tickStep(dreamSys, 1));
     } else {
-        dreamSys->vtbl->unk164(dreamSys, 0);
+        dreamSys->vtbl->tickStep(dreamSys, 0);
     }
 }
 
 void DreamSys_SetForward(DreamSys *dreamSys) {
-    dreamSys->unkA0 = 1;
+    dreamSys->walkDirection = 1;
 }
 
 s32 DreamSys_TickStep(DreamSys *dreamSys, void *allowShake) {
@@ -976,55 +976,55 @@ s32 DreamSys_TickStep(DreamSys *dreamSys, void *allowShake) {
     DreamCamera *camera = allowShake;
 
     direction = 0;
-    if (dreamSys->unkA0 != 0) {
-        direction = dreamSys->unkA0;
-        tick = dreamSys->unkB4 + 1;
-        dreamSys->unkB4 = tick;
+    if (dreamSys->walkDirection != 0) {
+        direction = dreamSys->walkDirection;
+        tick = dreamSys->stepTick + 1;
+        dreamSys->stepTick = tick;
         if (tick < 4) {
-            if (dreamSys->unkAC == 4) {
+            if (dreamSys->speed == 4) {
                 bit = tick & 1;
                 playSound = bit == 0;
             }
         } else {
-            dreamSys->unkA0 = 0;
+            dreamSys->walkDirection = 0;
             playSound = 1;
         }
         if (playSound != 0) {
-            dreamSys->vtbl->unk168(dreamSys);
+            dreamSys->vtbl->playStepSound(dreamSys);
         }
         camera = dreamSys->camera.obj;
         if (camera != 0 && dreamSys->save.shake != 0 && allowShake != 0) {
             step = -0x32;
-            if (dreamSys->unkB4 >= 3) {
+            if (dreamSys->stepTick >= 3) {
                 step = 0x32;
             }
-            camera->unk18 += step;
-            camera->unk24 += step;
+            camera->viewpointY += step;
+            camera->refPointY += step;
         }
-        if (dreamSys->unkA0 == 0) {
-            dreamSys->unkB4 = 0;
+        if (dreamSys->walkDirection == 0) {
+            dreamSys->stepTick = 0;
         }
     }
     if (playSound == 0) {
-        dreamSys->vtbl->unk16C(dreamSys, camera);
+        dreamSys->vtbl->stopStepSound(dreamSys, camera);
     }
     return direction;
 }
 
 void DreamSys_PlayStepSound(DreamSys *dreamSys) {
     SoundBank *bank = dreamSys->soundBank;
-    s32 groundSound = dreamSys->unkB8;
+    s32 groundSound = dreamSys->stepSound;
     SoundBankVtbl *bankVtbl = bank->vtbl;
     s32 tone;
 
     if (groundSound != 0) {
         tone = g_stepSoundTones[groundSound] * 0x10;
         bankVtbl->setOctave(bank, g_stepSoundOctaves[groundSound]);
-        dreamSys->unkBC = bankVtbl->playTone(bank, tone, 0x6E, 0x6E);
-        if (dreamSys->unkB8 != 0x16) {
-            dreamSys->unkBC = -1;
+        dreamSys->stepVoice = bankVtbl->playTone(bank, tone, 0x6E, 0x6E);
+        if (dreamSys->stepSound != 0x16) {
+            dreamSys->stepVoice = -1;
         }
-        if (dreamSys->unkB8 == 0xB) {
+        if (dreamSys->stepSound == 0xB) {
             bankVtbl->setOctave(bank, 1);
             bankVtbl->playTone(bank, tone, 0x6E, 0x6E);
             bankVtbl->setOctave(bank, 2);
@@ -1037,11 +1037,11 @@ void DreamSys_StopStepSound(DreamSys *dreamSys) {
     s32 voice;
     SoundBank *bank;
 
-    voice = dreamSys->unkBC;
+    voice = dreamSys->stepVoice;
     if (voice >= 0) {
         bank = dreamSys->soundBank;
         bank->vtbl->stopVoice(bank, voice);
-        dreamSys->unkBC = -1;
+        dreamSys->stepVoice = -1;
     }
 }
 
@@ -1052,13 +1052,13 @@ void DreamSys_Walk(DreamSys *dreamSys, s32 direction) {
     Coord2 *coord;
 
     if (direction != 0) {
-        distance = g_walkSigns[direction] * g_walkSpeeds[dreamSys->unkAC];
-        dreamSys->vtbl->unk12C(dreamSys);
-        map = dreamSys->player;
-        location = map->vt->unk10C(map, 0, 0);
-        if (dreamSys->vtbl->unk1DC(dreamSys, location) == 0 && dreamSys->vtbl->unk1D8(dreamSys, location) == 0 && dreamSys->vtbl->unk1D0(dreamSys, location) == 0) {
-            dreamSys->vtbl->unk220(dreamSys);
-            g_walkMoves[direction](dreamSys, distance, dreamSys->unk90C == 0);
+        distance = g_walkSigns[direction] * g_walkSpeeds[dreamSys->speed];
+        dreamSys->vtbl->beforeWalk(dreamSys);
+        map = dreamSys->map;
+        location = map->vt->getLocation(map, 0, 0);
+        if (dreamSys->vtbl->startLinkStep(dreamSys, location) == 0 && dreamSys->vtbl->linkExtra(dreamSys, location) == 0 && dreamSys->vtbl->linkFacing(dreamSys, location) == 0) {
+            dreamSys->vtbl->savePosition(dreamSys);
+            g_walkMoves[direction](dreamSys, distance, dreamSys->skipMoveBoxes == 0);
             if (dreamSys->stage == 0) {
                 coord = dreamSys->pos.coord;
                 if (coord->coord.t.y < -0x7D0 && coord->coord.t.x >= -0x1F3) {
@@ -1073,41 +1073,41 @@ void DreamSys_Walk(DreamSys *dreamSys, s32 direction) {
 void DreamSys_TickTurn(DreamSys *dreamSys) {
     s32 turn;
 
-    turn = dreamSys->unkA4;
+    turn = dreamSys->turnInput;
     if (turn != 0) {
-        dreamSys->vtbl->unk44(dreamSys, 0, g_turnRotations + turn * 12);
-        dreamSys->unkA4 = 0;
+        dreamSys->vtbl->setRotation(dreamSys, 0, g_turnRotations + turn * 12);
+        dreamSys->turnInput = 0;
     }
 }
 
 void DreamSys_TickFall(DreamSys *dreamSys) {
     DreamCamera *camera;
 
-    if (dreamSys->unkC4 != 0) {
+    if (dreamSys->falling != 0) {
         dreamSys->vtbl->move(dreamSys, g_fallStep);
         camera = dreamSys->camera.obj;
-        camera->unk24 = camera->unk24 - 0x258;
+        camera->refPointY = camera->refPointY - 0x258;
     }
-    if (dreamSys->unkC8 != 0) {
-        HandlerNode_Run((s32) dreamSys->soundBank, dreamSys->unkCC.bytes);
+    if (dreamSys->fallSoundOn != 0) {
+        HandlerNode_Run((s32) dreamSys->soundBank, dreamSys->fallSound.bytes);
     }
 }
 
 void DreamSys_EndFall(DreamSys *dreamSys, s32 stopSound) {
-    dreamSys->unkC4 = 0;
-    dreamSys->unkC8 = stopSound;
+    dreamSys->falling = 0;
+    dreamSys->fallSoundOn = stopSound;
     if (stopSound != 0) {
-        HandlerNode_Stop(dreamSys->soundBank, dreamSys->unkCC.bytes);
+        HandlerNode_Stop(dreamSys->soundBank, dreamSys->fallSound.bytes);
     }
 }
 
 s32 DreamSys_SwapSpeed(DreamSys *dreamSys, s32 speed) {
     s32 old;
 
-    old = dreamSys->unkAC;
+    old = dreamSys->speed;
     if (speed >= 0) {
-        dreamSys->unkAC = speed;
-        dreamSys->unkB0 = speed;
+        dreamSys->speed = speed;
+        dreamSys->savedSpeed = speed;
     }
     return old;
 }
@@ -1115,15 +1115,15 @@ s32 DreamSys_SwapSpeed(DreamSys *dreamSys, s32 speed) {
 void DreamSys_PushSpeed(DreamSys *dreamSys, s32 speed) {
     s32 current;
 
-    current = dreamSys->unkAC;
+    current = dreamSys->speed;
     if (current != speed) {
-        dreamSys->unkB0 = current;
-        dreamSys->unkAC = speed;
+        dreamSys->savedSpeed = current;
+        dreamSys->speed = speed;
     }
 }
 
 void DreamSys_PopSpeed(DreamSys *dreamSys) {
-    dreamSys->unkAC = dreamSys->unkB0;
+    dreamSys->speed = dreamSys->savedSpeed;
 }
 
 void DreamSys_SetLinkFlags(DreamSys *dreamSys, s32 dynamicLinkOn, s32 arg2, s32 arg3, s32 arg4) {
@@ -1142,7 +1142,7 @@ void DreamSys_SetLinkFlags(DreamSys *dreamSys, s32 dynamicLinkOn, s32 arg2, s32 
 }
 
 void DreamSys_SetLinkPeriod(DreamSys *dreamSys, s32 period) {
-    dreamSys->unk120 = period;
+    dreamSys->linkPeriod = period;
 }
 
 void DreamSys_FallSoundHandler(s32 owner, HandlerNode *node) {
@@ -1288,7 +1288,7 @@ s32 DreamSys_LoadNextFlashback(DreamSys *dreamSys, s32 quiet) {
         dreamSys->transition = 0xE;
         elem = &dreamSys->save.flashbacks[idx];
         if (quiet == 0) {
-            dreamSys->vtbl->unk30(dreamSys, 0xE);
+            dreamSys->vtbl->notify(dreamSys, 0xE);
         }
         dreamSys->save.day = elem->day;
         dreamSys->stage = elem->stage;
@@ -1310,10 +1310,10 @@ s32 DreamSys_LinkFacing(DreamSys *dreamSys, s16 *location) {
         return 0;
     }
     SceneNode_GetRotation(dreamSys, rotation);
-    if (Link_CheckFacing(&dreamSys->unk888, &dreamSys->unk884, rotation) == 0) {
+    if (Link_CheckFacing(&dreamSys->arrivalHeading, &dreamSys->linkHeading, rotation) == 0) {
         return 0;
     }
-    if (dreamSys->unkA8 == 0) {
+    if (dreamSys->walkingForward == 0) {
         return 0;
     }
     DreamSys_ExecuteLink(dreamSys, newStage, 0xF, 0);
@@ -1327,8 +1327,8 @@ s32 DreamSys_LinkFall(DreamSys *dreamSys, s32 location) {
         newStage = Link_PickFallStage(&dreamSys->place, dreamSys->stage, location, dreamSys->timer);
         if (newStage >= 0) {
             dreamSys->unk880 = func_8005BF48();
-            dreamSys->unk884 = 0;
-            dreamSys->unk888 = 0;
+            dreamSys->linkHeading = 0;
+            dreamSys->arrivalHeading = 0;
             DreamSys_ExecuteLink(dreamSys, newStage, 0x10, 0);
             return 1;
         }
@@ -1346,7 +1346,7 @@ s32 DreamSys_LinkExtra(DreamSys *dreamSys, void *location) {
         bonusSeconds = Link_GetExtraSeconds();
         if (DreamSys_ExecuteLink(dreamSys, newStage, 0x11, 0) != 0) {
             dreamSys->transition = 0;
-            dreamSys->player->vt->unkE8(dreamSys->player, worldPos, &dreamSys->place);
+            dreamSys->map->vt->placeToWorld(dreamSys->map, worldPos, &dreamSys->place);
             dreamSys->vtbl->setPosition(dreamSys, worldPos);
             if (bonusSeconds != 0 && dreamSys->flashbackMode == 0) {
                 dreamSys->vtbl->swapTimeLimit(dreamSys, dreamSys->vtbl->getElapsedSeconds(dreamSys) + bonusSeconds);
@@ -1359,7 +1359,7 @@ s32 DreamSys_LinkExtra(DreamSys *dreamSys, void *location) {
 
 s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition, s32 playSound) {
     dreamSys->transition = transition;
-    dreamSys->vtbl->unk30(dreamSys, transition);
+    dreamSys->vtbl->notify(dreamSys, transition);
     if (dreamSys->transition == 0) {
         return 0;
     }
@@ -1380,11 +1380,11 @@ s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
     if (dreamSys->transition == 0) {
         if (dreamSys->linkStep != 0) {
             if (dreamSys->linkStep(dreamSys) != 0) {
-                dreamSys->unk908 = 0;
+                dreamSys->ignorePad = 0;
                 dreamSys->linkStep = 0;
-                dreamSys->unk90C = 0;
-                if (dreamSys->unkAC == 4) {
-                    dreamSys->vtbl->unk188(dreamSys);
+                dreamSys->skipMoveBoxes = 0;
+                if (dreamSys->speed == 4) {
+                    dreamSys->vtbl->popSpeed(dreamSys);
                     return 0;
                 }
             }
@@ -1392,13 +1392,13 @@ s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
         }
         if (Link_FindScripted(&dreamSys->place, target, dreamSys->stage) >= 0) {
             SceneNode_GetRotation(dreamSys, rotation);
-            if (Link_CheckScripted((u8 **)&dreamSys->unk888, (u8 **)&dreamSys->unk884, (RotationYaw *)rotation) != 0 && dreamSys->unkA8 != 0) {
+            if (Link_CheckScripted((u8 **)&dreamSys->arrivalHeading, (u8 **)&dreamSys->linkHeading, (RotationYaw *)rotation) != 0 && dreamSys->walkingForward != 0) {
                 dreamSys->linkTarget = *target;
-                dreamSys->unk908 = 1;
-                dreamSys->unk90C = 1;
+                dreamSys->ignorePad = 1;
+                dreamSys->skipMoveBoxes = 1;
                 dreamSys->linkStepTick = 0;
                 dreamSys->linkStep = g_linkSteps[Link_GetStepScript()];
-                dreamSys->vtbl->unk44(dreamSys, 1, dreamSys->unk884);
+                dreamSys->vtbl->setRotation(dreamSys, 1, dreamSys->linkHeading);
                 dreamSys->linkStep(dreamSys);
             }
         }
@@ -1412,13 +1412,13 @@ s32 DreamSys_LinkStep0(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
         DreamSys_MoveToTileOffset(dreamSys, g_linkStep0Start, &dreamSys->linkTarget.x);
     }
-    if (dreamSys->unkAC != 4) {
+    if (dreamSys->speed != 4) {
         tick = dreamSys->linkStepTick;
         if (tick >= 0x85) {
             return 1;
         }
         if ((tick >= 0x2B && tick < 0x3A) || (tick >= 0x4B && tick < 0x5A)) {
-            dreamSys->unkA4 = 2;
+            dreamSys->turnInput = 2;
         }
     } else {
         tick = dreamSys->linkStepTick;
@@ -1426,10 +1426,10 @@ s32 DreamSys_LinkStep0(DreamSys *dreamSys) {
             return 1;
         }
         if ((tick >= 8 && tick < 0xA) || (tick >= 0xD && tick < 0xF)) {
-            dreamSys->vtbl->unk44(dreamSys, 0, g_yawPlus45);
+            dreamSys->vtbl->setRotation(dreamSys, 0, g_yawPlus45);
         }
     }
-    dreamSys->unkA0 = 1;
+    dreamSys->walkDirection = 1;
     dreamSys->linkStepTick++;
     return 0;
 }
@@ -1440,12 +1440,12 @@ s32 DreamSys_LinkStep1(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
         DreamSys_MoveToTileOffset(dreamSys, g_linkStep1Start, &dreamSys->linkTarget.x);
     }
-    if (dreamSys->unkAC != 4) {
+    if (dreamSys->speed != 4) {
         if (dreamSys->linkStepTick >= 0x95) {
             return 1;
         }
         if ((u32)(dreamSys->linkStepTick - 0x16) < 0xF || (u32)(dreamSys->linkStepTick - 0x39) < 0x10 || (u32)(dreamSys->linkStepTick - 0x6E) < 0xF) {
-            dreamSys->unkA4 = 1;
+            dreamSys->turnInput = 1;
         }
         lookDown = (u32)(dreamSys->linkStepTick - 0x39) < 0x35;
     } else {
@@ -1453,14 +1453,14 @@ s32 DreamSys_LinkStep1(DreamSys *dreamSys) {
             return 1;
         }
         if ((u32)(dreamSys->linkStepTick - 6) < 2 || (u32)(dreamSys->linkStepTick - 0xB) < 2 || (u32)(dreamSys->linkStepTick - 0x14) < 2) {
-            dreamSys->vtbl->unk44(dreamSys, 0, g_yawMinus45);
+            dreamSys->vtbl->setRotation(dreamSys, 0, g_yawMinus45);
         }
         lookDown = (u32)(dreamSys->linkStepTick - 3) < 0xE;
     }
     if (lookDown) {
-        dreamSys->unk88 = 2;
+        dreamSys->pitchInput = 2;
     }
-    dreamSys->unkA0 = 1;
+    dreamSys->walkDirection = 1;
     dreamSys->linkStepTick++;
     return 0;
 }
@@ -1469,22 +1469,22 @@ s32 DreamSys_LinkStep2(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
         DreamSys_MoveToTileOffset(dreamSys, g_linkStep2Start, &dreamSys->linkTarget.x);
     }
-    if (dreamSys->unkAC != 4) {
+    if (dreamSys->speed != 4) {
         if (dreamSys->linkStepTick > 100) {
             return 1;
         }
         if (dreamSys->linkStepTick >= 43 && dreamSys->linkStepTick < 58) {
-            dreamSys->unkA4 = 2;
+            dreamSys->turnInput = 2;
         }
     } else {
         if (dreamSys->linkStepTick > 14) {
             return 1;
         }
         if (dreamSys->linkStepTick >= 8 && dreamSys->linkStepTick < 10) {
-            dreamSys->vtbl->unk44(dreamSys, 0, g_yawPlus45);
+            dreamSys->vtbl->setRotation(dreamSys, 0, g_yawPlus45);
         }
     }
-    dreamSys->unkA0 = 1;
+    dreamSys->walkDirection = 1;
     dreamSys->linkStepTick++;
     return 0;
 }
@@ -1496,13 +1496,13 @@ s32 DreamSys_LinkStep3(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
         DreamSys_MoveToTileOffset(dreamSys, g_linkStep3Start, &dreamSys->linkTarget.x);
     }
-    if (dreamSys->unkAC != 4) {
+    if (dreamSys->speed != 4) {
         tick = dreamSys->linkStepTick;
         if (tick >= 0x71) {
             return 1;
         }
         if ((u32)(tick - 0x1E) < 0xF || (u32)(tick - 0x52) < 0xF) {
-            dreamSys->unkA4 = 1;
+            dreamSys->turnInput = 1;
         }
         lookDown = (u32)(dreamSys->linkStepTick - 0x1E) < 0x34;
     } else {
@@ -1511,14 +1511,14 @@ s32 DreamSys_LinkStep3(DreamSys *dreamSys) {
             return 1;
         }
         if ((u32)(tick - 6) < 2 || (u32)(tick - 0xF) < 2) {
-            dreamSys->vtbl->unk44(dreamSys, 0, g_yawMinus45);
+            dreamSys->vtbl->setRotation(dreamSys, 0, g_yawMinus45);
         }
         lookDown = (u32)dreamSys->linkStepTick < 9;
     }
     if (lookDown) {
-        dreamSys->unk88 = 2;
+        dreamSys->pitchInput = 2;
     }
-    dreamSys->unkA0 = 1;
+    dreamSys->walkDirection = 1;
     dreamSys->linkStepTick++;
     return 0;
 }
@@ -1755,10 +1755,10 @@ void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
     s32 location;
     DreamPlayer *map;
 
-    if (dreamSys->player != NULL) {
+    if (dreamSys->map != NULL) {
         if (rand() % 3 == 0) {
-            map = dreamSys->player;
-            location = map->vt->unk10C(map, 0, 0);
+            map = dreamSys->map;
+            location = map->vt->getLocation(map, 0, 0);
             SceneNode_GetRotation(dreamSys, rotation);
             dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, location, rotation, arg1, length, dreamSys->save.day);
         }
@@ -2043,7 +2043,7 @@ s32 Day_FindSpecial(void *cinematic, s32 dayNumber) {
         if (dayNumber == g_specialDays[i]) {
             o->variant = rand() % 6;
             o->category = i % 12;
-            return (s32) &D_8008ABF4;
+            return (s32) &g_specialDayPoint;
         }
     }
     return 0;

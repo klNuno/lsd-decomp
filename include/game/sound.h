@@ -31,8 +31,8 @@ typedef struct SoundBankVtbl {
     u8 pad_60[0x6C - 0x60];
     void (*unk_6C)(void *bank, s8 *fullPath);                                /* 0x6C */
     u8 pad_70[0x78 - 0x70];
-    void (*unk_78)(void *bank, s32 param);                                   /* 0x78 */
-    void (*unk_7C)(void *bank);                                              /* 0x7C */
+    void (*pollTransfer)(void *bank, s32 param);                                   /* 0x78 */
+    void (*loadProgramTable)(void *bank);                                              /* 0x7C */
     s32 (*playTone)(void *bank, s32 sound, s32 volume, s32 endVolume);      /* 0x80 Sound_PlayTone: SsUtKeyOn, then SsUtAutoVol */
     s32 (*stopVoice)(void *bank, s32 voice);                                 /* 0x84 Sound_StopVoice */
     u8 pad_88[0x9C - 0x88];

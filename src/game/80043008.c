@@ -127,7 +127,7 @@ s32 Mom_Create(s32 source);
 s32 TodPack_Create(s32 source);
 s32 Movie_AllocBuffers();
 void Movie_FreeBuffers(Movie *movie);
-void func_800458AC(Movie *movie);
+void Movie_RequestStart(Movie *movie);
 void Movie_OnStreamCallback(Movie *movie);
 void Movie_OnMdecOut(void);
 void Movie_WaitFrame(Movie *movie);
@@ -491,7 +491,7 @@ s32 Tmd_GetModel(Tmd *tmd, s32 index) {
     return (s32)tmd->models[index];
 }
 
-void func_80043B70(void) {
+void Tmd_EmptySlot84(void) {
 }
 
 TmdVtbl *Tmd_GetVtbl(void) {
@@ -806,7 +806,7 @@ void Bg_SetColor(Bg *bg, s32 set, Color3 *color) {
     }
 }
 
-void func_80044674(void) {
+void Bg_EmptySlotBC(void) {
 }
 
 BgVtbl *Bg_GetVtbl(void) {
@@ -1361,7 +1361,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
 
     if (g_activeMovie == NULL) {
         if (movie->unk_68 != 0) {
-            func_800458AC(movie);
+            Movie_RequestStart(movie);
         }
         stream = movie->stream;
         movie->unk_5C = unk5C;
@@ -1383,7 +1383,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
     return 0;
 }
 
-void func_800458AC(Movie *movie) {
+void Movie_RequestStart(Movie *movie) {
     movie->unk_50 = 1;
 }
 
@@ -1450,10 +1450,10 @@ void Movie_Stop(Movie *movie) {
     }
 }
 
-void func_80045AC8(void) {
+void Movie_EmptySlot50(void) {
 }
 
-void func_80045AD0(void) {
+void Movie_EmptySlot54(void) {
 }
 
 /* Slot 0x58: VLC-decodes the stream's next frame into the other run-level buffer; 1 when none */
@@ -1482,7 +1482,7 @@ s32 Movie_ReadFrame(Movie *movie) {
     return 1;
 }
 
-void func_80045BC0(void) {
+void Movie_EmptySlot5C(void) {
 }
 
 /* Slot 0x60, from the MDEC callback: loads the slice into VRAM and starts the next one */

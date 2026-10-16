@@ -177,10 +177,10 @@ void Scene_DrawNode(View *view, DrawNode *node) {
         }
         /* unk4C is the near plane (View_Reset stores 10): a sprite behind it is dropped.
            unk98 is the OT z step, (far - near) / OT length + 1, computed by the view's frame setup. */
-        if (pos->z > view->unk4C) {
+        if (pos->z > view->nearZ) {
             pos->x = pos->x * view->projection / pos->z;
             pos->y = pos->y * view->projection / pos->z;
-            pos->z = (pos->z - view->unk4C) / view->unk98;
+            pos->z = (pos->z - view->nearZ) / view->unk98;
             spriteNode = node;
             if ((pos->x < 0 ? ~pos->x + 1 : pos->x) <= 0x200) {
                 spriteNode->sprite.x = pos->x;

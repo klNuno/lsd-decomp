@@ -284,7 +284,7 @@ typedef struct SceneryParams {
     s32 direction;    /* 0x14 rand() % 5 */
     s32 variant;    /* 0x18 */
     u8 *color;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
-    s32 dayMark;    /* 0x20 kind 2: day number % 20, or D_80087430 */
+    s32 dayMark;    /* 0x20 kind 2: day number % 20, or g_sceneryDayMark */
 } SceneryParams;
 
 /* A part of a scenery object (classes g_actorVtbl for kind 0, g_sceneryPartVtbl for kinds 2 and 3). */
@@ -561,10 +561,10 @@ extern s32 Actor_ProbeGroundAt();
 extern s32 g_sceneryHeights1;
 extern u8 g_sceneryRotations[];
 extern s32 g_sceneryKind2Offsets[];
-extern s32 D_80087868[];
-extern s32 D_80087880[];
-extern u8 D_80087874[];
-extern u8 D_8008785C[];
+extern s32 g_sceneryKind2ScaleB[];
+extern s32 g_sceneryKind2Move[];
+extern u8 g_sceneryKind2ScaleC[];
+extern u8 g_sceneryKind2ScaleA[];
 void Actor_MovePos(void *actor, s32 *delta);
 extern s8 *File_JoinPath(s8 *, s8 *, s8 *, s8 *);
 extern CardText *Tim_New(s32);
@@ -589,7 +589,7 @@ extern u8 g_sceneryVtbl[];
 extern u8 g_actorVtbl[];
 extern u8 g_sceneryPartVtbl[];
 extern s32 g_sceneryKind0Speeds[];
-extern Vec3 D_8008782C;
+extern Vec3 g_sceneryKind0SpinOrigin;
 extern s32 g_sceneryKind0Spin[];
 extern void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, PlaceObj *arg3, PlaceObj *arg4);
 extern void *Stage_GetGrid(s32 stage);
@@ -601,7 +601,7 @@ extern SpotTileExtra g_soundSpotTileExtras[];
 extern SpotRecord *g_stageSoundSpots[];
 extern u8 g_stageSoundSpotCounts[];
 extern s32 g_stageBoxMargins[];
-extern s32 D_80087150[];
+extern s32 g_stage0Bounds[];
 Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused);
 s32 Stage_PickTexturePath(s32, s32, s32);
 s32 Music_PickTrack(s32, s32);
@@ -611,10 +611,10 @@ void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value,
 extern u8 g_sceneryKind3Colors[];
 void Scenery_RandomizeParamsDay7(void);
 void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
-extern Vec3 D_800877EC;
+extern Vec3 g_sceneryKind0Origin;
 extern s32 g_sceneryPartSpacing[];
 void *Actor_New(void);
-extern s32 D_80087430;
+extern s32 g_sceneryDayMark;
 extern u8 g_sceneryKind2Colors[];
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
@@ -1034,7 +1034,7 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
     view = place->view;
     view->vtbl->detach(view);
     place->texLoading = 1;
-    place->music->vt->unk5C(place->music, Music_PickTrack(place->stage, 0));
+    place->music->vt->setSeq(place->music, Music_PickTrack(place->stage, 0));
     place->texLoader = Tix_Create(Stage_PickTexturePath(place->stage, 0, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0)));
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
     place->refs.view = view;
@@ -1044,8 +1044,8 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
     }
     place->unk4C = ambienceGiven;
     if (place->stage != 0) {
-        place->unk40 = 0x10;
-        place->unk44 = 3;
+        place->linkPeriod = 0x10;
+        place->moveSpeed = 3;
         mode = place->stage == 5;
         if (place->stage == 6) {
             mode = 1;
@@ -1053,19 +1053,19 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
         if (place->stage == 3) {
             mode = 1;
         }
-        place->map->vtbl->unk134(place->map, NULL);
+        place->map->vtbl->setBounds(place->map, NULL);
     } else {
-        place->unk40 = 0x10;
-        place->unk44 = 2;
+        place->linkPeriod = 0x10;
+        place->moveSpeed = 2;
         mode = 1;
-        place->map->vtbl->unk134(place->map, D_80087150);
+        place->map->vtbl->setBounds(place->map, g_stage0Bounds);
     }
-    place->unk48 = viewDistance;
+    place->viewDistance = viewDistance;
     if (viewDistance == 0) {
-        place->unk48 = 0xA000;
+        place->viewDistance = 0xA000;
     }
     SceneNode_SetRayHeightCheck(mode);
-    place->dreamSys->vtbl->unkEC(place->dreamSys, g_stageBoxMargins[place->stage]);
+    place->dreamSys->vtbl->setBoxMargin(place->dreamSys, g_stageBoxMargins[place->stage]);
     place->state = 5;
 }
 
@@ -1077,7 +1077,7 @@ void Place_Unload(Place *place) {
     Sym_FreeSpy();
     Scenery_Teardown();
     music = place->music;
-    music->vt->unk48(music);
+    music->vt->stop(music);
 }
 
 /* Slot 0x54 */
@@ -1194,26 +1194,26 @@ void Place_Setup(Place *place) {
     view = place->view;
     ambience = place->ambience;
     view->vtbl->detach(view);
-    first = *place->unkC;
-    view->vtbl->setProjection(view, ((((s32) *first->vt->unk7C(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
+    first = *place->env;
+    view->vtbl->setProjection(view, ((((s32) *first->vt->getScreenRect(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
-    Sym_InitStage(place->stage, place->map, place->dreamSys, place->unk34, place->unk10);
+    Sym_InitStage(place->stage, place->map, place->dreamSys, place->sound, place->clock);
     map = place->map;
     place->vt->watch(place, map);
-    map->vtbl->setAmbient(map, ambience->unk8, 0);
-    map->vtbl->unkC4(map, 3, ambience->unk0, ambience->unk4);
+    map->vtbl->setAmbient(map, ambience->ambient, 0);
+    map->vtbl->unkC4(map, 3, ambience->lightVectors, ambience->lightColors);
     map->vtbl->setGrid(map, Stage_GetGrid(place->stage));
     dreamSys = place->dreamSys;
-    dreamSys->vtbl->unk4C(dreamSys, map);
-    map->vtbl->setViewDistance(map, place->unk48);
+    dreamSys->vtbl->enterMap(dreamSys, map);
+    map->vtbl->setViewDistance(map, place->viewDistance);
     map->vtbl->setMessageFilter(map, g_placeMapMessageFilter);
 }
 
 /* Slot 0x84 */
 void Place_Teardown(Place *place) {
     place->vt->closePause(place);
-    place->dreamSys->vtbl->unkFC(place->dreamSys);
-    place->dreamSys->vtbl->unk50(place->dreamSys);
+    place->dreamSys->vtbl->lockControls(place->dreamSys);
+    place->dreamSys->vtbl->leaveMap(place->dreamSys);
     place->view->vtbl->detach(place->view);
     place->vt->unwatch(place, place->map);
 }
@@ -1229,7 +1229,7 @@ void Place_Start(Place *place) {
     s32 flashbackMode;
 
     place->started = 1;
-    place->dreamSys->vtbl->unkF8(place->dreamSys, place->unk44, place->unk40);
+    place->dreamSys->vtbl->startPlace(place->dreamSys, place->moveSpeed, place->linkPeriod);
     map = place->map;
     map->vtbl->activate(map);
     view = place->view;
@@ -1245,7 +1245,7 @@ void Place_Start(Place *place) {
     dreamSys = place->dreamSys;
     flashbackMode = dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
     fader->vtbl->setTint(fader, flashbackMode, flashbackMode != 0 ? 3 : 0);
-    fader->vtbl->startIn(fader, place->unk10, flashbackMode != 0 ? color : -1, 0);
+    fader->vtbl->startIn(fader, place->clock, flashbackMode != 0 ? color : -1, 0);
 }
 
 /* Slot 0x8C, every tick while not paused: the scenery tick at the map's position. */
@@ -1339,7 +1339,7 @@ void Place_OnLinkDynamic(Place *place) {
         dreamSys = place->dreamSys;
         Place_StartFade(place, dreamSys->vtbl->getDreamColor(dreamSys), 0, 0xA, 1);
         dreamSys = place->dreamSys;
-        dreamSys->vtbl->unkFC(dreamSys);
+        dreamSys->vtbl->lockControls(dreamSys);
     }
 }
 
@@ -1351,7 +1351,7 @@ void Place_OnLinkStatic(Place *place) {
     place->state = 6;
     Place_StartFade(place, dreamSys->vtbl->getDreamColor(dreamSys), 0, 0x1E, 1);
     dreamSys = place->dreamSys;
-    dreamSys->vtbl->unkFC(dreamSys);
+    dreamSys->vtbl->lockControls(dreamSys);
 }
 
 /* Slot 0xA0: state 7, fade to the day's colour. */
@@ -1364,22 +1364,22 @@ void Place_OnNextFlashback(Place *place) {
     dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
     Place_StartFade(place, color, 0, 5, 1);
     dreamSys = place->dreamSys;
-    dreamSys->vtbl->unkFC(dreamSys);
+    dreamSys->vtbl->lockControls(dreamSys);
 }
 
 /* Slot 0xA4 */
 void Place_OnLink15(Place *place) {
     place->state = 8;
     Place_StartFade(place, 0, 0, 6, 1);
-    place->dreamSys->vtbl->unkF4(place->dreamSys, 1);
+    place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 1);
 }
 
 /* Slot 0xA8 */
 void Place_OnLink16(Place *place) {
     place->state = 10;
     Place_StartFade(place, 0, 0, 6, 1);
-    place->dreamSys->vtbl->unk13C(place->dreamSys, 2);
-    place->dreamSys->vtbl->unkF4(place->dreamSys, 2);
+    place->dreamSys->vtbl->setMoveMode(place->dreamSys, 2);
+    place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 2);
 }
 
 /* Slot 0xAC */
@@ -1401,7 +1401,7 @@ void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 wa
     if (watch != 0) {
         place->vt->watch(place, fader);
     }
-    fader->vtbl->startOut(fader, place->unk10, color, channels);
+    fader->vtbl->startOut(fader, place->clock, color, channels);
 }
 
 /* Slot 0xB0: the fader is done (5: back to state 0; 6: its colour goes to the view, state 10 becomes 4). */
@@ -1411,7 +1411,7 @@ void Place_OnFaderNotify(Place *place, Fade *fader, s32 message) {
     switch (message) {
     case 5:
         place->vt->unwatch(place, fader);
-        place->dreamSys->vtbl->unkF4(place->dreamSys, 0);
+        place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 0);
         place->state = 0;
         break;
     case 6:
@@ -1420,8 +1420,8 @@ void Place_OnFaderNotify(Place *place, Fade *fader, s32 message) {
         place->view->vtbl->setClearColor(place->view, color);
         if (place->state == 5 || place->state == 8) {
         } else if (place->state == 10) {
-            place->dreamSys->vtbl->unk17C(place->dreamSys, 1);
-            place->dreamSys->vtbl->unkF4(place->dreamSys, 0);
+            place->dreamSys->vtbl->endFall(place->dreamSys, 1);
+            place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 0);
             place->state = 4;
         }
         place->vt->notify(place, place->state);
@@ -1505,9 +1505,9 @@ void Place_UpdatePause(Place *place) {
     place->pauseOpen = ticks + 1;
     if (ticks == 4) {
         place->view->vtbl->setUnkB8(place->view, 0);
-        place->unk10->vt->unk4C(place->unk10);
+        place->clock->vt->unk4C(place->clock);
         place->music->vt->unk4C(place->music);
-        place->unk34->vt->unk88(place->unk34);
+        place->sound->vt->muteBank(place->sound);
     }
 }
 
@@ -1516,9 +1516,9 @@ void Place_ClosePause(Place *place) {
     if (place->pauseOpen != 0) {
         place->pauseText->vt->delete_(place->pauseText);
     }
-    place->unk34->vt->unk8C(place->unk34);
-    place->music->vt->unk50(place->music);
-    place->unk10->vt->unk50(place->unk10);
+    place->sound->vt->unmuteBank(place->sound);
+    place->music->vt->resume(place->music);
+    place->clock->vt->resume(place->clock);
     place->view->vtbl->setUnkB8(place->view, 1);
     place->pauseOpen = 0;
 }
@@ -1834,7 +1834,7 @@ s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
     return out;
 }
 
-/* Kind 2, one object; the word after unk1C gets day number % 20 (or D_80087430 when it is 0). */
+/* Kind 2, one object; the word after unk1C gets day number % 20 (or g_sceneryDayMark when it is 0). */
 s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
     ParamWord *p;
     s32 *q;
@@ -1846,7 +1846,7 @@ s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
     p->v = v;
     p++;
     if (g_placeDayNumber % 20) {
-        x = D_80087430;
+        x = g_sceneryDayMark;
     } else {
         x = g_placeDayNumber % 20;
     }
@@ -2324,7 +2324,7 @@ void Scenery_Build(void *self, s32 map, s32 origin) {
     Scenery_AttachPart(self, map, &pos, scenery->rotation, (s32)scenery->scale);
     kind = scenery->kind;
     if (kind < 2) {
-        SceneNode_LinkModel(self, g_sceneryModels->vt->unk80(g_sceneryModels, g_sceneryModelIndexes[kind]));
+        SceneNode_LinkModel(self, g_sceneryModels->vt->getModel(g_sceneryModels, g_sceneryModelIndexes[kind]));
     }
     switch (scenery->kind) {
     case 0:
@@ -2399,7 +2399,7 @@ void Scenery_PlaceKind0Parts(void *self, s32 move) {
 
     dir = scenery->direction;
     if (dir != 0) {
-        pos = D_800877EC;
+        pos = g_sceneryKind0Origin;
         part = scenery->u.pair;
         for (i = 0; i < 2; i++) {
             if (dir < 3) {
@@ -2442,7 +2442,7 @@ void Scenery_UpdateKind0(void *self, Vec3 *origin) {
                 speed = &g_sceneryKind0Speeds[idx];
                 off = 0;
                 do {
-                    pos = D_8008782C;
+                    pos = g_sceneryKind0SpinOrigin;
                     pos.z += off + *speed;
                     (*part)->vt->setPosition(*part, &pos);
                     i++;
@@ -2488,11 +2488,11 @@ void Scenery_BuildKind2(void *self, s32 unused) {
     coin = rand() % 2;
     partColor = 0;
     if (coin == 0) {
-        partColor = (s32)D_80087868;
+        partColor = (s32)g_sceneryKind2ScaleB;
     }
     Scenery_CreateSpriteParts(self, 0, 0, partColor);
     if (scenery->variant >= 2) {
-        value = D_80087880;
+        value = g_sceneryKind2Move;
         part = scenery->u.many.parts[1];
         *value = g_sceneryKind2Offsets[scenery->variant];
         Actor_MovePos(part, value);
@@ -2507,9 +2507,9 @@ void Scenery_BuildKind2(void *self, s32 unused) {
         part->vt->setSemiTrans(part, 1);
         part->vt->setBlendRate(part, 0);
         vt = part->vt;
-        color = (s32)D_80087874;
+        color = (s32)g_sceneryKind2ScaleC;
         if (coin != 0) {
-            color = (s32)D_8008785C;
+            color = (s32)g_sceneryKind2ScaleA;
         }
         vt->setScale(part, 1, color);
     }
@@ -2573,7 +2573,7 @@ void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view) 
     g_sceneryFont = font;
     g_sceneryView = view;
     for (i = 0; i < 2; i++) {
-        ModelObject_SetClut(models->vt->unk80(models, g_sceneryModelIndexes[i]), g_sceneryModelClut);
+        ModelObject_SetClut(models->vt->getModel(models, g_sceneryModelIndexes[i]), g_sceneryModelClut);
     }
 }
 

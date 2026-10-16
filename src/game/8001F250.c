@@ -184,7 +184,7 @@ s32 ModelObject_GetObjectAt(ModelObject *modelObject, s32 index) {
     return offset + modelObject->tmdObjectBase;
 }
 
-void func_8001F37C(void) {
+void ModelObject_EmptySlot4C(void) {
 }
 
 s32 ModelObject_GetVtbl(void) {

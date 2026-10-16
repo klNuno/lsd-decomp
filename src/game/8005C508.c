@@ -249,7 +249,7 @@ typedef struct Model {
     u8 pad_18[0x24 - 0x18];
     u32 timer;                 /* 0x24 ticks, counted by tickAnimation */
     u8 pad_28[0x50 - 0x28];
-    void *watched;             /* 0x50 the object Model_Attach watches, unwatched by Model_Detach */
+    void *clock;             /* 0x50 the object Model_Attach watches, unwatched by Model_Detach */
     u8 pad_54[0x58 - 0x54];
     struct SoundBank *soundBank; /* 0x58 */
     ModelFile *file;           /* 0x5C */
@@ -287,13 +287,13 @@ typedef struct BehaviorEntity {
     BehaviorPos pos;           /* 0x14 */
     u8 pad_18[0x24 - 0x18];
     u32 timer;                 /* 0x24 */
-    s32 ground;                /* 0x28 result of the ground test after moveZOnGround */
+    s32 contact;                /* 0x28 result of the ground test after moveZOnGround */
     u8 pad_2C[0x44 - 0x2C];
     s32 state;                 /* 0x44 handler state; 1 stops Entity_CheckWake for good */
     s16 speed;                 /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
     BehaviorMap *map;          /* 0x4C */
-    void *watched;             /* 0x50 Model.watched, the ticker Fade_StartIn and Fade_StartOut take */
+    void *clock;             /* 0x50 Model.watched, the ticker Fade_StartIn and Fade_StartOut take */
     u8 pad_54[0x6C - 0x54];
     s32 partCount;             /* 0x6C */
     ModelPart **parts;         /* 0x70 */
@@ -380,7 +380,7 @@ s32 Entity_Create(s32 type, s32 params, s32 soundBank);
 extern void Sym_InitExtraList(s32);
 s32 g_symMap;
 s32 g_symSoundBank;
-s32 D_8008AC08;
+s32 g_symClock;
 extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
 extern s32 g_entityRecordHandler[];
 s32 Entity_IsDreamerNear();
@@ -473,7 +473,7 @@ extern s16 g_rotZNeg9[];
 s32 Entity_StartEffect(Entity *entity, void *size, void *pos, s32 step, s32 priority);
 void Behavior_QueueLowSound7(HandlerNode *node);
 extern s32 g_rotZNeg90[];
-/* The 6-byte records of D_80088D3C: four bytes copied whole, then the height. */
+/* The 6-byte records of g_spawnPlaceOffsets: four bytes copied whole, then the height. */
 typedef struct SpawnPlaceOffset {
     u8 bytes[4];
     s16 height;
@@ -486,7 +486,7 @@ typedef struct SpawnQuery {
 } SpawnQuery;
 
 extern SpawnPlace g_spawnPlaces[];
-extern SpawnPlaceOffset D_80088D3C[];
+extern SpawnPlaceOffset g_spawnPlaceOffsets[];
 extern u8 g_spawnPlaceRotations[];
 extern s32 g_rotX90;
 s32 g_type78Stopped;
@@ -534,7 +534,7 @@ void Sym_InitStage(s32 stage, s32 map, DreamSys *dreamSys, s32 soundBank, s32 wa
     g_symMap = map;
     g_symDreamSys = dreamSys;
     g_symSoundBank = soundBank;
-    D_8008AC08 = watched;
+    g_symClock = watched;
     /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
         params[3] = (s32) entry->model;
@@ -794,10 +794,10 @@ s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
         placeInfo = &g_spawnPlaces[place];
         query.placeWord = placeInfo->unk0;
         recIndex = placeInfo->unk3;
-        query.offset = D_80088D3C[recIndex];
+        query.offset = g_spawnPlaceOffsets[recIndex];
         ((StageMap *) g_symMap)->vtbl->placeToWorld((void *) g_symMap, placement, &query);
         entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->unk2 * 12]);
-        entity->vt->attach(entity, g_symDreamSys, D_8008AC08, g_symMap, placement);
+        entity->vt->attach(entity, g_symDreamSys, g_symClock, g_symMap, placement);
         return 0;
     }
     return 1;
@@ -811,7 +811,7 @@ void Sym_SpawnSpy(SpyModel *spyModel) {
     if (spy != NULL) {
         spy->vt->detach(spy);
         SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->unk8, 0);
-        spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, D_8008AC08, g_symMap, placement);
+        spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, g_symClock, g_symMap, placement);
         Entity_FaceDreamer(spyModel->spy, g_symDreamSys, 1, 0, 0);
     }
 }
@@ -881,7 +881,7 @@ void Entity_Destruct(Entity *entity) {
 void Entity_Init(Entity *entity) {
     /* record points byte (+2) of 1 to 9 */
     if ((u8)g_entityRecordPoints[entity->type * 16] - 1U < 9) {
-        entity->vt->unk70(entity, 1);
+        entity->vt->setLightFlags(entity, 1);
     }
     entity->vt->setTickMode(entity, 0x42);
     entity->vt->sleep(entity);
@@ -969,7 +969,7 @@ s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
     } else {
         param = param << 0xB;
     }
-    return entity->dreamSys->vt->unk120(entity->dreamSys, 0, range << 0xB, &point, param);
+    return entity->dreamSys->vt->testPointAhead(entity->dreamSys, 0, range << 0xB, &point, param);
 }
 
 /* Ground distance |dx| + |dz| from this entity to the position copy of other. */
@@ -1035,13 +1035,13 @@ s32 Entity_GetVideo(Entity *entity) {
 }
 
 void Entity_Wake(Entity *entity) {
-    entity->vt->unk60(entity, 1);
+    entity->vt->setVisible(entity, 1);
     entity->awake = 1;
     entity->timer = 0;
 }
 
 void Entity_Sleep(Entity *entity) {
-    entity->vt->unk60(entity, 0);
+    entity->vt->setVisible(entity, 0);
     entity->vt->stopHandler(entity);
     entity->vt->setTouched(entity, 0);
     entity->awake = 0;
@@ -1086,7 +1086,7 @@ s32 Entity_CheckWake(Entity *entity) {
         if (record->wakeRange == 0) {
             goto done;
         }
-        if (Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->unk9) != 0) {
+        if (Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->boxSize) != 0) {
             if (record->wakeMode == 1) {
                 goto set1;
             }
@@ -1128,7 +1128,7 @@ s32 Entity_CheckSleep(Entity *entity) {
             if (mode >= 10) {
                 sleep = entity->timer == (u32)(mode * 15);
             } else if (record->wakeRange != 0) {
-                inRange = Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->unk9);
+                inRange = Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->boxSize);
                 if (inRange != 0) {
                     if (record->sleepMode == 1) {
                         sleep = 1;
@@ -1158,7 +1158,7 @@ s32 Entity_CheckTouch(Entity *entity) {
             if (range < 0) {
                 range = ~range + 1;
             }
-            if (Entity_IsInRange(entity, pos, range, record->unk9) != 0) {
+            if (Entity_IsInRange(entity, pos, range, record->boxSize) != 0) {
                 entity->vt->setTouched(entity, 1);
             }
         }
@@ -1184,7 +1184,7 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
                     if (range < 0) {
                         range = ~range + 1;
                     }
-                    if (Entity_IsInRange(entity, pos, range, record->unk9) != 0) {
+                    if (Entity_IsInRange(entity, pos, range, record->boxSize) != 0) {
                         entity->vt->startHandler(entity);
                     }
                 }
@@ -1229,7 +1229,7 @@ s32 Entity_CheckHandlerStop(Entity *entity) {
         if (entity->handlerActive != 0) {
             record = &g_entityRecords[entity->type];
             range = record->handlerRange;
-            if ((range < 0) && (Entity_IsInRange(entity, entity->pos.bytes + 0x18, ~range + 1, record->unk9) == 0)) {
+            if ((range < 0) && (Entity_IsInRange(entity, entity->pos.bytes + 0x18, ~range + 1, record->boxSize) == 0)) {
                 entity->vt->stopHandler(entity);
             }
         }
@@ -1421,7 +1421,7 @@ void Behavior_WalkingGeisha(BehaviorEntity *entity, HandlerNode *node) {
         entity->vt->rotate(entity, 0, turn);
     }
     entity->vt->moveZOnGround(entity, entity->speed, 0);
-    if (entity->state != 0xC && entity->ground != 0) {
+    if (entity->state != 0xC && entity->contact != 0) {
         entity->vt->moveY(entity, -0xC8, 0);
     }
 }
@@ -1723,7 +1723,7 @@ void Behavior_Type33(BehaviorEntity *entity, HandlerNode *node) {
         node->voices[0].sound = 3;
     }
     entity->vt->moveZOnGround(entity, -0x1E, 0);
-    if (entity->ground != 0) {
+    if (entity->contact != 0) {
         entity->vt->moveY(entity, -0xC8, 0);
     }
 }
@@ -1831,7 +1831,7 @@ void Behavior_Type40(BehaviorEntity *entity, HandlerNode *node) {
         entity->vt->rotate(entity, 0, turn);
     }
     entity->vt->moveZOnGround(entity, -0x1E, 0);
-    if (entity->ground != 0) {
+    if (entity->contact != 0) {
         entity->vt->moveY(entity, -0xC8, 0);
     }
 }
@@ -2188,7 +2188,7 @@ void Behavior_Type57(BehaviorEntity *entity, HandlerNode *node) {
             if (Entity_IsInRange(entity, entity->pos.bytes + 0x18, 0xF, 0xA) != 0) {
                 if (Entity_StartEffect((Entity *)entity, 0, 0, 0xA, 0) != 0) {
                     effect = entity->effect;
-                    effect->vtbl->startIn(effect, entity->watched, 4, 0);
+                    effect->vtbl->startIn(effect, entity->clock, 4, 0);
                 }
                 if (rand() & 1) {
                     entity->vt->postEvent(entity, 0xB);
@@ -2834,7 +2834,7 @@ void Behavior_Type81(BehaviorEntity *entity, HandlerNode *node) {
         speed = -0x14;
     }
     entity->vt->moveZOnGround(entity, speed, 1);
-    if (entity->ground != 0) {
+    if (entity->contact != 0) {
         entity->vt->moveY(entity, -0xC8, 0);
     }
 }
@@ -2947,7 +2947,7 @@ void Behavior_Type85(BehaviorEntity *entity, HandlerNode *node) {
         } else {
             Behavior_QueueLowSound7(node);
             if (Entity_StartEffect((Entity *)entity, 0, 0, 0x1E, 0) != 0) {
-                entity->effect->vtbl->startIn(entity->effect, entity->watched, 7, 0);
+                entity->effect->vtbl->startIn(entity->effect, entity->clock, 7, 0);
             }
             entity->state = 0xD;
             entity->handlerTicks = -1;
@@ -2956,7 +2956,7 @@ void Behavior_Type85(BehaviorEntity *entity, HandlerNode *node) {
         if (entity->handlerTicks < 0x5A) {
             if (entity->handlerTicks == 0x1E) {
                 if (Entity_StartEffect((Entity *)entity, 0, 0, 0xA, 0) != 0) {
-                    entity->effect->vtbl->startOut(entity->effect, entity->watched, 0, 0);
+                    entity->effect->vtbl->startOut(entity->effect, entity->clock, 0, 0);
                 }
             }
             entity->dreamSys->vt->rotate(entity->dreamSys, 0, g_rotZ1);
@@ -3069,7 +3069,7 @@ void Behavior_Type91(BehaviorEntity *entity, HandlerNode *node) {
             if (rand() & 1) {
                 entity->vt->move(entity, g_moveYNeg256);
             }
-            entity->effect->vtbl->startIn(entity->effect, entity->watched, 0, 0);
+            entity->effect->vtbl->startIn(entity->effect, entity->clock, 0, 0);
         }
     } else if (entity->animFrame == 0) {
         do {
@@ -3189,7 +3189,7 @@ void Behavior_Type96(BehaviorEntity *entity, HandlerNode *node) {
 
 void Behavior_EraseFlashbacks(BehaviorEntity *entity) {
     if (entity->touched != 0 && Entity_StartEffect(entity, 0, 0, 0xA, 0)) {
-        entity->effect->vtbl->startIn(entity->effect, entity->watched, 7, 0);
+        entity->effect->vtbl->startIn(entity->effect, entity->clock, 7, 0);
         entity->vt->sleep(entity);
         entity->dreamSys->vt->clearFlashbacks(entity->dreamSys);
     }
@@ -3542,7 +3542,7 @@ void Model_Init(Model *model) {
 void Model_Attach(Model *model, void *target, void *watched, s32 parent, s32 child) {
     if (model->attached == 0) {
         Actor_GetVtbl()->attach(model, parent, child);
-        if ((watched != 0) && (model->watched == 0)) {
+        if ((watched != 0) && (model->clock == 0)) {
             model->vt->watch(model, watched);
         }
         model->vt->setTarget(model, target);
@@ -3554,7 +3554,7 @@ void Model_Detach(Model *model) {
 
     if (model->attached != 0) {
         model->vt->clearTarget(model);
-        watched = model->watched;
+        watched = model->clock;
         if (watched != 0) {
             model->vt->unwatch(model, watched);
         }
@@ -3593,7 +3593,7 @@ void Model_Update(Model *model, s32 sender, s32 phase) {
     }
 }
 
-void func_80065BF4(Model *model, s32 value) {
+void Model_SetAnim6Flag(Model *model, s32 value) {
     model->anim6Flag = value;
 }
 

@@ -75,7 +75,7 @@ typedef struct DisplayVtbl {
     s32 (*getActiveBuffer)(); /* 0x54 Display_GetActiveBuffer: GsGetActiveBuff */
     void (*loadImage)();      /* 0x58 Display_LoadImage (display, rect, pixels) */
     void (*storeImage)();     /* 0x5C Display_StoreImage (display, pixels, rect) */
-    s32 (*unk60)();           /* 0x60 func_80020A1C: returns 0 */
+    s32 (*unk60)();           /* 0x60 Display_EmptySlot60: returns 0 */
     void (*moveImage)();      /* 0x64 Display_MoveImage (display, rect, x, y) */
     void (*frameLoop)();      /* 0x68 Display_RunFrameLoop */
     void (*countFrame)();     /* 0x6C Display_CountFrame, works on the current display */
@@ -214,7 +214,7 @@ typedef struct SceneNodeVtbl {
     void (*detach)();         /* 0x50 SceneNode_Detach */
     void (*detachChildren)(); /* 0x54 SceneNode_DetachChildren */
     void (*nextChild)();      /* 0x58 SceneNode_NextChild (node, &child, &iter) */
-    void (*unk5C)();          /* 0x5C func_8001D33C, empty */
+    void (*unk5C)();          /* 0x5C SceneNode_EmptySlot5C, empty */
     s32 (*setVisible)();      /* 0x60 SceneNode_SetVisible, GsDOFF */
     void (*setSemiTrans)();   /* 0x64 SceneNode_SetSemiTrans, GsALON */
     void (*setBlendRate)();   /* 0x68 SceneNode_SetBlendRate, GsAZERO to GsATHREE */
@@ -235,7 +235,7 @@ typedef struct SceneNodeVtbl {
     void (*worldToLocal)();   /* 0xA4 SceneNode_WorldToLocal (node, offset, dst, src, count) */
     s32 (*boxesOverlap)();    /* 0xA8 SceneNode_BoxesOverlap (node, box list, offset) */
     s32 (*rayTestBoxes)();    /* 0xAC SceneNode_RayTestBoxes (node, &sender hit mask, hit position, box list) */
-    void (*unkB0)();          /* 0xB0 func_8001E49C, empty */
+    void (*unkB0)();          /* 0xB0 SceneNode_EmptySlotB0, empty */
     void (*unkB4)();          /* 0xB4 SceneNode_AddActorWatchers */
 } SceneNodeVtbl;
 
@@ -728,8 +728,8 @@ typedef struct View {
     s32 projection;         /* 0x40 h of SetGeomScreen, 0x100 */
     s32 packetCount;        /* 0x44 2000 */
     s32 packetSize;         /* 0x48 0x40 */
-    s32 unk4C;              /* 0x4C 10, func_8003FB0C */
-    s32 unk50;              /* 0x50 0x10000; (unk50 - unk4C) / OT length + 1 is unk98 */
+    s32 nearZ;              /* 0x4C 10, func_8003FB0C */
+    s32 farZ;              /* 0x50 0x10000; (unk50 - unk4C) / OT length + 1 is unk98 */
     s32 lightMode;          /* 0x54 GsSetLightMode; 1 and 3 turn the fog on */
     Color3 clearColor;      /* 0x58 GsSortClear */
     Color3 fogColor;        /* 0x5B SetFarColor */

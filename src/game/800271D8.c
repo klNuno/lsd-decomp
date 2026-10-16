@@ -281,7 +281,7 @@ void File_Step(FileStepObject *obj) {
     obj->vt->onLoaded(obj);
 }
 
-void func_800272C8(void) {
+void File_EmptySlot40(void) {
 }
 
 void File_LoadByName(File *obj, char *name, s32 param2, s32 param3) {
@@ -395,7 +395,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
     return 0;
 }
 
-void func_800276C8(void) {
+void File_EmptySlot50(void) {
 }
 
 s32 File_Read(FileStateView *obj, s32 buf, u32 offset) {

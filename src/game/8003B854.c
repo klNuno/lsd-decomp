@@ -230,10 +230,10 @@ void VideoScreen_OnDown(VideoScreen *video) {
     MenuScreen_GetVtbl()->onDown(video);
 }
 
-void func_8003BDE4(void) {
+void VideoScreen_EmptySlot88(void) {
 }
 
-void func_8003BDEC(void) {
+void VideoScreen_EmptySlot8C(void) {
 }
 
 void VideoScreen_Close(VideoScreen *video) {
@@ -1352,8 +1352,8 @@ void View_Reset(View *view) {
     view->packetCount = 0x7D0;
     view->packetSize = 0x40;
     view->projection = 0x100;
-    view->unk4C = 0xA;
-    view->unk50 = 0x10000;
+    view->nearZ = 0xA;
+    view->farZ = 0x10000;
     view->lightMode = 0;
     view->fogNear = 0x4E20;
     view->fogColor = g_viewDefaultColor;
@@ -1387,10 +1387,10 @@ void View_SetProjection(View *view, s32 projection) {
     view->projection = projection;
 }
 
-void func_8003EA6C(void) {
+void View_EmptySlot58(void) {
 }
 
-void func_8003EA74(void) {
+void View_EmptySlot5C(void) {
 }
 
 void View_SetLightMode(View *view, s32 lightMode) {
@@ -1458,10 +1458,10 @@ void View_SetTwist(View *view, ViewRatio *ratio) {
     }
 }
 
-void func_8003ECC0(void) {
+void View_EmptySlot84(void) {
 }
 
-void func_8003ECC8(void) {
+void View_EmptySlot88(void) {
 }
 
 /*
@@ -1527,7 +1527,7 @@ void View_Render(View *view) {
             view->vtbl->drawNode(view, view->node);
         }
         View_SetGeomScreen(view->projection);
-        func_8003FB0C(view->unk4C);
+        func_8003FB0C(view->nearZ);
         GsSetLightMode(view->lightMode);
         if (view->lightMode == 1 || view->lightMode == 3) {
             SetFarColor(view->fogColor.r, view->fogColor.g, view->fogColor.b);
@@ -1535,7 +1535,7 @@ void View_Render(View *view) {
         }
         GsSetRefView2(&view->viewpoint);
         view->super->flg = 0;
-        view->unk98 = ((u32)(view->unk50 - view->unk4C) / (u32)(1 << view->otBits)) + 1;
+        view->unk98 = ((u32)(view->farZ - view->nearZ) / (u32)(1 << view->otBits)) + 1;
         func_8003FBE4(view->packets[view->buffer]);
         GsClearOt(0, 0, view->ot[view->buffer]);
         view->vtbl->drawNode(view, view->root);

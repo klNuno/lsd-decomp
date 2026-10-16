@@ -22,7 +22,7 @@ typedef struct EntityRecord {
     s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (Entity_FaceDreamer) */
     s8 link;         /* 0x07 > 0 stage link - 1, < 0 stage ~link (slot 0x154) */
     s8 video;        /* 0x08 event video + 1 (slot 0x158); with link < 0, link radius << 9 */
-    s8 unk9;         /* 0x09 last parameter of every range test (Entity_IsInRange) */
+    s8 boxSize;         /* 0x09 last parameter of every range test (Entity_IsInRange) */
     s8 unkA;         /* 0x0A range of slot 0x148, << 11 */
     s8 handlerRange; /* 0x0B range that starts the handler (slot 0x17C); negative also stops it out of range */
     void *handler;   /* 0x0C per-tick handler, registered by slot 0x168 */
@@ -48,7 +48,7 @@ typedef struct SpawnSlot {
 typedef struct SpawnPlace {
     u16 unk0; /* 0x00 copied into the placement query */
     s8 unk2;  /* 0x02 index of a 12-byte record at g_spawnPlaceRotations, given to the new entity's slot 0x44 */
-    s8 unk3;  /* 0x03 index of a 6-byte record at D_80088D3C, copied into the placement query */
+    s8 unk3;  /* 0x03 index of a 6-byte record at g_spawnPlaceOffsets, copied into the placement query */
 } SpawnPlace;
 
 /*
@@ -69,9 +69,9 @@ typedef struct EntityVtbl {
     void (*attach)(void *self, void *dreamSys, s32 arg2, s32 arg3, void *place); /* 0x4C Entity_Attach */
     void (*detach)(void *self);                               /* 0x50 Entity_Detach */
     u8 pad_54[0x60 - 0x54];
-    void (*unk60)(void *self, s32 arg1);
+    void (*setVisible)(void *self, s32 arg1);
     u8 pad_64[0x70 - 0x64];
-    void (*unk70)(void *self, s32 arg1);
+    void (*setLightFlags)(void *self, s32 arg1);
     u8 pad_74[0x98 - 0x74];
     void (*update)(void *self, void *arg1, s32 arg2);         /* 0x98 Entity_Update */
     u8 pad_9C[0x10C - 0x9C];
@@ -79,7 +79,7 @@ typedef struct EntityVtbl {
     void (*startTick)(void *self);                            /* 0x110 */
     void (*stopTick)(void *self);                             /* 0x114 */
     u8 pad_118[0x120 - 0x118];
-    s32 (*unk120)(void *self, s32 arg1, s32 range, void *pos, s32 arg4); /* the range test Entity_IsInRange runs on the dreamer */
+    s32 (*testPointAhead)(void *self, s32 arg1, s32 range, void *pos, s32 arg4); /* the range test Entity_IsInRange runs on the dreamer */
     u8 pad_124[0x12C - 0x124];
     void (*playAnimation)(void *self);                        /* 0x12C */
     void (*stopAnimation)(void *self);                        /* 0x130 */
@@ -114,13 +114,13 @@ typedef struct Entity {
     } pos;                   /* 0x14 its GsCOORDINATE2 (gs.h): position t, world position workT */
     u8 pad_18[0x24 - 0x18];
     u32 timer;               /* 0x24 cleared on waking; sleep mode >= 10 compares it with mode * 15 */
-    s32 unk28;               /* 0x28 result of the ground test after moveZOnGround */
+    s32 contact;               /* 0x28 result of the ground test after moveZOnGround */
     u8 pad_2C[0x44 - 0x2C];
     s32 state;               /* 0x44 handler state; 1 stops Entity_CheckWake for good */
     s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
     s32 map;                 /* 0x4C StageMap * (stage.h): third argument of attach, cleared by detach; slot 0x110 ground query */
-    void *unk50;             /* 0x50 */
+    void *clock;             /* 0x50 */
     u8 pad_54[0x58 - 0x54];
     s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
     u8 pad_5C[0x6C - 0x5C];

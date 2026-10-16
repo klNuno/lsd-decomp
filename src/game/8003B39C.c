@@ -60,25 +60,25 @@ void Tim_Upload(Tim *tim) {
     }
 }
 
-void func_8003B5AC(void) {
+void Tim_EmptySlot7C(void) {
 }
 
-void func_8003B5B4(void) {
+void Tim_EmptySlot80(void) {
 }
 
-void func_8003B5BC(void) {
+void Tim_EmptySlot84(void) {
 }
 
-void func_8003B5C4(void) {
+void Tim_EmptySlot88(void) {
 }
 
-void func_8003B5CC(void) {
+void Tim_EmptySlot8C(void) {
 }
 
-void func_8003B5D4(void) {
+void Tim_EmptySlot90(void) {
 }
 
-void func_8003B5DC(void) {
+void Tim_EmptySlot94(void) {
 }
 
 void func_8003B5E4(Tim *tim) {

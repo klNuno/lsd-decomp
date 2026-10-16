@@ -269,8 +269,8 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     context->map = (StageMap *)StageMap_New(0, 1);
     runner->dreamSys = dreamSys;
     runner->vtbl->watch(runner, dreamSys);
-    dreamSys->vtbl->unk10C(dreamSys, runner->sound);
-    dreamSys->vtbl->unk114(dreamSys, runner->etcTim);
+    dreamSys->vtbl->setSoundBank(dreamSys, runner->sound);
+    dreamSys->vtbl->setEtcTim(dreamSys, runner->etcTim);
     runner->vtbl->clearPhase(runner);
 }
 
@@ -313,7 +313,7 @@ void DreamRunner_Run(DreamRunner *runner) {
     dreamSys = runner->dreamSys;
     dreamSys->vtbl->watch(dreamSys, runner->context->unk4);
     dreamSys->vtbl->watch(dreamSys, runner->context->unk8);
-    dreamSys->vtbl->unk110(dreamSys, runner->context->unk10);
+    dreamSys->vtbl->setCamera(dreamSys, runner->context->unk10);
     Task_GetVtbl()->run(runner, runner->context, 0);
 }
 
@@ -322,7 +322,7 @@ void DreamRunner_Finish(DreamRunner *runner) {
 
     dreamSys = runner->dreamSys;
     Task_GetVtbl()->unk48(runner);
-    dreamSys->vtbl->unk110(dreamSys, 0);
+    dreamSys->vtbl->setCamera(dreamSys, 0);
     dreamSys->vtbl->unwatch(dreamSys, runner->context->unk4);
     dreamSys->vtbl->unwatch(dreamSys, runner->unk10);
 }
@@ -934,7 +934,7 @@ s32 StageMap_GetTellKey(s32 map) {
     return map + 0x1C0;
 }
 
-void func_8004B324(void) {
+void StageMap_EmptySlotD8(void) {
 }
 
 void StageMap_SetViewDistance(StageMap *map, s32 distance) {
@@ -1825,16 +1825,16 @@ void DreamView_Render(RenderObj *obj) {
     }
 }
 
-void func_8004D35C(void) {
+void DreamView_EmptySlotB8(void) {
 }
 
-void func_8004D364(void) {
+void DreamView_EmptySlotBC(void) {
 }
 
-void func_8004D36C(void) {
+void DreamView_EmptySlotC0(void) {
 }
 
-void func_8004D374(void) {
+void DreamView_EmptySlotC4(void) {
 }
 
 RenderObjVtbl *DreamView_GetVtbl(void) {

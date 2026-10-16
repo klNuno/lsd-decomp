@@ -238,7 +238,7 @@ void File_NullInit(void) {
 void File_NullDestroy(void) {
 }
 
-void func_8002C3D0(void) {
+void File_NullEmptySlot40(void) {
     u8 buf[0x40];
 }
 
@@ -252,7 +252,7 @@ void File_NullClose(void) {
 void File_NullSeek(void) {
 }
 
-void func_8002C400(void) {
+void File_NullEmptySlot50(void) {
 }
 
 s32 File_NullRead(void) {
@@ -390,7 +390,7 @@ void Sound_UpdateBank(SoundBank *bank) {
                 bank->vabId = ret;
                 if (ret != -1) {
                     bank->transferring = 1;
-                    bank->vtbl->unk_78(bank, 1);
+                    bank->vtbl->pollTransfer(bank, 1);
                 }
             }
             break;
@@ -405,7 +405,7 @@ s32 Sound_PollTransfer(SoundBank *bank, s32 allowFinish) {
             SsVabTransCompleted(1);
             bank->transferring = 0;
             bank->transferDone = 1;
-            bank->vtbl->unk_7C(bank);
+            bank->vtbl->loadProgramTable(bank);
             ret = 1;
         }
     }
@@ -496,13 +496,13 @@ void Sound_UnmuteBank(SoundBank *bank) {
     }
 }
 
-void func_8002CBDC(void) {
+void Sound_EmptySlot90(void) {
 }
 
-void func_8002CBE4(void) {
+void Sound_EmptySlot94(void) {
 }
 
-void func_8002CBEC(void) {
+void Sound_EmptySlot98(void) {
 }
 
 void Sound_SetOctave(SoundBank *bank, s32 octave) {

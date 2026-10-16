@@ -140,7 +140,7 @@ void Display_StoreImage(Display *display, u32 *pixels, DisplayRect *rect) {
     }
 }
 
-s32 func_80020A1C(void) {
+s32 Display_EmptySlot60(void) {
     return 0;
 }
 

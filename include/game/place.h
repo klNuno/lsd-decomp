@@ -30,9 +30,9 @@ typedef struct AmbienceRecord {
 } AmbienceRecord;
 
 typedef struct Ambience {
-    s32 unk0;     /* 0x00 map slot 0xC4, second argument */
-    s32 unk4;     /* 0x04 map slot 0xC4, third argument */
-    s32 unk8;     /* 0x08 map slot 0xBC */
+    s32 lightVectors;     /* 0x00 map slot 0xC4, second argument */
+    s32 lightColors;     /* 0x04 map slot 0xC4, third argument */
+    s32 ambient;     /* 0x08 map slot 0xBC */
     u8 *colorA;   /* 0x0C RGB triple of g_ambienceColors, record byte 3 */
     s32 unk10;
     s32 mode;     /* 0x14 record byte 0; picks colorA or colorB for the view (1 and 2 tested) */
@@ -45,17 +45,17 @@ typedef struct PlaceObjVtbl {
     u8 pad_00[0x04];
     void (*delete_)();                /* 0x04 Object_Delete */
     u8 pad_08[0x48 - 0x08];
-    void (*unk48)();
+    void (*stop)();
     void (*unk4C)();
-    void (*unk50)();
+    void (*resume)();
     u8 pad_54[0x5C - 0x54];
-    void (*unk5C)();                  /* music: plays the track Music_PickTrack chose */
+    void (*setSeq)();                  /* music: plays the track Music_PickTrack chose */
     u8 pad_60[0x7C - 0x60];
-    s32 *(*unk7C)();                  /* 0x7C first word read by the view setup */
-    void *(*unk80)();                 /* 0x80 refs.models: the model of an index */
+    s32 *(*getScreenRect)();                  /* 0x7C first word read by the view setup */
+    void *(*getModel)();                 /* 0x80 refs.models: the model of an index */
     u8 pad_84[0x88 - 0x84];
-    void (*unk88)();
-    void (*unk8C)();
+    void (*muteBank)();
+    void (*unmuteBank)();
     u8 pad_90[0xB8 - 0x90];
     void (*unkB8)();
 } PlaceObjVtbl;
@@ -130,19 +130,19 @@ typedef struct PlaceRefs {
 typedef struct Place {
     PlaceVtbl *vt;
     u8 pad_04[0x0C - 0x04];
-    PlaceObj **unkC;      /* 0x0C */
-    PlaceObj *unk10;      /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
+    PlaceObj **env;      /* 0x0C */
+    PlaceObj *clock;      /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
     StageMap *map;        /* 0x14 the stage map (stage.h), also g_symMap (Sym_InitStage) and g_sceneryMap */
     View *view;           /* 0x18 the screen's view (scene.h Screen.view): its overlay is the place fader */
     s32 ticks;            /* 0x1C counted by the tick while started */
     s32 state;            /* 0x20 0 normal, 5 after load, 4 to 10 while a transition runs */
     u8 pad_24[0x34 - 0x24];
-    PlaceObj *unk34;      /* 0x34 suspended by the pause window (slots 0x88/0x8C); Sym_InitStage arg3 */
+    PlaceObj *sound;      /* 0x34 suspended by the pause window (slots 0x88/0x8C); Sym_InitStage arg3 */
     s32 stage;            /* 0x38 stage index 0 to 13 */
     DreamSys *dreamSys;   /* 0x3C set by attach, watched */
-    s32 unk40;            /* 0x40 0x10 at load, DreamSys slot 0xF8 third argument */
-    s32 unk44;            /* 0x44 2 on stage 0, else 3; DreamSys slot 0xF8 second argument */
-    s32 unk48;            /* 0x48 load argument, 0xA000 when 0; map slot 0xDC */
+    s32 linkPeriod;            /* 0x40 0x10 at load, DreamSys slot 0xF8 third argument */
+    s32 moveSpeed;            /* 0x44 2 on stage 0, else 3; DreamSys slot 0xF8 second argument */
+    s32 viewDistance;            /* 0x48 load argument, 0xA000 when 0; map slot 0xDC */
     s32 unk4C;            /* 0x4C load argument */
     Ambience *ambience;   /* 0x50 Scenery_Begin's record, or the one given to load */
     PlaceObj *music;      /* 0x54 slot 0x5C plays Music_PickTrack's sequence */

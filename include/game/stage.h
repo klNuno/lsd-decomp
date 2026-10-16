@@ -452,7 +452,7 @@ typedef struct StageMapVtbl {
     void (*updateView)();   /* 0x128 StageMap_UpdateView */
     s32 (*tellView)();      /* 0x12C StageMap_TellNearTiles */
     void (*unk130)();       /* 0x130 func_8004CFA8 */
-    void (*unk134)();       /* 0x134 StageMap_SetBounds */
+    void (*setBounds)();       /* 0x134 StageMap_SetBounds */
     void (*unk138)();       /* 0x138 StageMap_StartTileStretch */
     void (*unk13C)();       /* 0x13C StageMap_StepTileStretch */
     void (*unk140)();       /* 0x140 StageMap_ResetTileScale */

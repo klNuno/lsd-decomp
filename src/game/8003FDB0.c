@@ -566,7 +566,7 @@ void Label_SetChar(Label *label, s32 c, s32 index) {
     glyph->vtbl->setChar(glyph, c, slot);
 }
 
-void func_80040F20(void) {
+void Label_EmptySlotC8(void) {
 }
 
 /* Slot 0xCC: one character per glyph, up to the end of text */
@@ -583,7 +583,7 @@ void Label_SetText(Label *label, u8 *text) {
     }
 }
 
-void func_80040FA0(void) {
+void Label_EmptySlotD0(void) {
 }
 
 /* Slot 0xD4 */

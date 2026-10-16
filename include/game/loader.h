@@ -34,11 +34,11 @@ typedef struct FileVtbl {
     void (*destroy)();         /* 0x0C */
     u8 pad_10[0x3C - 0x10];    /* Object methods, see ObjectVtbl */
     s32 unk_3C;                /* 0 */
-    void (*unk_40)();          /* CD: func_800272C8, empty */
+    void (*unk_40)();          /* CD: File_EmptySlot40, empty */
     void (*open)();            /* 0x44 (self, path, 1, 0), CD: File_LoadByName (CdSearchFile) */
     void (*close)();           /* 0x48 CD: File_Unload */
     s32 (*seek)();             /* 0x4C (self, offset, whence); whence 2 returns the size (File_LoadWhole) */
-    void (*unk_50)();          /* CD: func_800276C8, empty */
+    void (*unk_50)();          /* CD: File_EmptySlot50, empty */
     s32 (*read)();             /* 0x54 (self, buffer, size), CD: File_Read (CdRead) */
     void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_Open) */
     void (*freeData)();        /* 0x5C File_FreeData: frees +0x10 when +0x14 != 0 */
@@ -224,7 +224,7 @@ typedef struct TmdVtbl {
     void (*mapModelingData)(); /* 0x78 Tmd_MapModelingData */
     s32 (*getObject)();        /* 0x7C Tmd_GetObject (self, index): address of TMD object index */
     s32 (*getModel)();         /* 0x80 Tmd_GetModel (self, index) */
-    void (*unk_84)();          /* func_80043B70, empty */
+    void (*unk_84)();          /* Tmd_EmptySlot84, empty */
 } TmdVtbl;
 
 typedef struct Tmd {
@@ -381,7 +381,7 @@ typedef struct BgVtbl {
     void (*setScale)();       /* 0x48 Bg_SetScale (self, set, fractions) */
     u8 pad_4C[0xB8 - 0x4C];
     void (*setColor)();       /* 0xB8 Bg_SetColor (self, set, color) */
-    void (*unk_BC)();         /* func_80044674, empty */
+    void (*unk_BC)();         /* Bg_EmptySlotBC, empty */
 } BgVtbl;
 
 typedef struct Bg {
@@ -456,10 +456,10 @@ typedef struct MovieVtbl {
     void (*start)();          /* 0x44 Movie_Start */
     s32 (*update)();          /* 0x48 Movie_Update */
     void (*stop)();           /* 0x4C Movie_Stop */
-    void (*unk_50)();         /* func_80045AC8, empty */
-    void (*unk_54)();         /* func_80045AD0, empty */
+    void (*unk_50)();         /* Movie_EmptySlot50, empty */
+    void (*unk_54)();         /* Movie_EmptySlot54, empty */
     s32 (*readFrame)();       /* 0x58 Movie_ReadFrame */
-    void (*unk_5C)();         /* func_80045BC0, empty */
+    void (*unk_5C)();         /* Movie_EmptySlot5C, empty */
     void (*onSlice)();        /* 0x60 Movie_OnSlice */
     s32 (*onStopped)();       /* 0x64 Movie_OnStopped */
     s32 (*decodeFrame)();     /* 0x68 Movie_DecodeFrame */
@@ -483,7 +483,7 @@ typedef struct Movie {
     s32 stopped;              /* 0x44 */
     s32 streamEnded;          /* 0x48 */
     s32 frameDone;            /* 0x4C every slice of the frame is out */
-    s32 unk_50;               /* -1 from the stream callback Movie_OnStreamCallback, 1 from func_800458AC */
+    s32 unk_50;               /* -1 from the stream callback Movie_OnStreamCallback, 1 from Movie_RequestStart */
     s32 repeat;               /* 0x54 restart when stopped */
     s32 loops;                /* 0x58 0 = no limit */
     s32 unk_5C;               /* passed to the stream's slot 0x50 */
@@ -512,8 +512,8 @@ typedef struct StreamVtbl {
     void (*start)();        /* 0x50 Stream_Start (self, start frame, end frame) */
     void (*stop)();         /* 0x54 Stream_Stop */
     void (*rewind)();       /* 0x58 Stream_Rewind */
-    void (*unk_5C)();       /* func_800475C8, empty */
-    void (*unk_60)();       /* func_800475D0, empty */
+    void (*unk_5C)();       /* Stream_EmptySlot5C, empty */
+    void (*unk_60)();       /* Stream_EmptySlot60, empty */
     void (*mute)();         /* 0x64 Stream_Mute */
     void (*demute)();       /* 0x68 Stream_Demute */
     s32 (*getFrame)();      /* 0x6C Stream_GetFrame (self, &frame, &frameNumber, polls) */

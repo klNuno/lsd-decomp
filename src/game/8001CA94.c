@@ -297,7 +297,7 @@ void SceneNode_NextChild(SceneNode *node, SceneNode **child, ListNode **iter) {
     *child = NULL;
 }
 
-void func_8001D33C(void) {
+void SceneNode_EmptySlot5C(void) {
 }
 
 /* Slots 0x60 to 0x80 set the GsDOBJ2 attribute bits (PSY-Q libgs.h names). */
@@ -701,7 +701,7 @@ void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside)
     }
 }
 
-void func_8001E49C(void) {
+void SceneNode_EmptySlotB0(void) {
 }
 
 /*

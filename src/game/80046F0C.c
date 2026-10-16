@@ -237,10 +237,10 @@ void Stream_Rewind(Stream *stream) {
     }
 }
 
-void func_800475C8(void) {
+void Stream_EmptySlot5C(void) {
 }
 
-void func_800475D0(void) {
+void Stream_EmptySlot60(void) {
 }
 
 /* Slot 0x64: CdlMute */
