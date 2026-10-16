@@ -1,6 +1,9 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/loader.h"
+#include "game/root_node.h"
+#include "game/scene_node.h"
+#include "game/flat_light.h"
 
 /*
  * RootNode: vtable g_rootNodeVtbl 0x8006EFAC (tag 0x14), 0x54 bytes, RootNode_Create: a scene node
@@ -33,10 +36,10 @@ typedef struct RootNode {
     Color3 ambient;         /* 0x50 GsSetAmbient takes it times 16 */
 } RootNode;
 
-void *Heap_Alloc(s32 size);
+/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ObjectVtbl *SceneNode_GetVtbl(void);
-s32 FlatLight_New(s32);
 void GsSetAmbient(s32 r, s32 g, s32 b);
+/* not in game/root_node.h: each file that calls it reads the vtable through its own view of the slots */
 RootNodeVtbl *RootNode_GetVtbl(void);
 extern RootNodeVtbl g_rootNodeVtbl;
 

@@ -1,5 +1,18 @@
 #include "common.h"
 #include "game/stage.h"
+#include "game/dream_runner.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/bgm.h"
+#include "game/tim.h"
+#include "game/clock.h"
+#include "game/tmd.h"
+#include "game/path_table.h"
+#include "game/task.h"
+#include "game/stage_map.h"
+#include "game/dream_view.h"
+#include "game/place.h"
+#include "game/sym.h"
 
 /*
  * DreamRunner (vtable g_dreamRunnerVtbl 0x800865C8, types in game/stage.h): the object built for
@@ -48,25 +61,10 @@ typedef struct RunnerPeer {
 s32 g_pathTablePartCount; /* File_ResolvePathTablePart call count */
 s32 g_pathTableFirstHalf;
 
-s32 Heap_Alloc(s32 size);
+/* not from game/task.h: other files read this vtable through their own views of the slots */
 TaskVtbl *Task_GetVtbl(void);
-DreamRunnerVtbl *DreamRunner_GetVtbl(void);
-extern void *Place_New(void *sound, void *music, void *etcTim, void *dreamerModel, s32 stage);
-void *File_GetPathTable(s32 *count);
-s32 File_AddDirEntries(s32, s32);
-s32 Music_GetEffectsBank(s32);
-void Sym_LoadModels(void);
-void Sym_FreeModels(void);
-s32 Tim_New(s32 path);
-s32 Tmd_Create(s32 file);
-s32 Music_PickBank(s32);
-void *Bgm_New(s32, s32, s32);
-void File_EnableWait(s32, s32, s32);
-void *Clock_Create(void);
+static DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 
-void File_ResolvePathTablePart(s32);
-s32 StageMap_New(s32 origin, s32);
-s32 DreamView_New(void);
 void DreamRunner_CreateStage(DreamRunner *runner, s32 stage);
 
 /* Called by Scene_RunDream for each dream with the scene's context and its DreamSys. */
@@ -301,7 +299,7 @@ void DreamRunner_OnStageMessage(DreamRunner *runner, s32 sender, s32 message) {
     }
 }
 
-DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
+static DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
     return (DreamRunnerVtbl *)g_dreamRunnerVtbl;
 }
 

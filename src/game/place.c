@@ -2,6 +2,14 @@
 #include "game/heap.h"
 #include "game/dreamsys.h"
 #include "game/place.h"
+#include "game/scene_node.h"
+#include "game/label.h"
+#include "game/tix.h"
+#include "game/path_table.h"
+#include "game/stage.h"
+#include "game/task.h"
+#include "game/scenery.h"
+#include "game/sym.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -35,36 +43,22 @@ typedef struct PlaceOwner {
     u8 pad_00[0xC];
     PlaceOwnerObj *callbackObj;
 } PlaceOwner;
-void Place_CheckTextureLoad(void *place_, void *loader_);
+static void Place_CheckTextureLoad(void *place_, void *loader_);
+/* the vtable of task.c through this file's view of its slots, so not from game/task.h */
 PlaceBaseVtbl *Task_GetVtbl();
-void Stage_GetChunkPath(s32);
-void Stage_GetChunkPathAt(s32, s32, s32);
-s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found);
-void *Heap_Alloc(s32 size);
 void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 watch);
-extern void Sym_FreeSpy(void);
-extern void Scenery_Teardown(void);
-void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
-PlaceVtbl *Place_GetVtbl(void);
-s32 Sym_SpawnOrSpy(s32, void *, s32);
-extern s32 Label_Create(s32, s32, s32);
+static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
+static PlaceVtbl *Place_GetVtbl(void);
 extern u8 g_pauseText[];
 extern s32 g_pauseTextPos[];
 extern s32 g_pauseTextColor[];
 extern u8 g_placeVtbl[];
-extern void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, PlaceObj *arg3, PlaceObj *arg4);
-extern void *Stage_GetGrid(s32 stage);
 extern s32 g_placeViewpoint[];
 extern s32 g_placeRefPoint[];
 extern s32 g_placeMapMessageFilter[];
 s32 g_placeProjectionOffset;
 extern s32 g_stageBoxMargins[];
 extern s32 g_stage0Bounds[];
-Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused);
-s32 Stage_PickTexturePath(s32, s32, s32);
-s32 Music_PickTrack(s32, s32);
-void *Tix_Create(s32 path);
-s32 SceneNode_SetRayHeightCheck(s32);
 
 /* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreateStage. */
 void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage) {
@@ -133,7 +127,7 @@ void Place_Attach(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
     place->vt->watch(place, dreamSys);
 }
 
-void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
+static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
     if (result >= 0) {
         Stage_GetChunkPath(place->stage);
     } else {
@@ -217,7 +211,7 @@ void Place_OnDisplay(Place *place, s32 sender, s32 event) {
  * is dropped and the time limit becomes elapsed + 30 s (discoveries "the 30-second dreams");
  * when it is done the ambience colour goes to it. Then, once the map is ready, start the place.
  */
-void Place_CheckTextureLoad(void *place_, void *loader_) {
+static void Place_CheckTextureLoad(void *place_, void *loader_) {
     PlaceTexLoader *loader = loader_;
     Place *place = place_;
     PlaceTexLoaderVtbl *vt;
@@ -648,6 +642,6 @@ void Place_ClosePause(Place *place) {
     place->pauseOpen = 0;
 }
 
-PlaceVtbl *Place_GetVtbl(void) {
+static PlaceVtbl *Place_GetVtbl(void) {
     return (PlaceVtbl *)g_placeVtbl;
 }

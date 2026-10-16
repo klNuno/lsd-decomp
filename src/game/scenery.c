@@ -1,5 +1,11 @@
 #include "common.h"
 #include "game/place.h"
+#include "game/scenery.h"
+#include "game/heap.h"
+#include "game/handler_node.h"
+#include "game/tim.h"
+#include "game/box.h"
+#include "game/scenery_obj.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -188,62 +194,52 @@ typedef struct SpotState {
     s32 endVolume2;
 } SpotState;
 
-
 /* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: pairs read whole by Ambience_UpdateBands, Ambience_CreateBands */
 extern Point g_bandPos;
 extern Point g_bandSize;
 s32 g_ambienceFamily;
-extern void Object_DeleteArray(void *, s32);
 extern s32 g_soundSpotRanges[];
 s32 g_bandLayout;
 s32 g_sceneryCount;
 extern u8 g_scenery[];
-void HandlerNode_Stop(void *, void *);
 s32 g_ambienceTintColor;
 AmbienceBand *g_ambienceTint;
-s32 SoundSpot_CalcFade(SpotSlot *slot);
-s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found);
-void HandlerNode_Run(s32, s32);
+static s32 SoundSpot_CalcFade(SpotSlot *slot);
 PlaceRefs *g_placeRefs;
 extern u8 g_ambienceColors[];
 extern s32 g_ambienceDepths[];
-extern void Display_RotateRect(s32 *arg0, s32 arg1, s32 *arg2);
 extern s32 g_clutCycleRectA[];
 extern s32 g_clutCycleSpareA[];
 extern s32 g_clutCycleRectB[];
 extern s32 g_clutCycleSpareB[];
 s32 g_placeStage;
-extern void Scenery_Teardown(void);
 s32 g_sceneryMap;
 s32 g_placeTicks;
 s32 g_placeDayNumber;
 s32 D_8008AC78;
 extern s32 g_soundSpotSlot1;
-Ambience *Ambience_Get(void);
+static Ambience *Ambience_Get(void);
 extern SpotSlot *g_soundSpotSlots[];
 extern AmbienceRecord *g_stageAmbience[];
 extern Ambience g_ambience;
-AmbienceRecord *Ambience_PickFamily(void);
-extern void Ambience_Fill(Ambience *ambience, AmbienceRecord *record);
+static AmbienceRecord *Ambience_PickFamily(void);
+static void Ambience_Fill(Ambience *ambience, AmbienceRecord *record);
 void Scenery_RandomizeParams(void *origin, s32 height);
 extern s32 g_sceneryHeights2;
 extern u8 g_sceneryKind1Scale[];
 extern SceneryParams g_sceneryParams;
 void SoundSpot_Type11(void *slot, SpotState *state);
 extern AmbienceBand *g_ambienceBands[];
-extern void *Box_Create(s32 arg0, s32 arg1, s32 arg2);
 extern s32 g_ambienceTintPos[];
 extern s32 g_ambienceTintSize[];
-SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin);
+static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin);
 extern s32 g_soundSpotHandlers[];
-extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
 extern s32 rand(void);
 extern s8 g_sceneryKind0Counts[];
-void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view);
-s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin);
-s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin);
-s32 *Scenery_CreateKind3(s32 *out, s32 origin);
-s32 *Scenery_CreateKind2(s32 *out, s32 origin);
+static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin);
+static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin);
+static s32 *Scenery_CreateKind3(s32 *out, s32 origin);
+static s32 *Scenery_CreateKind2(s32 *out, s32 origin);
 s32 g_ambienceIndex;
 void *g_bandPalette;
 u8 *g_bandClearColor;
@@ -254,22 +250,20 @@ extern u8 g_bandPaletteB[];
 extern AmbienceRecord *g_ambienceFamilies[];
 extern s32 g_sceneryHeights1;
 extern u8 g_sceneryRotations[];
-void Scenery_RandomizeParamsDay7();
-void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin);
+static void Scenery_RandomizeParamsDay7();
 extern s32 g_sceneryHeights[];
 extern u8 g_sceneryScales[];
 s32 g_soundSpotNext;
 extern SpotSlot g_soundSpotSlotData[];
-void Ambience_CreateBands(void);
-void Ambience_UpdateBands(void);
+static void Ambience_CreateBands(void);
+static void Ambience_UpdateBands(void);
 void Stage_CyclePalettes(void);
 extern SpotTileExtra g_soundSpotTileExtras[];
 extern SpotRecord *g_stageSoundSpots[];
 extern u8 g_stageSoundSpotCounts[];
-Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused);
 extern u8 g_sceneryKind3Colors[];
-void Scenery_RandomizeParamsDay7(void);
-void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
+static void Scenery_RandomizeParamsDay7(void);
+static void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
 extern s32 g_sceneryDayMark;
 extern u8 g_sceneryKind2Colors[];
 
@@ -303,7 +297,7 @@ Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 
 }
 
 /* The stage's fixed ambience record, else one of the day's family (Ambience_PickFamily), into g_ambience. */
-Ambience *Ambience_Get(void) {
+static Ambience *Ambience_Get(void) {
     AmbienceRecord *record;
 
     record = g_stageAmbience[g_placeStage];
@@ -317,7 +311,7 @@ Ambience *Ambience_Get(void) {
     return &g_ambience;
 }
 
-void Ambience_Fill(Ambience *ambience, AmbienceRecord *record) {
+static void Ambience_Fill(Ambience *ambience, AmbienceRecord *record) {
     ambience->colorA = g_ambienceColors + record->colorA * 3;
     ambience->colorB = g_ambienceColors + record->colorB * 3;
     ambience->depth = g_ambienceDepths[record->depth];
@@ -325,7 +319,7 @@ void Ambience_Fill(Ambience *ambience, AmbienceRecord *record) {
 }
 
 /* The extra ambience object, when the record's depth is 4 or more. */
-void Ambience_CreateTint(void) {
+static void Ambience_CreateTint(void) {
     AmbienceBand *band;
     View *view;
 
@@ -339,7 +333,7 @@ void Ambience_CreateTint(void) {
     }
 }
 
-void Ambience_DeleteTint(void) {
+static void Ambience_DeleteTint(void) {
     if (g_ambienceTintColor != 0) {
         g_ambienceTint->vt->delete_(g_ambienceTint);
         g_ambienceTintColor = 0;
@@ -351,7 +345,7 @@ void Ambience_DeleteTint(void) {
  * 4 families, then record (day number + stage) % count (work/hunt6/C-notes-note.md). Family 0
  * also picks the band palette and, for records 0 to 5, the band layout (1 or 2).
  */
-AmbienceRecord *Ambience_PickFamily(void) {
+static AmbienceRecord *Ambience_PickFamily(void) {
     s32 sum;
     s32 family;
     s32 index;
@@ -381,7 +375,7 @@ AmbienceRecord *Ambience_PickFamily(void) {
 }
 
 /* Make the 18 bands (run again by every first tick: the old ones are not freed, work/hunt6/F-findings.md). */
-void Ambience_CreateBands(void) {
+static void Ambience_CreateBands(void) {
     Point layout[2];
     s32 i;
     AmbienceBand *band;
@@ -407,7 +401,7 @@ void Ambience_CreateBands(void) {
 }
 
 /* Every tick: shift the band colours and positions with the view's height. */
-void Ambience_UpdateBands(void) {
+static void Ambience_UpdateBands(void) {
     u8 rgb[8];
     Point pos;
     View *view;
@@ -444,13 +438,13 @@ void Ambience_UpdateBands(void) {
 }
 
 /* out = rgb with red and green lowered and blue raised by shift. */
-void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift) {
+static void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift) {
     out[0] = rgb[0] - shift;
     out[1] = rgb[1] - shift;
     out[2] = rgb[2] + shift;
 }
 
-void Ambience_DeleteBands(void) {
+static void Ambience_DeleteBands(void) {
     if (g_bandLayout != 0) {
         Object_DeleteArray(g_ambienceBands, 0x12);
         g_bandLayout = 0;
@@ -484,7 +478,7 @@ void Scenery_CreateAll(s32 origin) {
 }
 
 /* Every tick: slot 0xEC (Scenery_Update) of every scenery object. */
-void Scenery_UpdateAll(s32 origin) {
+static void Scenery_UpdateAll(s32 origin) {
     s32 i;
     Scenery **objs;
 
@@ -497,7 +491,7 @@ void Scenery_UpdateAll(s32 origin) {
     }
 }
 
-void Scenery_DeleteAll(void) {
+static void Scenery_DeleteAll(void) {
     if (g_ambienceFamily >= 0) {
         Object_DeleteArray(g_scenery, g_sceneryCount);
     }
@@ -519,7 +513,7 @@ void Scenery_Teardown(void) {
 }
 
 /* Kind 0: count objects at random offsets (Scenery_RandomizeParamsDay7 on day numbers divisible by 7, else Scenery_RandomizeParams). */
-s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
+static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
     void (*randomize)(void *, s32);
     s32 i;
     s32 height;
@@ -545,7 +539,7 @@ s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
 }
 
 /* Kind 1 */
-s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
+static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
     s32 i;
     s32 height = g_sceneryHeights2;
 
@@ -559,7 +553,7 @@ s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
 }
 
 /* Kind 3, one object: a fixed offset with the second band palette, else a random one behind the origin. */
-s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
+static s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
     Scenery_RandomizeParams((void *)origin, g_sceneryHeights2);
     if (g_bandLayout != 0 && g_bandPalette == g_bandPaletteB) {
         g_sceneryParams.x = 0xFFFF5000;
@@ -581,7 +575,7 @@ s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
 }
 
 /* Kind 2, one object; the word after unk1C gets day number % 20 (or g_sceneryDayMark when it is 0). */
-s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
+static s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
     ParamWord *p;
     s32 *q;
     s32 x;
@@ -624,7 +618,7 @@ void Scenery_RandomizeParams(void *origin, s32 height) {
 }
 
 /* Day numbers divisible by 7: x in 0..19 tiles, z 0xA000, -0x6000 or 0x800 by day number % 3. */
-void Scenery_RandomizeParamsDay7(void) {
+static void Scenery_RandomizeParamsDay7(void) {
     s32 v;
     s32 m;
 
@@ -644,7 +638,7 @@ void Scenery_RandomizeParamsDay7(void) {
 }
 
 /* Hold the next free spot in range of origin in slot and register its handler. */
-SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 unused) {
+static SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 unused) {
     SpotRecord *record;
 
     record = SoundSpot_FindInRange(slot->pos, &slot->distance, origin);
@@ -661,7 +655,7 @@ SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 unused) 
 }
 
 /* Walk the stage's spots from g_soundSpotNext and return the first free one within its range of origin. */
-SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) {
+static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) {
     SpotQuery query;
     SpotRecord *record;
     s32 *from;
@@ -698,13 +692,13 @@ SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) {
 }
 
 /* Release a slot: unregister its handler and free its spot. */
-s32 SoundSpot_Release(SpotSlotU *slot) {
+static s32 SoundSpot_Release(SpotSlotU *slot) {
     HandlerNode_Stop((void *)g_placeRefs->handlerList, &slot->node);
     slot->record->range = -slot->record->range;
     return 0;
 }
 
-s32 SoundSpot_Update(s32 slot, void *origin, s32 unused) {
+static s32 SoundSpot_Update(s32 slot, void *origin, s32 unused) {
     if (SoundSpot_IsInRange(slot, origin) != 0) {
         HandlerNode_Run(g_placeRefs->handlerList, slot + 0x14);
         return 1;
@@ -713,7 +707,7 @@ s32 SoundSpot_Update(s32 slot, void *origin, s32 unused) {
 }
 
 /* Is the held spot still within its range of origin (the range is negative while held)? */
-s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (origin != NULL) {
+static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (origin != NULL) {
     dx = slot->pos[0] - origin[0];
     if (dx < 0) dx = ~dx + 1;
     dz = slot->pos[2] - origin[2];
@@ -1004,7 +998,7 @@ void SoundSpot_Type14(void *slot, SpotState *state) {
 }
 
 /* distance / (range / unk28): grows with the distance to the spot. */
-s32 SoundSpot_CalcFade(SpotSlot *slot) {
+static s32 SoundSpot_CalcFade(SpotSlot *slot) {
     return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->fadeSteps);
 }
 

@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/display.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -40,15 +41,11 @@ typedef struct DisplaySizeHalves {
 
 void GsSwapDispBuff(void);
 extern int GsGetActiveBuff(void);
-void *Heap_Alloc(s32 size);
-DisplayVtbl *Display_GetVtbl(void);
-void Display_ConvertRect(Rect *rect, DisplayRect *src);
+static DisplayVtbl *Display_GetVtbl(void);
+static void Display_ConvertRect(Rect *rect, DisplayRect *src);
 void MoveImage(Rect *rect, s32 x, s32 y);
-Display *Display_GetCurrent(void);
-ObjectVtbl *Object_GetBaseVtbl(void);
 s32 LoadImage(Rect *rect, u32 *p);
 s32 DrawSync(s32 mode);
-extern s32 DrawSync(s32);
 void StoreImage(Rect *rect, u32 *pixels);
 void GsInitGraph(u16 x, u16 y, u16 intmode, u16 dith, u16 vrammode);
 void GsDefDispBuff(u16 x0, u16 y0, u16 x1, u16 y1);
@@ -125,7 +122,7 @@ void Display_LoadImage(Display *display, DisplayRect *rect, u32 *pixels) {
     }
 }
 
-void Display_ConvertRect(Rect *rect, DisplayRect *src) {
+static void Display_ConvertRect(Rect *rect, DisplayRect *src) {
     rect->x = src->x;
     rect->y = src->y;
     rect->w = src->w;
@@ -216,7 +213,7 @@ void Display_SetFrameCallback(Display *display, s32 callback) {
     display->frameCallback = (void (*)(void))callback;
 }
 
-DisplayVtbl *Display_GetVtbl(void) {
+static DisplayVtbl *Display_GetVtbl(void) {
     return &g_displayVtbl;
 }
 

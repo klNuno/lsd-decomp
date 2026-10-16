@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/glyph.h"
+#include "game/screen_sprite.h"
 
 /*
  * Glyph: vtable g_glyphVtbl 0x8006EC74 (tag 0x1144), 0xAC bytes, Glyph_Create: a ScreenSprite
@@ -82,11 +84,7 @@ typedef struct Glyph {
     u8 code;                /* 0xA8 the character shown */
 } Glyph;
 
-void *Heap_Alloc(s32 size);
-
-GlyphVtbl *Glyph_GetVtbl(void);
-void Glyph_GetRect(SpriteRect *rect, u32 code);
-ScreenSpriteVtbl *ScreenSprite_GetVtbl(void);
+static void Glyph_GetRect(SpriteRect *rect, u32 code);
 
 extern GlyphVtbl g_glyphVtbl;
 extern SpriteRect g_glyphCellRect;      /* {0, 0, 8, 8}: the cell of character 0 */
@@ -142,7 +140,7 @@ GlyphVtbl *Glyph_GetVtbl(void) {
 }
 
 /* The 8x8 cell of a character: 32 per row. */
-void Glyph_GetRect(SpriteRect *rect, u32 code) {
+static void Glyph_GetRect(SpriteRect *rect, u32 code) {
     *rect = g_glyphCellRect;
     code = code & 0xFF;
     rect->u = rect->u + ((code & 0x1F) * 8);

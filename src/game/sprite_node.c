@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/sprite_node.h"
+#include "game/scene_node.h"
 
 /*
  * SpriteNode: vtable g_spriteNodeVtbl 0x8006EE1C (tag 0x44), 0xA0 bytes, SpriteNode_Create. A scene
@@ -94,17 +96,17 @@ typedef struct SpriteNode {
     u8 pad_88[0xA0 - 0x88];
 } SpriteNode;
 
-void *Heap_Alloc(s32 size);
+/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ObjectVtbl *SceneNode_GetVtbl(void);
-s32 Bits_SetField(s32 *word, s32 shift, s32 bits, s32 value);
 u16 GetTPage(s32 tp, s32 abr, s16 x, s16 y);
-void SpriteNode_FillSprite();
+static void SpriteNode_FillSprite();
+/* not in game/sprite_node.h: each file that calls it reads the vtable through its own view of the slots */
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 
 /* SpriteNode */
 
-void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 arg3, s32 arg4) {
+static void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 arg3, s32 arg4) {
     void *node;
 
     node = Heap_Alloc(0xA0);
@@ -134,7 +136,7 @@ void SpriteNode_SetImage(SpriteNode *node, s32 image, s32 blendRate, SpriteRect 
 }
 
 /* Fills the sprite for the rect of the TIM: centered pivot, white, scale 1, no rotation. */
-void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes *rect, SpriteTim *tim) {
+static void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes *rect, SpriteTim *tim) {
     s32 colorMode;
 
     colorMode = tim->pmode;

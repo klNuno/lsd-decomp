@@ -1,5 +1,8 @@
 #include "common.h"
 #include "game/scene.h"
+#include "game/box.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
 
 /*
  * Box: a filled rectangle, a 2D widget drawn by the scene tree (src/game/scene_draw.c).
@@ -8,9 +11,6 @@
  */
 
 /* An (x, y) pair of s32 */
-/* A bit field setter of src/game/scene_node.c: sets width bits at shift in *word, returns the old value */
-s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
-void *Heap_Alloc(s32 size);
 
 /* The base scene node class (SceneNode_GetVtbl, src/game/scene_node.c), as Box calls it */
 typedef struct BaseNodeVtbl {
@@ -19,6 +19,7 @@ typedef struct BaseNodeVtbl {
     u8 pad_0C[0x4C - 0xC];
     void (*show)(void *box, s32 root, s32 position); /* 0x4C */
 } BaseNodeVtbl;
+/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 BaseNodeVtbl *SceneNode_GetVtbl(void);
 
 /*
@@ -60,8 +61,7 @@ typedef struct Box {
 } Box;
 
 extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
-BoxVtbl *Box_GetVtbl(void);
-void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
+static void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
 extern u8 g_boxVtbl[];
 
 /* new Box(size, color, priority) */
@@ -134,7 +134,7 @@ void Box_SetColor(Box *box, s32 copy, u8 *color) {
     Rgb_CopyOrAdd(box, &box->color, color, copy);
 }
 
-void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy) {
+static void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy) {
     if (copy != 0) {
         *dst = *src;
         return;

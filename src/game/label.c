@@ -1,15 +1,14 @@
 #include "common.h"
 #include "game/scene.h"
+#include "game/label.h"
+#include "game/heap.h"
+#include "game/glyph.h"
 
 /*
  * Label: a row of character glyphs, a 2D widget drawn by the scene tree (src/game/scene_draw.c).
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-void *Heap_Alloc(s32 size);
-void *Heap_Free(void *);
-void Object_DeleteArray(void *, s32);
 
 /* A glyph (vtable g_glyphVtbl, src/game/glyph.c): one character sprite, and the base of Label */
 typedef struct Glyph Glyph;
@@ -33,10 +32,7 @@ struct Glyph {
     GlyphVtbl *vtbl;
 };
 
-GlyphVtbl *Glyph_GetVtbl(void);
-void *Glyph_Create(s32, u8);
-
-LabelVtbl *Label_GetVtbl(void);
+static LabelVtbl *Label_GetVtbl(void);
 extern u8 g_labelVtbl[];
 
 /* new Label(font, count, text) */
@@ -203,6 +199,6 @@ void Label_SetSpacing(Label *label, s32 spacing) {
     label->spacing = spacing;
 }
 
-LabelVtbl *Label_GetVtbl(void) {
+static LabelVtbl *Label_GetVtbl(void) {
     return (LabelVtbl *)g_labelVtbl;
 }

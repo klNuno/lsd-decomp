@@ -1,4 +1,7 @@
 #include "common.h"
+#include "game/scenery_part.h"
+#include "game/heap.h"
+#include "game/sprite_node.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -33,11 +36,10 @@ typedef struct TextPart {
 typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32, s32, void *, s32, s32); } TextPartBaseVtbl;
 extern u16 g_sceneryPartCluts[];
 extern u16 g_sceneryPartClutsY[];
-void *Heap_Alloc(s32 size);
-TextPartVtbl *SceneryPart_GetVtbl(void);
+static TextPartVtbl *SceneryPart_GetVtbl(void);
 extern u8 g_sceneryPartRects[];
+/* the vtable of sprite_node.c through this file's view of its slots, so not from game/sprite_node.h */
 TextPartBaseVtbl *SpriteNode_GetVtbl(void);
-extern void *SceneryPart_New(s32 index, s32 blendRate, s32 font);
 extern u8 g_sceneryPartVtbl[];
 
 /* Allocate a scenery part of class g_sceneryPartVtbl (0xA8 bytes) for kinds 2 and 3. */
@@ -95,6 +97,6 @@ void SceneryPart_StubC0(void) {
 void SceneryPart_StubC4(void) {
 }
 
-TextPartVtbl *SceneryPart_GetVtbl(void) {
+static TextPartVtbl *SceneryPart_GetVtbl(void) {
     return (TextPartVtbl *)g_sceneryPartVtbl;
 }

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "game/file_null.h"
 
 /*
  * The null file back end (vtable g_fileNullVtbl, File_GetNullVtbl): the back end 0x23 that

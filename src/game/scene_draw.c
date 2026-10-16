@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/gs.h"
 #include "game/scene.h"
+#include "game/scene_draw.h"
+#include "game/heap.h"
+#include "game/render.h"
+#include "game/scene_node.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -63,9 +67,6 @@ void GsSetLsMatrix(Matrix *m);
 void GsSortBg(void *bg, void *ot, u16 pri);
 void GsSortBoxFill(BoxFill *box, void *ot, u16 pri);
 void GsSortSprite(Sprite *sp, void *ot, u16 pri);
-void List_Next(DrawNode **node, s32 *iter);
-void Render_SortModel(void *obj, void *ot, s32 shift, u32 *scratch);
-void Render_TransformLongVectors(Vec3 *out, Vec3 *in, s32 n, Matrix *m);
 
 void Scene_DrawNode(View *view, DrawNode *node) {
     Matrix lsbuf;

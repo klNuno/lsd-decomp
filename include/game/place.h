@@ -157,4 +157,7 @@ typedef struct Place {
     s32 exitArmed;        /* 0x84 SELECT held while paused in the normal state */
 } Place;
 
+/* Functions of src/game/place.c that other files call or reference (docs/naming.md, Prototypes) */
+void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage);
+
 #endif

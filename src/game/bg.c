@@ -1,5 +1,8 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/bg.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
 
 /*
  * Bg: a PSY-Q GsBG background object (include/game/loader.h).
@@ -22,9 +25,9 @@ typedef struct BgAngle {
     s16 num;
     s16 den;
 } BgAngle;
-extern s32 Heap_Alloc(s32 size);
+/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ObjectVtbl *SceneNode_GetVtbl(void);
-BgVtbl *Bg_GetVtbl(void);
+static BgVtbl *Bg_GetVtbl(void);
 extern BgVtbl g_bgVtbl;
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
 
@@ -152,6 +155,6 @@ void Bg_SetColor(Bg *bg, s32 set, Color3 *color) {
 void Bg_EmptySlotBC(void) {
 }
 
-BgVtbl *Bg_GetVtbl(void) {
+static BgVtbl *Bg_GetVtbl(void) {
     return &g_bgVtbl;
 }

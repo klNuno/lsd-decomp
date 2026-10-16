@@ -1,5 +1,11 @@
 #include "common.h"
 #include "game/place.h"
+#include "game/scenery_obj.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/model_object.h"
+#include "game/actor.h"
+#include "game/scenery_part.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -112,49 +118,40 @@ typedef struct Scenery {
         struct { u8 pad_7C[0x84 - 0x7C]; SceneryPart *parts[5]; } many; /* 0x84 kinds 2 and 3 */
     } u;
 } Scenery;
-extern void Object_DeleteArray(void *, s32);
-void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color);
-extern void Scenery_Follow();
-void Scenery_DeleteParts();
+static void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color);
+static void Scenery_Follow();
+static void Scenery_DeleteParts();
+/* not from game/actor.h: other files read this vtable through their own views of the slots */
 ActorVtbl *Actor_GetVtbl(void);
-void *Heap_Alloc(s32 size);
-void Heap_Free(void *);
 extern s32 g_sceneryModelIndexes[];
 extern s16 g_sceneryModelClut[];
 PlaceObj *g_sceneryModels;
 void *g_sceneryFont;
 View *g_sceneryView;
-void ModelObject_SetClut(void *, void *);
 SceneryVtbl *Scenery_GetVtbl(void);
-void Scenery_Build(void *self, s32 map, s32 origin);
-extern void *SceneryPart_New(s32 index, s32 blendRate, s32 font);
+static void Scenery_Build(void *self, s32 map, s32 origin);
 extern s32 rand(void);
 extern u8 g_sceneryKind3Scales[];
-void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view);
-extern void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b);
+static void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b);
 s32 g_sceneryViewY;
-void Scenery_UpdateKind0(void *self, Vec3 *origin);
-extern void Scenery_UpdateKind2(void *scenery, Vec3 *origin);
-extern void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin);
-void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale);
-void SceneNode_LinkModel(void *arg0, void *arg1);
-void Scenery_PlaceKind0Parts(void *self, s32 move);
-void Scenery_BuildKind2(void *self, s32 unused);
-void Scenery_BuildKind3(Scenery *scenery, s32 unused);
+static void Scenery_UpdateKind0(void *self, Vec3 *origin);
+static void Scenery_UpdateKind2(void *scenery, Vec3 *origin);
+static void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin);
+static void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale);
+static void Scenery_PlaceKind0Parts(void *self, s32 move);
+static void Scenery_BuildKind2(void *self, s32 unused);
+static void Scenery_BuildKind3(Scenery *scenery, s32 unused);
 extern s32 g_sceneryKind2Offsets[];
 extern s32 g_sceneryKind2ScaleB[];
 extern s32 g_sceneryKind2Move[];
 extern u8 g_sceneryKind2ScaleC[];
 extern u8 g_sceneryKind2ScaleA[];
-void Actor_MovePos(void *actor, s32 *delta);
-void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin);
 extern u8 g_sceneryVtbl[];
 extern s32 g_sceneryKind0Speeds[];
 extern Vec3 g_sceneryKind0SpinOrigin;
 extern s32 g_sceneryKind0Spin[];
 extern Vec3 g_sceneryKind0Origin;
 extern s32 g_sceneryPartSpacing[];
-void *Actor_New(void);
 
 /* Allocate a scenery object (0x98 bytes) of a kind from params at map, origin. */
 void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin) {
@@ -203,7 +200,7 @@ void Scenery_Update(Scenery *scenery) {
 }
 
 /* Place it at origin + offset and build its parts by kind. */
-void Scenery_Build(void *self, s32 map, s32 origin) {
+static void Scenery_Build(void *self, s32 map, s32 origin) {
     Scenery *scenery = (Scenery *)self;
     Vec3 pos;
     s32 kind;
@@ -229,7 +226,7 @@ void Scenery_Build(void *self, s32 map, s32 origin) {
 }
 
 /* Follow the origin (and the view's height since it was made), then update the parts by kind. */
-void Scenery_Follow(Scenery *scenery, Vec3 *origin) {
+static void Scenery_Follow(Scenery *scenery, Vec3 *origin) {
     Vec3 pos;
 
     Scenery_AddOffset(&pos, origin, &scenery->offset);
@@ -249,7 +246,7 @@ void Scenery_Follow(Scenery *scenery, Vec3 *origin) {
 }
 
 /* Delete the parts by kind. */
-void Scenery_DeleteParts(Scenery *scenery) {
+static void Scenery_DeleteParts(Scenery *scenery) {
     switch (scenery->kind) {
     case 0:
         Scenery_DeleteKind0Parts(scenery);
@@ -263,14 +260,14 @@ void Scenery_DeleteParts(Scenery *scenery) {
     }
 }
 
-void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b) {
+static void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b) {
     out->x = a->x + b->x;
     out->y = a->y + b->y;
     out->z = a->z + b->z;
 }
 
 /* Slots 0x4C, 0x44 and 0x48 of a scenery object or part (pos is not used). */
-void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale) {
+static void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale) {
     SceneryPart *obj = self;
 
     obj->vt->attach(obj, parent);
@@ -279,7 +276,7 @@ void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 sca
 }
 
 /* Kind 0: make (move == 0) or move its two parts, set apart along direction unk6C (1 to 4). */
-void Scenery_PlaceKind0Parts(void *self, s32 move) {
+static void Scenery_PlaceKind0Parts(void *self, s32 move) {
     Scenery *scenery = self;
     Vec3 pos;
     s32 dir;
@@ -310,7 +307,7 @@ void Scenery_PlaceKind0Parts(void *self, s32 move) {
 }
 
 /* Kind 0 tick: past 500 ticks, with a speed in g_sceneryKind0Speeds[unk70], move the parts every 0x5FB4 / speed ticks. */
-void Scenery_UpdateKind0(void *self, Vec3 *origin) {
+static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
     Scenery *scenery = self;
     SceneryPart **part;
     Vec3 pos;
@@ -356,14 +353,14 @@ void Scenery_UpdateKind0(void *self, Vec3 *origin) {
     *scenery->posBlock = 0;
 }
 
-void Scenery_DeleteKind0Parts(Scenery *scenery) {
+static void Scenery_DeleteKind0Parts(Scenery *scenery) {
     if (scenery->direction != 0) {
         Object_DeleteArray(scenery->u.pair, 2);
     }
 }
 
 /* Kind 2: five parts, then part 1 placed from g_sceneryKind2Offsets[unk70] or coloured, part 2 shown. */
-void Scenery_BuildKind2(void *self, s32 unused) {
+static void Scenery_BuildKind2(void *self, s32 unused) {
     Scenery *scenery;
     SceneryPart *part;
     SceneryPartVtbl *vt;
@@ -406,7 +403,7 @@ void Scenery_BuildKind2(void *self, s32 unused) {
 }
 
 /* Kinds 2 and 3: five parts of class g_sceneryPartVtbl in the place's font. */
-void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color) {
+static void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color) {
     SceneryPart **part;
     s32 i;
 
@@ -422,19 +419,19 @@ void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 colo
     }
 }
 
-void Scenery_UpdateKind2(void *scenery, Vec3 *origin) {
+static void Scenery_UpdateKind2(void *scenery, Vec3 *origin) {
 }
 
-void Scenery_DeleteKind2Parts(Scenery *scenery) {
+static void Scenery_DeleteKind2Parts(Scenery *scenery) {
     Object_DeleteArray(scenery->u.many.parts, 5);
 }
 
-void Scenery_BuildKind3(Scenery *scenery, s32 unused) {
+static void Scenery_BuildKind3(Scenery *scenery, s32 unused) {
     Scenery_CreateSpriteParts(scenery, 0, 0, 0);
 }
 
 /* Kind 3 tick: parts 1 to 4 get a random colour of g_sceneryKind3Scales and a random angle. */
-void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
+static void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
     s32 i;
     SceneryPart **part;
 
@@ -446,7 +443,7 @@ void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
     }
 }
 
-void Scenery_DeleteKind3Parts(Scenery *scenery) {
+static void Scenery_DeleteKind3Parts(Scenery *scenery) {
     Object_DeleteArray(scenery->u.many.parts, 5);
 }
 

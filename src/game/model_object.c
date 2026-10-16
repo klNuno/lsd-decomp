@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/model_object.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -14,7 +15,7 @@ typedef struct ModelObjectMapView {
 
 extern void GsMapModelingData(u32 *p);
 extern u8 g_modelBox[];
-void ModelObject_ComputeBox(void *modelObject, u8 *out);
+static void ModelObject_ComputeBox(void *modelObject, u8 *out);
 /* A CLUT offset in VRAM pixels, added to a primitive's CLUT by ModelObject_OffsetClut */
 typedef struct ClutOffset {
     s32 x;
@@ -27,10 +28,8 @@ typedef struct ClutPos {
     s16 y;
 } ClutPos;
 
-void *Object_GetBaseVtbl(void);
-s32 ModelObject_GetVtbl(void);
-void ModelObject_SetReady(void *modelObject);
-void *Heap_Alloc(s32 size);
+static s32 ModelObject_GetVtbl(void);
+static void ModelObject_SetReady(void *modelObject);
 
 /*
  * Output of ModelObject_GetBoxList: count 1, then the eight corners of the box, three u16 each.
@@ -141,7 +140,7 @@ typedef struct ModelBox {
     ModelVec max;
 } ModelBox;
 
-void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
+static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
 
 typedef struct HitLongVec { s32 x; s32 y; s32 z; s32 pad; } HitLongVec;
 typedef struct HitShortVec { s16 x; s16 y; s16 z; s16 pad; } HitShortVec;
@@ -151,7 +150,6 @@ void Square0(HitLongVec *in, HitLongVec *out);
 s32 SquareRoot0(s32 a);
 #define ABS(x) ((x) < 0 ? ~(x) + 1 : (x))
 #define FIX_DIV(n, d) ((((n) / (d)) != 0 ? ((n) / (d)) << 16 : ((n) * (d)) & 0x80000000) | (ABS((n) % (d)) << 16) / ABS(d))
-
 
 void *ModelObject_Create(s32 tmdObject) {
     void *modelObject;
@@ -191,11 +189,11 @@ s32 ModelObject_GetObjectAt(ModelObject *modelObject, s32 index) {
 void ModelObject_EmptySlot4C(void) {
 }
 
-s32 ModelObject_GetVtbl(void) {
+static s32 ModelObject_GetVtbl(void) {
     return (s32)g_modelObjectVtbl;
 }
 
-void ModelObject_SetReady(void *modelObject) {
+static void ModelObject_SetReady(void *modelObject) {
     g_modelObjectReady = 1;
 }
 
@@ -203,7 +201,7 @@ s32 ModelObject_IsReady(s32 modelObject) {
     return g_modelObjectReady;
 }
 
-void ModelObject_ComputeBox(void *modelObject, u8 *out) {
+static void ModelObject_ComputeBox(void *modelObject, u8 *out) {
     ModelBox *box;
     ModelVertex *v;
     s16 *miny;
@@ -478,7 +476,7 @@ s32 ModelObject_RayTest(ModelObjectView *modelObject, s32 *hitDist, ModelVec *hi
 }
 
 /* Walks the primitives of a model object, one per call, and copies up to four corners to out */
-void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex) {
+static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex) {
     s32 idx[4];
     s32 size;
     s32 i;
@@ -668,7 +666,7 @@ void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *c
 }
 
 /* Moves the CLUT of the model's first primitive: CBA = clut x / 16 + clut y * 64 */
-void ModelObject_OffsetClut(ModelObjectView *modelObject, ClutOffset *offset) {
+static void ModelObject_OffsetClut(ModelObjectView *modelObject, ClutOffset *offset) {
     ModelPrim *prim = modelObject->entry->primitives;
     prim->clut += offset->x / 16;
     prim->clut += offset->y * 64;

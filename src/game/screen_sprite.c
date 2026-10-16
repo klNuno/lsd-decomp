@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/screen_sprite.h"
+#include "game/sprite_node.h"
 
 /*
  * ScreenSprite: vtable g_screenSpriteVtbl 0x8006ED4C (tag 0x144), 0xA8 bytes, ScreenSprite_Create:
@@ -71,8 +73,7 @@ typedef struct ScreenSprite {
     ScreenPoint position;   /* 0xA0 set once attached */
 } ScreenSprite;
 
-void *Heap_Alloc(s32 size);
-ScreenSpriteVtbl *ScreenSprite_GetVtbl(void);
+/* not from game/sprite_node.h: other files read this vtable through their own views of the slots */
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */

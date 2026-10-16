@@ -2,6 +2,11 @@
 #include "game/entity.h"
 #include "game/sound.h"
 #include "game/scene.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/handler_node.h"
+#include "game/fade.h"
+#include "game/model.h"
 
 /*
  * Entities and their behaviour handlers (record +0xC). A handler runs once per tick as
@@ -264,13 +269,11 @@ typedef struct BehaviorEntity {
 extern EntityRecord g_entityRecords[];
 extern void Behavior_MazePenguin();
 extern s8 g_entityRecordVideo[];
-void HandlerNode_Stop(void *, void *);
 extern s32 g_scaleHalf;
 extern s32 g_scaleSix;
 extern s32 g_scaleQuarter;
 extern s8 g_entityRecordPoints[];
 extern s8 g_entityRecordLink[];
-extern void HandlerNode_Run(s32, void *);
 extern void Behavior_Type71();
 extern s32 g_scaleDouble[];
 extern s32 g_moveYNeg64[];
@@ -287,24 +290,18 @@ typedef struct Unk_80066818_Vtbl {
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
 } Unk_80066818_Vtbl;
-Unk_80066818_Vtbl *Model_GetVtbl(void);
 extern s32 rand(void);
-extern void Entity_FaceDreamer(void *entity, void *target, s32 noPitch, s32 facing, s32 extra);
 extern s32 g_scaleTiny;
-s32 Entity_Create(s32 type, s32 params, s32 soundBank);
-extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
 extern s32 g_entityRecordHandler[];
-s32 Entity_IsDreamerNear();
-EntityVtbl *Entity_GetVtbl(void);
-s32 Heap_Alloc(s32);
-void *Heap_Free();
-s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
+static s32 Entity_IsDreamerNear();
+static EntityVtbl *Entity_GetVtbl(void);
+static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 extern s16 g_rotY9[];
 extern s16 g_rotYNeg9[];
 extern s32 g_moveYNeg512[];
 extern s32 g_rotY180[];
-extern s32 Entity_StartEffect();
-void Behavior_QueueSound18And3(HandlerNode *node);
+static s32 Entity_StartEffect();
+static void Behavior_QueueSound18And3(HandlerNode *node);
 extern s32 g_rotY90;
 extern s16 g_scaleShrinkStep[];
 
@@ -316,27 +313,25 @@ extern s32 g_rotY2[];
 extern s32 g_rotY4[];
 extern s32 g_scaleTwoFifths[];
 extern s8 g_rotXEighth[];
-void Behavior_RollWideOrSlide(BehaviorEntity *entity);
+static void Behavior_RollWideOrSlide(BehaviorEntity *entity);
 
 extern s32 g_rotY1;
 extern s32 g_scaleTriple;
-void *Fade_Create(void *size, s32 channels, s32 priority);
 extern s32 g_effectDefaultPos[];
 extern s32 g_effectDefaultSize[];
 extern s8 g_entityRecordWakeMode[];
 extern s8 g_entityRecordHandlerRange[];
-extern s32 Heap_Alloc(s32);
 extern s32 g_rotYNeg90;
 extern s32 g_scaleThinTall[];
 extern s16 g_scaleSquash[];
 extern s32 g_moveYNeg1500Z1024[];
 extern s16 g_rotYNegHalf[];
-void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed);
+static void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed);
 extern s32 g_moveYNeg4096[];
 extern s32 g_moveY64[];
 extern s32 g_moveXNeg64[];
-void Entity_CheckLinkRadius();
-extern s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
+static void Entity_CheckLinkRadius();
+static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 extern u8 g_entityVtbl[];
 extern s8 D_8008AC1C[];
 extern s32 g_moveYNeg256[];
@@ -351,11 +346,11 @@ extern s32 g_rotYNeg120[];
 extern s32 g_astronautBarPose[];
 extern s32 g_moveY64ZNeg64[];
 extern s16 g_type41ScaleDepthDen[];
-s32 Entity_IsDreamerNear(Entity *entity, s32 radius);
+static s32 Entity_IsDreamerNear(Entity *entity, s32 radius);
 extern s16 g_rotZ1[];
 extern s16 g_rotZNeg9[];
-s32 Entity_StartEffect(Entity *entity, void *size, void *pos, s32 step, s32 priority);
-void Behavior_QueueLowSound7(HandlerNode *node);
+static s32 Entity_StartEffect(Entity *entity, void *size, void *pos, s32 step, s32 priority);
+static void Behavior_QueueLowSound7(HandlerNode *node);
 extern s32 g_rotZNeg90[];
 extern s32 g_rotX90;
 s32 g_type78Stopped;
@@ -388,7 +383,7 @@ void *Entity_Construct(Entity *entity, s32 type, s32 source, s32 soundBank) {
     return NULL;
 }
 
-s32 Entity_StartEffect(Entity *entity, void *size, void *pos, s32 step, s32 priority) {
+static s32 Entity_StartEffect(Entity *entity, void *size, void *pos, s32 step, s32 priority) {
     Fade *effect;
 
     if (entity->effect == NULL) {
@@ -500,7 +495,7 @@ void Entity_RunHandler(Entity *entity) {
 }
 
 /* Is pos within range << 11 of the dreamer; the record's points byte (+2), when -9 to -1, raises the tested height by points * 1024. */
-s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
+static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
     Vec3 point;
     u8 points;
 
@@ -740,7 +735,7 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
 }
 
 /* With a negative link (+7), link as soon as the dreamer is within the record's +8 << 9. */
-void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
+static void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
     s8 radius;
 
     if (g_entityRecordLink[entity->type * 16] < 0) {
@@ -752,7 +747,7 @@ void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
 }
 
 /* The dreamer is within 0x200 in height and closer than radius on the ground. */
-s32 Entity_IsDreamerNear(Entity *entity, s32 radius) {
+static s32 Entity_IsDreamerNear(Entity *entity, s32 radius) {
     Entity *other;
     s32 y;
     s32 my;
@@ -782,7 +777,7 @@ s32 Entity_CheckHandlerStop(Entity *entity) {
     return entity->handlerActive;
 }
 
-EntityVtbl *Entity_GetVtbl(void) {
+static EntityVtbl *Entity_GetVtbl(void) {
     return (EntityVtbl *)g_entityVtbl;
 }
 
@@ -1472,7 +1467,7 @@ void Behavior_Type44(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void Behavior_RollWideOrSlide(BehaviorEntity *entity) {
+static void Behavior_RollWideOrSlide(BehaviorEntity *entity) {
     s32 roll;
 
     if (entity->handlerTicks == 0) {
@@ -2537,7 +2532,7 @@ void Behavior_Type86(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void Behavior_QueueLowSound7(HandlerNode *node) {
+static void Behavior_QueueLowSound7(HandlerNode *node) {
     node->fade = 0;
     node->voices[0].sound = 7;
     node->voices[0].octave = -2;
@@ -2547,7 +2542,7 @@ void Behavior_QueueLowSound7(HandlerNode *node) {
     node->voices[2].octave = -2;
 }
 
-void Behavior_QueueSound18And3(HandlerNode *node) {
+static void Behavior_QueueSound18And3(HandlerNode *node) {
     node->voices[0].sound = 0x12;
     node->fade = 0;
     node->voices[1].sound = 3;
@@ -2921,7 +2916,7 @@ void Behavior_FlyingTrain(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed) {
+static void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed) {
     node->fade = 0;
     if (node->tick == 6) {
         node->voices[0].sound = 4;

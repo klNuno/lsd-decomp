@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/scene.h"
 #include "game/sound.h"
+#include "game/video_screen.h"
+#include "game/heap.h"
+#include "game/menu_screen.h"
+#include "game/movie.h"
 
 /*
  * VideoScreen (include/game/scene.h): the MenuScreen that plays one STR video (vtable 0x8006E5F8).
@@ -24,12 +28,8 @@ typedef struct ScreenMovieVtbl {
 typedef struct ScreenMovie {
     ScreenMovieVtbl *vtbl;
 } ScreenMovie;
-void *Heap_Alloc(s32 size);
-ScreenMovie *Movie_Create(ScreenRect *area, s32, s32);
 
-ScreenVtbl *VideoScreen_GetVtbl(void);
-ScreenVtbl *MenuScreen_GetVtbl(void);
-ScreenRect *MenuScreen_GetPictureRect(void);
+static ScreenVtbl *VideoScreen_GetVtbl(void);
 
 extern ScreenVtbl g_videoScreenVtbl[]; /* VideoScreen */
 
@@ -187,6 +187,6 @@ void VideoScreen_SetCloseAtOnce(VideoScreen *video, s32 value) {
     video->unkD4 = value;
 }
 
-ScreenVtbl *VideoScreen_GetVtbl(void) {
+static ScreenVtbl *VideoScreen_GetVtbl(void) {
     return g_videoScreenVtbl;
 }

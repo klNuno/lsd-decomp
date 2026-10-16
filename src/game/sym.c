@@ -3,6 +3,13 @@
 #include "game/loader.h"
 #include "game/dreamsys.h"
 #include "game/stage.h"
+#include "game/sym.h"
+#include "game/scene_node.h"
+#include "game/file_base.h"
+#include "game/mom.h"
+#include "game/mml.h"
+#include "game/scenery.h"
+#include "game/dream_link.h"
 
 /*
  * Sym: entities loaded from ETC\SYM*.MOM; only SYMSPY.MOM is loaded.
@@ -10,7 +17,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-void Link_SetExtraListOn(s32 on);
 DreamSys *g_symDreamSys;
 extern s8 g_ruleColors[];
 /* g_spyModel: the model loaded from ETC\SYMSPY.MOM and the Grey Man entity built on it */
@@ -28,15 +34,13 @@ typedef struct Unk_8005C76C_Entry {
 extern Unk_8005C76C_Entry g_spyEntity[];
 extern s32 rand(void);
 s32 g_currentStage;
-extern void Entity_FaceDreamer(void *entity, void *target, s32 noPitch, s32 facing, s32 extra);
 typedef struct Unk_80065CEC_Obj {
     ObjectVtbl *vt;
 } Unk_80065CEC_Obj;
 extern s8 g_spawnSlotCounts[];
 extern s16 *g_spawnSlots[];
-s32 Sym_PickSlotVariant(s32 slot, s32 index);
-s32 Entity_Create(s32 type, s32 params, s32 soundBank);
-extern void Sym_InitExtraList(s32);
+static s32 Sym_PickSlotVariant(s32 slot, s32 index);
+static void Sym_InitExtraList(s32);
 s32 g_symMap;
 s32 g_symSoundBank;
 s32 g_symClock;
@@ -44,24 +48,19 @@ typedef struct Unk_80065C5C {
     u8 pad[0xC];
     Unk_80065CEC_Obj *unkC;
 } Unk_80065C5C;
-extern Unk_80065CEC_Obj *Mom_Create(Unk_80065C5C *source);
-extern void SceneNode_LocalToWorld(void *node, void *dst, void *src, s32 unused);
-s32 Sym_FindSlot(s16 *chunkKey);
-s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot);
-s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square);
-void Sym_SpawnSpy(SpyModel *spyModel);
-extern s32 Mml_Create(s32 source);
-extern s32 Sym_SpawnGroup();
+static s32 Sym_FindSlot(s16 *chunkKey);
+static s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot);
+static s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square);
+static void Sym_SpawnSpy(SpyModel *spyModel);
+static s32 Sym_SpawnGroup();
 extern void *g_spawnGroups[];
-FileSource *File_MakeSource(FileSource *source, s32 data, char *path, s32 flag);
 extern s8 g_spawnGroupCounts[];
 
-void Sym_CheckExtraListType(s32 type);
+static void Sym_CheckExtraListType(s32 type);
 s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
-s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place);
-s32 Ambience_IsEvenFamily(void);
-s32 Sym_CheckColorRule(s32 rule);
-s32 Sym_CheckMonthRule(s32 dayNumber, s32 month);
+static s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place);
+static s32 Sym_CheckColorRule(s32 rule);
+static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month);
 /* The 6-byte records of g_spawnPlaceOffsets: four bytes copied whole, then the height. */
 typedef struct SpawnPlaceOffset {
     u8 bytes[4];
@@ -130,7 +129,7 @@ void Sym_InitStage(s32 stage, s32 map, DreamSys *dreamSys, s32 soundBank, s32 wa
     Sym_InitExtraList(stage);
 }
 
-void Sym_InitExtraList(s32 stage) {
+static void Sym_InitExtraList(s32 stage) {
     s32 extraList;
 
     extraList = 0;
@@ -140,7 +139,7 @@ void Sym_InitExtraList(s32 stage) {
     Link_SetExtraListOn(extraList);
 }
 
-void Sym_CheckExtraListType(s32 type) {
+static void Sym_CheckExtraListType(s32 type) {
     switch (type) {
         case 0xB:
         case 0x38:
@@ -180,7 +179,7 @@ s32 Sym_SpawnOrSpy(s32 square, void *chunkKey, s32 dayNumber) {
     return 0;
 }
 
-s32 Sym_FindSlot(s16 *chunkKey) {
+static s32 Sym_FindSlot(s16 *chunkKey) {
     s16 *slot;
     s32 i;
     s32 count;
@@ -202,7 +201,7 @@ s32 Sym_FindSlot(s16 *chunkKey) {
 }
 
 /* Stage 4, slot 16: on a red day (colour 4) use slot 21, 30 bytes further. */
-s32 Sym_PickSlotVariant(s32 slot, s32 index) {
+static s32 Sym_PickSlotVariant(s32 slot, s32 index) {
     s32 stage = g_currentStage;
 
     if (stage == 4 && index == 0x10) {
@@ -213,7 +212,7 @@ s32 Sym_PickSlotVariant(s32 slot, s32 index) {
     return slot;
 }
 
-s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
+static s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
     s32 pass;
     s8 parity;
 
@@ -226,7 +225,7 @@ s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
     return pass;
 }
 
-s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square) {
+static s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square) {
     s32 params[4];
     s32 squareObj;
     s8 *group;
@@ -248,7 +247,7 @@ s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square) {
     return 0;
 }
 
-s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml *squareObj) {
+static s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml *squareObj) {
     s32 params[4];
     s8 *place;
     s8 *placesEnd;
@@ -345,7 +344,7 @@ s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group) {
 }
 
 /* Rules 10 to 17: g_ruleColors[rule] is the mood colour the day must have (DreamSys vtable 0x200). */
-s32 Sym_CheckColorRule(s32 rule) {
+static s32 Sym_CheckColorRule(s32 rule) {
     s32 colour;
 
     colour = g_ruleColors[rule];
@@ -353,7 +352,7 @@ s32 Sym_CheckColorRule(s32 rule) {
 }
 
 /* Rules 2 to 4: the 30-day month (day - 1) / 30 + 1 equals month, month + 3, + 6 or + 9. */
-s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
+static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
     s32 i;
     s32 n;
 
@@ -367,7 +366,7 @@ s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
     return 0;
 }
 
-s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
+static s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
     SpawnQuery query;
     s32 placement[4];
     Entity *entity;
@@ -389,7 +388,7 @@ s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
     return 1;
 }
 
-void Sym_SpawnSpy(SpyModel *spyModel) {
+static void Sym_SpawnSpy(SpyModel *spyModel) {
     s32 placement[4];
     Entity *spy;
 

@@ -1,4 +1,5 @@
 #include "common.h"
+#include "game/seq_timer.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -6,22 +7,16 @@
 
 extern s32 g_seqToggle;
 extern void SsSeqCalledTbyT(void);
-void Seq_ArmTimer(s32 immediate);
+static void Seq_ArmTimer(s32 immediate);
 extern void SpuQuit(void);
-extern void (*g_seqPrevHandler)(void);
-extern s32 g_seqVsyncCount;
-extern s32 g_seqIrq;
-extern s32 g_seqHalfRate;
 extern s32 g_seqExternal;
 extern s32 EnterCriticalSection();
 extern s32 ExitCriticalSection();
 void VSyncCallback(void (*func)(void));
 void *InterruptCallback(s32 irq, void (*func)(void));
-extern s32 g_videoMode;
 extern s32 g_seqRate;
-extern s32 D_8009024C;
-void Seq_OnTick(void);
-void Seq_OnTickHalf(void);
+static void Seq_OnTick(void);
+static void Seq_OnTickHalf(void);
 void ResetRCnt(s32 spec);
 void SetRCnt(s32 spec, u16 target, s32 mode);
 void StartRCnt(s32 spec);
@@ -99,7 +94,7 @@ void Seq_SetRate(s32 rate) {
  * defers the tick to the next vsync (g_seqVsyncCount). Rate 0 does nothing; the other rates return when
  * g_seqExternal is set. Rates below 70 Hz count g_seqHalfRate.
  */
-void Seq_ArmTimer(s32 immediate) {
+static void Seq_ArmTimer(s32 immediate) {
     s32 counter;
     u16 target;
     s32 i;
@@ -168,7 +163,7 @@ void Seq_StartTimer(void) {
 }
 
 /* Starts the timer with the vsync-deferred tick (immediate 0). */
-void Seq_StartTimerVsync(void) {
+static void Seq_StartTimerVsync(void) {
     Seq_ArmTimer(0);
 }
 
@@ -198,7 +193,7 @@ void Spu_Quit(void) {
 }
 
 /* Timer interrupt: calls the saved previous handler, then the sequencer tick. */
-void Seq_OnTick(void) {
+static void Seq_OnTick(void) {
     if (g_seqPrevHandler != NULL) {
         g_seqPrevHandler();
     }
@@ -206,7 +201,7 @@ void Seq_OnTick(void) {
 }
 
 /* Half-rate tick: g_seqToggle toggles, and the sequencer runs on every second interrupt. */
-void Seq_OnTickHalf(void) {
+static void Seq_OnTickHalf(void) {
     if (g_seqToggle == 0) {
         g_seqToggle = 1;
     } else {

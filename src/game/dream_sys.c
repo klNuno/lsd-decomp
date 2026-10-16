@@ -1,16 +1,20 @@
 #include "common.h"
 #include "game/dreamsys.h"
 #include "game/scene.h"
+#include "game/dream_sys.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/handler_node.h"
+#include "game/stage.h"
+#include "game/actor.h"
+#include "game/dream_link.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
  */
 
-void HandlerNode_Stop(void *, void *);
-s32 Mood_GetColor(s16 *point);
-s16 *Stage_GetChunkMood(s32 stage, s8 *place);
-s32 Spawn_PickRandom(void *place, s32 stage, s32 unused);
-s32 DreamSys_ExecuteLink();
+static s32 Mood_GetColor(s16 *point);
+static s32 DreamSys_ExecuteLink();
 extern u8 g_turnRotations[];
 /* The StageMap (stage.h) as DreamSys_OnMapMessage calls it: slot 0x10C StageMap_GetLocation. */
 typedef struct MapLocateVtbl {
@@ -20,8 +24,6 @@ typedef struct MapLocateVtbl {
 typedef struct MapLocateView {
     MapLocateVtbl *vt;
 } MapLocateView;
-s32 Link_FindStatic(void *, void *, s32);
-s32 Nav_CalcScore(void);
 /* g_actorVtbl (0x800878D4), the Actor base class (place.h), as the DreamSys methods call it. */
 typedef struct ActorVtblView {
     u8 pad_00[0x8];
@@ -34,6 +36,7 @@ typedef struct ActorVtblView {
     void (*onNode34)(void *, s32 **, s32);      /* 0xDC Actor_OnNode34 */
     void (*onNode24)(void *, s32 **, s32);      /* 0xE0 Actor_OnNode24 */
 } ActorVtblView;
+/* the vtable of actor.c through this file's view of its slots, so not from game/actor.h */
 ActorVtblView *Actor_GetVtbl(void);
 /* A rotation in degrees (three Fractions, SceneNode_GetRotation) read for its yaw numerator. */
 typedef struct RotationYaw {
@@ -41,31 +44,18 @@ typedef struct RotationYaw {
     u16 yaw;
 } RotationYaw;
 s32 g_saveMagic;
-extern void Nav_InitFlags(u8 *flags, s32 *linkCount);
 extern void *memset(void *dst, s32 value, s32 size);
-s32 Spawn_PickFromMood(void *place, s32 *secondsOut, void *point, s32 day);
-void *Heap_Alloc(s32 size);
-DreamSysVtbl *DreamSys_GetVtable(void);
+static DreamSysVtbl *DreamSys_GetVtable(void);
 extern s32 g_dreamerStartRotation[];
-s32 Mood_CalcAxis(s32, s32, s32);
-s32 Link_PickFallStage();
-s32 *func_8005BF48(void);
+static s32 Mood_CalcAxis(s32, s32, s32);
 extern s32 g_fallStep[];
-extern void HandlerNode_Run(s32, void *);
 extern s8 g_moodColors[][3];
-void SceneNode_GetRotation(DreamSys *dreamSys, s32 *degrees);
-s32 Link_FindFacing(void *out, s16 *location, s32 stage);
-s32 Link_CheckFacing(u8 **arrivalOut, u8 **headingOut, RotationYaw *rotation);
-s32 Day_FindSpecial(void *cinematic, s32 dayNumber);
 extern s32 rand(void);
-extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
 extern s16 g_linkStep2Start[];
 extern u8 g_yawPlus45[];
-void DreamSys_MoveToTileOffset(DreamSys *, s16 *, s16 *);
+static void DreamSys_MoveToTileOffset(DreamSys *, s16 *, s16 *);
 extern s32 g_pointAheadZ[];
-extern void SceneNode_LocalToWorld(void *node, void *dst, void *src, s32 unused);
-s32 Entity_IsWithinBox(s32 *center, s32 range, s32 *pos);
-s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos);
+static s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos);
 extern s16 g_linkStep0Start[];
 extern s32 g_pitchSteps[];
 extern s32 g_pitchLimits[];
@@ -106,7 +96,7 @@ typedef struct RotationDegrees {
 extern s32 g_lookBackSteps[];
 extern s32 g_lookBackLimits[];
 extern s16 g_turnRotationYaw[];
-void DreamSys_ReverseDirection(DreamSys *dreamSys);
+static void DreamSys_ReverseDirection(DreamSys *dreamSys);
 extern u8 g_dreamSysVtbl[];
 extern s32 g_walkSpeeds[];
 extern s8 g_walkSigns[];
@@ -121,13 +111,7 @@ typedef struct EventEntityVtbl {
     s32 (*getLinkStage)(void *);                /* 0x154 Entity_GetLinkStage */
     s32 (*getVideo)(void *);                    /* 0x158 Entity_GetVideo */
 } EventEntityVtbl;
-s32 Link_FindScripted(void *out, void *location, s32 stage);
-s32 Link_CheckScripted(u8 **arrivalOut, u8 **headingOut, RotationYaw *rotation);
-s32 Link_GetStepScript(void);
 extern s32 (*g_linkSteps[])(void *);
-s32 Link_FindExtra(void *out, void *location, s32 stage);
-s32 Link_GetExtraSeconds(void);
-s32 rand();
 
 void *DreamSys_New(s32 tmd, s32 soundBank, s32 camera) {
     void *dreamSys;
@@ -478,7 +462,7 @@ s32 DreamSys_TestPointAhead(DreamSys *dreamSys, Vec3 *pointOut, s32 distance, s3
     return 0;
 }
 
-s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos) {
+static s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos) {
     s32 span;
 
     pos /= 1024;
@@ -628,7 +612,7 @@ void DreamSys_TickLookBack(DreamSys *dreamSys) {
     }
 }
 
-void DreamSys_ReverseDirection(DreamSys *dreamSys) {
+static void DreamSys_ReverseDirection(DreamSys *dreamSys) {
     s32 direction;
     s32 reversed;
 
@@ -1070,7 +1054,7 @@ s32 DreamSys_LinkExtra(DreamSys *dreamSys, void *location) {
     return 0;
 }
 
-s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition, s32 playSound) {
+static s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition, s32 playSound) {
     dreamSys->transition = transition;
     dreamSys->vtbl->notify(dreamSys, transition);
     if (dreamSys->transition == 0) {
@@ -1236,7 +1220,7 @@ s32 DreamSys_LinkStep3(DreamSys *dreamSys) {
     return 0;
 }
 
-void DreamSys_MoveToTileOffset(DreamSys *dreamSys, s16 *from, s16 *to) {
+static void DreamSys_MoveToTileOffset(DreamSys *dreamSys, s16 *from, s16 *to) {
     s32 delta[3];
 
     delta[0] = from[0] - to[0];
@@ -1369,12 +1353,11 @@ void DreamSys_GetDreamColor(DreamSys *dreamSys) {
     Mood_GetColor(&point);
 }
 
-s32 Mood_GetColor(s16 *point) {
+static s32 Mood_GetColor(s16 *point) {
     s8 buf[2];
     s8 *p;
     s32 i;
     s8 v;
-
 
     *(u16 *)buf = *(u16 *)point;
     p = buf;
@@ -1420,7 +1403,7 @@ void Mood_Resolve(DreamSys *dreamSys, MoodAccum *accum, MoodPoint *point) {
     *(u16 *)point = *(u16 *)accum;
 }
 
-s32 Mood_CalcAxis(s32 last, s32 sum, s32 count) {
+static s32 Mood_CalcAxis(s32 last, s32 sum, s32 count) {
     s32 r = sum / count + last / 3;
     if (r > 9) {
         r = -9;
@@ -1508,6 +1491,6 @@ s32 func_8005BA20(DreamSys *dreamSys, s32 value) {
     return old;
 }
 
-DreamSysVtbl *DreamSys_GetVtable(void) {
+static DreamSysVtbl *DreamSys_GetVtable(void) {
     return (DreamSysVtbl *)g_dreamSysVtbl;
 }

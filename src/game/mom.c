@@ -1,5 +1,10 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/mom.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/tmd.h"
+#include "game/tod_pack.h"
 
 /*
  * Mom: a MOM model file, a TMD and a TodPack (include/game/loader.h).
@@ -7,14 +12,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-FileVtbl *File_GetBackendVtbl(void);
-FileSource *File_MakeSource(FileSource *source, s32 data, s32 path, s32 unk08);
-MomVtbl *Mom_GetVtbl(void);
-s32 Tmd_Create(s32 source);
-s32 Mom_Create(s32 source);
-s32 TodPack_Create(s32 source);
 extern MomVtbl g_momVtbl;
 
 /* ---- MOM model: a TMD and a TodPack ---- */

@@ -682,13 +682,24 @@ Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
    it**: `g_viewDefaultScreenSize` in `view.c`, `g_bandPos` and `g_bandSize` in `scenery.c`. Their
    `.sdata` entries in `config/splat.yaml` name those files.
 3. **No `static` variable while the data lives in asm**: it would allocate bytes in the C object and
-   duplicate the data. File statics stay tentative definitions. `static` functions keep the bytes but
-   change the relocations, so `tools/unit_check.sh --save` must run again after one is added.
+   duplicate the data. File statics stay tentative definitions. A function is `static` when no other
+   file calls it and no data points to it (275 are); one that a vtable or table in asm names stays
+   global, or the link fails. `static` keeps the bytes but changes the relocations, so
+   `tools/unit_check.sh --save` must run again after one is added or removed.
 4. A file with rodata keeps its `.rodata` entry in `config/splat.yaml` (dot form, same name); an
    `INCLUDE_RODATA` path names `asm/nonmatchings/game/<file>`. After renaming a file, run
    `make split` twice: splat writes the `.s` only once the C file names it.
 5. GCC 2.6.3 carries reload choices from one function to the next (`Render_ProjectTri` then
    `Render_ProjectQuad` in `render.c`): keep functions in address order inside a file.
+6. **A file's header, `include/game/<file>.h`, declares what other files call or reference**: its
+   functions in the form of their definition, parameter names included, and the non-gp globals other
+   files read, with `extern`. heap.c, entity.c, menu.c, place.c, scene.c and stage.c add theirs at
+   the end of the type header of the same name. A file includes the header of every file it calls
+   and keeps no local copy; only Sony functions, gp globals (rule 1), forward declarations of its own
+   helpers and the exceptions listed in [naming.md](naming.md#prototypes) stay in the file. The
+   Makefile does not track headers: after editing one, `rm -rf build/src && make check` (not
+   `make clean`, which also deletes the unit_check references in `build/ref`), then
+   `tools/unit_check.sh` on every file that includes it.
 """
 
 

@@ -1,5 +1,9 @@
 #include "common.h"
 #include "game/stage.h"
+#include "game/task.h"
+#include "game/heap.h"
+#include "game/sound_bank.h"
+#include "game/screen.h"
 
 /*
  * Task (vtable g_taskVtbl 0x80086668, types in game/stage.h): a class with a tick count, a timeout
@@ -10,12 +14,12 @@
 
 extern u8 g_taskVtbl[];
 
-s32 Heap_Alloc(s32 size);
+/* the vtable of screen.c through this file's view of its slots, so not from game/screen.h */
 TaskBaseVtbl *Screen_GetVtbl(void);
+/* not in game/task.h: each file that calls it reads the vtable through its own view of the slots */
 TaskVtbl *Task_GetVtbl(void);
-void *Sound_CreateBank(s32 bankName);
 
-s32 Task_New(s32 bankName, s32 sound) {
+static s32 Task_New(s32 bankName, s32 sound) {
     s32 task;
 
     task = Heap_Alloc(0x38);

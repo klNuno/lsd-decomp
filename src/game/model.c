@@ -2,6 +2,11 @@
 #include "game/entity.h"
 #include "game/sound.h"
 #include "game/scene.h"
+#include "game/model.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/mom.h"
+#include "game/actor.h"
 
 /*
  * Model: the model base class every entity derives from (vtable g_modelVtbl 0x8008A6C4, 0x98
@@ -180,10 +185,11 @@ typedef struct ModelSource {
     u8 pad_00[0xC];
     ModelFile *file; /* 0x0C */
 } ModelSource;
-s32 Model_LoadFile();
-extern void Model_FreeFile();
-s32 Model_BuildParts(Model *model);
-void Model_ReleaseParts(Model *model);
+static s32 Model_LoadFile();
+static void Model_FreeFile();
+static s32 Model_BuildParts(Model *model);
+static void Model_ReleaseParts(Model *model);
+/* the vtable of actor.c through this file's view of its slots, so not from game/actor.h */
 ModelParentVtbl *Actor_GetVtbl(void);
 typedef struct Unk_80066818_Vtbl {
     u8 pad[0x8];
@@ -198,23 +204,15 @@ typedef struct Unk_80066818_Vtbl {
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
 } Unk_80066818_Vtbl;
-Unk_80066818_Vtbl *Model_GetVtbl(void);
 typedef struct Unk_80065CEC_Obj {
     ObjectVtbl *vt;
 } Unk_80065CEC_Obj;
-s32 Heap_Alloc(s32);
-void *Heap_Free();
 typedef struct Unk_80065C5C {
     u8 pad[0xC];
     Unk_80065CEC_Obj *unkC;
 } Unk_80065C5C;
-extern Unk_80065CEC_Obj *Mom_Create(Unk_80065C5C *source);
-void SceneNode_LinkModel(void *, s32);
-extern s32 Heap_Alloc(s32);
-extern void *Actor_New(void);
-extern void Model_ReleaseParts(Model *model);
+static void Model_ReleaseParts(Model *model);
 extern u8 g_modelVtbl[];
-s32 Model_FindPart(Model *model, u8 id);
 
 void *Model_New(s32 source, s32 soundBank) {
     void *model;
@@ -350,7 +348,7 @@ void Model_Unload(Model *model) {
 }
 
 /* Takes the source's file object when it has one (borrowed), else loads one (owned), then makes the parts. */
-s32 Model_LoadFile(Model *model, ModelSource *source) {
+static s32 Model_LoadFile(Model *model, ModelSource *source) {
     if (source->file != NULL) {
         model->file = source->file;
         model->ownsFile = 0;
@@ -365,7 +363,7 @@ s32 Model_LoadFile(Model *model, ModelSource *source) {
     return 1;
 }
 
-void Model_FreeFile(Model *model) {
+static void Model_FreeFile(Model *model) {
     ModelFile *file;
 
     model->vt->freeParts(model);
@@ -406,7 +404,7 @@ void Model_FreeParts(Model *model) {
     }
 }
 
-s32 Model_BuildParts(Model *model) {
+static s32 Model_BuildParts(Model *model) {
     ModelFile *file;
     s32 current;
     s32 n;
@@ -442,7 +440,7 @@ fail:
     return 1;
 }
 
-void Model_ReleaseParts(Model *model) {
+static void Model_ReleaseParts(Model *model) {
     ModelPart **p;
     ModelPart *part;
 

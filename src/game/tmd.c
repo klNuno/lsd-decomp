@@ -1,5 +1,9 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/tmd.h"
+#include "game/heap.h"
+#include "game/model_object.h"
+#include "game/file_base.h"
 
 /*
  * Tmd: a TMD model file and its model objects (include/game/loader.h).
@@ -8,12 +12,6 @@
  */
 
 extern void GsMapModelingData(u32 *p);
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-FileVtbl *File_GetBackendVtbl(void);
-extern void *ModelObject_Create(s32 tmdObject);
-TmdVtbl *Tmd_GetVtbl(void);
-s32 Tmd_Create(s32 source);
 extern TmdVtbl g_tmdVtbl;
 
 /* ---- TMD model ---- */

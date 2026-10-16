@@ -1,5 +1,9 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/tim_pack.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/tim.h"
 
 /*
  * TimPack: one part of a TIX, a list of TIM images (include/game/loader.h).
@@ -23,13 +27,6 @@ typedef struct GsImage {
     u32 *clut;
     u8 pad_1C[0x20 - 0x1C];
 } GsImage;
-extern void Object_DeleteArray(void *, s32);
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-FileVtbl *File_GetBackendVtbl(void);
-s32 Tim_New(s32 path);
-TimPackVtbl *TimPack_GetVtbl(void);
-s32 TimPack_Create(s32 path);
 extern TimPackVtbl g_timPackVtbl;
 s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette index */
 

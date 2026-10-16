@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/clock.h"
 
 /*
  * Clock: vtable g_clockVtbl 0x8006EF50 (tag 5), 0x1C bytes, Clock_Create: each step adds a tick and
@@ -9,10 +10,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-void *Heap_Alloc(s32 size);
-ObjectVtbl *Object_GetBaseVtbl(void);
-void List_Next(s32 *value, ListNode **iter);
-ClockVtbl *Clock_GetVtbl(void);
+static ClockVtbl *Clock_GetVtbl(void);
 extern ClockVtbl g_clockVtbl;
 
 /* Clock */
@@ -114,6 +112,6 @@ void Clock_Stop(Clock *clock) {
     clock->stopped = 1;
 }
 
-ClockVtbl *Clock_GetVtbl(void) {
+static ClockVtbl *Clock_GetVtbl(void) {
     return &g_clockVtbl;
 }

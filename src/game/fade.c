@@ -1,5 +1,8 @@
 #include "common.h"
 #include "game/scene.h"
+#include "game/fade.h"
+#include "game/heap.h"
+#include "game/box.h"
 
 /*
  * Fade: the Box that fades a color over the screen (the view's overlay, the Place fader, the entity
@@ -7,8 +10,6 @@
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-void *Heap_Alloc(s32 size);
 
 /*
  * Box (vtable g_boxVtbl at 0x8006EAC0, class word 0x64, 0x6C bytes): a scene node holding a PSY-Q
@@ -28,13 +29,12 @@ typedef struct BoxVtbl {
     u8 pad_C0[0xCC - 0xC0];
     void (*setMask)(void *box, s32 bits);     /* 0xCC */
 } BoxVtbl;
-BoxVtbl *Box_GetVtbl(void);
 
 /* Fade, Label: include/game/scene.h */
 
 extern u8 g_fadePalette[][3];
 extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */
-FadeVtbl *Fade_GetVtbl(void);
+static FadeVtbl *Fade_GetVtbl(void);
 extern u8 g_fadeVtbl[];
 
 /* new Fade(size, channels, priority) */
@@ -238,6 +238,6 @@ void Fade_SetTint(Fade *fade, s32 tint, s32 tintDivisor) {
     fade->tintDivisor = tintDivisor;
 }
 
-FadeVtbl *Fade_GetVtbl(void) {
+static FadeVtbl *Fade_GetVtbl(void) {
     return (FadeVtbl *)g_fadeVtbl;
 }

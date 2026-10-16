@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/sound.h"
+#include "game/bgm.h"
+#include "game/display.h"
+#include "game/sound_bank.h"
+#include "game/seq_file.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -68,16 +72,10 @@ extern void SsSeqPause(s16);
 extern void SsSeqStop(s16);
 extern void SsSeqClose(s16);
 extern void SsSeqPlay(s16, s16, s16);
-extern s32 Sound_GetTickRate(void);
 extern void SsSeqSetCrescendo(s16, s16, s32);
-extern s32 Bgm_Open();
-extern void *Heap_Alloc(s32 size);
-BgmVtbl *Bgm_GetVtbl(void);
-extern ObjectVtbl *Object_GetBaseVtbl(void);
-extern s32 Display_GetCurrent(void);
+static s32 Bgm_Open();
+static BgmVtbl *Bgm_GetVtbl(void);
 s32 g_bgmActive;
-extern void *SeqFile_Create(s32);
-void *Sound_CreateBank(s32 path);
 extern s16 SsSeqOpen(s32, s16);
 extern s32 printf(const char *fmt, ...);
 extern BgmVtbl g_bgmVtbl;
@@ -144,7 +142,7 @@ void Bgm_OnDisplayEvent(Bgm *bgm, s32 display, s32 message) {
 }
 
 /* Opens the SEQ with the bank's VAB once both are loaded; returns 1 when opened. */
-s32 Bgm_Open(Bgm *bgm) {
+static s32 Bgm_Open(Bgm *bgm) {
     SoundBank *bank;
     BgmSeq *seq;
     s16 seqId;
@@ -262,7 +260,7 @@ void Bgm_SetBank(Bgm *bgm, s32 path) {
     }
 }
 
-BgmVtbl *Bgm_GetVtbl(void) {
+static BgmVtbl *Bgm_GetVtbl(void) {
     return &g_bgmVtbl;
 }
 

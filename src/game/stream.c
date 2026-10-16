@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/loader.h"
+#include "game/stream.h"
+#include "game/file_base.h"
 
 /*
  * The CD stream class (vtable g_streamVtbl, 0x5C bytes, created by Stream_New): plays one STR
@@ -40,27 +42,23 @@ typedef struct StreamSectorHeader {
     u32 frameNumber;
 } StreamSectorHeader;
 
-
 Stream *g_activeStream;         /* the stream that holds the drive */
 extern void CdSyncCallback(void *cb);
 s32 CdControl(s32 com, u8 *param, s32 result);
-void *Heap_Alloc(s32 size);
-StreamVtbl *Stream_GetVtbl(void);
+static StreamVtbl *Stream_GetVtbl(void);
 s32 CdControlF(s32 com, u8 *param);
-void Stream_OnCdSync(u8 status);
+static void Stream_OnCdSync(u8 status);
 s32 CdRead2(s32 mode);
 void StSetStream(s32 a, s32 b, s32 c, s32 d, s32 e);
-s8 *File_GetPathPrefix(void);
 s8 *strcpy(s8 *dst, s8 *src);
 s8 *strcat(s8 *dst, s8 *src);
 s32 CdSearchFile(void *, s8 *);
-s32 Stream_EnableCdAudio();
+static s32 Stream_EnableCdAudio();
 s32 g_streamCdAudioOn;             /* 1 once Stream_EnableCdAudio turned the CD audio on */
 extern s8 g_streamVersionSuffix[];     /* ";1" */
 s32 StGetNext(void **frame, StreamSectorHeader **header);
-void Stream_NotifyFrame();
-void Stream_NotifyEnd();
-ObjectVtbl *Object_GetBaseVtbl(void);
+static void Stream_NotifyFrame();
+static void Stream_NotifyEnd();
 extern StreamVtbl g_streamVtbl;
 
 s32 Stream_New(s32 speedMode, s32 fps, s32 unk3C) {
@@ -142,7 +140,7 @@ s32 Stream_Open(Stream *stream, s8 *name, s32 retries) {
 }
 
 /* Master volume half up, CD audio (the STR sound) on at full volume */
-s32 Stream_EnableCdAudio(void) {
+static s32 Stream_EnableCdAudio(void) {
     StreamSpuAttr attr;
 
     attr.mask = 0x2C3;
@@ -184,7 +182,7 @@ void Stream_Seek(Stream *stream, u8 *pos) {
 }
 
 /* CdSyncCallback: on CdlComplete, runs the active stream's seekDone */
-void Stream_OnCdSync(u8 status) {
+static void Stream_OnCdSync(u8 status) {
     Stream *active;
 
     if (g_activeStream != NULL && status == 2) {
@@ -312,7 +310,7 @@ ret1:
 }
 
 /* With a callback: runs it, then releases the frame */
-void Stream_NotifyFrame(Stream *stream, void *frame) {
+static void Stream_NotifyFrame(Stream *stream, void *frame) {
     void (*callback)(void *);
 
     callback = stream->callback;
@@ -322,7 +320,7 @@ void Stream_NotifyFrame(Stream *stream, void *frame) {
     }
 }
 
-void Stream_NotifyEnd(Stream *stream) {
+static void Stream_NotifyEnd(Stream *stream) {
     if (stream->unk4C != 0) {
         stream->callback(stream->callbackArg);
         stream->vtbl->close(stream);
@@ -345,7 +343,7 @@ void Stream_ClearRing(void) {
 }
 
 /* No caller found: CdSync into the result bytes */
-void Stream_Sync(u8 *stream, s32 mode) {
+static void Stream_Sync(u8 *stream, s32 mode) {
     CdSync(mode, stream + 0x24);
 }
 
@@ -353,6 +351,6 @@ void Stream_Sync(u8 *stream, s32 mode) {
 void Stream_SetCallback(void) {
 }
 
-StreamVtbl *Stream_GetVtbl(void) {
+static StreamVtbl *Stream_GetVtbl(void) {
     return &g_streamVtbl;
 }

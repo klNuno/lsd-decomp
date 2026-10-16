@@ -1,5 +1,11 @@
 #include "common.h"
 #include "game/sound.h"
+#include "game/sound_bank.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/spu.h"
+#include "game/seq_timer.h"
+#include "game/bgm.h"
 
 /*
  * Sound: the PSY-Q sound bank (VAB) that a model holds at +0x58 and its tone table (vtable
@@ -8,11 +14,6 @@
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-/* Heap and root object services. */
-void *Heap_Alloc(s32 size);
-void Heap_Free(s32 block);
-void *File_GetBackendVtbl(void);
 
 /* Vtable of the root object class returned by File_GetBackendVtbl (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
 typedef struct ObjectRootVtbl {
@@ -51,7 +52,6 @@ typedef struct SoundBankTones {
 } SoundBankTones;
 
 extern SoundBankVtbl g_soundBankVtbl;
-SoundBankVtbl *Sound_GetBankClass(void);
 s32 g_spuReady;
 s32 g_soundRateSet;
 s32 g_seqTimerStarted;
@@ -77,15 +77,6 @@ s16 SsUtKeyOn(s16 vabId, s16 prog, s16 tone, s16 note, s16 fine, s16 voll, s16 v
 s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
 void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
 
-/* Other functions of the game code used here. */
-s8 *File_JoinPath(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
-s32 Bgm_IsActive(void);
-void Seq_StopTimer(void);
-void Spu_Quit(void);
-void Spu_ResetCold(void);
-s32 Bgm_GetSeqTable(void);
-void Seq_SetRate(s32 arg0);
-void Seq_StartTimer(void);
 s32 strlen(u8 *s);
 s8 *strcpy(s8 *dst, s8 *src);
 
@@ -307,7 +298,7 @@ SoundBankVtbl *Sound_GetBankClass(void) {
     return &g_soundBankVtbl;
 }
 
-s32 Sound_GetBankCount(void) {
+static s32 Sound_GetBankCount(void) {
     return g_bankCount;
 }
 

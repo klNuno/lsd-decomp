@@ -1,6 +1,9 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/loader.h"
+#include "game/file_base.h"
+#include "game/file_cd.h"
+#include "game/file_null.h"
 
 /*
  * The file base class (vtable g_fileBaseVtbl, returned by File_GetBaseVtbl, include/game/loader.h):
@@ -15,37 +18,12 @@
 #define FILE_BACKEND_CD 0x13   /* g_fileVtable, src/game/file_cd.c */
 #define FILE_BACKEND_NULL 0x23 /* g_fileNullVtbl: every I/O slot is empty */
 s32 g_fileBackend;
-void File_Lock(void);
-void File_Unlock(void);
-s32 File_IsBusy(void);
-s32 File_IsDone(void);
-s32 File_GetOpKind(void);
-s32 File_GetState(void);
-FileVtbl *File_GetVtable(void);
-FileVtbl *File_GetNullVtbl(void);
-s32 File_NullGetEnabled(s32 *optionOut);
-s32 File_GetEnabled(s32 *optionOut);
-s32 File_NullGetVSyncMode(void);
-s32 File_GetVSyncMode(void);
-ObjectVtbl *Object_GetBaseVtbl(void);
-FileVtbl *File_GetBaseVtbl(void);
-void Heap_Free(void *);
 s8 *strcat(s8 *, s8 *);
-s32 Heap_Alloc(s32);
-s32 File_NullEnable(s32, s32, s32);
-s32 File_Enable(s32, s32, s32);
 s32 g_fileDirTableSet;
-void File_SetDirTable(s32);
-void File_SetDirCount(s32);
-s32 File_GetDirCount(void);
-s32 File_ResolveEntries(s32, s32);
-void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src);
+static void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src);
 extern FileVtbl *(*g_fileClassGetters[])();
-void File_SetPathPrefix(void *rootDir);
-void File_EnableWait(s32 enabled, s32 option, s32 vsyncMode);
 extern FileVtbl g_fileBaseVtbl[];
 s8 *g_filePathPrefix;
-s8 *File_GetPathPrefix(void);
 
 /* File base slot 0x04, shared by every file class. */
 s32 File_Delete(File *file) {
@@ -160,7 +138,7 @@ void File_SetBackend(s32 backend) {
 }
 
 /* Copies the I/O slots 0x40 to 0x58 and 0x68 to 0x74. */
-void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src) {
+static void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src) {
     dst->unk_40 = src->unk_40;
     dst->open = src->open;
     dst->close = src->close;
@@ -186,28 +164,28 @@ void File_UnlockBackend(void) {
     }
 }
 
-s32 File_IsBackendBusy(void) {
+static s32 File_IsBackendBusy(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_IsBusy();
     }
     return 0;
 }
 
-s32 File_IsBackendDone(void) {
+static s32 File_IsBackendDone(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_IsDone();
     }
     return 1;
 }
 
-s32 File_GetBackendOpKind(void) {
+static s32 File_GetBackendOpKind(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetOpKind();
     }
     return 0;
 }
 
-s32 File_GetBackendState(void) {
+static s32 File_GetBackendState(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetState();
     }
@@ -226,14 +204,14 @@ void File_EnableWait(s32 enabled, s32 option, s32 vsyncMode) {
     }
 }
 
-s32 File_GetBackendEnabled(s32 *optionOut) {
+static s32 File_GetBackendEnabled(s32 *optionOut) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetEnabled(optionOut);
     }
     return File_NullGetEnabled(optionOut);
 }
 
-s32 File_GetBackendVSyncMode(void) {
+static s32 File_GetBackendVSyncMode(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetVSyncMode();
     }

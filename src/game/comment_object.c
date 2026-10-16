@@ -1,5 +1,12 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/comment_object.h"
+#include "game/file_base.h"
+#include "game/tim.h"
+#include "game/label.h"
+#include "game/text.h"
+#include "game/glyph.h"
+#include "game/screen_sprite.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -88,30 +95,20 @@ struct CommentObject {
     CommentWidget *inputBox;                /* 0x48 ScreenSprite of the COMINPUT image, NULL until BuildWidgets */
 };
 
-extern void Heap_Free(s32);
-extern ObjectVtbl *Object_GetBaseVtbl(void);
-extern void *Heap_Alloc(s32 size);
-CommentVtbl *CommentObject_GetVtbl(void);
-s8 *Text_Decode(s8 *dst, u8 *src);
+static CommentVtbl *CommentObject_GetVtbl(void);
 s8 *strcpy(s8 *dst, u8 *src);
 s32 g_commentOriginX;
 s32 g_commentOriginY;
 u8 *g_alphabet;
-void CommentObject_ClearSenders(CommentObject *obj);
+static void CommentObject_ClearSenders(CommentObject *obj);
 extern s32 strlen(u8 *);
 extern u8 g_commentVtbl[];
-extern s8 *File_JoinPath(s8 *, s8 *, s8 *, s8 *);
-extern CommentWidget *Tim_New(s32);
-extern CommentWidget *ScreenSprite_Create(CommentWidget *, s32 *, s32);
-extern s32 Label_Create(s32, s32, s32);
-extern void *Glyph_Create(s32, u8);
 extern s8 g_widgetPrefix[];
 extern s8 g_widgetSuffix[];
 extern s32 g_glyphColor[];
 extern s32 g_inputShowArg[];
 extern s32 g_fontShowArg[];
 extern s32 g_inputBoxRect[];
-s8 *Text_Encode(s8 *dst, u8 *src);
 
 void *CommentObject_New(s32 text, s32 mode) {
     void *obj;
@@ -147,7 +144,7 @@ void CommentObject_Init(CommentObject *obj, u8 *text, s32 mode) {
     obj->vtbl->setText(obj, text, mode);
 }
 
-void CommentObject_ClearSenders(CommentObject *obj) {
+static void CommentObject_ClearSenders(CommentObject *obj) {
     obj->senderTag2 = NULL;
     obj->senderTag5 = NULL;
     obj->inputBox = 0;
@@ -502,6 +499,6 @@ void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 ref
     }
 }
 
-CommentVtbl *CommentObject_GetVtbl(void) {
+static CommentVtbl *CommentObject_GetVtbl(void) {
     return (CommentVtbl *)g_commentVtbl;
 }

@@ -1,5 +1,11 @@
 #include "common.h"
 #include "game/menu.h"
+#include "game/card.h"
+#include "game/heap.h"
+#include "game/tim.h"
+#include "game/screen_sprite.h"
+#include "game/comment_object.h"
+#include "game/string_list.h"
 
 /*
  * The memory card object the main menu drives (class Card, vtable g_cardVtbl 0x80086DC4). Types and
@@ -17,29 +23,26 @@ typedef struct CardIconFrame {
 } CardIconFrame;
 
 extern s32 EnableEvent();
-s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical);
-s32 Card_WaitAnyEvent(s32 *events, s32 count);
+static s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical);
+static s32 Card_WaitAnyEvent(s32 *events, s32 count);
 extern s32 DisableEvent();
 extern s32 TestEvent();
 extern s32 CloseEvent();
-void Card_DisableEvents(Card *card);
-extern ObjectVtbl *Object_GetBaseVtbl(void);
-s32 Card_GetInfo();
-s32 Card_ReadDirectory();
-extern s32 Heap_Alloc(s32);
-CardVtbl *Card_GetVtbl(void);
+static void Card_DisableEvents(Card *card);
+static s32 Card_GetInfo();
+static s32 Card_ReadDirectory();
+static CardVtbl *Card_GetVtbl(void);
 extern s32 format(char *);
 extern char g_cardDevice1[];
 extern char g_cardDevice0[];
-s32 Card_HasSpaceOnce();
+static s32 Card_HasSpaceOnce();
 extern char g_cardTempName[];
-char *Card_MakePath(char *buf, s32 port, char *name);
+static char *Card_MakePath(char *buf, s32 port, char *name);
 s32 open(char *name, s32 flags);
 s32 close(s32 fd);
 s32 delete(char *name);
-s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size);
-s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name);
-extern s32 Heap_Free(s32);
+static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size);
+static s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name);
 extern s32 EnterCriticalSection();
 extern s32 ExitCriticalSection();
 extern s32 OpenEvent(u32, s32, s32, s32);
@@ -47,41 +50,35 @@ extern s32 g_cardEventSpecs[];
 s32 read(s32 fd, s32 buf, s32 n);
 s32 strcpy(s32 dst, s32 src);
 s8 *strcat(s8 *dst, s8 *src);
-s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted);
-CardDialog *StringList_New(char **titles, s32 arg1);
-void Card_SetTitleLetter(CardTitle *title, u8 *fileName);
-s32 Card_CheckReady();
-void Card_FreeFileList(Card *card);
-void Card_AllocFileList(Card *card);
-void Card_TrimFileList(Card *card);
-CardDialog *CommentObject_New(s32 text, s32 arg1);
+static s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted);
+static s32 Card_CheckReady();
+static void Card_FreeFileList(Card *card);
+static void Card_AllocFileList(Card *card);
+static void Card_TrimFileList(Card *card);
 s32 lseek(s32 fd, s32 offset, s32 whence);
-s32 Tim_New(s32 path);
-Card *Card_New(s32 sharePad, s32 port);
-void Card_ClearLinks(Card *card);
-void Card_EnableEvents(Card *card);
+static void Card_ClearLinks(Card *card);
+static void Card_EnableEvents(Card *card);
 void InitCARD(s32);
 void StartCARD(void);
 void _bu_init(void);
 s32 g_cardCount;
 s32 _card_info(s32);
 void _card_clear(s32);
-void Card_ClearEvents(Card *card);
-s32 Card_WaitEvent(Card *card);
+static void Card_ClearEvents(Card *card);
+static s32 Card_WaitEvent(Card *card);
 extern s32 _card_load(s32);
 extern s8 *g_cardMessageNames[];
 extern s32 D_80086EC4[];
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
-CardMessage *ScreenSprite_Create(CardMessage *picture, s32 *arg1, s32 arg2);
 extern u8 g_cardVtbl[];
 void *memcpy(void *dst, const void *src, u32 n);
 SjisChar *g_titleLetters;
 s32 atoi(u8 *s);
 s32 write(s32 fd, void *buf, s32 n);
 s32 printf(char *fmt, ...);
-s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
+static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
 
 /* Allocates a Card (0x84 bytes) and runs Card_Init. */
 Card *Card_New(s32 sharePad, s32 port) {
@@ -114,7 +111,7 @@ void Card_Init(Card *card, s32 sharePad, s32 port) {
     card->vtbl->setPort(card, port);
 }
 
-void Card_ClearLinks(Card *card) {
+static void Card_ClearLinks(Card *card) {
     card->pad = 0;
     card->clock = 0;
     card->root = 0;
@@ -222,7 +219,7 @@ s32 Card_Probe(Card *card, s32 *error, s32 *changed, s32 *formatted) {
     return ok;
 }
 
-s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted) {
+static s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted) {
     s32 ok;
 
     ok = Card_GetInfo(card, error, changed);
@@ -233,7 +230,7 @@ s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted) {
 }
 
 /* _card_info, then the event it raised: 0x100 timeout (no card), 0x8000 error, 0x2000 new card. */
-s32 Card_GetInfo(Card *card, s32 *error, s32 *changed) {
+static s32 Card_GetInfo(Card *card, s32 *error, s32 *changed) {
     s32 ok;
     s32 result;
 
@@ -258,7 +255,7 @@ s32 Card_GetInfo(Card *card, s32 *error, s32 *changed) {
 }
 
 /* _card_load reads the directory; 0x2000 (new card) here means the card is not formatted. */
-s32 Card_ReadDirectory(Card *card, s32 *error, s32 *formatted) {
+static s32 Card_ReadDirectory(Card *card, s32 *error, s32 *formatted) {
     s32 ok;
     s32 result;
 
@@ -310,7 +307,7 @@ s32 Card_FindFile(Card *card, s32 titleOut, u8 *name) {
     return found;
 }
 
-s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name) {
+static s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name) {
     char path[32];
     s32 fd;
     s32 header;
@@ -375,7 +372,7 @@ s32 Card_HasSpace(Card *card, u8 iconFrames, s32 size) {
 }
 
 /* Creates then deletes a TEMP file of the blocks size needs (8 KB blocks, header included). */
-s32 Card_HasSpaceOnce(Card *card, s32 iconFrames, s32 size) {
+static s32 Card_HasSpaceOnce(Card *card, s32 iconFrames, s32 size) {
     char path[32];
     s32 fd;
     u32 blocks;
@@ -402,7 +399,7 @@ s32 Card_ReadFile(Card *card, char *name, void *buf, s32 size) {
 }
 
 /* Reads a save file's data: header byte 2 (0x10 + icon frames) gives the header size. */
-s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
+static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
     char path[32];
     s32 fd;
     s32 header;
@@ -448,7 +445,7 @@ INCLUDE_RODATA("asm/nonmatchings/game/card", D_80011524);
  * Writes a save file: the header ("SC", 0x10 + icon frames, blocks, the title, the icon
  * palette and frames from the TIM) then the data, rounded up to 128 bytes.
  */
-s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
     char pathBuf[0x20];
     char *path;
     s32 fd;
@@ -486,7 +483,7 @@ s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuP
 }
 
 /* "bu00:" or "bu10:" followed by the name. */
-char *Card_MakePath(char *buf, s32 port, char *name) {
+static char *Card_MakePath(char *buf, s32 port, char *name) {
     char *device = g_cardDevice0;
     if (port != 0) {
         device = g_cardDevice1;
@@ -496,21 +493,21 @@ char *Card_MakePath(char *buf, s32 port, char *name) {
     return buf;
 }
 
-void Card_EnableEvents(Card *card) {
+static void Card_EnableEvents(Card *card) {
     Card_ForEachEvent(card, EnableEvent, 1);
 }
 
-void Card_DisableEvents(Card *card) {
+static void Card_DisableEvents(Card *card) {
     Card_ForEachEvent(card, DisableEvent, 1);
 }
 
 /* Clears the four events. */
-void Card_ClearEvents(Card *card) {
+static void Card_ClearEvents(Card *card) {
     Card_ForEachEvent(card, TestEvent, 0);
 }
 
 /* Runs eventFn on each event until one returns 0. */
-s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical) {
+static s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical) {
     s32 ret;
     s32 i;
 
@@ -529,12 +526,12 @@ s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical) {
     return ret;
 }
 
-s32 Card_WaitEvent(Card *card) {
+static s32 Card_WaitEvent(Card *card) {
     return Card_WaitAnyEvent(card->events, 4);
 }
 
 /* Waits for one of the events and returns its spec. */
-s32 Card_WaitAnyEvent(s32 *events, s32 count) {
+static s32 Card_WaitAnyEvent(s32 *events, s32 count) {
     s32 i;
 
     for (;;) {
@@ -597,7 +594,7 @@ void Card_Load(Card *card, char *fileName, char *title, void *data, s32 size) {
     }
 }
 
-void Card_AllocFileList(Card *card) {
+static void Card_AllocFileList(Card *card) {
     s32 i;
 
     if (card->titles == NULL) {
@@ -610,7 +607,7 @@ void Card_AllocFileList(Card *card) {
 }
 
 /* Frees the title buffers past the files found. */
-void Card_TrimFileList(Card *card) {
+static void Card_TrimFileList(Card *card) {
     s32 i;
 
     for (i = card->fileCount; i < 0xF; i++) {
@@ -619,7 +616,7 @@ void Card_TrimFileList(Card *card) {
     card->titles[i] = 0;
 }
 
-void Card_FreeFileList(Card *card) {
+static void Card_FreeFileList(Card *card) {
     s32 i;
 
     if (card->titles != NULL) {
@@ -665,7 +662,7 @@ void Card_Save(Card *card, char *fileName, char *title, s32 unk48, u8 iconFrames
 }
 
 /* 1 when a formatted card answers; otherwise sets the state that says why and returns 0. */
-s32 Card_CheckReady(Card *card) {
+static s32 Card_CheckReady(Card *card) {
     s32 error;
     s32 changed;
     s32 formatted;
@@ -1004,7 +1001,7 @@ void Card_OnChooser(Card *card, CardDialog *chooser, s32 message) {
     }
 }
 
-CardVtbl *Card_GetVtbl(void) {
+static CardVtbl *Card_GetVtbl(void) {
     return (CardVtbl *)g_cardVtbl;
 }
 

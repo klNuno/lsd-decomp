@@ -1,5 +1,9 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/mml.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/mom.h"
 
 /*
  * Mml: the list of MOM models of a map square (include/game/loader.h).
@@ -7,13 +11,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern void Object_DeleteArray(void *, s32);
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-FileSource *File_MakeSource(FileSource *source, s32 data, s32 path, s32 unk08);
-MomVtbl *Mom_GetVtbl(void);
-MomVtbl *Mml_GetVtbl(void);
-s32 Mom_Create(s32 source);
 extern MomVtbl g_mmlVtbl;
 
 /* ---- MML: the MOM list of a map square ---- */

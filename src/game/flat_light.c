@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/flat_light.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -30,9 +31,7 @@ typedef struct FlatLightVtbl {
 
 /* The third argument is the RGB bytes (slot 0x44) or the xyz words (slot 0x48), whichever the caller passes. */
 void GsSetFlatLight(s32 lightId, void *vector, void *data);
-void *Object_GetBaseVtbl(void);
-FlatLightVtbl *FlatLight_GetVtbl(void);
-s32 Heap_Alloc(s32 size);
+static FlatLightVtbl *FlatLight_GetVtbl(void);
 extern FlatLightVtbl g_flatLightVtbl;
 
 /* Allocates a flat light for lightId and initializes it; returns 0 when the heap is full. */
@@ -90,6 +89,6 @@ void FlatLight_SetVector(FlatLight *flatLight, s32 saveVector, s16 *xyz) {
 }
 
 /* The vtable of the flat light class. */
-FlatLightVtbl *FlatLight_GetVtbl(void) {
+static FlatLightVtbl *FlatLight_GetVtbl(void) {
     return &g_flatLightVtbl;
 }

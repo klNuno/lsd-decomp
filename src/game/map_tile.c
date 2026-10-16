@@ -1,6 +1,9 @@
 #include "common.h"
 #include "game/stage.h"
 #include "game/scene.h"
+#include "game/map_tile.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
 
 /*
  * MapTile (vtable g_mapTileVtbl 0x80086AA0, types in game/stage.h): one tile model of a chunk, a
@@ -11,10 +14,9 @@
 
 extern char g_mapTileVtbl[];
 
-s32 Heap_Alloc(s32 size);
+/* not from game/scene_node.h: other files read this vtable through their own views of the slots */
 SceneNodeVtbl *SceneNode_GetVtbl(void);
-MapTileVtbl *MapTile_GetVtbl(void);
-s32 MapTile_New(void);
+static MapTileVtbl *MapTile_GetVtbl(void);
 
 s32 MapTile_New(void) {
     s32 tile;
@@ -57,6 +59,6 @@ s32 MapTile_GetSelf(s32 tile) {
     return tile;
 }
 
-MapTileVtbl *MapTile_GetVtbl(void) {
+static MapTileVtbl *MapTile_GetVtbl(void) {
     return (MapTileVtbl *)g_mapTileVtbl;
 }

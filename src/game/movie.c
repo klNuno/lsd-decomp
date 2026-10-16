@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/loader.h"
 #include "game/scene.h"
+#include "game/movie.h"
+#include "game/heap.h"
+#include "game/display.h"
+#include "game/stream.h"
 
 /*
  * The MDEC movie player (vtable g_movieVtbl, include/game/loader.h). It owns a CD stream of
@@ -28,24 +32,19 @@ typedef struct MovieSliceView {
     s32 streamEnded;           /* 0x48 */
     s32 frameDone;             /* 0x4C */
 } MovieSliceView;
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-ObjectVtbl *Object_GetBaseVtbl(void);
-Display *Display_GetCurrent(void);
-Stream *Stream_New(void *arg0, s32 arg1, s32 arg2);
 extern s32 DrawSync(s32 mode);
 extern void DecDCTReset(s32 mode);
 extern void DecDCToutCallback(void (*func)(void));
 extern void DecDCTout(s32 p, s32 size);
 extern void DecDCTin(s32 p, s32 mode);
 extern void DecDCTvlc(s32 p, s32 q);
-MovieVtbl *Movie_GetVtbl(void);
-s32 Movie_AllocBuffers();
-void Movie_FreeBuffers(Movie *movie);
-void Movie_RequestStart(Movie *movie);
-void Movie_OnStreamCallback(Movie *movie);
-void Movie_OnMdecOut(void);
-void Movie_WaitFrame(Movie *movie);
+static MovieVtbl *Movie_GetVtbl(void);
+static s32 Movie_AllocBuffers();
+static void Movie_FreeBuffers(Movie *movie);
+static void Movie_RequestStart(Movie *movie);
+static void Movie_OnStreamCallback(Movie *movie);
+static void Movie_OnMdecOut(void);
+static void Movie_WaitFrame(Movie *movie);
 extern u8 g_movieVtbl[];
 
 Movie *g_activeMovie;             /* the movie playing */
@@ -105,7 +104,7 @@ void Movie_Destroy(Movie *movie) {
 }
 
 /* The buffers (unless skipAlloc) and the frame and slice rects; 1 (buffers freed) on failure */
-s32 Movie_AllocBuffers(Movie *movie, MovieRect *rect, s32 skipAlloc) {
+static s32 Movie_AllocBuffers(Movie *movie, MovieRect *rect, s32 skipAlloc) {
     s32 size;
     s32 buffer;
     s32 unused[2];
@@ -149,7 +148,7 @@ fail:
     return 1;
 }
 
-void Movie_FreeBuffers(Movie *movie) {
+static void Movie_FreeBuffers(Movie *movie) {
     if (movie->skipAlloc == 0) {
         Heap_Free(movie->runLevel[0]);
         Heap_Free(movie->runLevel[1]);
@@ -187,7 +186,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
     return 0;
 }
 
-void Movie_RequestStart(Movie *movie) {
+static void Movie_RequestStart(Movie *movie) {
     movie->unk_50 = 1;
 }
 
@@ -210,7 +209,7 @@ void Movie_Start(Movie *movie) {
     }
 }
 
-void Movie_OnStreamCallback(Movie *movie) {
+static void Movie_OnStreamCallback(Movie *movie) {
     movie->unk_50 = -1;
 }
 
@@ -350,7 +349,7 @@ s32 Movie_DecodeFrame(Movie *movie) {
 }
 
 /* The DecDCToutCallback */
-void Movie_OnMdecOut(void) {
+static void Movie_OnMdecOut(void) {
     Movie *movie = g_activeMovie;
 
     if (movie != NULL) {
@@ -358,7 +357,7 @@ void Movie_OnMdecOut(void) {
     }
 }
 
-void Movie_WaitFrame(Movie *movie) {
+static void Movie_WaitFrame(Movie *movie) {
     while (movie->frameDone == 0) {
     }
 }
@@ -367,6 +366,6 @@ void func_80045E3C(Movie *movie, s32 value) {
     movie->unk_68 = value;
 }
 
-MovieVtbl *Movie_GetVtbl(void) {
+static MovieVtbl *Movie_GetVtbl(void) {
     return (MovieVtbl *)g_movieVtbl;
 }

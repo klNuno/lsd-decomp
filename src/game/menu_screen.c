@@ -2,6 +2,16 @@
 #include "game/scene.h"
 #include "game/loader.h"
 #include "game/sound.h"
+#include "game/menu_screen.h"
+#include "game/heap.h"
+#include "game/sound_bank.h"
+#include "game/tim.h"
+#include "game/screen.h"
+#include "game/box.h"
+#include "game/label.h"
+#include "game/bg.h"
+#include "game/bg_map.h"
+#include "game/bg_cells.h"
 
 /*
  * MenuScreen (include/game/scene.h): a Screen with sound bank, picture, fades, timeout and an item
@@ -31,19 +41,8 @@ typedef struct ScreenBgVtbl {
 typedef struct ScreenBg {
     ScreenBgVtbl *vtbl;
 } ScreenBg;
-extern void Object_DeleteArray(void *, s32);
-void *Heap_Alloc(s32 size);
-void Heap_Free(void *);
 extern s32 strlen(u8 *);
-SoundBank *Sound_CreateBank(char *path);
-Tim *Tim_New(char *path);
-extern void *Box_Create(s32, s32, s32);
-Widget *Label_Create(Tim *font, s32 length, u8 *text);
-ScreenBg *Bg_Create(ScreenBg *, s32);
-ScreenBg *BgMap_Create(s32, ScreenBg *);
-ScreenBg *BgCells_Create(s32);
-ScreenVtbl *MenuScreen_GetVtbl(void);
-ScreenRect *MenuScreen_GetPictureRect(void);
+/* not from game/screen.h: other files read this vtable through their own views of the slots */
 ScreenVtbl *Screen_GetVtbl(void);
 extern ScreenVtbl g_menuScreenVtbl[]; /* MenuScreen */
 extern s32 g_pictureRect[];        /* ScreenRect (640, 0) 320 x 240: the VRAM area of pictures and videos */

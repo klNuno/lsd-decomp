@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/screen.h"
+#include "game/view.h"
+#include "game/clock.h"
+#include "game/root_node.h"
 
 /*
  * Screen (include/game/scene.h): the base screen class (vtable 0x8006E878), a state machine run by
@@ -9,11 +13,8 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-ObjectVtbl *Object_GetBaseVtbl(void);
-void *Clock_Create(void);
-void *RootNode_Create(void);
+/* not in game/screen.h: each file that calls it reads the vtable through its own view of the slots */
 ScreenVtbl *Screen_GetVtbl(void);
-View *View_New(void);
 extern ScreenVtbl g_screenVtbl[]; /* Screen */
 
 /* Screen */

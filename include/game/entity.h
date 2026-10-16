@@ -144,4 +144,7 @@ typedef struct Entity {
     struct Fade *unk104;
 } Entity;
 
+/* Functions of src/game/entity.c that other files call or reference (docs/naming.md, Prototypes) */
+s32 Entity_Create(s32 type, s32 params, s32 soundBank);
+
 #endif

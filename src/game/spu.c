@@ -1,10 +1,12 @@
 #include "common.h"
+#include "game/spu.h"
+#include "game/seq_timer.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
  */
 
-void Spu_Reset(s32 hot);
+static void Spu_Reset(s32 hot);
 extern void ResetCallback(void);
 extern void SpuInit(void);
 extern void SpuInitHot(void);
@@ -12,14 +14,8 @@ extern void SpuVmInit(s32);
 extern s32 GetVideoMode(void);
 extern u16 g_spuVoiceInit[];
 extern u16 g_spuControlInit[];
-extern s32 g_seqVsyncCount;
-extern s32 g_seqIrq;
-extern s32 g_seqHalfRate;
-extern s32 g_videoMode;
-extern void (*g_seqPrevHandler)(void);
 extern s32 D_8008E934;
 extern s32 D_8008EA00;
-extern s32 D_8009024C;
 extern s32 D_80090368[][16];
 
 /*
@@ -27,7 +23,7 @@ extern s32 D_80090368[][16];
  * (0x1F801D80) from their tables, clears the voice table and the sound state, and reads the video mode.
  * hot 0 runs the cold SpuInit, hot 1 runs SpuInitHot.
  */
-void Spu_Reset(s32 hot) {
+static void Spu_Reset(s32 hot) {
     s32 i;
     s32 j;
     u16 *spuReg;
@@ -85,6 +81,6 @@ void Spu_ResetCold(void) {
 }
 
 /* Hot SPU reset. */
-void Spu_ResetHot(void) {
+static void Spu_ResetHot(void) {
     Spu_Reset(1);
 }

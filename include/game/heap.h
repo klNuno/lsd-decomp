@@ -84,4 +84,27 @@ typedef struct Object {
 /* Message sent by destroy to every watcher: the sender is going away */
 #define OBJECT_MSG_DESTROYED 1
 
+/* Functions of src/game/heap.c that other files call or reference (docs/naming.md, Prototypes) */
+Heap *Heap_Create(); /* unprototyped: main passes a second argument */
+void Heap_SetCurrent(Heap *heap);
+void *Heap_Alloc(); /* K&R definition: callers pass only the size, the heap argument is read only when g_currentHeap is NULL */
+void *Heap_Free(); /* K&R definition: callers pass only the pointer, the heap argument is read only when g_currentHeap is NULL */
+s32 Object_Delete(Object *object);
+void Object_Destroy(Object *object);
+void Object_Watch(Object *object, Object *other);
+void Object_Unwatch(Object *object, Object *other);
+void Object_UnwatchAll(Object *object);
+void Object_NextWatched(Object *object, s32 *value, ListNode **iter);
+void Object_AddWatcher(Object *object);
+void Object_RemoveWatcher(Object *object);
+void Object_FreeWatchers(Object *object);
+void Object_NextWatcher(Object *object, s32 *value, ListNode **iter);
+void Object_Notify(Object *object, void *message);
+void func_80018350(void);
+void Object_OnNotify(Object *object, s32 sender, s32 message);
+ObjectVtbl *Object_GetBaseVtbl(void);
+void List_Next(s32 *value, ListNode **iter);
+void Object_DeleteArray(Object **objects, s32 count);
+s32 Heap_IsBusy(void);
+
 #endif

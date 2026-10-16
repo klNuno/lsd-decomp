@@ -497,4 +497,9 @@ typedef struct StageMap {
     MapTileStep *unk1E4;    /* 0x1E4 */
 } StageMap;
 
+/* Functions of src/game/stage.c that other files call or reference (docs/naming.md, Prototypes) */
+StageGrid *Stage_GetGrid(s32 stage);
+u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood);
+s16 *Stage_GetChunkMood(s32 stage, StagePlace *place);
+
 #endif

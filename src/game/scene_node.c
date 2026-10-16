@@ -2,6 +2,8 @@
 #include "game/heap.h"
 #include "game/entity.h"
 #include "game/scene.h"
+#include "game/scene_node.h"
+#include "game/model_object.h"
 
 /*
  * Scene nodes: the class of vtable g_sceneNodeVtbl (SceneNode_GetVtbl, tag 4, 0x44 bytes, made by
@@ -41,27 +43,15 @@ typedef struct NodeBoxList {
 /* Message a node sends to the node it hit, and that the hit node keeps as contact. */
 #define NODE_MSG_CONTACT 4
 
-void *Heap_Alloc(s32 size);
-void Heap_Free(void *block);
-ObjectVtbl *Object_GetBaseVtbl(void);
-void Object_NextWatcher(Object *self, s32 *value, s32 *more);
-void List_Next(s32 *value, ListNode **iter);
+/* not in game/scene_node.h: each file that calls it reads the vtable through its own view of the slots */
 SceneNodeVtbl *SceneNode_GetVtbl(void);
-void SceneNode_LinkModel(SceneNode *node, ModelObject *model);
-void SceneNode_UnlinkModel(SceneNode *node);
-s32 Fraction_ToFixed(Fraction *fraction);
-s32 ModelBox_OutCode(NodeBox *box, SVec3 *point);
-s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
-s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end);
-void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside);
-void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to);
-void Render_TransformLongVectors(void *dstVecs, void *srcVecs, s32 count, s32 *matrix);
-void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix);
-s32 ModelObject_IsReady(ModelObject *model);
-void ModelObject_UpdateBox(ModelObject *model);
-NodeBox *ModelObject_GetBox(ModelObject *model, s32 index);
-void ModelObject_GetBoxList(ModelObject *model, s32 *boxList);
-s32 ModelObject_RayTest(ModelObject *model, s32 *hitDist, SVec3 *hitPos, s32 *hitHeight, SVec3 *start, SVec3 *end);
+static void SceneNode_UnlinkModel(SceneNode *node);
+static s32 Fraction_ToFixed(Fraction *fraction);
+static s32 ModelBox_OutCode(NodeBox *box, SVec3 *point);
+static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end);
+static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside);
+static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to);
+static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix);
 void GsInitCoordinate2(Coord2 *super, Coord2 *coord);
 extern void GsLinkObject4(u32 *src, void *dst, s32 id);
 void RotMatrix(SVector *r, void *m);
@@ -618,7 +608,7 @@ s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, SVec3 *hitPos, Node
  * Segment against box by bisection with outcodes: 0 no part inside, 1 both ends inside,
  * 2 start inside, 3 end inside; for 2 and 3, *out gets the point where it leaves the box.
  */
-s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end) {
+static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end) {
     SVec3 mid;
     u8 startCode;
     u8 endCode;
@@ -662,7 +652,7 @@ s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end) {
 }
 
 /* Bisects from a point inside the box to a point outside until the midpoint stops moving. */
-void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside)
+static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside)
 {
     s16 tmp[2][4];
     u8 bits;
@@ -795,7 +785,7 @@ void SceneNode_LinkModel(SceneNode *node, ModelObject *model) {
     GsLinkObject4((u32 *)(node->model->tmdObjectBase + 0xC), &node->attribute, 0);
 }
 
-void SceneNode_UnlinkModel(SceneNode *node) {
+static void SceneNode_UnlinkModel(SceneNode *node) {
     node->tmd = 0;
     node->model = NULL;
 }
@@ -849,7 +839,7 @@ s32 SceneNode_ProbeHeight(SceneNode *node, Vec3 *offset, Vec3 *point) {
     return 1;
 }
 
-void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to) {
+static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to) {
     out->x = to->x - from->x;
     out->y = to->y - from->y;
     out->z = to->z - from->z;
@@ -901,7 +891,7 @@ void Entity_FaceDreamer(Entity *entity, SceneNode *target, s32 noPitch, s32 faci
 }
 
 /* num / den in 20.12 fixed point. */
-s32 Fraction_ToFixed(Fraction *fraction) {
+static s32 Fraction_ToFixed(Fraction *fraction) {
     s32 num;
     s32 den;
 
@@ -911,7 +901,7 @@ s32 Fraction_ToFixed(Fraction *fraction) {
 }
 
 /* Outcode of a point against a box: 8 or 4 past max or min x, 2 or 1 for y, 0x20 or 0x10 for z. */
-s32 ModelBox_OutCode(NodeBox *box, SVec3 *point) {
+static s32 ModelBox_OutCode(NodeBox *box, SVec3 *point) {
     s32 code;
 
     code = 0;
@@ -951,7 +941,7 @@ s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value) {
     return (u32)(mask & old) >> shift;
 }
 
-void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix) {
+static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix) {
     SVec3 tmp;
     SVec3 *end;
 

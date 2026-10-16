@@ -1,6 +1,10 @@
 #include "common.h"
 #include "game/dreamsys.h"
 #include "game/place.h"
+#include "game/actor.h"
+#include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/model_object.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -108,26 +112,20 @@ struct GridActor {
     u8 pad_2C[0x4C - 0x2C];
     StageMap *map;        /* 0x4C */
 };
-void Actor_ApplyPos(void *self, s32 set, s32 *vec);
-extern s32 SceneNode_ProbeHeight(void);
+static void Actor_ApplyPos(void *self, s32 set, s32 *vec);
 extern s16 g_actorMoveVecZ[];
 void Actor_MoveAxis(void *self, s16 *field, s32 value, s32 notify, s32 message);
 extern s16 g_actorMoveVec[];
+/* not in game/actor.h: each file that calls it reads the vtable through its own view of the slots */
 ActorVtbl *Actor_GetVtbl(void);
+/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ActorBaseVtbl *SceneNode_GetVtbl(void);
-extern void SceneNode_RotateVector(void *, void *, void *);
 s32 Actor_SnapToGround();
-void *Heap_Alloc(s32 size);
-void Heap_Free(void *);
-s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell);
-s32 Actor_GetGroundRects(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size);
-s32 ModelObject_IsReady(s32);
-void ModelBox_ShiftList(s32 **arg0, s32 arg1, s32 arg2, s32 arg3);
-extern s32 Actor_ProbeGroundAt();
-void Actor_MovePos(void *actor, s32 *delta);
+static s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell);
+static s32 Actor_GetGroundRects(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size);
+static s32 Actor_ProbeGroundAt();
 extern u8 g_actorVtbl[];
-void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify);
-void *Actor_New(void);
+static void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify);
 
 /* Allocate a kind 0 part: an object of the base class g_actorVtbl (0x58 bytes). */
 void *Actor_New(void) {
@@ -245,7 +243,7 @@ void Actor_MovePos(void *actor, s32 *delta) {
     Actor_ApplyPos(actor, 0, delta);
 }
 
-void Actor_ApplyPos(void *self, s32 set, s32 *vec) {
+static void Actor_ApplyPos(void *self, s32 set, s32 *vec) {
     Actor *actor = self;
     Coord2 *block = actor->posBlock;
     if (set != 0) {
@@ -304,7 +302,7 @@ void Actor_StubD8(void) {
 }
 
 /* Run a move, then look for a contact when the move found none. */
-void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify) {
+static void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify) {
     actor->contact = 0;
     move(actor, value, notify);
     if (actor->contact == 0) {
@@ -339,7 +337,7 @@ s32 Actor_SnapToGround(GridActor *actor) {
 }
 
 /* The rectangles of cells to search: the cell itself and the slots above and below it (n == 1), else the n x n square clipped to the 20 x 20 grid. */
-s32 Actor_GetGroundRects(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size) {
+static s32 Actor_GetGroundRects(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size) {
     MapSlot **cells;
     GridRect *rects;
     MapLocation *in = cellInfo;
@@ -414,7 +412,7 @@ s32 Actor_GetGroundRects(void *actor, void *outRects, void *outCells, void *cell
     return 1;
 }
 
-s32 Actor_FindGroundInCells(s32 actor, s32 delta, s32 pos, s32 count, s32 rects, void **cells) {
+static s32 Actor_FindGroundInCells(s32 actor, s32 delta, s32 pos, s32 count, s32 rects, void **cells) {
     s32 found;
     MapSlot *cell;
     s32 i;
@@ -436,7 +434,7 @@ s32 Actor_FindGroundInCells(s32 actor, s32 delta, s32 pos, s32 count, s32 rects,
 }
 
 /* Walk a rectangle of a cell's 20-wide grid (+0x10) and each entry's chain (+0x38). */
-s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell) {
+static s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell) {
     GridRect *r = (GridRect *)rect;
     GridCell *grid = (GridCell *)cell;
     s32 entry;
@@ -466,7 +464,7 @@ s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell) 
     return 0;
 }
 
-s32 Actor_ProbeGroundAt(s32 entry) {
+static s32 Actor_ProbeGroundAt(s32 entry) {
     if (entry != 0 && SceneNode_ProbeHeight() != 0) {
         return entry;
     }

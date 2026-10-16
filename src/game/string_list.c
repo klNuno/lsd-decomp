@@ -1,5 +1,11 @@
 #include "common.h"
 #include "game/heap.h"
+#include "game/string_list.h"
+#include "game/file_base.h"
+#include "game/tim.h"
+#include "game/label.h"
+#include "game/text.h"
+#include "game/screen_sprite.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -61,14 +67,10 @@ struct StringList {
     s32 unk_50;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
 };
 
-extern void Heap_Free(s32);
-extern ObjectVtbl *Object_GetBaseVtbl(void);
-extern void *Heap_Alloc(s32 size);
-s8 *Text_Decode(s8 *dst, u8 *src);
 s8 *strcpy(s8 *dst, u8 *src);
-StringListVtbl *StringList_GetVtbl(void);
+static StringListVtbl *StringList_GetVtbl(void);
 extern s32 strlen(u8 *);
-void StringList_ClearSenders(StringList *list);
+static void StringList_ClearSenders(StringList *list);
 
 s32 StringList_New(s32 strings, s32 mode) {
     void *list;
@@ -126,7 +128,7 @@ void StringList_Init(StringList *list, s32 **strings, s32 mode) {
     list->vtbl->reset(list);
 }
 
-void StringList_ClearSenders(StringList *list) {
+static void StringList_ClearSenders(StringList *list) {
     list->senderTag2 = 0;
     list->senderTag5 = 0;
     list->unk_50 = 0;
@@ -251,17 +253,12 @@ typedef struct CardList {
     CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
 } CardList;
 extern u8 g_stringListCursorColor[];
-extern s32 strlen(u8 *s);
 extern void *memcpy(void *dst, void *src, s32 n);
 extern u8 g_stringListRowColor[];
-extern s32 Label_Create(s32, s32, s32);
 s32 g_stringListRowX;
 s32 g_stringListRowY;
-u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text);
-void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight);
-extern s8 *File_JoinPath(s8 *, s8 *, s8 *, s8 *);
-extern CardText *Tim_New(s32);
-extern CardText *ScreenSprite_Create(CardText *, s32 *, s32);
+static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text);
+static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight);
 extern s8 g_selectTimName[];
 extern s8 g_cardDirName[];
 extern s8 g_timExtension[];
@@ -530,7 +527,7 @@ void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 
 }
 
 /* Copy row (top + i) into out, padded with spaces to 26 characters. */
-u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text) {
+static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text) {
     s32 idx = top + i;
     s32 len;
     s32 j;
@@ -547,7 +544,7 @@ u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text) {
     return out;
 }
 
-void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight) {
+static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight) {
     s32 row;
     CardText *obj;
 
@@ -589,6 +586,6 @@ s32 StringList_GetCursor(CardList *list) {
     return list->cursor;
 }
 
-StringListVtbl *StringList_GetVtbl(void) {
+static StringListVtbl *StringList_GetVtbl(void) {
     return (StringListVtbl *)g_stringListVtbl;
 }

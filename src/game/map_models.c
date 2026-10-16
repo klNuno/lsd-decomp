@@ -1,14 +1,13 @@
 #include "common.h"
+#include "game/map_models.h"
+#include "game/heap.h"
+#include "game/file_base.h"
 
 /*
  * MapModels: the model list of one map chunk (vtable 0x8006D940, made by MapModels_New).
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-/* Heap and root object services. */
-void *Heap_Alloc(s32 size);
-void *File_GetBackendVtbl(void);
 
 /* The object that MapModels_OnLoaded marks: only 0x30 is used here. */
 typedef struct RootObject {
@@ -41,7 +40,6 @@ typedef struct ModelSet {
 } ModelSet;
 
 extern ModelSetVtbl g_mapModelsVtbl;
-ModelSetVtbl *MapModels_GetVtbl(void);
 
 /* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through unk_08. */
 typedef struct GridRecord {
@@ -155,6 +153,6 @@ ModelSetVtbl *MapModels_GetVtbl(void) {
     return &g_mapModelsVtbl;
 }
 
-s32 func_8002C3B8(void) {
+static s32 func_8002C3B8(void) {
     return 0;
 }

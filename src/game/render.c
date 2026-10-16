@@ -1,6 +1,7 @@
 #include "common.h"
 #include "gte.h"
 #include "game/gs.h"
+#include "game/render.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -217,31 +218,31 @@ extern void *RCpolyGT4(void *, void *);
 extern s32 g_renderDivision;
 s32 g_clipScreenWidth; /* 320 in .sdata, never written */
 s32 g_clipScreenHeight; /* 240 in .sdata, never written */
-void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage);
-void Render_CopyClipTri(void *dst, void *src, void *sxy0, void *sxy1, void *sxy2);
-void Render_CopyClipQuad(void *dst, void *src, void *sxy0, void *sxy1, void *sxy2, void *sxy3);
-s32 Render_TransformTri(u8 *prim, TmdCtx *ctx);
-void Render_CheckScreenBox(TmdCtx *ctx, s32 count);
-void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx);
-s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*storeXy)(u8 *));
-s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, void (*storeXy)(u8 *, s32));
-void Render_StoreXyF3(void *prim);
-void Render_StoreXyG3(void *prim);
-void Render_StoreXyFT3(void *prim);
-void Render_StoreXyGT3(void *prim);
-void Render_StoreXyF4(u8 *prim, s32 firstThree);
-void Render_StoreXyG4(u8 *prim, s32 firstThree);
-void Render_StoreXyFT4(u8 *prim, s32 firstThree);
-void Render_StoreXyGT4(u8 *prim, s32 firstThree);
-void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx);
-void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx);
-void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx);
-void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx);
-void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx);
-void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx);
-void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx);
-void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx);
-void Render_InitClipSlots(u8 **slots, u8 *area, s32 count);
+static void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage);
+static void Render_CopyClipTri(void *dst, void *src, void *sxy0, void *sxy1, void *sxy2);
+static void Render_CopyClipQuad(void *dst, void *src, void *sxy0, void *sxy1, void *sxy2, void *sxy3);
+static s32 Render_TransformTri(u8 *prim, TmdCtx *ctx);
+static void Render_CheckScreenBox(TmdCtx *ctx, s32 count);
+static void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx);
+static s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*storeXy)(u8 *));
+static s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, void (*storeXy)(u8 *, s32));
+static void Render_StoreXyF3(void *prim);
+static void Render_StoreXyG3(void *prim);
+static void Render_StoreXyFT3(void *prim);
+static void Render_StoreXyGT3(void *prim);
+static void Render_StoreXyF4(u8 *prim, s32 firstThree);
+static void Render_StoreXyG4(u8 *prim, s32 firstThree);
+static void Render_StoreXyFT4(u8 *prim, s32 firstThree);
+static void Render_StoreXyGT4(u8 *prim, s32 firstThree);
+static void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx);
+static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx);
+static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx);
+static void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx);
+static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx);
+static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx);
+static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx);
+static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx);
+static void Render_InitClipSlots(u8 **slots, u8 *area, s32 count);
 extern s32 D_8008E250; /* attribute bit 5 */
 extern s32 D_8008E24C; /* attribute bits 3-4 */
 extern s32 D_800902E0;
@@ -551,7 +552,7 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
 }
 
 /* Packet code bits: 1 semi-transparent (group type bit 9), 0 no shading (attribute bit 6) */
-void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx) {
+static void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx) {
     if (ctx->semiTrans != 0) {
         prim->code |= 2;
     } else {
@@ -567,7 +568,7 @@ void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx) {
 }
 
 /* Projects a triangle; 0 when it is drawn, 1 when culled */
-s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*storeXy)(u8 *)) {
+static s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*storeXy)(u8 *)) {
     u8 **v = ctx->src;
     v[0] = ctx->vertices + i0 * 8;
     v[1] = ctx->vertices + i1 * 8;
@@ -583,7 +584,7 @@ s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*stor
 }
 
 /* Projects a quad; 0 when it is drawn, 1 when culled (on its first three corners) */
-s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, void (*storeXy)(u8 *, s32)) {
+static s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, void (*storeXy)(u8 *, s32)) {
     u8 **v = ctx->src;
     v[0] = ctx->vertices + i0 * 8;
     v[1] = ctx->vertices + i1 * 8;
@@ -605,7 +606,7 @@ s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, vo
 
 /* rtpt of the three loaded vertices; culls on a GTE error (except flag 0x40000, which asks
    for the clipper), a back face, or depth >= 0x1000; else picks the OT entry */
-s32 Render_TransformTri(u8 *prim, TmdCtx *ctx) {
+static s32 Render_TransformTri(u8 *prim, TmdCtx *ctx) {
     ctx->clip = 0;
     gte_rtpt();
     prim[3] = ctx->primLen;
@@ -632,23 +633,23 @@ s32 Render_TransformTri(u8 *prim, TmdCtx *ctx) {
     return 0;
 }
 
-void Render_StoreXyF3(void *prim) {
+static void Render_StoreXyF3(void *prim) {
     gte_stsxy3_f3(prim);
 }
 
-void Render_StoreXyG3(void *prim) {
+static void Render_StoreXyG3(void *prim) {
     gte_stsxy3_g3(prim);
 }
 
-void Render_StoreXyFT3(void *prim) {
+static void Render_StoreXyFT3(void *prim) {
     gte_stsxy3_ft3(prim);
 }
 
-void Render_StoreXyGT3(void *prim) {
+static void Render_StoreXyGT3(void *prim) {
     gte_stsxy3_gt3(prim);
 }
 
-void Render_StoreXyF4(u8 *prim, s32 firstThree) {
+static void Render_StoreXyF4(u8 *prim, s32 firstThree) {
     if (firstThree != 0) {
         gte_stsxy3_f4(prim);
     } else {
@@ -656,7 +657,7 @@ void Render_StoreXyF4(u8 *prim, s32 firstThree) {
     }
 }
 
-void Render_StoreXyG4(u8 *prim, s32 firstThree) {
+static void Render_StoreXyG4(u8 *prim, s32 firstThree) {
     if (firstThree != 0) {
         gte_stsxy3_g4(prim);
     } else {
@@ -664,7 +665,7 @@ void Render_StoreXyG4(u8 *prim, s32 firstThree) {
     }
 }
 
-void Render_StoreXyFT4(u8 *prim, s32 firstThree) {
+static void Render_StoreXyFT4(u8 *prim, s32 firstThree) {
     if (firstThree != 0) {
         gte_stsxy3_ft4(prim);
     } else {
@@ -672,7 +673,7 @@ void Render_StoreXyFT4(u8 *prim, s32 firstThree) {
     }
 }
 
-void Render_StoreXyGT4(u8 *prim, s32 firstThree) {
+static void Render_StoreXyGT4(u8 *prim, s32 firstThree) {
     if (firstThree != 0) {
         gte_stsxy3_gt4(prim);
     } else {
@@ -685,7 +686,7 @@ void Render_StoreXyGT4(u8 *prim, s32 firstThree) {
  * else linked at the head of its OT entry (24-bit next pointer in the tag). They return the
  * next free byte of the packet buffer.
  */
-void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, prim + 4, 0, 0, 0);
         Render_CopyClipTri(ctx->triClip.v, ctx->src, prim + 8, prim + 0xC, prim + 0x10);
@@ -696,7 +697,7 @@ void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx) {
     return prim + 0x14;
 }
 
-void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
@@ -713,7 +714,7 @@ void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
     return prim + 1;
 }
 
-void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
@@ -730,7 +731,7 @@ void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
     return (u8 *)prim + 0x20;
 }
 
-void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, (u8 *)prim + 4, 0, 0, 0);
         Render_CopyClipQuad(ctx->quadClip.v, ctx->src, (u8 *)prim + 8, (u8 *)prim + 0xC, (u8 *)prim + 0x10, (u8 *)prim + 0x14);
@@ -741,7 +742,7 @@ void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx) {
     return (u8 *)prim + 0x18;
 }
 
-void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->x0, &prim->x1, &prim->x2, &prim->x3);
@@ -760,7 +761,7 @@ void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
     return prim + 1;
 }
 
-void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
@@ -779,7 +780,7 @@ void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
     return (u8 *)prim + 0x28;
 }
 
-void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
@@ -799,7 +800,7 @@ void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
     return prim + 1;
 }
 
-void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
         Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
@@ -824,7 +825,7 @@ void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
 
 /* Points `count` vertex slots at the work area's 0x18-byte vertices, from area + 0x18,
    and records them in the area's own table (+0xA8 for triangles, +0xF0 for quads) */
-void Render_InitClipSlots(u8 **slots, u8 *area, s32 count) {
+static void Render_InitClipSlots(u8 **slots, u8 *area, s32 count) {
     u8 **slot;
     u8 *entry;
 
@@ -844,7 +845,7 @@ void Render_InitClipSlots(u8 **slots, u8 *area, s32 count) {
 }
 
 /* Screen box of the face; wider or taller than 256 pixels sends it to the clipper */
-void Render_CheckScreenBox(TmdCtx *ctx, s32 count) {
+static void Render_CheckScreenBox(TmdCtx *ctx, s32 count) {
     ScreenXY *p;
 
     ctx->max = ctx->sxy.pt[0];
@@ -871,7 +872,7 @@ void Render_CheckScreenBox(TmdCtx *ctx, s32 count) {
     }
 }
 
-void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage) {
+static void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage) {
     s32 value;
 
     if (g_clipDivisionForced != 0) {
@@ -891,7 +892,7 @@ void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textu
 }
 
 /* Copies the three model vertices and the packet's screen xy into the clipper vertices */
-void Render_CopyClipTri(void *dstArg, void *srcArg, void *sxy0, void *sxy1, void *sxy2) {
+static void Render_CopyClipTri(void *dstArg, void *srcArg, void *sxy0, void *sxy1, void *sxy2) {
     ClipRefs *dst = dstArg;
     ClipRefs *src = srcArg;
 
@@ -904,7 +905,7 @@ void Render_CopyClipTri(void *dstArg, void *srcArg, void *sxy0, void *sxy1, void
 }
 
 /* The same for a quad: three through Render_CopyClipTri, then the fourth */
-void Render_CopyClipQuad(void *dstArg, void *srcArg, void *sxy0, void *sxy1, void *sxy2, void *sxy3) {
+static void Render_CopyClipQuad(void *dstArg, void *srcArg, void *sxy0, void *sxy1, void *sxy2, void *sxy3) {
     ClipRefs *dst = dstArg;
     ClipRefs *src = srcArg;
 
@@ -914,7 +915,7 @@ void Render_CopyClipQuad(void *dstArg, void *srcArg, void *sxy0, void *sxy1, voi
 }
 
 /* Forces the clipper header's first word to `value` while `on` is set (see Render_FillClipHeader) */
-void Render_ForceClipDivision(s32 on, s32 value) {
+static void Render_ForceClipDivision(s32 on, s32 value) {
     g_clipDivisionForced = on;
     if (on != 0) {
         g_clipForcedDivision = value;

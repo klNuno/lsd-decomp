@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/stage.h"
+#include "game/path_table.h"
 
 /*
  * The path table g_pathTable: 0x1C-byte path entries, 560 counted by File_GetPathTable (sound banks, then per stage
@@ -14,20 +15,17 @@ extern u8 g_pathTable[];      /* the path table, 0x1C bytes per path */
 extern s16 g_videoTable[];   /* frame count of each video, by video id */
 s32 g_musicBankOverride;              /* forced music bank + 1, 0 = random (Music_SetOverride) */
 s32 g_musicTrackOverride;              /* forced track + 1, 0 = random (Music_SetOverride) */
-u8 *Stage_GetPathBase(s32 stage);
-s32 *Music_GetEffectsBankPtr(void);
+static u8 *Stage_GetPathBase(s32 stage);
+static s32 *Music_GetEffectsBankPtr(void);
 extern void srand(u32 seed);
 extern s32 rand(void);
-void *File_GetPathTable(s32 *count);
 extern s16 g_stageFirstPath[];     /* first path of each stage in the path table */
-StageGrid *Stage_GetGrid(s32 stage);
-u8 *Stage_GetChunkPaths(s32 stage);
-u8 *Stage_GetChunkPath(s32 stage, s32 chunk);
-u8 *Cine_GetEventPaths(s32 *videoId);
-s32 Cine_GetOpeningPaths(s32 *videoId);
-s32 Cine_GetEndingPathEntry(s32 *videoId);
-u8 *Cine_GetEventPath(s32 *videoId, s32 event);
-s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category);
+static u8 *Stage_GetChunkPaths(s32 stage);
+static u8 *Cine_GetEventPaths(s32 *videoId);
+static s32 Cine_GetOpeningPaths(s32 *videoId);
+static s32 Cine_GetEndingPathEntry(s32 *videoId);
+static u8 *Cine_GetEventPath(s32 *videoId, s32 event);
+static s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category);
 
 /* {category, variant} of DreamSys +0x168; a negative category means an event video */
 typedef struct CineChoice {
@@ -35,10 +33,9 @@ typedef struct CineChoice {
     s16 variant;
 } CineChoice;
 
-s32 Rand_SeedAndNext();
-u8 *Stage_GetTrackPaths(s32 stage);
-u8 *Stage_GetTexturePaths(s32 stage);
-u8 *Music_GetBanks(void);
+static u8 *Stage_GetTrackPaths(s32 stage);
+static u8 *Stage_GetTexturePaths(s32 stage);
+static u8 *Music_GetBanks(void);
 void *g_rootDir;            /* "CDI\\", the root directory of every path */
 extern u8 g_musicBanks[];      /* the 7 sound bank paths, SND\AMBIENT to SND\STANDERD */
 extern s32 g_effectsBank[];     /* points to "SND\\SE" */
@@ -57,7 +54,7 @@ s32 Rand_SeedAndNext(seed)
 }
 
 /* No caller: pins the bank and the track (1-based), a negative value keeps the current one */
-void Music_SetOverride(s32 bank, s32 track) {
+static void Music_SetOverride(s32 bank, s32 track) {
     if (bank >= 0) {
         g_musicBankOverride = bank;
     }
@@ -73,7 +70,7 @@ void *File_GetPathTable(s32 *count) {
     return g_pathTable;
 }
 
-u8 *Music_GetBanks(void) {
+static u8 *Music_GetBanks(void) {
     return g_musicBanks;
 }
 
@@ -93,7 +90,7 @@ s32 Music_PickBank(s32 unused) {
     return *(s32 *)(banks + ofs);
 }
 
-s32 *Music_GetEffectsBankPtr(void) {
+static s32 *Music_GetEffectsBankPtr(void) {
     return g_effectsBank;
 }
 
@@ -101,11 +98,11 @@ s32 Music_GetEffectsBank(void) {
     return *Music_GetEffectsBankPtr();
 }
 
-u8 *Stage_GetPathBase(s32 stage) {
+static u8 *Stage_GetPathBase(s32 stage) {
     return (u8 *)File_GetPathTable(NULL) + g_stageFirstPath[stage] * 0x1C;
 }
 
-u8 *Stage_GetTexturePaths(s32 stage) {
+static u8 *Stage_GetTexturePaths(s32 stage) {
     return Stage_GetPathBase(stage);
 }
 
@@ -119,7 +116,7 @@ u8 *Stage_PickTexturePath(s32 stage, s32 unused, s32 dayNumber) {
     return Stage_GetTexturePaths(stage) + r * 0x1C;
 }
 
-u8 *Stage_GetTrackPaths(s32 stage) {
+static u8 *Stage_GetTrackPaths(s32 stage) {
     return Stage_GetPathBase(stage) + 0x70;
 }
 
@@ -147,7 +144,7 @@ u8 *Music_PickTrack(s32 stage) {
     return tracks + (ofs * 4);
 }
 
-u8 *Stage_GetChunkPaths(s32 stage) {
+static u8 *Stage_GetChunkPaths(s32 stage) {
     return Stage_GetPathBase(stage) + 0xFC;
 }
 
@@ -170,7 +167,7 @@ char *Cine_GetLogoPath(s32 *videoId) {
 }
 
 /* ETC\OPENINGA.STR to OPENINGG.STR, video ids 0 to 6 */
-s32 Cine_GetOpeningPaths(s32 *videoId) {
+static s32 Cine_GetOpeningPaths(s32 *videoId) {
     if (videoId != NULL) {
         *videoId = 0;
     }
@@ -191,7 +188,7 @@ s32 Cine_PickOpeningPath(s32 *videoId) {
 }
 
 /* ETC\ENDING.STR, video id 7 */
-s32 Cine_GetEndingPathEntry(s32 *videoId) {
+static s32 Cine_GetEndingPathEntry(s32 *videoId) {
     if (videoId != NULL) {
         *videoId = 7;
     }
@@ -210,14 +207,14 @@ s32 Cine_GetEndingPath(s32 *videoId) {
 }
 
 /* FILM\EVENT1.STR to EVENT6.STR, video ids from 8 */
-u8 *Cine_GetEventPaths(s32 *videoId) {
+static u8 *Cine_GetEventPaths(s32 *videoId) {
     if (videoId != NULL) {
         *videoId = 8;
     }
     return (u8 *)File_GetPathTable(NULL) + 0x3E20;
 }
 
-u8 *Cine_GetEventPath(s32 *videoId, s32 event) {
+static u8 *Cine_GetEventPath(s32 *videoId, s32 event) {
     s32 firstId;
     u8 *paths;
 
@@ -229,7 +226,7 @@ u8 *Cine_GetEventPath(s32 *videoId, s32 event) {
 }
 
 /* The 6 paths of a special-day category (0xA8 bytes): videos A and B have ids category * 2 + 14 */
-s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category) {
+static s32 Cine_GetSpecialDayPaths(s32 *videoId, s32 category) {
     s32 paths;
 
     paths = (s32)File_GetPathTable(NULL) + 0x3EC8;

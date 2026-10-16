@@ -1,4 +1,6 @@
 #include "common.h"
+#include "game/dream_link.h"
+#include "game/stage.h"
 
 /*
  * File boundaries: guess (docs/layout.md)
@@ -17,7 +19,7 @@ extern s16 g_stageTimeLimits[];
 extern u8 g_staticLinkCounts[];
 extern s32 g_staticLinkLists[];
 extern s32 g_staticLinkTargets[];
-s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag);
+static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag);
 extern u8 g_facingLinkCounts[];
 extern void *g_facingLinkLists[];
 extern void *g_facingLinkTargets[];
@@ -27,22 +29,12 @@ extern s32 g_extraLinkTargets;
 s32 g_extraListOn;
 extern u8 g_scriptedLinkCounts[];
 extern s32 g_scriptedLinkLists[];
-s32 Spawn_PickRandom(void *place, s32 stage, s32 unused);
-s32 Link_FindStatic(void *, void *, s32);
-s32 Nav_CalcScore(void);
 extern u16 g_linkHeadingYaws[];
 /* A rotation in degrees (three Fractions, SceneNode_GetRotation) read for its yaw numerator. */
 typedef struct RotationYaw {
     u8 pad_00[4];
     u16 yaw;
 } RotationYaw;
-extern void Nav_InitFlags(u8 *flags, s32 *linkCount);
-s32 Spawn_PickFromMood(void *place, s32 *secondsOut, void *point, s32 day);
-s32 Link_PickFallStage();
-s32 *func_8005BF48(void);
-s32 Link_FindFacing(void *out, s16 *location, s32 stage);
-s32 Link_CheckFacing(u8 **arrivalOut, u8 **headingOut, RotationYaw *rotation);
-s32 Day_FindSpecial(void *cinematic, s32 dayNumber);
 extern s32 rand(void);
 extern s16 g_specialDays[42];
 extern s32 g_specialDayPoint;
@@ -55,7 +47,7 @@ extern u8 g_linkHeadings[];
 extern u8 *g_facingArrivalHeadings[];
 extern u8 *g_facingLinkHeadings[];
 s32 g_linkFromIndex;
-s32 Link_IsFacing(RotationYaw *rotation, u8 heading);
+static s32 Link_IsFacing(RotationYaw *rotation, u8 heading);
 extern u8 *g_scriptedLinkHeadings[];
 extern u8 *g_scriptedArrivalHeadings[];
 s32 g_fallPlace5;
@@ -65,9 +57,6 @@ typedef struct FallLocation {
     s16 x;
     s16 y;
 } FallLocation;
-s32 Link_FindScripted(void *out, void *location, s32 stage);
-s32 Link_CheckScripted(u8 **arrivalOut, u8 **headingOut, RotationYaw *rotation);
-s32 Link_GetStepScript(void);
 /* The first 4 bytes of a StagePlace, copied as one: chunk column and row, tile x and y. */
 typedef struct { u8 col, row, tileX, tileY; } PlaceTile;
 /* One g_tileOffsets entry, 6 bytes copied into StagePlace +4: the x, y (as one word) and z offsets in the tile. */
@@ -79,12 +68,8 @@ typedef struct { s16 chunkKey; s16 tileKey; s8 toStage; u8 toIndex; } LinkEntry;
 /* A StagePlace as the link and spawn pickers write it. */
 typedef struct { PlaceTile tile; TileOffset offset; } PlaceOut;
 extern TileOffset g_tileOffsets[];
-s32 Link_FindExtra(void *out, void *location, s32 stage);
-s32 Link_GetExtraSeconds(void);
 extern SpawnPoint *g_spawnPoints[];
 extern u8 g_spawnCounts[];
-s32 rand();
-u32 Stage_FindChunkByMood(void *placeOut, void *mood);
 
 void Nav_InitFlags(u8 *flags, s32 *linkCount) {
     s32 i;
@@ -115,7 +100,7 @@ s32 Nav_CalcScore(void) {
     return sum;
 }
 
-s16 Stage_GetTimeLimit(s32 stage) {
+static s16 Stage_GetTimeLimit(s32 stage) {
     return g_stageTimeLimits[stage];
 }
 
@@ -169,7 +154,7 @@ s32 Link_CheckFacing(u8 **arrivalOut, u8 **headingOut, RotationYaw *rotation) {
     return 0;
 }
 
-s32 Link_IsFacing(RotationYaw *rotation, u8 heading) {
+static s32 Link_IsFacing(RotationYaw *rotation, u8 heading) {
     s32 diff = rotation->yaw - g_linkHeadingYaws[heading * 6];
     s16 diff16 = diff;
     s16 wrapped;
@@ -256,7 +241,7 @@ s32 Link_GetStepScript(void) {
     return g_scriptedLinkTargets[g_linkToStage][g_linkToIndex].stepScript;
 }
 
-s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag) {
+static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag) {
     LinkEntry *entry;
     SpawnPoint *target;
     PlaceOut *out;

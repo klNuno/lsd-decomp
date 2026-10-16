@@ -24,6 +24,14 @@ Matching is half the job; the other half is C a person can read. Every change be
 - Functions and globals are renamed only through `tools/rename.py NAMES.tsv` (OLD, NEW, evidence per line), which rewrites src/, include/, docs/ and `config/symbol_addrs.txt`; then `make split && make check`.
 - Never change statements, their order, expression types or casts while renaming: those change the code the compiler emits.
 
+## Prototypes
+
+A function's prototype lives in the header of the file that defines it, `include/game/<file>.h`, written like the definition with its parameter names; callers include that header ([layout.md](layout.md), rule 6). Its non-gp globals that other files read are declared there with `extern`; gp globals never are (rule 1). Sony functions are declared in the files that call them until the PSY-Q headers exist. The exceptions keep the bytes, each with a comment saying why:
+
+- Unprototyped in the header (`s32 Cine_PickOpeningPath();`) when a caller passes another number of arguments than the definition takes, because the call in the executable passes them: `Heap_Create`, `SceneNode_ProbeHeight`, `SceneNode_LocalToWorld`, `ModelObject_GetBox`, `File_LoadWhole`, `Music_GetEffectsBank`, `Music_PickTrack`, `Stage_GetChunkPath`, `Cine_PickOpeningPath`, `Cine_GetEndingPath`, and `Cine_GetPath` (scene.c passes the `{category, variant}` pair as one s32). `Heap_Alloc`, `Heap_Free` and `Rand_SeedAndNext` are K&R definitions on purpose, so their header form has no parameters either.
+- `X_GetVtbl` of Actor, RootNode, Screen, SceneNode, SpriteNode, Task and View stays out of the headers: a subclass calls its base class's methods through its own view of the vtable struct (other slot names or types), so each file that calls it declares it with its own return type, one comment line above. Merging those views into one vtable struct per class removes the exception.
+- `Cine_GetVideoFrames` is defined as s16 in path_table.c; scene.c declares it as s32 because its code takes the word as is, and an s16 prototype adds a sign extension.
+
 ## Evidence that counts
 
 - The function's behaviour read from matched C, with the call sites that use it.

@@ -1,6 +1,9 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/view.h"
+#include "game/scene_node.h"
+#include "game/fade.h"
 
 /*
  * View (include/game/scene.h): the 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables,
@@ -15,9 +18,6 @@ typedef struct ViewRatio {
     s16 den;
 } ViewRatio;
 
-ObjectVtbl *Object_GetBaseVtbl(void);
-void *Heap_Alloc(s32 size);
-void Heap_Free(void *);
 extern s32 DrawSync(s32);
 extern void SetGeomScreen(s32);
 void GsSetRefView2(void *);
@@ -30,12 +30,10 @@ void SetFarColor(u8, u8, u8);
 void SetFogNear(s32, s32);
 void func_8003FB0C(s32);
 void func_8003FBE4(void *packets);
-SceneNode *SceneNode_New(void);
-void *Fade_Create(s32, s32, s32);
-View *View_New(void);
+/* not in game/view.h: each file that calls it reads the vtable through its own view of the slots */
 ViewVtbl *View_GetVtbl(void);
-SceneNode *SceneNode_GetRoot(SceneNode *node);
-void View_SetGeomScreen(s32 projection);
+static SceneNode *SceneNode_GetRoot(SceneNode *node);
+static void View_SetGeomScreen(s32 projection);
 extern ViewVtbl g_viewVtbl[];   /* View */
 extern s32 g_viewNoTwist;          /* ViewRatio (0, 1): no twist */
 extern Color3 g_viewDefaultColor;       /* black */
@@ -380,14 +378,14 @@ ViewVtbl *View_GetVtbl(void) {
     return g_viewVtbl;
 }
 
-SceneNode *SceneNode_GetRoot(SceneNode *node) {
+static SceneNode *SceneNode_GetRoot(SceneNode *node) {
     while (node->parent != NULL) {
         node = node->parent;
     }
     return node;
 }
 
-void View_SetGeomScreen(s32 projection) {
+static void View_SetGeomScreen(s32 projection) {
     SetGeomScreen(projection);
 }
 

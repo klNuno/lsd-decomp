@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/scene.h"
+#include "game/pad.h"
 
 /*
  * The pad (vtable g_padVtbl, 0x20 bytes, made by Pad_New; main makes one for the scene):
@@ -19,10 +20,8 @@
 /* Every slot of g_padVtbl past Object's (0x00 to 0x3C). */
 extern s32 PadRead(u16);
 void PadStop(void);
-ObjectVtbl *Object_GetBaseVtbl(void);
 s32 g_padCount;
-s32 Heap_Alloc(s32);
-PadVtbl *Pad_GetVtbl(void);
+static PadVtbl *Pad_GetVtbl(void);
 extern s32 g_padButtonMasks[16];
 void PadInit(s32);
 extern PadVtbl g_padVtbl;
@@ -145,6 +144,6 @@ void Pad_InitButtons(void) {
 void func_80025E94(void) {
 }
 
-PadVtbl *Pad_GetVtbl(void) {
+static PadVtbl *Pad_GetVtbl(void) {
     return &g_padVtbl;
 }

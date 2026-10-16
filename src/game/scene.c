@@ -3,6 +3,17 @@
 #include "game/loader.h"
 #include "game/scene.h"
 #include "game/stage.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/app.h"
+#include "game/video_screen.h"
+#include "game/menu_screen.h"
+#include "game/tmd.h"
+#include "game/path_table.h"
+#include "game/dream_runner.h"
+#include "game/menu.h"
+#include "game/graph.h"
+#include "game/dream_sys.h"
 
 /*
  * The scene (vtable g_sceneVtbl, 0x2C bytes, made by Scene_New from main with the settings
@@ -31,36 +42,14 @@ typedef struct ReelStack {
     s32 pad_0C;
 } ReelStack;
 
-/*
- * A file object as the base class reads it: Object, then the fields of the CD back end
- * (src/game/file_cd.c) and of the classes of include/game/loader.h.
- */
-void File_ResolvePathTablePart(s32);
-void Rand_SeedAndNext(s32, s32);
-AppVtbl *App_GetVtbl(void);
-s32 Heap_Alloc(s32);
-SceneVtbl *Scene_GetVtbl(void);
-void *File_GetRootDir(void);
-void File_SetPathPrefix(void *rootDir);
-s32 Tmd_Create(s32 source);
-DreamSys *DreamSys_New(s32 model, s32 unk58, s32 camera); /* DreamSys_Init stores the second at +0x58 */
-void File_EnableWait(s32 enabled, s32 option, s32 vsyncMode);
-VideoScreen *VideoScreen_New(s32, s32, s32, s32);
-s32 Cine_PickOpeningPath(s32 *videoId, s32 unused); /* the definition takes one argument */
+static SceneVtbl *Scene_GetVtbl(void);
+/* not from game/path_table.h */
 s32 Cine_GetVideoFrames(s32 videoId); /* defined as s16 in src/game/path_table.c; the callers here take the word as is */
-MenuScreen *MenuScreen_New(s32, s32, s32);
-void Scene_ShowLogo(Scene *scene, void *path);
-void Scene_OnLogoClosed(void);
-s32 Cine_GetEndingPath(s32 *videoId, s32 unused); /* the definition takes one argument */
-char *Cine_GetLogoPath(s32 *videoId);
-DreamRunner *DreamRunner_New(ScreenEnv *env, DreamSys *dreamSys, s32 unk4);
-void Scene_PlayCinematic(Scene *scene);
-s32 Cine_GetSpecialDayRun(s32 *frames, s32 category, s32 count);
-s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env);
-void Scene_PlayReel(Scene *scene);
-extern Screen *Graph_New(DreamSys *dreamSys);
-extern Screen *Menu_New(DreamSys *dreamSys);
-s32 Cine_GetPath(s32 *videoId, s32 cinematic);
+static void Scene_ShowLogo(Scene *scene, void *path);
+static void Scene_OnLogoClosed(void);
+static void Scene_PlayCinematic(Scene *scene);
+static s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env);
+static void Scene_PlayReel(Scene *scene);
 extern SceneVtbl g_sceneVtbl[];
 
 /* main makes the one scene with g_sceneSettings. */
@@ -120,7 +109,7 @@ void Scene_ShowLogos(Scene *scene) {
 }
 
 /* Shows one logo picture; closing it runs Scene_OnLogoClosed. */
-void Scene_ShowLogo(Scene *scene, void *path) {
+static void Scene_ShowLogo(Scene *scene, void *path) {
     MenuScreen *screen;
 
     screen = MenuScreen_New(0, 0, 0);
@@ -132,7 +121,7 @@ void Scene_ShowLogo(Scene *scene, void *path) {
 }
 
 /* Each logo's close resolves part of the disc's file table (File_ResolvePathTablePart: half, then the rest). */
-void Scene_OnLogoClosed(void) {
+static void Scene_OnLogoClosed(void) {
     File_ResolvePathTablePart(0);
 }
 
@@ -179,7 +168,7 @@ s32 Scene_RunTitle(Scene *scene) {
 }
 
 /* Makes a screen with create(dreamSys), runs it and deletes it; returns its result. */
-s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env) {
+static s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env) {
     Screen *screen = create(dreamSys);
     s32 result = screen->vtbl->run(screen, env, 0);
     screen->vtbl->delete_(screen);
@@ -190,7 +179,7 @@ s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env) {
  * The secret video reel: FILM\SPDAY01A.STR played on for the length of the 20 videos of
  * categories 0 to 9 (Cine_GetSpecialDayRun), not skippable (docs/discoveries.md, the secret video reel).
  */
-void Scene_PlayReel(Scene *scene) {
+static void Scene_PlayReel(Scene *scene) {
     ReelStack reel;
     VideoScreen *video;
     s32 path;
@@ -245,7 +234,7 @@ s32 Scene_RunDream(Scene *scene) {
  * The cinematic of the day: a FILM\ video for variants 0 and 1 (when videos are on), else a
  * still picture shown for 10 seconds (docs/discoveries.md, special days).
  */
-void Scene_PlayCinematic(Scene *scene) {
+static void Scene_PlayCinematic(Scene *scene) {
     u16 cinematic[2];
     s32 videoId[2];
     s32 unused[2];
@@ -289,6 +278,6 @@ void Scene_PlayEnding(Scene *scene) {
     }
 }
 
-SceneVtbl *Scene_GetVtbl(void) {
+static SceneVtbl *Scene_GetVtbl(void) {
     return g_sceneVtbl;
 }

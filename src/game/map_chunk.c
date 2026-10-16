@@ -1,6 +1,9 @@
 #include "common.h"
 #include "game/loader.h"
 #include "game/stage.h"
+#include "game/map_chunk.h"
+#include "game/heap.h"
+#include "game/file_base.h"
 
 /*
  * The map chunk file class (vtable g_mapChunkVtbl, 0x3C bytes, created by MapChunk_New for each
@@ -12,11 +15,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-s32 Heap_Free(s32);
-
-MapChunkVtbl *MapChunk_GetVtbl(void);
-FileVtbl *File_GetBackendVtbl(void);
-s32 Heap_Alloc(s32 size);
 extern u8 g_mapChunkVtbl[];      /* MapChunkVtbl */
 
 s32 MapChunk_New(void) {

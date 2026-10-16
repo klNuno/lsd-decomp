@@ -8,17 +8,13 @@
 
 extern void free(void *);
 Heap *g_currentHeap; /* the heap Heap_Init, Heap_Alloc and Heap_Free use; their heap argument only when NULL */
-void Heap_Init(Heap *fallbackHeap);
-void *Heap_Alloc();
-void *Heap_Free();
+static void Heap_Init(Heap *fallbackHeap);
 extern ObjectVtbl g_objectVtbl[]; /* the root class vtable */
 s32 g_heapBusy; /* heap busy flag, Heap_SetBusy */
-extern s32 List_Push();
-void List_Remove();
-ObjectVtbl *Object_GetBaseVtbl(void);
-void List_Next(s32 *value, ListNode **iter);
-void List_FreeAll(ListNode **head);
-void Heap_SetBusy(s32 busy);
+static s32 List_Push();
+static void List_Remove();
+static void List_FreeAll(ListNode **head);
+static void Heap_SetBusy(s32 busy);
 extern void *malloc(u32);
 extern s32 printf(const char *fmt, ...);
 
@@ -43,12 +39,12 @@ void Heap_SetCurrent(Heap *heap) {
     g_currentHeap = heap;
 }
 
-void Heap_Delete(void *heap) {
+static void Heap_Delete(void *heap) {
     free(heap);
 }
 
 /* The whole pool becomes one free block, followed by the end header. */
-void Heap_Init(Heap *fallbackHeap) {
+static void Heap_Init(Heap *fallbackHeap) {
     Heap *heap = g_currentHeap;
     HeapBlock *block;
     u8 *end;
@@ -247,7 +243,7 @@ void *Heap_Free(data, fallbackHeap)
     return NULL;
 }
 
-void func_80017EA8(void) {
+static void func_80017EA8(void) {
 }
 
 /* vtable slot 0x04 */
@@ -331,7 +327,7 @@ void Object_NextWatcher(Object *object, s32 *value, ListNode **iter) {
     List_Next(value, iter);
 }
 
-s32 List_Push(ListNode **head, s32 value) {
+static s32 List_Push(ListNode **head, s32 value) {
     ListNode *node;
 
     node = Heap_Alloc(8);
@@ -344,7 +340,7 @@ s32 List_Push(ListNode **head, s32 value) {
     return 0;
 }
 
-void List_Remove(ListNode **head, s32 value) {
+static void List_Remove(ListNode **head, s32 value) {
     ListNode *node;
     ListNode *prev;
 
@@ -365,7 +361,7 @@ void List_Remove(ListNode **head, s32 value) {
     }
 }
 
-void List_FreeAll(ListNode **head) {
+static void List_FreeAll(ListNode **head) {
     ListNode *node;
     ListNode *cur;
 
@@ -427,7 +423,7 @@ void Object_DeleteArray(Object **objects, s32 count) {
 }
 
 /* Set to 1 while Heap_Alloc or Heap_Free runs */
-void Heap_SetBusy(s32 busy) {
+static void Heap_SetBusy(s32 busy) {
     g_heapBusy = busy;
 }
 

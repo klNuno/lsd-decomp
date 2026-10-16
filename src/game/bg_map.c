@@ -1,5 +1,8 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/bg_map.h"
+#include "game/heap.h"
+#include "game/file_base.h"
 
 /*
  * BgMap: the GsMAP of a Bg (include/game/loader.h).
@@ -7,10 +10,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-FileVtbl *File_GetBackendVtbl(void);
-BgMapVtbl *BgMap_GetVtbl(void);
 extern BgMapVtbl g_bgMapVtbl;
 
 /* ---- BgMap: GsMAP over a BgCells ---- */

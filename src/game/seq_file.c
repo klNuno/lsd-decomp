@@ -1,6 +1,8 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/loader.h"
+#include "game/seq_file.h"
+#include "game/file_base.h"
 
 /*
  * SeqFile: vtable g_seqFileVtbl 0x8006EED8 (tag 0xB03), 0x30 bytes, SeqFile_Create: a file class
@@ -22,10 +24,7 @@ typedef struct SeqFile {
     s32 loaded;             /* 0x2C set by SeqFile_OnLoaded */
 } SeqFile;
 
-void *Heap_Alloc(s32 size);
-FileVtbl *File_GetBackendVtbl(void);
 s8 *strcpy(s8 *dst, s8 *src);
-FileVtbl *SeqFile_GetVtbl(void);
 extern FileVtbl g_seqFileVtbl;
 
 /* SeqFile */

@@ -1,5 +1,8 @@
 #include "common.h"
 #include "game/scene.h"
+#include "game/heap.h"
+#include "game/display.h"
+#include "game/pad.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -9,11 +12,6 @@ Heap *g_mainHeap;
 Scene *g_scene;
 extern s32 g_sceneSettings[];
 void SetMem(s32);
-Heap *Heap_Create(u32, s32);
-void Heap_SetCurrent(Heap *);
-s32 Scene_New(s32);
-Display *Display_New(void);
-s32 Pad_New(s32, s32);
 
 /* The boot entry. gcc inserts the __main() call (constructors) itself at the top of main. Makes the boot heap and the scene, then calls the scene's slots 0x44 and 0x4C. */
 void main(void) {

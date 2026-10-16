@@ -1,5 +1,9 @@
 #include "common.h"
 #include "game/loader.h"
+#include "game/tix.h"
+#include "game/heap.h"
+#include "game/file_base.h"
+#include "game/tim_pack.h"
 
 /*
  * Tix: a TEXx.TIX texture set file and its palette fades (include/game/loader.h).
@@ -27,20 +31,12 @@ typedef struct ClutRows {
     u16 source[0x100];
     u16 pad420[4];
 } ClutRows;
-extern void Object_DeleteArray(void *, s32);
-extern void Heap_Free(s32);
-extern s32 Heap_Alloc(s32 size);
-extern void File_LockBackend(void);
-extern void File_UnlockBackend(void);
-FileVtbl *File_GetBackendVtbl(void);
 extern s32 DrawSync(s32 mode);
 void StoreImage(ClutRect *rect, u32 *p);
 s32 LoadImage(ClutRect *rect, u32 *p);
 
-TixVtbl *Tix_GetVtbl(void);
-u32 Tix_GetMaxPartSize(Tix *tix);
-void Tix_BuildFade(TixFade *fade, s32 palette);
-s32 TimPack_Create(s32 path);
+static u32 Tix_GetMaxPartSize(Tix *tix);
+static void Tix_BuildFade(TixFade *fade, s32 palette);
 
 extern TixVtbl g_tixVtbl;
 s16 g_clutFadeShift;                /* 3: a palette fade has 1 << this rows */
@@ -172,7 +168,7 @@ end:
 }
 
 /* The largest part size of the header (sizes at words 5 to 8) */
-u32 Tix_GetMaxPartSize(Tix *tix) {
+static u32 Tix_GetMaxPartSize(Tix *tix) {
     u32 *header;
     u32 i;
     u32 max;
@@ -221,7 +217,7 @@ void Tix_SetFadeColor(Tix *tix, s32 palette, Color3 *color) {
  * 1 to rows - 1 under it, row k blended toward the fade colour by k / rows (4.12 weights,
  * 5-bit channels). Colour 0 (transparent) stays 0; the semi-transparency bit is kept.
  */
-void Tix_BuildFade(TixFade *fade, s32 palette) {
+static void Tix_BuildFade(TixFade *fade, s32 palette) {
     ClutRows work;
     s32 i;
     s32 k;

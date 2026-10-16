@@ -303,4 +303,7 @@ typedef struct Card {
     s32 choice;             /* 0x80 index of the file picked in the chooser */
 } Card;
 
+/* Functions of src/game/menu.c that other files call or reference (docs/naming.md, Prototypes) */
+s32 Menu_New(s32 arg0);
+
 #endif

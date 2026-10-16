@@ -833,4 +833,7 @@ typedef struct Scene {
     struct DreamSys *dreamSys; /* 0x28 the game state, made with ETC\DREAME5.TMD */
 } Scene;
 
+/* Functions of src/game/scene.c that other files call or reference (docs/naming.md, Prototypes) */
+s32 Scene_New(SceneSettings *settings);
+
 #endif

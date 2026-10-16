@@ -1,6 +1,12 @@
 #include "common.h"
 #include "game/scene.h"
 #include "game/menu.h"
+#include "game/heap.h"
+#include "game/tim.h"
+#include "game/menu_screen.h"
+#include "game/label.h"
+#include "game/text.h"
+#include "game/card.h"
 
 /*
  * The main menu (class Menu, vtable g_menuVtbl 0x80086B60). It drives the memory card object of
@@ -9,8 +15,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-s32 Heap_Alloc(s32 size);
-MenuVtbl *Menu_GetVtbl(void);
+static MenuVtbl *Menu_GetVtbl(void);
 
 /* Allocates the menu (0xC4 bytes) and runs slot 0x8 of its class, Menu_Init. */
 s32 Menu_New(s32 arg0) {
@@ -23,33 +28,24 @@ s32 Menu_New(s32 arg0) {
     }
     return 0;
 }
-extern MenuVtbl *MenuScreen_GetVtbl(void);
 s32 g_cardFileName;
 s32 g_cardTitle;
-extern s32 Heap_Alloc(s32);
 extern MenuFillRect g_menuFillRects[];
 extern s32 D_8008A9B4;
 s32 open(char *name, s32 flags);
 s32 close(s32 fd);
-extern s32 Heap_Free(s32);
 s32 strcpy(s32 dst, s32 src);
-void Card_SetTitleLetter(CardTitle *title, u8 *fileName);
 s32 g_cardBlankComment;
-extern s32 Label_Create(s32, s32, s32);
-extern s8 *Text_Decode(s8 *, u8 *);
 extern s32 strlen(u8 *);
-s32 Tim_New(s32 path);
-Card *Card_New(s32 sharePad, s32 port);
 extern u8 g_cardFileSuffixes[];
 void *g_cardFilePrefix;
-MenuVtbl *Menu_GetVtbl(void);
-void SaveMenu_SetTitleDay(s32 dayNumber);
+static MenuVtbl *Menu_GetVtbl(void);
+static void SaveMenu_SetTitleDay(s32 dayNumber);
 extern u8 g_mainMenuDesc[];
 u8 g_titleBlinkChannel;
 s32 g_titleBlinkTick;
 extern u8 g_menuVtbl[];
 s8 *g_titleDayDigits;
-void Text_FormatNumber(s8 *buf, s32 number, s32 digits, s32 arg3);
 
 INCLUDE_RODATA("asm/nonmatchings/game/menu", D_80011434);
 
@@ -77,7 +73,7 @@ void Menu_Init(Menu *menu, DreamSys *dreamSys) {
 }
 
 /* FLASHBACK is drawn only with an unlock score above 9,999,999 and one flashback kept. */
-void Menu_UpdateFlashbackItem(Menu *menu, MenuDef *desc, DreamSys *dreamSys) {
+static void Menu_UpdateFlashbackItem(Menu *menu, MenuDef *desc, DreamSys *dreamSys) {
     SaveBlock *save = menu->saveBlock;
     s32 hidden = 1;
     if (save->unlockScore > 9999999) {
@@ -87,7 +83,7 @@ void Menu_UpdateFlashbackItem(Menu *menu, MenuDef *desc, DreamSys *dreamSys) {
 }
 
 /* Writes the day number as three full-width digits into the card title. */
-void SaveMenu_SetTitleDay(s32 dayNumber) {
+static void SaveMenu_SetTitleDay(s32 dayNumber) {
     Text_FormatNumber(g_titleDayDigits, dayNumber, 3, 0);
     ((CardTitle *)g_cardTitle)->day = *(SjisChar3 *)g_titleDayDigits;
 }
@@ -347,6 +343,6 @@ void Menu_OnCardNotify(Menu *menu, s32 **sender, s32 state) {
     }
 }
 
-MenuVtbl *Menu_GetVtbl(void) {
+static MenuVtbl *Menu_GetVtbl(void) {
     return (MenuVtbl *)g_menuVtbl;
 }

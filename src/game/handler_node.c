@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/sound.h"
+#include "game/handler_node.h"
 
 /*
  * The handler nodes that play sounds from a model's sound bank once per tick (see src/game/entity.c):

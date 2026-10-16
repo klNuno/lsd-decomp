@@ -1,4 +1,7 @@
 #include "common.h"
+#include "game/dream_view.h"
+#include "game/heap.h"
+#include "game/view.h"
 
 /*
  * DreamView (vtable g_dreamViewVtbl 0x800869D8): the dream camera, a View subclass of 0xDC bytes.
@@ -26,10 +29,9 @@ typedef struct RenderObj {
     s32 unk70;
 } RenderObj;
 
-s32 Heap_Alloc(s32 size);
+/* the vtable of view.c through this file's view of its slots, so not from game/view.h */
 RenderObjVtbl *View_GetVtbl(void);
-RenderObjVtbl *DreamView_GetVtbl(void);
-s32 DreamView_New(void);
+static RenderObjVtbl *DreamView_GetVtbl(void);
 
 s32 DreamView_New(void) {
     s32 obj;
@@ -72,6 +74,6 @@ void DreamView_EmptySlotC0(void) {
 void DreamView_EmptySlotC4(void) {
 }
 
-RenderObjVtbl *DreamView_GetVtbl(void) {
+static RenderObjVtbl *DreamView_GetVtbl(void) {
     return (RenderObjVtbl *)g_dreamViewVtbl;
 }

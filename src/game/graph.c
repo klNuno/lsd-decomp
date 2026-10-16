@@ -2,6 +2,10 @@
 #include "game/dreamsys.h"
 #include "game/scene.h"
 #include "game/sound.h"
+#include "game/graph.h"
+#include "game/heap.h"
+#include "game/menu_screen.h"
+#include "game/box.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -30,10 +34,7 @@ typedef struct GraphVtbl {
     void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
 } GraphVtbl;
 
-void *Heap_Alloc(s32 size);
-void Heap_Free(s32);
-GraphVtbl *Graph_GetVtable(void);
-extern ScreenVtbl *MenuScreen_GetVtbl(void);
+static GraphVtbl *Graph_GetVtable(void);
 
 /* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
 void *Graph_New(s32 dreamSys) {
@@ -60,7 +61,6 @@ void Graph_Init(Graph *graph, DreamSys *dreamSys) {
 extern s32 g_graphReelColor;
 extern u8 g_graphBoxSize[];
 extern s32 g_graphNewestColor[];
-void *Box_Create(s32 size, s32 color, s32 priority);
 /* A box color the graph steps down; signed bytes, as the code subtracts. */
 typedef struct GraphColor {
     s8 r;
@@ -86,7 +86,7 @@ typedef struct ReelSave {
     s8 reelSeen;            /* 0x467 */
 } ReelSave;
 
-s32 Graph_CheckReel(Graph *graph, void *saveBlock);
+static s32 Graph_CheckReel(Graph *graph, void *saveBlock);
 extern ReelPoint g_reelPoints[]; /* the 4 points of the reel */
 
 /* Slot 0x40 */
@@ -217,7 +217,7 @@ void Graph_Draw(Graph *graph, void *root) {
 }
 
 /* Looks for each of the 4 points of g_reelPoints among the last n days (n at most 100), newest first. */
-s32 Graph_CheckReel(Graph *graph, void *saveBlock) {
+static s32 Graph_CheckReel(Graph *graph, void *saveBlock) {
     ReelSave *save = saveBlock;
     s32 n, j, k, count;
     u32 i;
@@ -260,6 +260,6 @@ void Graph_BlinkReel(Graph *graph) {
     }
 }
 
-GraphVtbl *Graph_GetVtable(void) {
+static GraphVtbl *Graph_GetVtable(void) {
     return g_graphVtbl;
 }

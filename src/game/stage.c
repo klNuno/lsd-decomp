@@ -13,11 +13,11 @@ extern StageGrid g_stageGridRows[];  /* g_stageGrids + 2 */
 extern s16 *g_stageChunkMoods[];       /* per stage: the s16 mood of each chunk, row-major */
 
 /* The number of stages (STG00 to STG13). */
-s32 Stage_GetCount(void) {
+static s32 Stage_GetCount(void) {
     return 0xE;
 }
 
-StageGrid *Stage_GetGrids(s32 *count) {
+static StageGrid *Stage_GetGrids(s32 *count) {
     if (count != NULL) {
         *count = 14;
     }
