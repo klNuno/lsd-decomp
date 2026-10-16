@@ -28,33 +28,21 @@ s32 ModelObject_GetVtbl(void);
 void ModelObject_SetReady(void *modelObject);
 void *Heap_Alloc(s32 size);
 
-/* Output of ModelObject_GetBoxList: count 1, then the eight corners of a box as u16 (hex offsets) */
+/*
+ * Output of ModelObject_GetBoxList: count 1, then the eight corners of the box, three u16 each.
+ * c0 is (min, min, min), c1 (min, max y, min), c2 (max, max y, min), c3 (max, min y, min),
+ * and c4 to c7 repeat them with max z. Same layout as ModelBoxRecord.
+ */
 typedef struct ModelBoxOut {
     s32 count;
-    u16 unk4;
-    u16 unk6;
-    u16 unk8;
-    u16 unkA;
-    u16 unkC;
-    u16 unkE;
-    u16 unk10;
-    u16 unk12;
-    u16 unk14;
-    u16 unk16;
-    u16 unk18;
-    u16 unk1A;
-    u16 unk1C;
-    u16 unk1E;
-    u16 unk20;
-    u16 unk22;
-    u16 unk24;
-    u16 unk26;
-    u16 unk28;
-    u16 unk2A;
-    u16 unk2C;
-    u16 unk2E;
-    u16 unk30;
-    u16 unk32;
+    u16 c0x, c0y, c0z;
+    u16 c1x, c1y, c1z;
+    u16 c2x, c2y, c2z;
+    u16 c3x, c3y, c3z;
+    u16 c4x, c4y, c4z;
+    u16 c5x, c5y, c5z;
+    u16 c6x, c6y, c6z;
+    u16 c7x, c7y, c7z;
 } ModelBoxOut;
 
 /* Scratch buffer of ModelObject_GetBoxList: min x, y, z then max x, y, z */
@@ -66,32 +54,38 @@ typedef struct ModelBoxBuf {
 extern u8 g_modelObjectVtbl[];
 s32 g_modelObjectReady;
 
-/* One primitive of a TMD object: the GPU polygon code is in unk3 (0x20 to 0x3F) */
+/*
+ * One primitive of a TMD object, the Sony packet (psx-spx "TMD - Modeling Data for OS Library").
+ * The GPU polygon code is in mode (0x20 to 0x3F). flag bit 2 selects the gouraud layout, which
+ * pushes the vertex index words 8 bytes down, so one offset holds a different word per code.
+ * ModelObject_NextPrim reads only the vertex index words. The names below are those indexes for
+ * the flat layout. In the gouraud layout the same field is read as the next vertex's index.
+ */
 typedef struct ModelPrim {
-    u8 unk0;
-    u8 unk1;
-    u8 unk2;
-    u8 unk3;
-    u16 unk4;
-    u16 clut;   /* +0x06 CBA of a textured primitive: clut x / 16 + clut y * 64 */
-    u16 unk8;
-    u16 unkA;
-    u16 unkC;
-    u16 unkE;
-    u16 unk10;
-    u16 unk12;
-    u16 unk14;
-    u16 unk16;
-    u16 unk18;
-    u16 unk1A;
-    u16 unk1C;
-    u16 unk1E;
-    u16 unk20;
-    u16 unk22;
-    u16 unk24;
-    u16 unk26;
-    u16 unk28;
-    u16 unk2A;
+    u8 olen;     /* +0x00 output packet size in words */
+    u8 ilen;     /* +0x01 input packet size in words */
+    u8 flag;     /* +0x02 bit 2: gouraud, the vertex indexes move */
+    u8 mode;     /* +0x03 GPU command 0x20 to 0x3F */
+    u16 i04;
+    u16 clut;    /* +0x06 CBA of a textured primitive: clut x / 16 + clut y * 64 */
+    u16 v0;      /* +0x08 flat untextured (0x21, 0x23, 0x29, 0x2B); gouraud puts a normal here */
+    u16 v1;      /* +0x0A */
+    u16 v2;      /* +0x0C */
+    u16 v3;      /* +0x0E quad only; a triangle ends here */
+    u16 i10;     /* +0x10 flat textured quad's fourth vertex (0x28) */
+    u16 i12;
+    u16 i14;     /* +0x14 flat textured unlit quad's first vertex (0x39) */
+    u16 i16;
+    u16 i18;
+    u16 i1A;
+    u16 i1C;     /* +0x1C gouraud textured unlit triangle's first vertex (0x35) */
+    u16 i1E;
+    u16 i20;
+    u16 i22;
+    u16 i24;     /* +0x24 gouraud textured unlit quad's first vertex (0x3D) */
+    u16 i26;
+    u16 i28;
+    u16 i2A;
 } ModelPrim;
 
 typedef struct ModelVec {
@@ -264,30 +258,30 @@ void ModelObject_GetBoxList(void *modelObject, ModelBoxOut *out) {
 
     ModelObject_ComputeBox(modelObject, (u8 *)box.buf);
     box.one = 1;
-    out->unk4 = box.buf[0];
-    out->unk6 = box.buf[1];
-    out->unk8 = box.buf[2];
-    out->unkA = box.buf[0];
-    out->unkC = box.buf[4];
-    out->unkE = box.buf[2];
-    out->unk10 = box.buf[3];
-    out->unk12 = box.buf[4];
-    out->unk14 = box.buf[2];
-    out->unk16 = box.buf[3];
-    out->unk18 = box.buf[1];
-    out->unk1A = box.buf[2];
-    out->unk1C = box.buf[0];
-    out->unk1E = box.buf[1];
-    out->unk20 = box.buf[5];
-    out->unk22 = box.buf[0];
-    out->unk24 = box.buf[4];
-    out->unk26 = box.buf[5];
-    out->unk28 = box.buf[3];
-    out->unk2A = box.buf[4];
-    out->unk2C = box.buf[5];
-    out->unk2E = box.buf[3];
-    out->unk30 = box.buf[1];
-    out->unk32 = box.buf[5];
+    out->c0x = box.buf[0];
+    out->c0y = box.buf[1];
+    out->c0z = box.buf[2];
+    out->c1x = box.buf[0];
+    out->c1y = box.buf[4];
+    out->c1z = box.buf[2];
+    out->c2x = box.buf[3];
+    out->c2y = box.buf[4];
+    out->c2z = box.buf[2];
+    out->c3x = box.buf[3];
+    out->c3y = box.buf[1];
+    out->c3z = box.buf[2];
+    out->c4x = box.buf[0];
+    out->c4y = box.buf[1];
+    out->c4z = box.buf[5];
+    out->c5x = box.buf[0];
+    out->c5y = box.buf[4];
+    out->c5z = box.buf[5];
+    out->c6x = box.buf[3];
+    out->c6y = box.buf[4];
+    out->c6z = box.buf[5];
+    out->c7x = box.buf[3];
+    out->c7y = box.buf[1];
+    out->c7z = box.buf[5];
     out->count = 1;
 }
 
@@ -496,163 +490,163 @@ void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *c
         prim = model->primitives;
     }
     *count = 4;
-    switch (prim->unk3) {
+    switch (prim->mode) {
     case 0x20:
     case 0x22:
-        if (prim->unk2 & 4) {
-            idx[0] = prim->unk12;
-            idx[1] = prim->unk14;
-            idx[2] = prim->unk16;
+        if (prim->flag & 4) {
+            idx[0] = prim->i12;
+            idx[1] = prim->i14;
+            idx[2] = prim->i16;
             size = 0x18;
         } else {
-            idx[0] = prim->unkA;
-            idx[1] = prim->unkC;
-            idx[2] = prim->unkE;
+            idx[0] = prim->v1;
+            idx[1] = prim->v2;
+            idx[2] = prim->v3;
             size = 0x10;
         }
         *count = 3;
         break;
     case 0x21:
     case 0x23:
-        idx[0] = prim->unk8;
-        idx[1] = prim->unkA;
-        idx[2] = prim->unkC;
+        idx[0] = prim->v0;
+        idx[1] = prim->v1;
+        idx[2] = prim->v2;
         size = 0x10;
         *count = 3;
         break;
     case 0x24:
     case 0x26:
-        idx[0] = prim->unk12;
-        idx[1] = prim->unk14;
-        idx[2] = prim->unk16;
+        idx[0] = prim->i12;
+        idx[1] = prim->i14;
+        idx[2] = prim->i16;
         size = 0x18;
         *count = 3;
         break;
     case 0x25:
     case 0x27:
-        idx[0] = prim->unk14;
-        idx[1] = prim->unk16;
-        idx[2] = prim->unk18;
+        idx[0] = prim->i14;
+        idx[1] = prim->i16;
+        idx[2] = prim->i18;
         size = 0x1C;
         *count = 3;
         break;
     case 0x28:
     case 0x2A:
-        if (prim->unk2 & 4) {
-            idx[0] = prim->unk16;
-            idx[1] = prim->unk18;
-            idx[2] = prim->unk1A;
-            idx[3] = prim->unk1C;
+        if (prim->flag & 4) {
+            idx[0] = prim->i16;
+            idx[1] = prim->i18;
+            idx[2] = prim->i1A;
+            idx[3] = prim->i1C;
             size = 0x20;
         } else {
-            idx[0] = prim->unkA;
-            idx[1] = prim->unkC;
-            idx[2] = prim->unkE;
-            idx[3] = prim->unk10;
+            idx[0] = prim->v1;
+            idx[1] = prim->v2;
+            idx[2] = prim->v3;
+            idx[3] = prim->i10;
             size = 0x14;
         }
         break;
     case 0x29:
     case 0x2B:
-        idx[0] = prim->unk8;
-        idx[1] = prim->unkA;
-        idx[2] = prim->unkC;
-        idx[3] = prim->unkE;
+        idx[0] = prim->v0;
+        idx[1] = prim->v1;
+        idx[2] = prim->v2;
+        idx[3] = prim->v3;
         size = 0x10;
         break;
     case 0x2C:
     case 0x2E:
-        idx[0] = prim->unk16;
-        idx[1] = prim->unk18;
-        idx[2] = prim->unk1A;
-        idx[3] = prim->unk1C;
+        idx[0] = prim->i16;
+        idx[1] = prim->i18;
+        idx[2] = prim->i1A;
+        idx[3] = prim->i1C;
         size = 0x20;
         break;
     case 0x2D:
     case 0x2F:
-        idx[0] = prim->unk18;
-        idx[1] = prim->unk1A;
-        idx[2] = prim->unk1C;
-        idx[3] = prim->unk1E;
+        idx[0] = prim->i18;
+        idx[1] = prim->i1A;
+        idx[2] = prim->i1C;
+        idx[3] = prim->i1E;
         size = 0x20;
         break;
     case 0x30:
     case 0x32:
-        if (prim->unk2 & 4) {
-            idx[0] = prim->unk12;
-            idx[1] = prim->unk16;
-            idx[2] = prim->unk1A;
+        if (prim->flag & 4) {
+            idx[0] = prim->i12;
+            idx[1] = prim->i16;
+            idx[2] = prim->i1A;
             size = 0x1C;
         } else {
-            idx[0] = prim->unkA;
-            idx[1] = prim->unkE;
-            idx[2] = prim->unk12;
+            idx[0] = prim->v1;
+            idx[1] = prim->v3;
+            idx[2] = prim->i12;
             size = 0x14;
         }
         *count = 3;
         break;
     case 0x31:
     case 0x33:
-        idx[0] = prim->unk10;
-        idx[1] = prim->unk12;
-        idx[2] = prim->unk14;
+        idx[0] = prim->i10;
+        idx[1] = prim->i12;
+        idx[2] = prim->i14;
         size = 0x18;
         *count = 3;
         break;
     case 0x34:
     case 0x36:
-        idx[0] = prim->unk12;
-        idx[1] = prim->unk16;
-        idx[2] = prim->unk1A;
+        idx[0] = prim->i12;
+        idx[1] = prim->i16;
+        idx[2] = prim->i1A;
         size = 0x1C;
         *count = 3;
         break;
     case 0x35:
     case 0x37:
-        idx[0] = prim->unk1C;
-        idx[1] = prim->unk1E;
-        idx[2] = prim->unk20;
+        idx[0] = prim->i1C;
+        idx[1] = prim->i1E;
+        idx[2] = prim->i20;
         size = 0x24;
         *count = 3;
         break;
     case 0x38:
     case 0x3A:
-        if (prim->unk2 & 4) {
-            idx[0] = prim->unk16;
-            idx[1] = prim->unk1A;
-            idx[2] = prim->unk1E;
-            idx[3] = prim->unk22;
+        if (prim->flag & 4) {
+            idx[0] = prim->i16;
+            idx[1] = prim->i1A;
+            idx[2] = prim->i1E;
+            idx[3] = prim->i22;
             size = 0x24;
         } else {
-            idx[0] = prim->unkA;
-            idx[1] = prim->unkE;
-            idx[2] = prim->unk12;
-            idx[3] = prim->unk16;
+            idx[0] = prim->v1;
+            idx[1] = prim->v3;
+            idx[2] = prim->i12;
+            idx[3] = prim->i16;
             size = 0x18;
         }
         break;
     case 0x39:
     case 0x3B:
-        idx[0] = prim->unk14;
-        idx[1] = prim->unk16;
-        idx[2] = prim->unk18;
-        idx[3] = prim->unk1A;
+        idx[0] = prim->i14;
+        idx[1] = prim->i16;
+        idx[2] = prim->i18;
+        idx[3] = prim->i1A;
         size = 0x1C;
         break;
     case 0x3C:
     case 0x3E:
-        idx[0] = prim->unk16;
-        idx[1] = prim->unk1A;
-        idx[2] = prim->unk1E;
-        idx[3] = prim->unk22;
+        idx[0] = prim->i16;
+        idx[1] = prim->i1A;
+        idx[2] = prim->i1E;
+        idx[3] = prim->i22;
         size = 0x24;
         break;
     case 0x3D:
     case 0x3F:
-        idx[0] = prim->unk24;
-        idx[1] = prim->unk26;
-        idx[2] = prim->unk28;
-        idx[3] = prim->unk2A;
+        idx[0] = prim->i24;
+        idx[1] = prim->i26;
+        idx[2] = prim->i28;
+        idx[3] = prim->i2A;
         size = 0x2C;
         break;
     default:

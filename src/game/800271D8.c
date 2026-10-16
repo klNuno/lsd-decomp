@@ -4,7 +4,7 @@
 
 typedef struct FileLoadedView {
     u8 pad[0xC];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen: File_ClearLoaded drops it */
 } FileLoadedView;
 s32 g_fileEnabled;
 s32 g_fileOption;
@@ -20,48 +20,48 @@ void File_Unlock(void);
 s32 g_fileVSyncPending;
 typedef struct FileSizeView {
     u8 pad[0xC];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen */
     u8 pad2[0xC];
-    u32 unk1C;
+    u32 cdSize;          /* File.cdSize, rounded up to whole sectors */
 } FileSizeView;
 void File_UnhookVSync(void);
 typedef struct ObjectClassTable {
     u8 pad_00[0x8];
-    void (*unk8)(void *);
-    void (*unkC)(s32);
+    void (*init)(void *);    /* 0x08 Object_Init */
+    void (*destroy)(s32);    /* 0x0C Object_Destroy */
 } ObjectClassTable;
 ObjectClassTable *File_GetBaseVtbl(void);
 void *File_GetVtable(void);
 void File_InitCd(void);
 typedef struct FileInitObject {
-    void *unk0;
+    void *vtbl;              /* File.vtbl, the back end vtable */
     u8 pad4[0x24];
-    s16 unk28;
+    s16 direct;              /* File.direct, 0: requests are queued */
 } FileInitObject;
 typedef struct FileInitClassTable {
     u8 pad[8];
-    void (*unk8)(FileInitObject *);
+    void (*init)(FileInitObject *);  /* 0x08 Object_Init */
 } FileInitClassTable;
 s32 g_fileDirTable;
 typedef struct FileVtSlot8 {
     u8 pad[0x8];
-    void (*unk8)(s32);
+    void (*init)(s32);       /* 0x08 File_InitObject */
 } FileVtSlot8;
 s32 Heap_Alloc(s32);
 s32 g_fileCdReady;
 void CdSetDebug(s32 level);
 s32 CdControlB(s32 com, u8 *param, s32 result);
 typedef struct FileInitRecord {
-    void *unk0;
+    void *vtbl;              /* File.vtbl */
     u8 pad_04[0x8];
-    s32 unkC;
+    s32 isOpen;              /* File.isOpen, 0 until File_Locate finds the file */
 } FileInitRecord;
 typedef struct FileStepObject FileStepObject;
 typedef struct {
     u8 pad[0x5C];
-    void (*unk5C)(FileStepObject *);
+    void (*onLoaded)(FileStepObject *); /* 0x5C File_MarkLoaded: flags |= 1 */
     u8 pad2[0x74 - 0x60];
-    void (*unk74)(void);
+    void (*cancel)(void);               /* 0x74 File_CancelRequests */
 } FileStepVt;
 struct FileStepObject {
     FileStepVt *vt;
@@ -81,48 +81,48 @@ struct FileRequest *File_NewRequest(void);
 typedef struct FileHandle FileHandle;
 typedef struct {
     u8 pad[0x44];
-    void (*unk44)(FileHandle *, s32, s32, s32);
-    void (*unk48)(FileHandle *);
-    void (*unk4C)(FileHandle *, s32, s32);
+    void (*open)(FileHandle *, s32, s32, s32);  /* 0x44 File_LoadByName */
+    void (*close)(FileHandle *);               /* 0x48 File_Unload */
+    void (*seek)(FileHandle *, s32, s32);       /* 0x4C File_Seek */
     u8 pad2[0x54 - 0x50];
-    void (*unk54)(FileHandle *, s32, s32);
-    void (*unk58)(FileHandle *, s32);
+    void (*read)(FileHandle *, s32, s32);       /* 0x54 File_Read */
+    void (*load)(FileHandle *, s32);            /* 0x58 File_Open */
     u8 pad3[0x64 - 0x5C];
-    void (*unk64)(FileHandle *);
+    void (*onLoaded)(FileHandle *);             /* 0x64 File_MarkLoaded */
     u8 pad4[0x70 - 0x68];
-    void (*unk70)(FileHandle *);
+    void (*unk70)(FileHandle *);                /* 0x70 File_Stop, called once the queue drains */
 } FileHandleVt;
 struct FileHandle {
     FileHandleVt *vt;
     u8 pad[0x1E];
-    u16 unk22;
-    s32 unk24;
-    u16 unk28;
+    u16 pending;         /* File.pending, queued requests */
+    s32 flags;           /* File.flags, one bit per finished request */
+    u16 direct;          /* File.direct, 1 while a queued request runs */
 };
 typedef struct FileRequest FileRequest;
 struct FileRequest {
-    void *unk0;
-    s32 unk4;
-    s32 unk8;
-    FileHandle *unkC;
-    s32 unk10;
-    s32 unk14;
-    s32 unk18;
-    FileRequest *unk1C;
-    FileRequest *unk20;
+    void *running;       /* 0x00 0 while queued, 1 once File_BeginOp starts it */
+    s32 markLoaded;      /* 0x04 1: the finished request sets bit 0 of the file's flags */
+    s32 kind;            /* 0x08 2 open, 3 close, 4 seek, 5 read, 7 load whole */
+    FileHandle *file;    /* 0x0C the file the request belongs to */
+    s32 index;           /* 0x10 directory index, File_EntryAt for kinds 2 and 7 */
+    s32 param0;          /* 0x14 open mode, seek offset, or read buffer */
+    s32 param1;          /* 0x18 open param, seek mode, or read size */
+    FileRequest *prev;   /* 0x1C */
+    FileRequest *next;   /* 0x20 */
 };
 void Heap_Free(void *);
 typedef struct FileStateView {
     u8 pad[0xC];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen */
     u8 pad2[0x28 - 0x10];
-    u16 unk28;
+    u16 direct;          /* File.direct */
 } FileStateView;
 void File_BeginOp(s32 kind, s32 state);
 void File_EndOp(void);
 typedef struct FileVtPathSlot {
     u8 pad[0x58];
-    void (*unk58)(File *, char *);
+    void (*load)(File *, char *); /* 0x58 File_Open */
 } FileVtPathSlot;
 s32 File_FindIndex(char *name);
 void File_QueueRequest(File *obj, s32 index, s32 kind, s32 param3, s32 param4);
@@ -136,7 +136,7 @@ typedef struct VSyncObject {
 VSyncObject *Display_GetCurrent(void);
 typedef struct FileVtVSyncSlot {
     u8 pad[0x68];
-    void (*unk68)(void);
+    void (*runQueue)(void); /* 0x68 File_ServiceQueue */
 } FileVtVSyncSlot;
 s32 g_fileLock;
 s32 Heap_IsBusy(void);
@@ -144,14 +144,14 @@ void File_PollIo(void);
 void File_StepIo(void);
 typedef struct FileVtSlot48 {
     u8 pad[0x48];
-    void (*unk48)(void *);
+    void (*close)(void *);   /* 0x48 File_Unload */
 } FileVtSlot48;
 typedef struct FileSeekView {
-    FileVtSlot48 *unk0;
+    FileVtSlot48 *vtbl;  /* File.vtbl */
     u8 pad4[0x8];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen */
     u8 pad10[0x8];
-    u8 unk18[0x8];
+    u8 cdPos[0x8];       /* File.cdPos, the CdlLOC given to CdControl command 2 */
 } FileSeekView;
 s32 CdControl(s32 com, u8 *param, s32 result);
 s32 CdRead(s32 sectors, void *buf, s32 mode);
@@ -159,11 +159,11 @@ s32 CdReadSync(s32 mode, u8 *result);
 s32 CdSync(s32 mode, u8 *result);
 typedef struct FileRequestLink FileRequestLink;
 struct FileRequestLink {
-    void *unk0;
+    void *running;       /* FileRequest.running */
     u8 pad4[0x8];
-    void *unkC;
+    void *file;          /* FileRequest.file */
     u8 pad10[0x10];
-    FileRequestLink *unk20;
+    FileRequestLink *next; /* FileRequest.next */
 };
 s32 g_fileCurEntry;
 s32 g_filePrevEntry;
@@ -176,12 +176,12 @@ s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset);
 extern u8 g_fileVtable[];
 typedef struct FileEntryView {
     u8 pad[0xC];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen */
     u8 pad2[0x18 - 0x10];
-    u8 unk18[4];
-    u32 unk1C;
+    u8 cdPos[4];         /* File.cdPos */
+    u32 cdSize;          /* File.cdSize */
     u8 pad3[0x28 - 0x20];
-    u16 unk28;
+    u16 direct;          /* File.direct */
 } FileEntryView;
 extern u8 g_fileScratchPos[];
 s32 File_GetSize(FileSizeView *obj);
@@ -200,10 +200,10 @@ typedef struct CdlFile {
 } CdlFile;
 typedef struct FileLoadState {
     u8 pad[0xC];
-    s32 unkC;
+    s32 isOpen;          /* File.isOpen, set once CdSearchFile finds it */
     u8 pad2[0x8];
-    CdlLoc unk18;
-    s32 unk1C;
+    CdlLoc cdPos;        /* File.cdPos */
+    s32 cdSize;          /* File.cdSize */
 } FileLoadState;
 typedef struct CdlLocDir {
     u8 minute, second, sector, track;
@@ -226,8 +226,8 @@ typedef struct CdlLocTail {
 } CdlLocTail;
 typedef struct DirEntryTail {
     u8 pad[0x14];
-    CdlLocTail unk14;
-    s32 unk18;
+    CdlLocTail pos;      /* DirEntry.pos, the CdlLOC at +0x14 */
+    s32 size;            /* DirEntry.size */
 } DirEntryTail;
 typedef struct CdlFileTail {
     CdlLocTail pos;
@@ -237,24 +237,24 @@ typedef struct CdlFileTail {
 s32 File_FindEntry(char *name);
 typedef struct FileVtOpen {
     u8 pad[0x48];
-    void (*unk48)(void *);
+    void (*close)(void *);   /* 0x48 File_Unload */
     u8 pad2[0x64 - 0x4C];
-    void (*unk64)(void *);
+    void (*onLoaded)(void *); /* 0x64 File_MarkLoaded */
 } FileVtOpen;
 typedef struct FileOpenObject {
-    FileVtOpen *unk0;
+    FileVtOpen *vtbl;    /* File.vtbl */
     u8 pad4[0xC];
-    s32 unk10;
-    s32 unk14;
+    s32 data;            /* File.data, the buffer the whole file is read into */
+    s32 size;            /* File.size, the buffer size in bytes */
     u8 pad18[0x8];
-    u16 unk20;
+    u16 keepData;        /* File.keepData, reuses the buffer when set */
     u8 pad22[0x2];
-    s32 unk24;
-    u16 unk28;
+    s32 flags;           /* File.flags */
+    u16 direct;          /* File.direct */
 } FileOpenObject;
 typedef struct DirEntrySize {
     u8 pad[0x18];
-    u32 unk18;
+    u32 size;            /* DirEntry.size, rounded up to sectors by File_Open */
 } DirEntrySize;
 void File_LoadWhole();
 
@@ -263,22 +263,22 @@ s32 File_Create(void) {
 
     obj = Heap_Alloc(0x2C);
     if (obj != 0) {
-        ((FileVtSlot8 *)File_GetVtable())->unk8(obj);
+        ((FileVtSlot8 *)File_GetVtable())->init(obj);
         return obj;
     }
     return 0;
 }
 
 void File_InitObject(FileInitObject *obj) {
-    ((FileInitClassTable *)File_GetBaseVtbl())->unk8(obj);
-    obj->unk0 = File_GetVtable();
-    obj->unk28 = 0;
+    ((FileInitClassTable *)File_GetBaseVtbl())->init(obj);
+    obj->vtbl = File_GetVtable();
+    obj->direct = 0;
     File_InitCd();
 }
 
 void File_Step(FileStepObject *obj) {
-    obj->vt->unk74();
-    obj->vt->unk5C(obj);
+    obj->vt->cancel();
+    obj->vt->onLoaded(obj);
 }
 
 void func_800272C8(void) {
@@ -302,8 +302,8 @@ void File_LoadByName(File *obj, char *name, s32 param2, s32 param3) {
                 if (g_fileCurEntry == 0) {
                     return;
                 }
-                *(CdlLocTail *)&obj->cdPos = ((DirEntryTail *)g_fileCurEntry)->unk14;
-                obj->cdSize = ((DirEntryTail *)g_fileCurEntry)->unk18;
+                *(CdlLocTail *)&obj->cdPos = ((DirEntryTail *)g_fileCurEntry)->pos;
+                obj->cdSize = ((DirEntryTail *)g_fileCurEntry)->size;
                 g_fileAsyncMode = 1;
                 obj->isOpen = 1;
             } else {
@@ -334,10 +334,10 @@ void File_Unload(FileStateView *obj) {
         return;
     }
     File_Lock();
-    if (obj->unk28 != 0) {
+    if (obj->direct != 0) {
         if (g_fileBusy == 0) {
             File_BeginOp(0, 0);
-            obj->unkC = 0;
+            obj->isOpen = 0;
             File_EndOp();
         }
     } else {
@@ -357,14 +357,14 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
         return File_GetSize((FileSizeView *)obj);
     }
     File_Lock();
-    if (obj->unk28 != 0) {
-        if (g_fileBusy == 0 && obj->unkC != 0) {
+    if (obj->direct != 0) {
+        if (g_fileBusy == 0 && obj->isOpen != 0) {
             File_BeginOp(2, 1);
             sector = offset >> 11;
             if (offset & 0x7FF) {
                 sector++;
             }
-            base = CdPosToInt(obj->unk18);
+            base = CdPosToInt(obj->cdPos);
             buf = g_fileScratchPos;
             CdIntToPos(base + sector, buf);
             if (mode == 0) {
@@ -381,7 +381,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
             } else {
                 File_EndOp();
                 File_Unlock();
-                v = obj->unk1C;
+                v = obj->cdSize;
                 if (v & 0x7FF) {
                     return ((v >> 11) + 1) << 11;
                 }
@@ -406,8 +406,8 @@ s32 File_Read(FileStateView *obj, s32 buf, u32 offset) {
         return 0;
     }
     File_Lock();
-    if (obj->unk28 != 0) {
-        if ((g_fileBusy == 0) && (obj->unkC != 0)) {
+    if (obj->direct != 0) {
+        if ((g_fileBusy == 0) && (obj->isOpen != 0)) {
             File_BeginOp(3, 7);
             if (g_fileEnabled != 0) {
                 g_fileReadSector = offset >> 11;
@@ -441,13 +441,13 @@ void File_Open(FileOpenObject *obj, char *name) {
 
     if (g_fileEnabled == 0 && g_fileOption == 0) {
         File_LoadWhole();
-        obj->unk24 |= 0x200;
-        obj->unk0->unk64(obj);
+        obj->flags |= 0x200;
+        obj->vtbl->onLoaded(obj);
         return;
     }
     File_Lock();
-    if (obj->unk28 != 0) {
-        if (g_fileBusy == 0 && (obj->unk10 == 0 || obj->unk20 != 0)) {
+    if (obj->direct != 0) {
+        if (g_fileBusy == 0 && (obj->data == 0 || obj->keepData != 0)) {
             File_BeginOp(4, 1);
             g_filePrevEntry = g_fileCurEntry;
             entry = File_FindEntry(name);
@@ -455,26 +455,26 @@ void File_Open(FileOpenObject *obj, char *name) {
             if (entry == 0) {
                 return;
             }
-            sectors = ((DirEntrySize *)entry)->unk18 >> 11;
+            sectors = ((DirEntrySize *)entry)->size >> 11;
             g_fileReadSector = sectors;
-            if (((DirEntrySize *)entry)->unk18 & 0x7FF) {
+            if (((DirEntrySize *)entry)->size & 0x7FF) {
                 g_fileReadSector = sectors + 1;
             }
-            cur = obj->unk10;
+            cur = obj->data;
             size = g_fileReadSector << 11;
             if (cur == 0) {
                 buf = Heap_Alloc(size);
                 if (buf == 0) {
-                    obj->unk0->unk48(obj);
+                    obj->vtbl->close(obj);
                     return;
                 }
                 g_fileReadBuf = buf;
-                obj->unk10 = buf;
+                obj->data = buf;
             } else {
                 g_fileReadBuf = cur;
             }
             if (g_fileEnabled != 0) {
-                obj->unk14 = size;
+                obj->size = size;
                 g_fileAsyncMode = 2;
             } else {
             retry:
@@ -482,12 +482,12 @@ void File_Open(FileOpenObject *obj, char *name) {
                     CdControl(2, (u8 *)(g_fileCurEntry + 0x14), 0);
                     while ((r = CdSync(0, 0)) == 0) {}
                 } while (r == 5);
-                CdRead(g_fileReadSector, (void *)obj->unk10, 0x80);
+                CdRead(g_fileReadSector, (void *)obj->data, 0x80);
                 while ((r = CdReadSync(0, 0)) > 0) {}
                 if (r == -1) {
                     goto retry;
                 }
-                obj->unk14 = size;
+                obj->size = size;
                 *g_fileRequestHead = 1;
                 File_EndOp();
             }
@@ -506,55 +506,55 @@ void File_ServiceQueue(void) {
     File_Lock();
     req = (FileRequest *)g_fileRequestHead;
     if (req != NULL) {
-        obj = req->unkC;
-        kind = req->unk8;
-        if (req->unk0 == NULL) {
-            obj->unk28 = 1;
+        obj = req->file;
+        kind = req->kind;
+        if (req->running == NULL) {
+            obj->direct = 1;
             switch (kind) {
             case 2:
-                obj->vt->unk44(obj, File_EntryAt(req->unk10), req->unk14, req->unk18);
+                obj->vt->open(obj, File_EntryAt(req->index), req->param0, req->param1);
                 break;
             case 3:
-                obj->vt->unk48(obj);
+                obj->vt->close(obj);
                 break;
             case 4:
-                obj->vt->unk4C(obj, req->unk14, req->unk18);
+                obj->vt->seek(obj, req->param0, req->param1);
                 break;
             case 5:
-                obj->vt->unk54(obj, req->unk14, req->unk18);
+                obj->vt->read(obj, req->param0, req->param1);
                 break;
             case 7:
-                obj->vt->unk58(obj, File_EntryAt(req->unk10));
+                obj->vt->load(obj, File_EntryAt(req->index));
                 break;
             }
-            obj->unk28 = 0;
+            obj->direct = 0;
         } else if (g_fileDone != 0) {
-            if (req->unk4 != 0) {
-                obj->unk24 |= 1;
+            if (req->markLoaded != 0) {
+                obj->flags |= 1;
             }
-            obj->unk24 |= 2;
-            obj->unk22--;
-            if (obj->unk22 == 0) {
-                obj->unk24 |= 4;
+            obj->flags |= 2;
+            obj->pending--;
+            if (obj->pending == 0) {
+                obj->flags |= 4;
             }
             switch (kind) {
             case 2:
-                obj->unk24 |= 0x10;
+                obj->flags |= 0x10;
                 break;
             case 3:
-                obj->unk24 |= 0x20;
+                obj->flags |= 0x20;
                 break;
             case 4:
-                obj->unk24 |= 0x40;
+                obj->flags |= 0x40;
                 break;
             case 5:
-                obj->unk24 |= 0x80;
+                obj->flags |= 0x80;
                 break;
             case 7:
-                obj->unk24 |= 0x200;
+                obj->flags |= 0x200;
                 break;
             }
-            obj->vt->unk64(obj);
+            obj->vt->onLoaded(obj);
             File_FreeRequest(req);
             if (g_fileRequestHead == NULL) {
                 obj->vt->unk70(obj);
@@ -570,10 +570,10 @@ void File_RequestOpen(File *obj, char *name) {
     File_Lock();
     if (name != 0) {
         if (g_fileEnabled != 0) {
-            uninit->unk4 = 1;
+            uninit->markLoaded = 1;
             File_QueueRequest(obj, File_FindIndex(name), 7, 0, 0);
         } else {
-            (*(FileVtPathSlot **)obj)->unk58(obj, name);
+            (*(FileVtPathSlot **)obj)->load(obj, name);
             if (obj->pending == 0) {
                 obj->flags = obj->flags | 4;
             }
@@ -598,7 +598,7 @@ void File_CancelRequests(File *obj) {
     node = (FileRequestLink *)g_fileRequestHead;
     if (node != NULL && obj->pending != 0) {
         obj->flags = 0;
-        if (node->unkC == obj && node->unk0 != NULL && g_fileDone == 0) {
+        if (node->file == obj && node->running != NULL && g_fileDone == 0) {
             CdFlush();
             File_EndOp();
             tmp = g_filePrevEntry;
@@ -607,8 +607,8 @@ void File_CancelRequests(File *obj) {
         }
         cur = (FileRequestLink *)g_fileRequestHead;
         while (cur != NULL) {
-            next = cur->unk20;
-            if (cur->unkC == obj) {
+            next = cur->next;
+            if (cur->file == obj) {
                 File_FreeRequest(cur);
                 obj->pending--;
             }
@@ -737,7 +737,7 @@ s32 File_OnVSync(void) {
                 File_StepIo();
             }
             if (g_fileVSyncPending != 0) {
-                ((FileVtVSyncSlot *)File_GetVtable())->unk68();
+                ((FileVtVSyncSlot *)File_GetVtable())->runQueue();
             }
             if (g_fileVSyncMode != 0) {
                 VSyncCallback(File_OnVSync);
@@ -781,11 +781,11 @@ void File_QueueRequest(File *obj, s32 index, s32 kind, s32 param3, s32 param4) {
     FileRequest *req;
 
     req = File_NewRequest();
-    req->unk8 = kind;
-    req->unk14 = param3;
-    req->unkC = obj;
-    req->unk10 = index;
-    req->unk18 = param4;
+    req->kind = kind;
+    req->param0 = param3;
+    req->file = obj;
+    req->index = index;
+    req->param1 = param4;
     obj->flags = 0;
     obj->pending = obj->pending + 1;
     File_HookVSync();
@@ -798,17 +798,17 @@ FileRequest *File_NewRequest(void) {
     File_Lock();
     node = (FileRequest *)Heap_Alloc(0x24);
     if (node != NULL) {
-        node->unk1C = NULL;
-        node->unk20 = NULL;
-        node->unk0 = NULL;
-        node->unk4 = 0;
+        node->prev = NULL;
+        node->next = NULL;
+        node->running = NULL;
+        node->markLoaded = 0;
         if (g_fileRequestHead != NULL) {
             last = (FileRequest *)g_fileRequestHead;
-            while (last->unk20 != NULL) {
-                last = last->unk20;
+            while (last->next != NULL) {
+                last = last->next;
             }
-            last->unk20 = node;
-            node->unk1C = last;
+            last->next = node;
+            node->prev = last;
         } else {
             g_fileRequestHead = (s32 *)node;
         }
@@ -820,13 +820,13 @@ FileRequest *File_NewRequest(void) {
 void File_FreeRequest(FileRequest *node) {
     File_Lock();
     if (node != NULL) {
-        if (node->unk1C != NULL) {
-            node->unk1C->unk20 = node->unk20;
+        if (node->prev != NULL) {
+            node->prev->next = node->next;
         } else {
-            g_fileRequestHead = (s32 *)node->unk20;
+            g_fileRequestHead = (s32 *)node->next;
         }
-        if (node->unk20 != NULL) {
-            node->unk20->unk1C = node->unk1C;
+        if (node->next != NULL) {
+            node->next->prev = node->prev;
         }
         Heap_Free(node);
     }
@@ -1014,13 +1014,13 @@ void File_SetState(s32 state) {
 }
 
 void File_InitRecord(FileInitRecord *obj) {
-    File_GetBaseVtbl()->unk8(obj);
-    obj->unk0 = File_GetVtable();
-    obj->unkC = 0;
+    File_GetBaseVtbl()->init(obj);
+    obj->vtbl = File_GetVtable();
+    obj->isOpen = 0;
 }
 
 void File_Destroy(s32 handle) {
-    File_GetBaseVtbl()->unkC(handle);
+    File_GetBaseVtbl()->destroy(handle);
 }
 
 void func_80028918(void) {
@@ -1032,7 +1032,7 @@ void File_Locate(FileLoadState *obj) {
     s8 name[0x40];
 
     tries = 0;
-    if (obj->unkC == 0) {
+    if (obj->isOpen == 0) {
         File_BuildPath(name);
     again:
         if (CdSearchFile(&file, name) != 0) {
@@ -1044,9 +1044,9 @@ void File_Locate(FileLoadState *obj) {
         printf("File not found. path = %s\n", name);
         return;
     found:
-        obj->unk18 = file.pos;
-        obj->unk1C = file.size;
-        obj->unkC = 1;
+        obj->cdPos = file.pos;
+        obj->cdSize = file.size;
+        obj->isOpen = 1;
     }
 }
 
@@ -1059,14 +1059,14 @@ s8 *File_BuildPath(s8 *path, s8 *name) {
 }
 
 void File_ClearLoaded(FileLoadedView *obj) {
-    if (obj->unkC != 0) {
-        obj->unkC = 0;
+    if (obj->isOpen != 0) {
+        obj->isOpen = 0;
     }
 }
 
 s32 File_GetSize(FileSizeView *obj) {
-    if (obj->unkC != 0) {
-        return ((obj->unk1C >> 0xB) + 1) << 0xB;
+    if (obj->isOpen != 0) {
+        return ((obj->cdSize >> 0xB) + 1) << 0xB;
     }
     return 0;
 }
@@ -1081,12 +1081,12 @@ s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset) {
     s32 ret;
     s32 sectors;
 
-    if (obj->unkC == 0) {
+    if (obj->isOpen == 0) {
         goto fallback;
     }
 retry:
     sectors = offset >> 11;
-    CdControl(2, obj->unk18, 0);
+    CdControl(2, obj->cdPos, 0);
 sync:
     status = CdSync(0, result);
     if (status == 0) {
@@ -1107,7 +1107,7 @@ sync:
     }
     return 0;
 fallback:
-    obj->unk0->unk48(obj);
+    obj->vtbl->close(obj);
     return 0;
 }
 

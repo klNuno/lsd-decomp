@@ -56,7 +56,7 @@ typedef struct ClipVertex {
 
 /* Header of a clipper work area (g_clipTriWork, g_clipQuadWork), filled by Render_FillClipHeader */
 typedef struct ClipHeader {
-    s32 unk_00;    /* g_clipForcedDivision when Render_ForceClipDivision set it, else attribute bits 9-11 */
+    s32 division;  /* g_clipForcedDivision when Render_ForceClipDivision set it, else attribute bits 9-11 */
     s32 width;     /* g_clipScreenWidth, 320 */
     s32 height;    /* g_clipScreenHeight, 240 */
     u16 clut;      /* textured faces only */
@@ -197,9 +197,9 @@ typedef struct PolyGT4 {
    Scene_DrawNode passes to GsGetLs, and the model's vertex, normal and primitive tables */
 typedef struct TmdModel {
     u8 *vertices;
-    s32 unk_04;
+    s32 vertexCount;         /* TmdObjectEntry.vertexCount, not read by the renderer */
     u8 *normals;
-    s32 unk_0C;
+    s32 normalCount;         /* TmdObjectEntry.normalCount, not read by the renderer */
     u8 *primitives;          /* groups: u16 count, u16 type, then count faces */
     s32 primitiveCount;
 } TmdModel;
@@ -1304,7 +1304,7 @@ void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textu
     } else {
         value = g_renderDivision;
     }
-    header->unk_00 = value;
+    header->division = value;
     header->width = g_clipScreenWidth;
     header->height = g_clipScreenHeight;
     if (textured != 0) {

@@ -2,7 +2,7 @@
 # Check one game unit on its own: it must assemble to the same bytes as the reference build.
 #   tools/unit_check.sh --save              after a green `make check`: keep build/src/**/*.o as the reference
 #   tools/unit_check.sh src/game/80058078.c build that unit alone (in a temp dir) and compare it
-# Compares every section's bytes and the relocation list (offset and type) with the reference
+# Compares every section's bytes and the relocation list (offset, type and symbol) with the reference
 # object, so renames and struct rewrites can be tested while other units are being edited.
 # The final judge stays `make check` (sha1 of the linked executable).
 set -euo pipefail
@@ -32,7 +32,9 @@ done
 mipsel-linux-gnu-objdump -h "$want" | awk '$2 ~ /^\./ {print $2, $3}' > "$tmp/hw"
 mipsel-linux-gnu-objdump -h "$got" | awk '$2 ~ /^\./ {print $2, $3}' > "$tmp/hg"
 cmp -s "$tmp/hw" "$tmp/hg" || { echo "DIFF in section sizes:"; diff "$tmp/hw" "$tmp/hg" | head; bad=1; }
-rel() { mipsel-linux-gnu-objdump -r "$1" | awk '/^RELOCATION RECORDS/ {sec=$4} /^[0-9a-f]{8} / {print sec, $1, $2}'; }
+# offset, type and symbol: a unit worker may rename locals only, so a symbol name that differs
+# from the reference means a function or global was renamed outside tools/rename.py.
+rel() { mipsel-linux-gnu-objdump -r "$1" | awk '/^RELOCATION RECORDS/ {sec=$4} /^[0-9a-f]{8} / {print sec, $1, $2, $3}'; }
 rel "$want" > "$tmp/rw"; rel "$got" > "$tmp/rg"
 cmp -s "$tmp/rw" "$tmp/rg" || { echo "DIFF in relocations:"; diff "$tmp/rw" "$tmp/rg" | head; bad=1; }
 if [ $bad = 0 ]; then echo "UNIT OK: $unit"; else echo "UNIT MISMATCH: $unit"; exit 1; fi

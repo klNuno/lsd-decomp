@@ -1724,19 +1724,19 @@ void StageMap_SetBounds(StageMap *map, void *bounds) {
     map->bounds = bounds;
 }
 
-/* Picks the tile step record by sign and arg2; +0x1E0 = its ticks x |count|. */
-void StageMap_StartTileStretch(StageMap *map, s32 count, s32 arg2) {
+/* Picks the tile step record by sign and fast; +0x1E0 = its ticks x |count|. */
+void StageMap_StartTileStretch(StageMap *map, s32 count, s32 fast) {
     MapTileStep *step;
     if (count > 0) {
         step = &g_tileStretchSlowUp;
-        if (arg2 != 0) {
+        if (fast != 0) {
             map->unk1E4 = &g_tileStretchFastUp;
         } else {
             map->unk1E4 = step;
         }
     } else {
         step = &g_tileStretchSlowDown;
-        if (arg2 != 0) {
+        if (fast != 0) {
             step = &g_tileStretchFastDown;
         }
         map->unk1E4 = step;
@@ -1878,8 +1878,8 @@ void MapTile_OnActorMessage(MapTile *tile, void *sender, s32 message) {
     }
 }
 
-s32 MapTile_GetSelf(s32 arg0) {
-    return arg0;
+s32 MapTile_GetSelf(s32 tile) {
+    return tile;
 }
 
 MapTileVtbl *MapTile_GetVtbl(void) {

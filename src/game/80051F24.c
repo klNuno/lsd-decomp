@@ -21,7 +21,7 @@ typedef struct CardListVtbl {
     u8 pad_4C[0x54 - 0x4C];
     void (*setMode)();    /* 0x54 StringList_SetState */
     u8 pad_58[0x60 - 0x58];
-    void (*unk60)();      /* 0x60 StringList_SetBoxValue */
+    void (*setBoxValue)();      /* 0x60 StringList_SetBoxValue */
     u8 pad_64[0x7C - 0x64];
     void (*scrollRight)(); /* 0x7C StringList_ScrollRight */
     void (*scrollLeft)(); /* 0x80 StringList_ScrollLeft */
@@ -38,9 +38,9 @@ typedef struct CardTextVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();   /* 0x04 Object_Delete */
     u8 pad_08[0x4C - 0x08];
-    void (*unk4C)();      /* 0x4C (obj, parent, position) */
+    void (*attach)();      /* 0x4C (obj, parent, position) */
     u8 pad_50[0x78 - 0x50];
-    void (*unk78)();      /* 0x78 called on a file right after Tim_New */
+    void (*upload)();      /* 0x78 called on a file right after Tim_New */
     u8 pad_7C[0xB8 - 0x7C];
     void (*setColor)();   /* 0xB8 g_stringListCursorColor or g_stringListRowColor */
     u8 pad_BC[0xCC - 0xBC];
@@ -72,9 +72,9 @@ typedef struct CardList {
     s32 cursor;           /* 0x28 selected row */
     s32 mode;             /* 0x2C 2 or 3 (setMode) */
     s32 modeTicks;        /* 0x30 */
-    s32 unk34;            /* 0x34 unwatched by setMode and the destructor */
-    s32 unk38;
-    s32 unk3C;
+    s32 watchedA;            /* 0x34 unwatched by setMode and the destructor */
+    s32 watchedB;
+    s32 owner;
     CardText *rows[4];    /* 0x40 visible rows */
     CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
 } CardList;
@@ -107,16 +107,16 @@ typedef struct ActorVtbl {
     u8 pad_10[0x40 - 0x10];
     void (*init)();       /* 0x40 Actor_Init */
     u8 pad_44[0x88 - 0x44];
-    void (*unk88)();      /* 0x88 Actor_SendBoxes */
-    void (*unk8C)();
-    void (*unk90)();
+    void (*sendBoxes)();      /* 0x88 Actor_SendBoxes */
+    void (*getBoxList)();
+    void (*sendShape)();
     u8 pad_94[0xA0 - 0x94];
-    void (*unkA0)();
+    void (*checkContact)();
     u8 pad_A4[0xBC - 0xA4];
     void (*movePos)();    /* 0xBC Actor_MovePos */
-    void (*unkC0)();
-    void (*unkC4)();
-    void (*unkC8)();
+    void (*moveLocal)();
+    void (*moveZ)();
+    void (*moveX)();
     u8 pad_CC[0xDC - 0xCC];
     void (*onTouch34)();  /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
     void (*onTouch24)();  /* 0xE0 Actor_OnNode24: on message byte 0x24 */
@@ -133,9 +133,9 @@ typedef struct ActorBaseVtbl {
     void (*unwatch)();    /* 0x14 */
     void (*unwatchAll)(); /* 0x18 */
     u8 pad_1C[0x88 - 0x1C];
-    void (*unk88)();
+    void (*sendBoxes)();
     u8 pad_8C[0x9C - 0x8C];
-    void (*unk9C)();
+    void (*onNode)();
 } ActorBaseVtbl;
 
 typedef struct Actor {
@@ -143,16 +143,16 @@ typedef struct Actor {
     u8 pad_04[0x14 - 0x04];
     Coord2 *posBlock;     /* 0x14 its GsCOORDINATE2 (gs.h): flg cleared after each move */
     u8 pad_18[0x20 - 0x18];
-    s32 unk20;            /* 0x20 tested by ModelObject_IsReady */
+    s32 model;            /* 0x20 tested by ModelObject_IsReady */
     u8 pad_24[0x28 - 0x24];
     s32 contact;          /* 0x28 the object found by Actor_SnapToGround, 0 when none */
     u8 pad_2C[0x44 - 0x2C];
     s32 unk44;            /* 0x44 cleared by the constructor */
-    s16 unk48;            /* 0x48 0x12C at init */
+    s16 speed;            /* 0x48 0x12C at init */
     u8 pad_4A[0x4C - 0x4A];
     s32 map;              /* 0x4C the watched object whose class id ends in 0x114 (the map) */
-    s32 unk50;            /* 0x50 the watched object whose class id ends in 5 */
-    s32 unk54;            /* 0x54 slot 0xEC */
+    s32 clock;            /* 0x50 the watched object whose class id ends in 5 */
+    s32 boxMargin;            /* 0x54 slot 0xEC */
 } Actor;
 
 /* A cell of the map grid as Actor_FindGroundInRect reads it: 20 x 20 entry words at +0x10 (0x50 per row). */
@@ -182,11 +182,11 @@ typedef struct TextPart {
     s32 unk5C;
     s32 unk60;
     u8 pad_64[0x74 - 0x64];
-    u16 unk74;            /* 0x74 g_sceneryPartCluts[index * 2] */
-    u16 unk76;            /* 0x76 g_sceneryPartClutsY[index * 2] */
+    u16 clutX;            /* 0x74 g_sceneryPartCluts[index * 2] */
+    u16 clutY;            /* 0x76 g_sceneryPartClutsY[index * 2] */
     u8 pad_78[0x80 - 0x78];
-    s16 unk80;
-    s16 unk82;
+    s16 scaleX;
+    s16 scaleY;
     u8 pad_84[0xA0 - 0x84];
     s32 index;            /* 0xA0 */
     s32 unkA4;
@@ -208,7 +208,7 @@ typedef struct PlaceOwnerObj {
 } PlaceOwnerObj;
 typedef struct PlaceOwner {
     u8 pad_00[0xC];
-    PlaceOwnerObj *unkC;
+    PlaceOwnerObj *callbackObj;
 } PlaceOwner;
 
 /* The class SpriteNode_GetVtbl returns, base of TextPart. */
@@ -229,7 +229,7 @@ typedef struct GridActor GridActor;
 
 typedef struct GridActorVtbl {
     u8 pad_00[0x88];
-    void (*unk88)(GridActor *, s32);  /* -1 contact found, -2 none */
+    void (*sendBoxes)(GridActor *, s32);  /* -1 contact found, -2 none */
     u8 pad_8C[0xBC - 0x8C];
     void (*movePos)(GridActor *, void *);
 } GridActorVtbl;
@@ -263,8 +263,8 @@ typedef struct AmbienceBandVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*attach)();     /* 0x4C (band, parent, position) */
     u8 pad_50[0x64 - 0x50];
-    void (*unk64)();
-    void (*unk68)();
+    void (*setSemiTrans)();
+    void (*setBlendMode)();
     u8 pad_6C[0xB8 - 0x6C];
     void (*setColor)();   /* 0xB8 (band, 1, RGB) */
     void (*setPos)();     /* 0xBC */
@@ -279,33 +279,33 @@ typedef struct SceneryParams {
     s32 x;        /* 0x00 offset from the origin: random +-22 tiles (<< 11) in Scenery_RandomizeParams */
     s32 y;        /* 0x04 */
     s32 z;        /* 0x08 */
-    u8 *unkC;     /* 0x0C 12-byte entry of g_sceneryRotations */
-    u8 *unk10;    /* 0x10 12-byte entry of g_sceneryScales, or g_sceneryKind1Scale */
-    s32 unk14;    /* 0x14 rand() % 5 */
-    s32 unk18;    /* 0x18 */
-    u8 *unk1C;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
-    s32 unk20;    /* 0x20 kind 2: day number % 20, or D_80087430 */
+    u8 *rotation;     /* 0x0C 12-byte entry of g_sceneryRotations */
+    u8 *scale;    /* 0x10 12-byte entry of g_sceneryScales, or g_sceneryKind1Scale */
+    s32 direction;    /* 0x14 rand() % 5 */
+    s32 variant;    /* 0x18 */
+    u8 *color;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
+    s32 dayMark;    /* 0x20 kind 2: day number % 20, or D_80087430 */
 } SceneryParams;
 
 /* A part of a scenery object (classes g_actorVtbl for kind 0, g_sceneryPartVtbl for kinds 2 and 3). */
 typedef struct SceneryPartVtbl {
     u8 pad_00[0x44];
-    void (*unk44)();
-    void (*unk48)();
-    void (*unk4C)();
+    void (*setRotation)();
+    void (*setScale)();
+    void (*attach)();
     u8 pad_50[0x60 - 0x50];
-    void (*unk60)();
-    void (*unk64)();
-    void (*unk68)();
+    void (*setVisible)();
+    void (*setSemiTrans)();
+    void (*setBlendRate)();
     u8 pad_6C[0xB8 - 0x6C];
-    void (*unkB8)();
-    void (*unkBC)();
+    void (*setColor)();
+    void (*setPosition)();
 } SceneryPartVtbl;
 
 typedef struct SceneryPart {
     SceneryPartVtbl *vt;
     u8 pad_04[0x84 - 0x04];
-    s32 unk84;    /* 0x84 random angle (rand() % 360) << 12 for kind 3 */
+    s32 angle;    /* 0x84 random angle (rand() % 360) << 12 for kind 3 */
 } SceneryPart;
 
 /*
@@ -319,9 +319,9 @@ typedef struct SceneryVtbl {
     void (*destruct)();   /* 0x0C Scenery_Destruct */
     u8 pad_10[0x40 - 0x10];
     void (*init)();       /* 0x40 Scenery_Init */
-    void (*unk44)();
-    void (*unk48)();
-    void (*unk4C)();
+    void (*setRotation)();
+    void (*setScale)();
+    void (*attach)();
     u8 pad_50[0xB8 - 0x50];
     void (*setPos)();     /* 0xB8 Actor_SetPos */
     void (*movePos)();    /* 0xBC Actor_MovePos */
@@ -341,12 +341,12 @@ typedef struct Scenery {
     u8 pad_48[0x54 - 0x48];
     s32 kind;             /* 0x54 0 to 3 */
     Vec3 offset;          /* 0x58 params x, y, z: offset from the origin */
-    s32 unk64;            /* 0x64 params unkC */
-    s16 *unk68;           /* 0x68 params unk10 */
-    s32 unk6C;            /* 0x6C params unk14, kind 0: direction 1 to 4 of its two parts */
-    s32 unk70;            /* 0x70 params unk18 */
-    s32 unk74;            /* 0x74 params unk1C */
-    s32 unk78;
+    s32 rotation;            /* 0x64 params unkC */
+    s16 *scale;           /* 0x68 params unk10 */
+    s32 direction;            /* 0x6C params unk14, kind 0: direction 1 to 4 of its two parts */
+    s32 variant;            /* 0x70 params unk18 */
+    s32 color;            /* 0x74 params unk1C */
+    s32 dayMark;
     union {
         SceneryPart *pair[2];                                 /* 0x7C kind 0 */
         struct { u8 pad_7C[0x84 - 0x7C]; SceneryPart *parts[5]; } many; /* 0x84 kinds 2 and 3 */
@@ -388,7 +388,7 @@ typedef struct SpotSlot {
     s32 distance;         /* 0x10 ground distance to the dreamer */
     s32 node;             /* 0x14 handler node, registered with HandlerNode_Start */
     u8 pad_18[0x28 - 0x18];
-    s32 unk28;            /* 0x28 SoundSpot_CalcFade divides the range by it */
+    s32 fadeSteps;            /* 0x28 SoundSpot_CalcFade divides the range by it */
     u8 pad_2C[0x68 - 0x2C];
 } SpotSlot;
 
@@ -412,20 +412,20 @@ typedef struct SpotState {
     u8 pad_08[0x10 - 0x8];
     s32 level;            /* 0x10 SoundSpot_CalcFade: distance / (range / slot +0x28) */
     u8 pad_14[0x1C - 0x14];
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24;
-    s32 unk28;
+    s32 sound0;
+    s32 octave0;
+    s32 volume0;
+    s32 endVolume0;
     u8 pad_2C[0x30 - 0x2C];
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    s32 unk3C;
+    s32 sound1;
+    s32 octave1;
+    s32 volume1;
+    s32 endVolume1;
     u8 pad_40[0x44 - 0x40];
-    s32 unk44;
-    s32 unk48;
-    s32 unk4C;
-    s32 unk50;
+    s32 sound2;
+    s32 octave2;
+    s32 volume2;
+    s32 endVolume2;
 } SpotState;
 
 
@@ -435,8 +435,8 @@ extern Point g_bandSize;
 s32 g_ambienceFamily;
 extern void Object_DeleteArray(void *, s32);
 void Actor_ApplyPos(void *self, s32 set, s32 *vec);
-void Scenery_CreateSpriteParts(Scenery *scenery, s32 arg1, s32 arg2, s32 color);
-void Place_CheckTextureLoad(void *arg0, void *arg1);
+void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color);
+void Place_CheckTextureLoad(void *place_, void *loader_);
 extern void Scenery_Follow();
 extern s32 g_soundSpotRanges[];
 s32 g_bandLayout;
@@ -458,7 +458,7 @@ ActorBaseVtbl *SceneNode_GetVtbl(void);
 s32 g_ambienceTintColor;
 AmbienceBand *g_ambienceTint;
 s32 SoundSpot_CalcFade(SpotSlot *slot);
-s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found);
+s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found);
 void HandlerNode_Run(s32, s32);
 PlaceRefs *g_placeRefs;
 extern void SceneNode_RotateVector(void *, void *, void *);
@@ -466,7 +466,7 @@ s32 Actor_SnapToGround();
 extern u8 g_stringListCursorColor[];
 void *Heap_Alloc(s32 size);
 GraphCtorVtbl *Graph_GetVtable(void);
-void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch);
+void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 watch);
 extern u8 g_ambienceColors[];
 extern s32 g_ambienceDepths[];
 extern void Display_RotateRect(s32 *arg0, s32 arg1, s32 *arg2);
@@ -492,7 +492,7 @@ PlaceObj *g_sceneryModels;
 void *g_sceneryFont;
 View *g_sceneryView;
 void ModelObject_SetClut(void *, void *);
-void Place_GetChunkPath(Place *place, s32 result, s32 arg2, s32 arg3);
+void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
 PlaceVtbl *Place_GetVtbl(void);
 SceneryVtbl *Scenery_GetVtbl(void);
 extern AmbienceRecord *g_stageAmbience[];
@@ -518,7 +518,7 @@ extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
 s32 Actor_FindGroundInRect(s32 actor, s32 delta, s32 pos, s32 rect, void *cell);
 extern s32 strlen(u8 *s);
 extern void *memcpy(void *dst, void *src, s32 n);
-extern void *SceneryPart_New(s32 index, s32 arg1, s32 font);
+extern void *SceneryPart_New(s32 index, s32 blendRate, s32 font);
 extern s32 rand(void);
 extern u8 g_sceneryKind3Scales[];
 extern s8 g_sceneryKind0Counts[];
@@ -541,11 +541,11 @@ void Scenery_UpdateKind0(void *self, Vec3 *origin);
 extern void Scenery_UpdateKind2(void *scenery, Vec3 *origin);
 extern void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin);
 extern u8 g_stringListRowColor[];
-void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 arg3, s32 arg4);
+void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale);
 void SceneNode_LinkModel(void *arg0, void *arg1);
 void Scenery_PlaceKind0Parts(void *self, s32 move);
-void Scenery_BuildKind2(void *self, s32 arg1);
-void Scenery_BuildKind3(Scenery *scenery, s32 arg1);
+void Scenery_BuildKind2(void *self, s32 unused);
+void Scenery_BuildKind3(Scenery *scenery, s32 unused);
 extern s32 Label_Create(s32, s32, s32);
 extern u8 g_pauseText[];
 extern s32 g_pauseTextPos[];
@@ -602,12 +602,12 @@ extern SpotRecord *g_stageSoundSpots[];
 extern u8 g_stageSoundSpotCounts[];
 extern s32 g_stageBoxMargins[];
 extern s32 D_80087150[];
-Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 arg4);
+Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused);
 s32 Stage_PickTexturePath(s32, s32, s32);
 s32 Music_PickTrack(s32, s32);
 void *Tix_Create(s32 path);
 s32 SceneNode_SetRayHeightCheck(s32);
-void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 arg2, s32 arg3);
+void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify);
 extern u8 g_sceneryKind3Colors[];
 void Scenery_RandomizeParamsDay7(void);
 void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
@@ -628,13 +628,13 @@ void StringList_Open(CardList *list, s32 parent) {
 
     if ((parent != 0) && (list->background == NULL)) {
         file = Tim_New((s32)File_JoinPath(path, g_selectTimName, g_cardDirName, g_timExtension));
-        file->vt->unk78(file);
+        file->vt->upload(file);
         list->background = ScreenSprite_Create(file, g_stringListBgRect, 0);
         file->vt->delete_(file);
         background = list->background;
-        background->vt->unk4C(background, parent, g_stringListBgPos);
+        background->vt->attach(background, parent, g_stringListBgPos);
         iconFile = Tim_New((s32)File_JoinPath(path, (s8 *)"FONTICON\0\0\0\0\0\0\0", g_cardDirName, g_timExtension));
-        iconFile->vt->unk78(iconFile);
+        iconFile->vt->upload(iconFile);
         list->vt->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
         iconFile->vt->delete_(iconFile);
     }
@@ -651,17 +651,17 @@ void StringList_Close(CardList *list) {
     }
 }
 
-void StringList_WatchPair(CardList *list, s32 arg1, s32 arg2, s32 arg3) {
-    list->vt->watch(list, arg1);
-    list->vt->watch(list, arg2);
-    list->unk3C = arg3;
+void StringList_WatchPair(CardList *list, s32 first, s32 second, s32 owner) {
+    list->vt->watch(list, first);
+    list->vt->watch(list, second);
+    list->owner = owner;
     list->mode = 0;
 }
 
 void StringList_UnwatchPair(CardList *list) {
-    list->vt->unwatch(list, list->unk34);
-    list->vt->unwatch(list, list->unk38);
-    list->unk3C = 0;
+    list->vt->unwatch(list, list->watchedA);
+    list->vt->unwatch(list, list->watchedB);
+    list->owner = 0;
 }
 
 void StringList_SetState(CardList *list, s32 mode) {
@@ -669,7 +669,7 @@ void StringList_SetState(CardList *list, s32 mode) {
     switch (mode) {
     case 2:
     case 3:
-        list->vt->unwatch(list, list->unk34);
+        list->vt->unwatch(list, list->watchedA);
         list->vt->close(list);
         list->mode = mode;
         break;
@@ -698,17 +698,17 @@ void StringList_Tick(CardList *list) {
 }
 
 /* Pad codes minus 4: 25 and 23 close the list (modes 2, 3), 5, 4, 18, 19 move and scroll it. */
-void StringList_OnKey(CardList *list, s32 arg1, s32 code) {
+void StringList_OnKey(CardList *list, s32 sender, s32 code) {
     void (*fn)(CardList *, s32, s32);
     u32 idx = code - 4;
 
     switch (idx) {
     case 21:
-        list->vt->unk60(list, 0x10, idx);
+        list->vt->setBoxValue(list, 0x10, idx);
         list->vt->setMode(list, 2);
         return;
     case 19:
-        list->vt->unk60(list, 0x10, idx);
+        list->vt->setBoxValue(list, 0x10, idx);
         list->vt->setMode(list, 3);
         return;
     case 1:
@@ -726,13 +726,13 @@ void StringList_OnKey(CardList *list, s32 arg1, s32 code) {
     default:
         return;
     }
-    fn(list, arg1, idx);
+    fn(list, sender, idx);
 }
 
-void StringList_SetBoxValue(CardList *list, s32 arg1) {
-    CardListOwner *owner = (CardListOwner *)list->unk3C;
+void StringList_SetBoxValue(CardList *list, s32 value) {
+    CardListOwner *owner = (CardListOwner *)list->owner;
     if (owner != NULL) {
-        owner->vt->unk80(owner, arg1, 0x60, 0x60);
+        owner->vt->unk80(owner, value, 0x60, 0x60);
     }
 }
 
@@ -819,7 +819,7 @@ void StringList_CreateRows(CardList *list, s32 parent, s32 font, s32 top, s32 co
                 StringList_FormatRow(list, text, i, top, (u8 *)column);
                 created = (CardText *)Label_Create(font, 0x1A, (s32)text);
                 *row = created;
-                created->vt->unk4C(created, parent, pos);
+                created->vt->attach(created, parent, pos);
                 obj = *row;
                 i += 1;
                 obj->vt->setColor(obj, g_stringListRowColor);
@@ -872,7 +872,7 @@ void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 
         }
         StringList_SetView(list, top, column, cursor, 0);
         if (notify != 0) {
-            list->vt->unk60(list, 0);
+            list->vt->setBoxValue(list, 0);
         }
     }
 }
@@ -928,7 +928,7 @@ void StringList_MoveHighlight(CardList *list, s32 down, s32 notify) {
         obj = *row;
         obj->vt->setColor(obj, g_stringListCursorColor);
         if (notify != 0) {
-            list->vt->unk60(list, 0);
+            list->vt->setBoxValue(list, 0);
         }
     }
 }
@@ -942,12 +942,12 @@ CardListVtbl *StringList_GetVtbl(void) {
 }
 
 /* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreateStage. */
-void *Place_New(s32 handlerList, s32 music, s32 font, s32 arg3, s32 stage) {
+void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage) {
     void *place;
 
     place = Heap_Alloc(0x88);
     if (place != NULL) {
-        Place_GetVtbl()->construct(place, handlerList, music, font, arg3, stage);
+        Place_GetVtbl()->construct(place, handlerList, music, font, models, stage);
         return place;
     }
     return NULL;
@@ -1001,18 +1001,18 @@ void Place_Stub40(void) {
 void Place_Attach(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
     PlaceOwnerObj *obj;
 
-    obj = owner->unkC;
+    obj = owner->callbackObj;
     obj->vt->setCallback(obj, &Place_GetChunkPath, place);
     place->dreamSys = dreamSys;
     Task_GetVtbl()->attach(place, owner, 1);
     place->vt->watch(place, dreamSys);
 }
 
-void Place_GetChunkPath(Place *place, s32 result, s32 arg2, s32 arg3) {
+void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
     if (result >= 0) {
         Stage_GetChunkPath(place->stage);
     } else {
-        Stage_GetChunkPathAt(place->stage, arg2, arg3);
+        Stage_GetChunkPathAt(place->stage, col, row);
     }
 }
 
@@ -1027,7 +1027,7 @@ void Place_Detach(Place *place) {
  * texture-set loader (Stage_PickTexturePath, Tix_Create), starts the scenery
  * (Scenery_Begin, which gives the ambience) and sets the state to 5.
  */
-void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
+void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambienceGiven) {
     View *view;
     s32 mode;
 
@@ -1042,7 +1042,7 @@ void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
     if (ambience != 0) {
         place->ambience = ambience;
     }
-    place->unk4C = arg3;
+    place->unk4C = ambienceGiven;
     if (place->stage != 0) {
         place->unk40 = 0x10;
         place->unk44 = 3;
@@ -1060,8 +1060,8 @@ void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
         mode = 1;
         place->map->vtbl->unk134(place->map, D_80087150);
     }
-    place->unk48 = arg1;
-    if (arg1 == 0) {
+    place->unk48 = viewDistance;
+    if (viewDistance == 0) {
         place->unk48 = 0xA000;
     }
     SceneNode_SetRayHeightCheck(mode);
@@ -1081,7 +1081,7 @@ void Place_Unload(Place *place) {
 }
 
 /* Slot 0x54 */
-void Place_OnDisplay(Place *place, s32 arg1, s32 event) {
+void Place_OnDisplay(Place *place, s32 sender, s32 event) {
     if (event == 2) {
         Place_CheckTextureLoad(place, place->texLoader);
     }
@@ -1092,9 +1092,9 @@ void Place_OnDisplay(Place *place, s32 arg1, s32 event) {
  * is dropped and the time limit becomes elapsed + 30 s (discoveries "the 30-second dreams");
  * when it is done the ambience colour goes to it. Then, once the map is ready, start the place.
  */
-void Place_CheckTextureLoad(void *arg0, void *arg1) {
-    PlaceTexLoader *loader = arg1;
-    Place *place = arg0;
+void Place_CheckTextureLoad(void *place_, void *loader_) {
+    PlaceTexLoader *loader = loader_;
+    Place *place = place_;
     PlaceTexLoaderVtbl *vt;
     Ambience *ambience;
     u8 *color;
@@ -1129,7 +1129,7 @@ void Place_CheckTextureLoad(void *arg0, void *arg1) {
 }
 
 /* Slot 0x58, the pad handler: 33 START, 12 SELECT held, 22 TRIANGLE, 44 SELECT released (discoveries "the hidden exit"). */
-void Place_OnPad(Place *place, s32 arg1, s32 code) {
+void Place_OnPad(Place *place, s32 sender, s32 code) {
     PlaceVtbl *vt;
     void (*fn)();
 
@@ -1388,8 +1388,8 @@ void Place_OnLink17(Place *place) {
 }
 
 /* Start the view's fader towards a colour index (0 to 7), watched when asked. */
-void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch) {
-    Place *place = arg0;
+void Place_StartFade(void *place_, s32 color, s32 channels, s32 duration, s32 watch) {
+    Place *place = place_;
     View *view;
     Fade *fader;
 
@@ -1401,7 +1401,7 @@ void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch) {
     if (watch != 0) {
         place->vt->watch(place, fader);
     }
-    fader->vtbl->startOut(fader, place->unk10, color, arg2);
+    fader->vtbl->startOut(fader, place->unk10, color, channels);
 }
 
 /* Slot 0xB0: the fader is done (5: back to state 0; 6: its colour goes to the view, state 10 becomes 4). */
@@ -1532,7 +1532,7 @@ PlaceVtbl *Place_GetVtbl(void) {
  * tick counter g_placeTicks and the two spot slots (g_soundSpotSlots[0..1], g_soundSpotSlot1 is [1]), and
  * return the ambience. Runs only while no place is up (g_sceneryMap is 0 again after Scenery_Teardown).
  */
-Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 arg4) {
+Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused) {
     s32 *slot;
     s32 n;
 
@@ -1544,7 +1544,7 @@ Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 
         g_placeRefs = refs;
         g_ambienceFamily = -1;
         g_placeDayNumber = dayNumber;
-        D_8008AC78 = arg4;
+        D_8008AC78 = unused;
         g_placeTicks = 0;
         do {
             *slot = 0;
@@ -1586,8 +1586,8 @@ void Ambience_CreateTint(void) {
     if (g_ambienceTintColor != 0) {
         band = Box_Create((s32)g_ambienceTintSize, g_ambienceTintColor, 0);
         g_ambienceTint = band;
-        band->vt->unk64(band, 1);
-        g_ambienceTint->vt->unk68(g_ambienceTint, 0);
+        band->vt->setSemiTrans(band, 1);
+        g_ambienceTint->vt->setBlendMode(g_ambienceTint, 0);
         view = g_placeRefs->view;
         g_ambienceTint->vt->attach(g_ambienceTint, view->vtbl->getOverlay(view), g_ambienceTintPos);
     }
@@ -1778,8 +1778,8 @@ s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
     s32 i;
     s32 height;
 
-    g_sceneryParams.unk18 = rand() % 7;
-    g_sceneryParams.unk10 = &g_sceneryScales[((u32)rand() % 5) * 12];
+    g_sceneryParams.variant = rand() % 7;
+    g_sceneryParams.scale = &g_sceneryScales[((u32)rand() % 5) * 12];
     height = (u32)rand() % 5;
     if (height != 0) {
         height = g_sceneryHeights[height];
@@ -1803,7 +1803,7 @@ s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
     s32 i;
     s32 height = g_sceneryHeights2;
 
-    g_sceneryParams.unk10 = g_sceneryKind1Scale;
+    g_sceneryParams.scale = g_sceneryKind1Scale;
     for (i = 0; i < count; i++) {
         Scenery_RandomizeParams(origin, height);
         *out = Scenery_New(1, &g_sceneryParams, g_sceneryMap, origin);
@@ -1819,7 +1819,7 @@ s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
         g_sceneryParams.x = 0xFFFF5000;
         g_sceneryParams.y = -0x2000;
         g_sceneryParams.z = 0;
-        g_sceneryParams.unk1C = g_sceneryKind3Colors + 3;
+        g_sceneryParams.color = g_sceneryKind3Colors + 3;
     } else {
         if (g_sceneryParams.z > 0) {
             g_sceneryParams.z = -g_sceneryParams.z;
@@ -1827,9 +1827,9 @@ s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
         if (g_sceneryParams.z < -0x7800) {
             g_sceneryParams.z = -0x7800;
         }
-        g_sceneryParams.unk1C = g_sceneryKind3Colors + ((u32)rand() % 3) * 3;
+        g_sceneryParams.color = g_sceneryKind3Colors + ((u32)rand() % 3) * 3;
     }
-    g_sceneryParams.unkC = g_sceneryRotations;
+    g_sceneryParams.rotation = g_sceneryRotations;
     *out++ = (s32)Scenery_New(3, (s32)&g_sceneryParams, g_sceneryMap, origin);
     return out;
 }
@@ -1842,7 +1842,7 @@ s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
     s32 v;
 
     v = (s32)(g_sceneryKind2Colors + ((u32)rand() % 3) * 3);
-    p = (ParamWord *)&g_sceneryParams.unk1C;
+    p = (ParamWord *)&g_sceneryParams.color;
     p->v = v;
     p++;
     if (g_placeDayNumber % 20) {
@@ -1852,9 +1852,9 @@ s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
     }
     p->v = x;
     Scenery_RandomizeParams((void *)origin, g_sceneryHeights2);
-    q = (s32 *)&g_sceneryParams.unkC;
+    q = (s32 *)&g_sceneryParams.rotation;
     *q = (s32)g_sceneryRotations;
-    g_sceneryParams.unk18 = rand() % 6;
+    g_sceneryParams.variant = rand() % 6;
     *out++ = (s32)Scenery_New(2, (s32)&g_sceneryParams, g_sceneryMap, origin);
     return out;
 }
@@ -1873,8 +1873,8 @@ void Scenery_RandomizeParams(void *origin, s32 height) {
     if (rand() & 1) {
         g_sceneryParams.z = -g_sceneryParams.z;
     }
-    g_sceneryParams.unkC = g_sceneryRotations + ((u32)rand() % 7) * 12;
-    g_sceneryParams.unk14 = rand() % 5;
+    g_sceneryParams.rotation = g_sceneryRotations + ((u32)rand() % 7) * 12;
+    g_sceneryParams.direction = rand() % 5;
 }
 
 /* Day numbers divisible by 7: x in 0..19 tiles, z 0xA000, -0x6000 or 0x800 by day number % 3. */
@@ -1893,12 +1893,12 @@ void Scenery_RandomizeParamsDay7(void) {
     } else if (m == 2) {
         g_sceneryParams.z = 0x800;
     }
-    g_sceneryParams.unkC = g_sceneryRotations + ((u32)rand() % 7) * 12;
-    g_sceneryParams.unk14 = rand() % 5;
+    g_sceneryParams.rotation = g_sceneryRotations + ((u32)rand() % 7) * 12;
+    g_sceneryParams.direction = rand() % 5;
 }
 
 /* Hold the next free spot in range of origin in slot and register its handler. */
-SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 arg3) {
+SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 unused) {
     SpotRecord *record;
 
     record = SoundSpot_FindInRange(slot->pos, &slot->distance, origin);
@@ -1958,7 +1958,7 @@ s32 SoundSpot_Release(SpotSlotU *slot) {
     return 0;
 }
 
-s32 SoundSpot_Update(s32 slot, void *origin, s32 arg2) {
+s32 SoundSpot_Update(s32 slot, void *origin, s32 unused) {
     if (SoundSpot_IsInRange(slot, origin) != 0) {
         HandlerNode_Run(g_placeRefs->handlerList, slot + 0x14);
         return 1;
@@ -1982,7 +1982,7 @@ s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (origin !
  * leak, work/hunt6/F-findings.md). Then it updates them and the two spot slots, and returns the
  * range of a spot just taken when it equals found.
  */
-s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found) {
+s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found) {
     s32 posBuf[4];
     void *origin;
     s32 i;
@@ -2006,11 +2006,11 @@ s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found) {
     slot = g_soundSpotSlots;
     for (i = 0; i < 2; i++, slot++) {
         if (*slot != NULL) {
-            if (SoundSpot_Update(*slot, origin, arg1) == 0) {
+            if (SoundSpot_Update(*slot, origin, ignored) == 0) {
                 *slot = (SpotSlot *)SoundSpot_Release(*slot);
             }
         } else {
-            *slot = (SpotSlot *)SoundSpot_Acquire(&g_soundSpotSlotData[i], &found, origin, arg1);
+            *slot = (SpotSlot *)SoundSpot_Acquire(&g_soundSpotSlotData[i], &found, origin, ignored);
         }
     }
     return found;
@@ -2031,14 +2031,14 @@ void SoundSpot_Type1(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     tick = state->tick;
     if (tick == 0) {
-        state->unk1C = 7;
-        state->unk20 = 0;
+        state->sound0 = 7;
+        state->octave0 = 0;
     } else if (tick == 2) {
-        state->unk30 = 7;
-        state->unk34 = 0;
+        state->sound1 = 7;
+        state->octave1 = 0;
     } else if (tick == 5) {
-        state->unk44 = 7;
-        state->unk48 = 0;
+        state->sound2 = 7;
+        state->octave2 = 0;
     } else if (tick >= 8) {
         state->tick = -1;
     }
@@ -2047,8 +2047,8 @@ void SoundSpot_Type1(void *slot, SpotState *state) {
 void SoundSpot_Type2(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     if (state->tick == 0) {
-        state->unk1C = 0x18;
-        state->unk20 = -2;
+        state->sound0 = 0x18;
+        state->octave0 = -2;
         return;
     }
     if (state->tick >= 0x401) {
@@ -2062,8 +2062,8 @@ void SoundSpot_Type3(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     tick = state->tick;
     if (tick == 0) {
-        state->unk1C = 0xC;
-        state->unk20 = 2;
+        state->sound0 = 0xC;
+        state->octave0 = 2;
         return;
     }
     if (tick >= 5) {
@@ -2074,59 +2074,59 @@ void SoundSpot_Type3(void *slot, SpotState *state) {
 void SoundSpot_Type4(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     if (state->tick % 20 == 0) {
-        state->unk1C = 0x1E;
-        state->unk24 = 0x20;
-        state->unk20 = 0;
-        state->unk28 = 0xA;
+        state->sound0 = 0x1E;
+        state->volume0 = 0x20;
+        state->octave0 = 0;
+        state->endVolume0 = 0xA;
     }
     if (state->tick % 400 == 0) {
-        state->unk30 = 0x1E;
-        state->unk34 = 0;
+        state->sound1 = 0x1E;
+        state->octave1 = 0;
     }
-    state->unk44 = 6;
-    state->unk4C = 0x20;
-    state->unk48 = 0;
-    state->unk50 = 0xA;
+    state->sound2 = 6;
+    state->volume2 = 0x20;
+    state->octave2 = 0;
+    state->endVolume2 = 0xA;
 }
 
 void SoundSpot_Type5(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade((SpotSlot *)slot);
     if (state->tick % 3 == 0) {
-        state->unk1C = 0x1E;
-        state->unk20 = 0;
+        state->sound0 = 0x1E;
+        state->octave0 = 0;
     }
     if (state->tick % 5 == 0) {
-        state->unk30 = 0x1E;
-        state->unk34 = 0;
-        state->unk38 = 0x18;
-        state->unk3C = 0x18;
+        state->sound1 = 0x1E;
+        state->octave1 = 0;
+        state->volume1 = 0x18;
+        state->endVolume1 = 0x18;
     }
     if (state->tick % 7 == 0) {
-        state->unk1C = 0x1E;
-        state->unk20 = 0;
+        state->sound0 = 0x1E;
+        state->octave0 = 0;
     }
-    state->unk44 = 6;
-    state->unk48 = 1;
-    state->unk4C = 0x2A;
-    state->unk50 = 0xA;
+    state->sound2 = 6;
+    state->octave2 = 1;
+    state->volume2 = 0x2A;
+    state->endVolume2 = 0xA;
 }
 
 void SoundSpot_Type6(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade((SpotSlot *)slot);
     if (state->tick == 0) {
-        state->unk1C = 0x1E;
-        state->unk20 = -1;
+        state->sound0 = 0x1E;
+        state->octave0 = -1;
         return;
     }
     if (state->tick < 50 && state->tick % 5 == 4) {
-        state->unk30 = 0x1E;
-        state->unk34 = 0;
-        state->unk3C = state->unk38 -= state->tick * 2;
+        state->sound1 = 0x1E;
+        state->octave1 = 0;
+        state->endVolume1 = state->volume1 -= state->tick * 2;
         return;
     }
     if (state->tick >= 0x65 && state->tick < 0x6E) {
-        state->unk44 = 0xD;
-        state->unk48 = 1;
+        state->sound2 = 0xD;
+        state->octave2 = 1;
         return;
     }
     if (state->tick >= 0xC9) {
@@ -2140,8 +2140,8 @@ void SoundSpot_Type7(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     tick = state->tick;
     if (tick == 0) {
-        state->unk1C = 7;
-        state->unk20 = 2;
+        state->sound0 = 7;
+        state->octave0 = 2;
         return;
     }
     if (tick >= 0x1B) {
@@ -2155,15 +2155,15 @@ void SoundSpot_Type8(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     tick = state->tick;
     if (tick == 0) {
-        state->unk1C = 0x14;
-        state->unk20 = 1;
+        state->sound0 = 0x14;
+        state->octave0 = 1;
         return;
     }
     if (tick == 3) {
-        state->unk20 = 2;
-        state->unk24 = 0x18;
-        state->unk1C = 3;
-        state->unk28 = 0x14;
+        state->octave0 = 2;
+        state->volume0 = 0x18;
+        state->sound0 = 3;
+        state->endVolume0 = 0x14;
         return;
     }
     if (tick >= 0x33) {
@@ -2174,18 +2174,18 @@ void SoundSpot_Type8(void *slot, SpotState *state) {
 void SoundSpot_Type9(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     if (state->tick % 20 == 0) {
-        state->unk1C = 9;
-        state->unk20 = 0;
-        state->unk24 = 0x40;
-        state->unk28 = 0x40;
+        state->sound0 = 9;
+        state->octave0 = 0;
+        state->volume0 = 0x40;
+        state->endVolume0 = 0x40;
     }
 }
 
 void SoundSpot_Type10(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     if (state->tick == ((state->tick / 20) * 20)) {
-        state->unk1C = 9;
-        state->unk20 = -2;
+        state->sound0 = 9;
+        state->octave0 = -2;
     }
 }
 
@@ -2195,11 +2195,11 @@ void SoundSpot_Type11(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     phase = state->tick % 20;
     if (phase == 1) {
-        state->unk1C = 9;
-        state->unk20 = -2;
+        state->sound0 = 9;
+        state->octave0 = -2;
     } else if (phase == 16) {
-        state->unk30 = 9;
-        state->unk34 = -2;
+        state->sound1 = 9;
+        state->octave1 = -2;
     }
 }
 
@@ -2209,14 +2209,14 @@ void SoundSpot_Type12(void *slot, SpotState *state) {
     SoundSpot_Type11(slot, state);
     phase = state->tick % 70;
     if (phase == 50) {
-        state->unk44 = 20;
-        state->unk48 = 1;
+        state->sound2 = 20;
+        state->octave2 = 1;
     } else if (phase >= 54 && phase < 59) {
-        state->unk44 = 13;
-        state->unk48 = 1;
+        state->sound2 = 13;
+        state->octave2 = 1;
     } else if (phase == 61) {
-        state->unk44 = 9;
-        state->unk48 = -1;
+        state->sound2 = 9;
+        state->octave2 = -1;
     }
 }
 
@@ -2226,22 +2226,22 @@ void SoundSpot_Type13(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     tick = state->tick;
     if (tick == 0) {
-        state->unk1C = 0x14;
-        state->unk20 = -2;
-        state->unk30 = 0x14;
-        state->unk34 = -2;
+        state->sound0 = 0x14;
+        state->octave0 = -2;
+        state->sound1 = 0x14;
+        state->octave1 = -2;
         return;
     }
     if (tick == 4) {
-        state->unk30 = 0x14;
-        state->unk34 = -2;
+        state->sound1 = 0x14;
+        state->octave1 = -2;
         return;
     }
     if (tick == 20) {
-        state->unk1C = 0x10;
-        state->unk20 = -2;
-        state->unk30 = 0x12;
-        state->unk34 = -2;
+        state->sound0 = 0x10;
+        state->octave0 = -2;
+        state->sound1 = 0x12;
+        state->octave1 = -2;
         return;
     }
     if (tick >= 0xC9) {
@@ -2252,14 +2252,14 @@ void SoundSpot_Type13(void *slot, SpotState *state) {
 void SoundSpot_Type14(void *slot, SpotState *state) {
     state->level = SoundSpot_CalcFade(slot);
     if (state->tick == 0) {
-        state->unk1C = 0x18;
-        state->unk20 = 0;
+        state->sound0 = 0x18;
+        state->octave0 = 0;
     }
 }
 
 /* distance / (range / unk28): grows with the distance to the spot. */
 s32 SoundSpot_CalcFade(SpotSlot *slot) {
-    return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->unk28);
+    return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->fadeSteps);
 }
 
 /* Spawn rule 7 (Sym_CheckRule): 1 when the ambience family is even, 0 for odd ones and none (-1). */
@@ -2321,7 +2321,7 @@ void Scenery_Build(void *self, s32 map, s32 origin) {
 
     g_sceneryViewY = g_sceneryView->viewpoint.y;
     Scenery_AddOffset(&pos, (Vec3 *)origin, &scenery->offset);
-    Scenery_AttachPart(self, map, &pos, scenery->unk64, (s32)scenery->unk68);
+    Scenery_AttachPart(self, map, &pos, scenery->rotation, (s32)scenery->scale);
     kind = scenery->kind;
     if (kind < 2) {
         SceneNode_LinkModel(self, g_sceneryModels->vt->unk80(g_sceneryModels, g_sceneryModelIndexes[kind]));
@@ -2381,12 +2381,12 @@ void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b) {
 }
 
 /* Slots 0x4C, 0x44 and 0x48 of a scenery object or part (pos is not used). */
-void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 arg3, s32 arg4) {
+void Scenery_AttachPart(void *self, s32 parent, Vec3 *pos, s32 rotation, s32 scale) {
     SceneryPart *obj = self;
 
-    obj->vt->unk4C(obj, parent);
-    obj->vt->unk44(obj, 1, arg3);
-    obj->vt->unk48(obj, 1, arg4);
+    obj->vt->attach(obj, parent);
+    obj->vt->setRotation(obj, 1, rotation);
+    obj->vt->setScale(obj, 1, scale);
 }
 
 /* Kind 0: make (move == 0) or move its two parts, set apart along direction unk6C (1 to 4). */
@@ -2397,23 +2397,23 @@ void Scenery_PlaceKind0Parts(void *self, s32 move) {
     SceneryPart **part;
     s32 i;
 
-    dir = scenery->unk6C;
+    dir = scenery->direction;
     if (dir != 0) {
         pos = D_800877EC;
         part = scenery->u.pair;
         for (i = 0; i < 2; i++) {
             if (dir < 3) {
-                pos.x += *scenery->unk68 * g_sceneryPartSpacing[dir];
+                pos.x += *scenery->scale * g_sceneryPartSpacing[dir];
             } else {
                 pos.y += g_sceneryPartSpacing[dir];
             }
             if (move != 0) {
                 SceneryPart *obj = *part;
-                obj->vt->unkB8(obj, &pos);
+                obj->vt->setColor(obj, &pos);
             } else {
                 *part = Actor_New();
                 SceneNode_LinkModel(*part, scenery->model);
-                Scenery_AttachPart(*part, (s32)scenery, &pos, scenery->unk64, (s32)scenery->unk68);
+                Scenery_AttachPart(*part, (s32)scenery, &pos, scenery->rotation, (s32)scenery->scale);
             }
             part++;
         }
@@ -2432,22 +2432,22 @@ void Scenery_UpdateKind0(void *self, Vec3 *origin) {
     s32 period;
     u32 ticks;
 
-    idx = scenery->unk70;
-    if (scenery->unk6C != 0) {
+    idx = scenery->variant;
+    if (scenery->direction != 0) {
         if (g_sceneryKind0Speeds[idx] != 0) {
             part = scenery->u.pair;
             if (scenery->ticks >= 0x1F5) {
-                scenery->vt->unk44(scenery, 0, &g_sceneryKind0Spin);
+                scenery->vt->setRotation(scenery, 0, &g_sceneryKind0Spin);
                 i = 0;
                 speed = &g_sceneryKind0Speeds[idx];
                 off = 0;
                 do {
                     pos = D_8008782C;
                     pos.z += off + *speed;
-                    (*part)->vt->unkBC(*part, &pos);
+                    (*part)->vt->setPosition(*part, &pos);
                     i++;
                     off += 3;
-                    (*part)->vt->unk44(*part, 0, &g_sceneryKind0Spin);
+                    (*part)->vt->setRotation(*part, 0, &g_sceneryKind0Spin);
                     part++;
                 } while (i < 2);
                 period = 0x5FB4 / g_sceneryKind0Speeds[idx];
@@ -2468,13 +2468,13 @@ void Scenery_UpdateKind0(void *self, Vec3 *origin) {
 }
 
 void Scenery_DeleteKind0Parts(Scenery *scenery) {
-    if (scenery->unk6C != 0) {
+    if (scenery->direction != 0) {
         Object_DeleteArray(scenery->u.pair, 2);
     }
 }
 
 /* Kind 2: five parts, then part 1 placed from g_sceneryKind2Offsets[unk70] or coloured, part 2 shown. */
-void Scenery_BuildKind2(void *self, s32 arg1) {
+void Scenery_BuildKind2(void *self, s32 unused) {
     Scenery *scenery;
     SceneryPart *part;
     SceneryPartVtbl *vt;
@@ -2491,43 +2491,43 @@ void Scenery_BuildKind2(void *self, s32 arg1) {
         partColor = (s32)D_80087868;
     }
     Scenery_CreateSpriteParts(self, 0, 0, partColor);
-    if (scenery->unk70 >= 2) {
+    if (scenery->variant >= 2) {
         value = D_80087880;
         part = scenery->u.many.parts[1];
-        *value = g_sceneryKind2Offsets[scenery->unk70];
+        *value = g_sceneryKind2Offsets[scenery->variant];
         Actor_MovePos(part, value);
-        arg = scenery->unk78;
+        arg = scenery->dayMark;
         vt = part->vt;
         if (arg == 0) {
-            arg = scenery->unk74;
+            arg = scenery->color;
         }
-        vt->unkB8(part, arg);
+        vt->setColor(part, arg);
     } else {
         part = scenery->u.many.parts[1];
-        part->vt->unk64(part, 1);
-        part->vt->unk68(part, 0);
+        part->vt->setSemiTrans(part, 1);
+        part->vt->setBlendRate(part, 0);
         vt = part->vt;
         color = (s32)D_80087874;
         if (coin != 0) {
             color = (s32)D_8008785C;
         }
-        vt->unk48(part, 1, color);
+        vt->setScale(part, 1, color);
     }
-    scenery->u.many.parts[2]->vt->unk60(scenery->u.many.parts[2], 0);
+    scenery->u.many.parts[2]->vt->setVisible(scenery->u.many.parts[2], 0);
 }
 
 /* Kinds 2 and 3: five parts of class g_sceneryPartVtbl in the place's font. */
-void Scenery_CreateSpriteParts(Scenery *scenery, s32 arg1, s32 arg2, s32 color) {
+void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s32 color) {
     SceneryPart **part;
     s32 i;
 
     part = scenery->u.many.parts;
     for (i = 0; i < 5; i++) {
-        *part = SceneryPart_New(arg2, 0, (s32)g_sceneryFont);
-        (*part)->vt->unk4C(*part, scenery, 0);
-        (*part)->vt->unkB8(*part, scenery->unk74);
+        *part = SceneryPart_New(index, 0, (s32)g_sceneryFont);
+        (*part)->vt->attach(*part, scenery, 0);
+        (*part)->vt->setColor(*part, scenery->color);
         if (color != 0) {
-            (*part)->vt->unk48(*part, 1, color);
+            (*part)->vt->setScale(*part, 1, color);
         }
         part++;
     }
@@ -2540,7 +2540,7 @@ void Scenery_DeleteKind2Parts(Scenery *scenery) {
     Object_DeleteArray(scenery->u.many.parts, 5);
 }
 
-void Scenery_BuildKind3(Scenery *scenery, s32 arg1) {
+void Scenery_BuildKind3(Scenery *scenery, s32 unused) {
     Scenery_CreateSpriteParts(scenery, 0, 0, 0);
 }
 
@@ -2551,8 +2551,8 @@ void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
 
     part = &scenery->u.many.parts[1];
     for (i = 0; i < 4; i++) {
-        (*part)->vt->unk48(*part, 1, g_sceneryKind3Scales + ((u32)rand() % 6) * 12);
-        (*part)->unk84 = (rand() % 360) << 12;
+        (*part)->vt->setScale(*part, 1, g_sceneryKind3Scales + ((u32)rand() % 6) * 12);
+        (*part)->angle = (rand() % 360) << 12;
         part++;
     }
 }
@@ -2598,7 +2598,7 @@ void *Actor_Construct(Actor *actor) {
         actor->vt = Actor_GetVtbl();
         actor->unk44 = 0;
         actor->map = 0;
-        actor->unk50 = 0;
+        actor->clock = 0;
         actor->vt->init(actor);
         return actor;
     }
@@ -2616,7 +2616,7 @@ void Actor_Watch(Actor *actor, s32 **other) {
         return;
     }
     if ((classId & 0xF) == 5) {
-        actor->unk50 = (s32)other;
+        actor->clock = (s32)other;
     }
 }
 
@@ -2628,7 +2628,7 @@ void Actor_Unwatch(Actor *actor, s32 **other) {
     if ((classId & 0xFFF) == 0x114) {
         actor->map = 0;
     } else if ((classId & 0xF) == 5) {
-        actor->unk50 = 0;
+        actor->clock = 0;
     }
     SceneNode_GetVtbl()->unwatch(actor, other);
 }
@@ -2636,14 +2636,14 @@ void Actor_Unwatch(Actor *actor, s32 **other) {
 /* Slot 0x18, unwatch all */
 void Actor_UnwatchAll(Actor *actor) {
     actor->map = 0;
-    actor->unk50 = 0;
+    actor->clock = 0;
     SceneNode_GetVtbl()->unwatchAll(actor);
 }
 
 /* Slot 0x40 */
 void Actor_Init(Actor *actor) {
-    actor->unk48 = 0x12C;
-    actor->unk54 = 0;
+    actor->speed = 0x12C;
+    actor->boxMargin = 0;
 }
 
 /* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_IsReady. */
@@ -2651,16 +2651,16 @@ void Actor_SendBoxes(Actor *actor, s32 message) {
     s32 *buf[14];
     Actor *contact;
 
-    SceneNode_GetVtbl()->unk88(actor, message);
+    SceneNode_GetVtbl()->sendBoxes(actor, message);
     if (message < 9) {
         if (message >= 5) {
-            if ((actor->unk20 != 0) && (ModelObject_IsReady(actor->unk20) != 0)) {
-                actor->vt->unk8C(actor, buf);
+            if ((actor->model != 0) && (ModelObject_IsReady(actor->model) != 0)) {
+                actor->vt->getBoxList(actor, buf);
                 if (message != 5) {
-                    ModelBox_ShiftList(buf, message == 7, actor->unk48 >= 0,
-                                  actor->unk48 >= 0 ? actor->unk48 + actor->unk54 : actor->unk48 - actor->unk54);
+                    ModelBox_ShiftList(buf, message == 7, actor->speed >= 0,
+                                  actor->speed >= 0 ? actor->speed + actor->boxMargin : actor->speed - actor->boxMargin);
                 }
-                actor->vt->unk90(actor, buf, message);
+                actor->vt->sendShape(actor, buf, message);
                 contact = (Actor *)actor->contact;
                 if (contact != NULL) {
                     if (*(u8 *)contact->vt == 0x34) {
@@ -2707,10 +2707,10 @@ void Actor_ApplyPos(void *self, s32 set, s32 *vec) {
 }
 
 /* Slot 0xC0 */
-void Actor_MoveLocal(Actor *actor, void *arg1) {
+void Actor_MoveLocal(Actor *actor, void *local) {
     s32 delta[3];
 
-    SceneNode_RotateVector(actor, delta, arg1);
+    SceneNode_RotateVector(actor, delta, local);
     actor->vt->movePos(actor, delta);
 }
 
@@ -2730,31 +2730,31 @@ void Actor_MoveY(void *actor, s32 value, s32 notify) {
 void Actor_MoveAxis(void *self, s16 *field, s32 value, s32 notify, s32 message) {
     Actor *actor = self;
 
-    actor->unk48 = *field = value;
-    actor->vt->unkC0(actor, g_actorMoveVec);
+    actor->speed = *field = value;
+    actor->vt->moveLocal(actor, g_actorMoveVec);
     *field = 0;
     if (notify != 0) {
-        actor->vt->unk88(actor, message);
+        actor->vt->sendBoxes(actor, message);
     }
 }
 
 /* Slot 0xD0 */
-void Actor_MoveZOnGround(Actor *actor, s32 arg1, s32 arg2) {
-    Actor_MoveThenSnap(actor, actor->vt->unkC4, arg1, arg2);
+void Actor_MoveZOnGround(Actor *actor, s32 value, s32 notify) {
+    Actor_MoveThenSnap(actor, actor->vt->moveZ, value, notify);
 }
 
 /* Slot 0xD4 */
-void Actor_MoveXOnGround(Actor *actor, s32 arg1, s32 arg2) {
-    Actor_MoveThenSnap(actor, actor->vt->unkC8, arg1, arg2);
+void Actor_MoveXOnGround(Actor *actor, s32 value, s32 notify) {
+    Actor_MoveThenSnap(actor, actor->vt->moveX, value, notify);
 }
 
 void Actor_StubD8(void) {
 }
 
 /* Run a move, then look for a contact when the move found none. */
-void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 arg2, s32 arg3) {
+void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify) {
     actor->contact = 0;
-    move(actor, arg2, arg3);
+    move(actor, value, notify);
     if (actor->contact == 0) {
         Actor_SnapToGround(actor);
     }
@@ -2777,10 +2777,10 @@ s32 Actor_SnapToGround(GridActor *actor) {
             actor->contact = found;
             if (found != 0) {
                 actor->vt->movePos(actor, delta);
-                actor->vt->unk88(actor, -1);
+                actor->vt->sendBoxes(actor, -1);
                 return 1;
             }
-            actor->vt->unk88(actor, -2);
+            actor->vt->sendBoxes(actor, -2);
         }
     }
     return 0;
@@ -2922,23 +2922,23 @@ s32 Actor_ProbeGroundAt(s32 entry) {
 }
 
 /* Slot 0xDC: the base slot 0x9C, then slot 0xA0 for messages 5 to 8. */
-void Actor_OnNode34(Actor *actor, void *arg1, s32 message) {
-    SceneNode_GetVtbl()->unk9C(actor, arg1, message);
+void Actor_OnNode34(Actor *actor, void *sender, s32 message) {
+    SceneNode_GetVtbl()->onNode(actor, sender, message);
     if (message < 9) {
         if (message >= 5) {
-            actor->vt->unkA0(actor, arg1, message);
+            actor->vt->checkContact(actor, sender, message);
         }
     }
 }
 
 /* Slot 0xE0 */
-void Actor_OnNode24(s32 actor, s32 arg1, s32 message) {
-    SceneNode_GetVtbl()->unk9C(actor, arg1, message);
+void Actor_OnNode24(s32 actor, s32 sender, s32 message) {
+    SceneNode_GetVtbl()->onNode(actor, sender, message);
 }
 
 /* Slot 0xE4 */
 void Actor_SetSpeed(Actor *actor, s16 value) {
-    actor->unk48 = value;
+    actor->speed = value;
 }
 
 void Actor_StubE8(void) {
@@ -2946,7 +2946,7 @@ void Actor_StubE8(void) {
 
 /* Slot 0xEC */
 void Actor_SetBoxMargin(Actor *actor, s32 value) {
-    actor->unk54 = value;
+    actor->boxMargin = value;
 }
 
 ActorVtbl *Actor_GetVtbl(void) {
@@ -2954,20 +2954,20 @@ ActorVtbl *Actor_GetVtbl(void) {
 }
 
 /* Allocate a scenery part of class g_sceneryPartVtbl (0xA8 bytes) for kinds 2 and 3. */
-void *SceneryPart_New(s32 index, s32 arg1, s32 font) {
+void *SceneryPart_New(s32 index, s32 blendRate, s32 font) {
     void *part;
 
     part = Heap_Alloc(0xA8);
     if (part != NULL) {
-        SceneryPart_GetVtbl()->construct(part, index, arg1, font);
+        SceneryPart_GetVtbl()->construct(part, index, blendRate, font);
         return part;
     }
     return NULL;
 }
 
 /* Slot 0x08 of g_sceneryPartVtbl: base construct with the font and the 12-byte entry g_sceneryPartRects[index]. */
-void SceneryPart_Construct(TextPart *part, s32 index, s32 arg2, s32 font) {
-    SpriteNode_GetVtbl()->construct(part, font, 0, g_sceneryPartRects + index * 0xC, arg2, 0);
+void SceneryPart_Construct(TextPart *part, s32 index, s32 blendRate, s32 font) {
+    SpriteNode_GetVtbl()->construct(part, font, 0, g_sceneryPartRects + index * 0xC, blendRate, 0);
     part->vt = SceneryPart_GetVtbl();
     part->unkA4 = 0;
     part->vt->init(part, index);
@@ -2976,12 +2976,12 @@ void SceneryPart_Construct(TextPart *part, s32 index, s32 arg2, s32 font) {
 /* Slot 0x40 */
 void SceneryPart_Init(TextPart *part, s32 index) {
     part->index = index;
-    part->unk74 = g_sceneryPartCluts[index * 2];
-    part->unk76 = g_sceneryPartClutsY[index * 2];
+    part->clutX = g_sceneryPartCluts[index * 2];
+    part->clutY = g_sceneryPartClutsY[index * 2];
 }
 
 /* Slot 0x48: two 4.12 ratios from ratio[0] / ratio[1] and ratio[2] / ratio[3]. */
-void SceneryPart_SetScale(TextPart *part, s32 arg1, s16 *ratio) {
+void SceneryPart_SetScale(TextPart *part, s32 assign, s16 *ratio) {
     s16 x;
     s16 y;
 
@@ -2991,8 +2991,8 @@ void SceneryPart_SetScale(TextPart *part, s32 arg1, s16 *ratio) {
         part->unk5C = (x * part->unk5C) >> 12;
         part->unk60 = (y * part->unk60) >> 12;
     } else {
-        part->unk80 = x;
-        part->unk82 = y;
+        part->scaleX = x;
+        part->scaleY = y;
     }
 }
 
@@ -3013,12 +3013,12 @@ TextPartVtbl *SceneryPart_GetVtbl(void) {
 }
 
 /* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
-void *Graph_New(s32 arg0) {
+void *Graph_New(s32 dreamSys) {
     void *graph;
 
     graph = Heap_Alloc(0x244);
     if (graph != 0) {
-        Graph_GetVtable()->construct(graph, arg0);
+        Graph_GetVtable()->construct(graph, dreamSys);
         return graph;
     }
     return 0;

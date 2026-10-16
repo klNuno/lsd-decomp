@@ -5,7 +5,7 @@
 /* A parent node as a child sees it: only its own parent link (at 0x0C) is read. */
 typedef struct ParentNode {
     u8 pad_00[0xC];
-    s32 unk_0C;         /* 0x0C the parent's own parent link, tested against 0 */
+    s32 parent;         /* 0x0C the parent's own parent link, tested against 0 */
 } ParentNode;
 
 /* A box fill as GsSortBoxFill takes it. */
@@ -30,25 +30,25 @@ typedef struct Sprite {
    Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
 typedef struct DrawNode {
     u32 *vtbl;              /* 0x00 vtable; its first word is the tag: low 4 bits the sender type, low byte the kind */
-    s32 unk_04;             /* 0x04 first child for List_Next; the walk ends when it reaches 0 */
+    s32 firstChild;         /* 0x04 first child for List_Next; the walk ends when it reaches 0 */
     u8 pad_08[0x4];
     ParentNode *parent;     /* 0x0C */
-    s32 unk_10;             /* 0x10 embedded model object, given to Render_SortModel */
+    s32 model;              /* 0x10 embedded model object, given to Render_SortModel; negative skips kind 0x24 */
     Coord2 *coord;          /* 0x14 */
-    s32 unk_18;             /* 0x18 when set, the model is sorted */
+    s32 modelShown;         /* 0x18 when set, the model is sorted */
     u8 pad_1C[0x28];
-    u16 unk_44;             /* 0x44 box priority; for kind 0x54 its address is the bg data */
+    u16 priority;           /* 0x44 box priority; for kind 0x54 its address is the bg data */
     u8 pad_46[0x2];
-    s32 unk_48;             /* 0x48 when set, the box size is a percent of half the screen */
+    s32 percent;            /* 0x48 when set, the box size is a percent of half the screen */
     u8 pad_4C[0x4];
-    s32 unk_50;             /* 0x50 box width, or its percent */
-    s32 unk_54;             /* 0x54 box height, or its percent */
+    s32 boxW;               /* 0x50 box width, or its percent */
+    s32 boxH;               /* 0x54 box height, or its percent */
     BoxFill boxFill;        /* 0x58 */
     u8 pad_60[0x4];
     Sprite sprite;          /* 0x64 */
     u8 pad_88[0x18];
-    s32 unk_A0;             /* 0xA0 sprite x scale, used with half the screen width */
-    s32 unk_A4;             /* 0xA4 sprite y scale, used with half the screen height */
+    s32 scaleX;             /* 0xA0 sprite x scale, used with half the screen width */
+    s32 scaleY;             /* 0xA4 sprite y scale, used with half the screen height */
 } DrawNode;
 
 void RotMatrix(s16 *r, Matrix *m);
@@ -82,7 +82,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     u32 kind;
 
     scaled = 0;
-    if ((*node->vtbl & 0xFF) == 0x24 && node->unk_10 < 0) {
+    if ((*node->vtbl & 0xFF) == 0x24 && node->model < 0) {
         return;
     }
     coord = node->coord;
@@ -107,7 +107,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     do {
         for (;;) {
             if (child == NULL) {
-                iter = node->unk_04;
+                iter = node->firstChild;
             }
             List_Next(&child, &iter);
             if (child != NULL && (*child->vtbl & 0xF) == 4 && child->parent == (ParentNode *)node) {
@@ -129,23 +129,23 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     type = *node->vtbl;
     kind = type & 0xFF;
     if (kind == 0x54) {
-        GsSortBg(&node->unk_44, view->ot[view->buffer], (1 << view->otBits) - 1);
+        GsSortBg(&node->priority, view->ot[view->buffer], (1 << view->otBits) - 1);
     } else if (kind == 0x64) {
         boxNode = node;
-        if (boxNode->unk_48 != 0) {
-            boxNode->boxFill.x = (view->screenSize.x >> 1) * boxNode->unk_50 / 100;
-            boxNode->boxFill.y = (view->screenSize.y >> 1) * boxNode->unk_54 / 100;
+        if (boxNode->percent != 0) {
+            boxNode->boxFill.x = (view->screenSize.x >> 1) * boxNode->boxW / 100;
+            boxNode->boxFill.y = (view->screenSize.y >> 1) * boxNode->boxH / 100;
         } else {
-            boxNode->boxFill.x = boxNode->unk_50;
-            boxNode->boxFill.y = boxNode->unk_54;
+            boxNode->boxFill.x = boxNode->boxW;
+            boxNode->boxFill.y = boxNode->boxH;
         }
-        GsSortBoxFill(&boxNode->boxFill, view->ot[view->buffer], boxNode->unk_44);
+        GsSortBoxFill(&boxNode->boxFill, view->ot[view->buffer], boxNode->priority);
     } else if (kind != 0x44) {
         GsGetLws(node->coord, lw, ls);
         GsSetLightMatrix(lw);
         GsSetLsMatrix(ls);
-        if (node->unk_18 != 0) {
-            Render_SortModel(&node->unk_10, view->ot[view->buffer], 14 - view->otBits, (u32 *)0x1F800000);
+        if (node->modelShown != 0) {
+            Render_SortModel(&node->model, view->ot[view->buffer], 14 - view->otBits, (u32 *)0x1F800000);
         }
     } else {
         Vec3 pos[2];
@@ -156,8 +156,8 @@ void Scene_DrawNode(View *view, DrawNode *node) {
 
             sp = &spr->sprite;
             dim = &view->screenSize.x;
-            sp->x = spr->unk_A0 != 0 ? (dim[0] >> 1) * 100 / (10000 / spr->unk_A0) : 0;
-            sp->y = spr->unk_A4 != 0 ? (dim[1] >> 1) * 100 / (10000 / spr->unk_A4) : 0;
+            sp->x = spr->scaleX != 0 ? (dim[0] >> 1) * 100 / (10000 / spr->scaleX) : 0;
+            sp->y = spr->scaleY != 0 ? (dim[1] >> 1) * 100 / (10000 / spr->scaleY) : 0;
             sp->x += sp->mx;
             sp->y += sp->my;
             GsSortSprite(sp, view->ot[view->buffer], 0);
@@ -167,7 +167,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
         if (ls->t.z - 1 > 0xFFFEU) {
             return;
         }
-        if (node->parent->unk_0C != 0) {
+        if (node->parent->parent != 0) {
             Render_TransformLongVectors(pos, &node->coord->coord.t, 1, ls);
             pos->x += lsbuf.t.x;
             pos->y += lsbuf.t.y;
@@ -175,6 +175,8 @@ void Scene_DrawNode(View *view, DrawNode *node) {
         } else {
             *pos = lsbuf.t;
         }
+        /* unk4C is the near plane (View_Reset stores 10): a sprite behind it is dropped.
+           unk98 is the OT z step, (far - near) / OT length + 1, computed by the view's frame setup. */
         if (pos->z > view->unk4C) {
             pos->x = pos->x * view->projection / pos->z;
             pos->y = pos->y * view->projection / pos->z;

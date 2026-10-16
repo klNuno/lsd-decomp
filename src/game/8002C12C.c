@@ -521,7 +521,7 @@ s32 Sound_GetTickRate(void) {
     return g_soundTickRate;
 }
 
-s32 HandlerNode_Start(s32 arg0, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
+s32 HandlerNode_Start(s32 bank, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
     HandlerVoice *voice;
     s32 noVoice;
     s32 i;

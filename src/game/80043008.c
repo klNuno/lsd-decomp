@@ -1004,25 +1004,25 @@ MomVtbl *Mml_GetVtbl(void) {
 
 /* ---- BgMap: GsMAP over a BgCells ---- */
 
-s32 BgMap_Create(s32 arg0, s32 cells) {
+s32 BgMap_Create(s32 skipBuild, s32 cells) {
     s32 bgMap;
 
     bgMap = Heap_Alloc(0x44);
     if (bgMap != 0) {
-        BgMap_GetVtbl()->base.init(bgMap, arg0, cells);
+        BgMap_GetVtbl()->base.init(bgMap, skipBuild, cells);
         return bgMap;
     }
     return 0;
 }
 
-void BgMap_Init(BgMap *bgMap, s32 arg1, BgCells *cells) {
+void BgMap_Init(BgMap *bgMap, s32 skipBuild, BgCells *cells) {
     s32 unused[8];
 
     File_GetBackendVtbl()->init(bgMap);
     bgMap->vtbl = BgMap_GetVtbl();
     bgMap->cellSource = cells;
     bgMap->built = 0;
-    if (arg1 == 0) {
+    if (skipBuild == 0) {
         bgMap->fullScreen = 1;
         bgMap->state = 0;
         bgMap->vtbl->base.onLoaded(bgMap);
@@ -1075,25 +1075,25 @@ BgMapVtbl *BgMap_GetVtbl(void) {
 
 /* ---- BgCells: the GsCELL table ---- */
 
-s32 BgCells_Create(s32 arg0) {
+s32 BgCells_Create(s32 skipBuild) {
     s32 bgCells;
 
     bgCells = Heap_Alloc(0x38);
     if (bgCells != 0) {
-        BgCells_GetVtbl()->base.init(bgCells, arg0);
+        BgCells_GetVtbl()->base.init(bgCells, skipBuild);
         return bgCells;
     }
     return 0;
 }
 
-void BgCells_Init(BgCells *bgCells, s32 arg1) {
+void BgCells_Init(BgCells *bgCells, s32 skipBuild) {
     char unused[0x20]; /* same 0x20 buffer as SeqFile_Init's strcpy target */
 
     File_GetBackendVtbl()->init(bgCells);
     bgCells->vtbl = BgCells_GetVtbl();
     bgCells->unk_34 = 0;
     bgCells->built = 0;
-    if (arg1 == 0) {
+    if (skipBuild == 0) {
         bgCells->fullScreen = 1;
         bgCells->state = 0;
         bgCells->vtbl->base.onLoaded(bgCells);
