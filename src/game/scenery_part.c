@@ -22,8 +22,8 @@ typedef struct TextPart {
     s32 unk5C;
     s32 unk60;
     u8 pad_64[0x74 - 0x64];
-    u16 clutX;            /* 0x74 g_sceneryPartCluts[index * 2] */
-    u16 clutY;            /* 0x76 g_sceneryPartClutsY[index * 2] */
+    u16 clutX;            /* 0x74 g_sceneryPartCluts[index].x */
+    u16 clutY;            /* 0x76 g_sceneryPartCluts[index].y */
     u8 pad_78[0x80 - 0x78];
     s16 scaleX;
     s16 scaleY;
@@ -34,8 +34,9 @@ typedef struct TextPart {
 
 /* The class SpriteNode_GetVtbl returns, base of TextPart. */
 typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32, s32, void *, s32, s32); } TextPartBaseVtbl;
-extern u16 g_sceneryPartCluts[];
-extern u16 g_sceneryPartClutsY[];
+/* CLUT position of each part in VRAM (SceneryPart_Init). */
+typedef struct SceneryPartClut { u16 x; u16 y; } SceneryPartClut;
+extern SceneryPartClut g_sceneryPartCluts[];
 static TextPartVtbl *SceneryPart_GetVtbl(void);
 extern u8 g_sceneryPartRects[];
 /* the vtable of sprite_node.c through this file's view of its slots, so not from game/sprite_node.h */
@@ -65,8 +66,8 @@ void SceneryPart_Construct(TextPart *part, s32 index, s32 blendRate, s32 font) {
 /* Slot 0x40 */
 void SceneryPart_Init(TextPart *part, s32 index) {
     part->index = index;
-    part->clutX = g_sceneryPartCluts[index * 2];
-    part->clutY = g_sceneryPartClutsY[index * 2];
+    part->clutX = g_sceneryPartCluts[index].x;
+    part->clutY = g_sceneryPartCluts[index].y;
 }
 
 /* Slot 0x48: two 4.12 ratios from ratio[0] / ratio[1] and ratio[2] / ratio[3]. */

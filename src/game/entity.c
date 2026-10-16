@@ -268,12 +268,9 @@ typedef struct BehaviorEntity {
 } BehaviorEntity;
 extern EntityRecord g_entityRecords[];
 extern void Behavior_MazePenguin();
-extern s8 g_entityRecordVideo[];
 extern s32 g_scaleHalf;
 extern s32 g_scaleSix;
 extern s32 g_scaleQuarter;
-extern s8 g_entityRecordPoints[];
-extern s8 g_entityRecordLink[];
 extern void Behavior_Type71();
 extern s32 g_scaleDouble[];
 extern s32 g_moveYNeg64[];
@@ -292,7 +289,6 @@ typedef struct Unk_80066818_Vtbl {
 } Unk_80066818_Vtbl;
 extern s32 rand(void);
 extern s32 g_scaleTiny;
-extern s32 g_entityRecordHandler[];
 static s32 Entity_IsDreamerNear();
 static EntityVtbl *Entity_GetVtbl(void);
 static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
@@ -305,7 +301,6 @@ static void Behavior_QueueSound18And3(HandlerNode *node);
 extern s32 g_rotY90;
 extern s16 g_scaleShrinkStep[];
 
-extern s8 g_entityRecordSoundRange[];
 extern s32 g_scaleTallTwo;
 extern s16 g_scaleWideThree[];
 extern s32 g_moveZNeg256[];
@@ -319,8 +314,6 @@ extern s32 g_rotY1;
 extern s32 g_scaleTriple;
 extern s32 g_effectDefaultPos[];
 extern s32 g_effectDefaultSize[];
-extern s8 g_entityRecordWakeMode[];
-extern s8 g_entityRecordHandlerRange[];
 extern s32 g_rotYNeg90;
 extern s32 g_scaleThinTall[];
 extern s16 g_scaleSquash[];
@@ -345,7 +338,7 @@ extern s32 g_scaleEighth;
 extern s32 g_rotYNeg120[];
 extern s32 g_astronautBarPose[];
 extern s32 g_moveY64ZNeg64[];
-extern s16 g_type41ScaleDepthDen[];
+extern s16 g_type41Scale[];
 static s32 Entity_IsDreamerNear(Entity *entity, s32 radius);
 extern s16 g_rotZ1[];
 extern s16 g_rotZNeg9[];
@@ -420,7 +413,7 @@ void Entity_Destruct(Entity *entity) {
 
 void Entity_Init(Entity *entity) {
     /* record points byte (+2) of 1 to 9 */
-    if ((u8)g_entityRecordPoints[entity->type * 16] - 1U < 9) {
+    if ((u8)g_entityRecords[entity->type].points - 1U < 9) {
         entity->vt->setLightFlags(entity, 1);
     }
     entity->vt->setTickMode(entity, 0x42);
@@ -432,9 +425,9 @@ void Entity_Attach(Entity *entity, void *dreamSys, void *watched, s32 map, s32 p
         Model_GetVtbl()->attach(entity, dreamSys, watched, map, placement);
         entity->map = map;
         /* record +3 wake mode 0: awake at spawn; +0xB handler range 0: handler from the start */
-        if (g_entityRecordWakeMode[entity->type * 16] == 0) {
+        if (g_entityRecords[entity->type].wakeMode == 0) {
             entity->vt->wake(entity);
-            if (g_entityRecordHandlerRange[entity->type * 16] == 0) {
+            if (g_entityRecords[entity->type].handlerRange == 0) {
                 entity->vt->startHandler(entity);
             }
         }
@@ -464,7 +457,7 @@ void Entity_OnActorTouch(Entity *entity, void *sender, s32 message) {
     s32 link;
 
     /* record +7 link */
-    link = g_entityRecordLink[entity->type * 16];
+    link = g_entityRecords[entity->type].link;
     if (message < 2 || message >= 9 || link > 0) {
         ((ModelVtbl *)Model_GetVtbl())->onActorTouch(entity, sender, message);
         /* entity events: 10 link, 11 end with the record's video (+8), 12 end; link 0x7F ends the dream */
@@ -473,7 +466,7 @@ void Entity_OnActorTouch(Entity *entity, void *sender, s32 message) {
                 message = 0xA;
             } else {
                 message = 0xC;
-                if (g_entityRecordVideo[entity->type * 16] != 0) {
+                if (g_entityRecords[entity->type].video != 0) {
                     message = 0xB;
                 }
             }
@@ -500,7 +493,7 @@ static s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
     u8 points;
 
     point = *(Vec3 *)pos;
-    points = *(u8 *)(g_entityRecordPoints + (entity->type * 0x10));
+    points = *(u8 *)&g_entityRecords[entity->type].points;
     if ((u32)((points + 9) & 0xFF) < 9U) {
         point.y += (s32)(points << 0x18) >> 0xE;
     }
@@ -544,7 +537,7 @@ s32 Entity_GetSoundFade(Entity *entity) {
 
     if (entity->dreamSys != NULL) {
         dist = entity->vt->distanceTo(entity, entity->dreamSys);
-        range = g_entityRecordSoundRange[entity->type * 16] << 11;
+        range = g_entityRecords[entity->type].soundRange << 11;
         if (range >= dist) {
             return dist / (range / entity->handlerNode.fadeSteps);
         }
@@ -557,13 +550,13 @@ EntityRecord *Entity_GetRecord(Entity *entity) {
 }
 
 s32 Entity_GetPoints(Entity *entity) {
-    return g_entityRecordPoints[entity->type * 16] * 1000;
+    return g_entityRecords[entity->type].points * 1000;
 }
 
 s32 Entity_GetLinkStage(Entity *entity) {
     s8 link;
 
-    link = g_entityRecordLink[entity->type * 16];
+    link = g_entityRecords[entity->type].link;
     if (link < 0) {
         return ~link;
     }
@@ -571,7 +564,7 @@ s32 Entity_GetLinkStage(Entity *entity) {
 }
 
 s32 Entity_GetVideo(Entity *entity) {
-    return g_entityRecordVideo[entity->type * 16] - 1;
+    return g_entityRecords[entity->type].video - 1;
 }
 
 void Entity_Wake(Entity *entity) {
@@ -596,7 +589,7 @@ void Entity_SetTouched(Entity *entity, s32 touched) {
 
 void Entity_StartHandler(Entity *entity) {
     /* register the record's handler (+0xC) */
-    HandlerNode_Start(entity->soundBank, &entity->handlerNode, entity->type + 1, entity, g_entityRecordHandler[entity->type * 4]);
+    HandlerNode_Start(entity->soundBank, &entity->handlerNode, entity->type + 1, entity, g_entityRecords[entity->type].handler);
     entity->vt->playAnimation(entity);
     entity->vt->startTick(entity);
     entity->handlerTicks = 0;
@@ -738,8 +731,8 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
 static void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
     s8 radius;
 
-    if (g_entityRecordLink[entity->type * 16] < 0) {
-        radius = g_entityRecordVideo[entity->type * 16];
+    if (g_entityRecords[entity->type].link < 0) {
+        radius = g_entityRecords[entity->type].video;
         if ((radius != 0) && (Entity_IsDreamerNear(entity, radius << 9) != 0)) {
             entity->vt->postEvent(entity, 0xA);
         }
@@ -1385,8 +1378,8 @@ void Behavior_Type41(BehaviorEntity *entity, HandlerNode *node) {
         return;
     }
     if (entity->state == 0xE && !(entity->handlerTicks & 3)) {
-        g_type41ScaleDepthDen[0] = rand() % 32 + 1;
-        entity->vt->scale(entity, 1, &g_type41ScaleDepthDen[-5]);
+        g_type41Scale[5] = rand() % 32 + 1;
+        entity->vt->scale(entity, 1, g_type41Scale);
     }
 }
 

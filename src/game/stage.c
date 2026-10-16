@@ -9,7 +9,6 @@
  */
 
 extern StageGrid g_stageGrids[];  /* g_stageGrids, 14 entries (Stage_GetGrids) */
-extern StageGrid g_stageGridRows[];  /* g_stageGrids + 2 */
 extern s16 *g_stageChunkMoods[];       /* per stage: the s16 mood of each chunk, row-major */
 
 /* The number of stages (STG00 to STG13). */
@@ -39,7 +38,7 @@ u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood) {
 
     for (stage = 0; stage < 0xE; stage++) {
         chunkMood = g_stageChunkMoods[stage];
-        rows = g_stageGridRows[stage].cols; /* g_stageGridRows is g_stageGrids + 2: this reads the rows */
+        rows = g_stageGrids[stage].rows;
         cols = g_stageGrids[stage].cols;
         for (row = 0; row < rows; row++) {
             for (col = 0; col < cols; col++) {

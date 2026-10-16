@@ -23,6 +23,7 @@ options:
   undefined_syms_auto_path: linker/undefined_syms_auto.txt
 
   gp_value: 0x8008A808
+  ld_gp_expression: main_SDATA_START
   find_file_boundaries: True
   migrate_rodata_to_functions: True
   disassemble_all: True

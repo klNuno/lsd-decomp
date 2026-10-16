@@ -157,6 +157,12 @@ void Stage_GetChunkPathAt(s32 stage, s32 col, s32 row) {
 }
 
 INCLUDE_RODATA("asm/nonmatchings/game/path_table", D_80011384);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankLovely);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankHuman);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankEthnova);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankElectro);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankCartoon);
+INCLUDE_RODATA("asm/nonmatchings/game/path_table", g_musicBankAmbient);
 
 /* The ASMIK logo video, video id 0x31 */
 char *Cine_GetLogoPath(s32 *videoId) {

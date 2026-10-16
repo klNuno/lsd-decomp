@@ -205,3 +205,17 @@ Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
    Makefile does not track headers: after editing one, `rm -rf build/src && make check` (not
    `make clean`, which also deletes the unit_check references in `build/ref`), then
    `tools/unit_check.sh` on every file that includes it.
+7. **The build must stay shiftable: every address in it is a symbol the linker can move.** After
+   `make check`, `python3 tools/rawscan.py` links the objects a second time with `.main` 0x10000
+   higher and lists every word that did not move although it points into the executable (data
+   pointers, `jal`, `lui` of an address). Read a field of the containing table in C
+   (`g_entityRecords[i].link`, `g_ruleColors[rule - 10]`) instead of declaring a symbol in the
+   middle of it, and give a string or a label that data points at its own entry in
+   `config/symbol_addrs.txt` (Sony ones in the hand-kept block of `symbol_addrs.psyq.txt`), so that
+   `linker/undefined_syms_auto.txt` keeps only `D_7FFFFF`. A label splat writes at an address that is
+   not word aligned needs `defined:True`, or splat also writes it there as a fixed number. 13 raw
+   words are left on 2026-10-16: the 10 of Sony's startup (`asm/psyq/80011994.s`, written as
+   `.word` because the function ends in a table), the header's initial pc and .text size, and the
+   numeric `_gp` in `linker/lsd.ld`. Fixing them needs a Makefile change (a post-split step for the
+   startup and the header, an extra linker script for `_gp`); until then, adding a byte anywhere
+   before the end of the startup code crashes the game on its first instruction.

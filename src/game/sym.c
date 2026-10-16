@@ -343,11 +343,11 @@ s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group) {
     return 0;
 }
 
-/* Rules 10 to 17: g_ruleColors[rule] is the mood colour the day must have (DreamSys vtable 0x200). */
+/* Rules 10 to 17: g_ruleColors[rule - 10] is the mood colour the day must have (DreamSys vtable 0x200). */
 static s32 Sym_CheckColorRule(s32 rule) {
     s32 colour;
 
-    colour = g_ruleColors[rule];
+    colour = g_ruleColors[rule - 10];
     return colour == g_symDreamSys->vtbl->getDreamColor(g_symDreamSys);
 }
 
