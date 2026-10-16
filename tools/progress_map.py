@@ -71,8 +71,11 @@ def c_functions(path):
                 tail = head.rstrip().split("\n")[-1]
                 cands = [l for l in head.split("\n") if l[:1].strip() and "(" in l
                          and not l.rstrip().endswith(";") and "=" not in l.split("(")[0]]
-                # a struct body or an initializer: no parenthesis before the brace, or `=` before it
-                if cands and "(" in tail and "=" not in tail.split("(")[0]:
+                # the brace opens a body when the text before it ends a declarator: `)` (also a
+                # multi-line parameter list) or `;` (K&R parameter declarations); a struct head
+                # (`typedef struct X`) ends otherwise, an initializer has `=` before any `(`
+                t = tail.rstrip()
+                if cands and (t.endswith(")") or t.endswith(";")) and "=" not in t.split("(")[0]:
                     m = re.search(r"(\w+)\s*\(", cands[-1])
                     if m:
                         funcs[m.group(1)] = code[start:i + 1]

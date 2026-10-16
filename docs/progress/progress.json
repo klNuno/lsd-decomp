@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "commit": "60f783a",
+ "commit": "f51478a",
  "tracked_tree_dirty": false,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
@@ -14,21 +14,21 @@
     "bytes": 132
    },
    "named": {
-    "functions": 31,
-    "bytes": 9116
+    "functions": 30,
+    "bytes": 8892
    },
    "read": {
-    "functions": 1414,
-    "bytes": 200924
+    "functions": 1415,
+    "bytes": 201148
    }
   },
   "unknowns": {
    "unk_fields": 44,
    "m2c_names": 5,
-   "unk_types": 1,
+   "unk_types": 0,
    "d_globals": 1
   },
-  "functions_in_findings": 230,
+  "functions_in_findings": 261,
   "sony_symbols": 627,
   "sony_bytes": 137808
  },
@@ -1984,7 +1984,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "SceneNode_GetRotation",
@@ -4224,7 +4224,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "File_GetBackendEnabled",
@@ -5289,7 +5289,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "named",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "MapModels_GetVtbl",
@@ -8493,7 +8493,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Screen_Finish",
@@ -8765,7 +8765,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "View_SetFogColor",
@@ -8930,7 +8930,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "View_SetOverlay",
@@ -8963,7 +8963,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "View_SetPresentEnabled",
@@ -8974,7 +8974,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "View_GetVtbl",
@@ -9145,7 +9145,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Fade_SetStep",
@@ -11376,7 +11376,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Movie_RequestStart",
@@ -11398,7 +11398,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Movie_OnStreamCallback",
@@ -11409,7 +11409,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Movie_Update",
@@ -11420,7 +11420,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Movie_Stop",
@@ -11970,7 +11970,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Stream_GetVtbl",
@@ -12490,7 +12490,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Cine_GetSpecialDayRun",
@@ -12603,7 +12603,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "DreamRunner_Init",
@@ -13103,7 +13103,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "MapTile_Tell",
@@ -13114,7 +13114,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "StageMap_GetTellKey",
@@ -13301,7 +13301,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "StageMap_HideSlot",
@@ -13768,7 +13768,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "MapTile_GetSelf",
@@ -14477,7 +14477,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Card_CheckReady",
@@ -14598,7 +14598,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Card_CloseKeyboard",
@@ -14631,7 +14631,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Card_CloseChooser",
@@ -14925,7 +14925,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "CommentObject_UnwatchPair",
@@ -14980,7 +14980,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "CommentObject_CaretRight",
@@ -15035,7 +15035,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "CommentObject_ResetChar",
@@ -15285,7 +15285,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "StringList_ScrollRight",
@@ -15854,7 +15854,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Place_GetVtbl",
@@ -18311,7 +18311,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "address",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "DreamSys_GetVtable",
@@ -18555,9 +18555,9 @@
      "bytes": 224,
      "unk_fields": 0,
      "m2c_names": 0,
-     "unk_types": 1,
+     "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true
     },
     {
@@ -19809,7 +19809,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Behavior_Type74",
@@ -19820,7 +19820,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Behavior_Type75",
