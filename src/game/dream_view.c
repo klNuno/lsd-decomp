@@ -9,7 +9,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern u8 g_dreamViewVtbl[];
+extern struct RenderObjVtbl g_dreamViewVtbl;
 
 /* The 0xDC object of class 0x800869D8 (DreamView_New); slot 0xA0 is Scene_DrawNode, which draws scene nodes. */
 typedef struct RenderObjVtbl {
@@ -33,15 +33,15 @@ typedef struct RenderObj {
 RenderObjVtbl *View_GetVtbl(void);
 static RenderObjVtbl *DreamView_GetVtbl(void);
 
-s32 DreamView_New(void) {
-    s32 obj;
+View *DreamView_New(void) {
+    View *obj;
 
     obj = Heap_Alloc(0xDC);
-    if (obj != 0) {
+    if (obj != NULL) {
         DreamView_GetVtbl()->init(obj);
         return obj;
     }
-    return 0;
+    return NULL;
 }
 
 void DreamView_Init(void **obj) {
@@ -75,5 +75,5 @@ void DreamView_EmptySlotC4(void) {
 }
 
 static RenderObjVtbl *DreamView_GetVtbl(void) {
-    return (RenderObjVtbl *)g_dreamViewVtbl;
+    return &g_dreamViewVtbl;
 }

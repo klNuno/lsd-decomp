@@ -32,20 +32,36 @@ typedef struct TodPacket {
     u16 tmdId;                /* type 2 packets */
 } TodPacket;
 
+/* A walk through the packets of a frame */
+typedef union TodCursor {
+    TodFrame *frame;
+    TodPacket *packet;
+    u32 *words;
+} TodCursor;
+
+/* The 8-byte header of a TOD file; the frames follow it */
+typedef struct TodFileHeader {
+    u32 id;                   /* 0x50, version, resolution */
+    s32 frameCount;           /* 0x04 */
+} TodFileHeader;
+
 typedef struct Tod {
     TodVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
     u8 pad_0C[0x10 - 0x0C];
-    s32 data;                 /* 0x10 the TOD file */
+    union {
+        u8 *bytes;
+        TodFileHeader *header;
+    } data;                   /* 0x10 the TOD file */
     s32 size;                 /* 0x14 */
     u8 pad_18[0x2C - 0x18];
 } Tod;
 
 /* Functions of src/game/tod.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Tod_Create(s32 source);
-s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet);
-u32 *Tod_ReadPacket(void *tod, u32 *packet, s8 *id, s8 *type, s8 *flag, s8 *length);
+Tod *Tod_Create(FileSource *source);
+s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, TodCursor packet);
+u32 *Tod_ReadPacket(void *tod, u32 *packet, u8 *id, u8 *type, u8 *flag, u8 *length);
 TodVtbl *Tod_GetVtbl(void);
 
 #endif

@@ -18,15 +18,15 @@ typedef struct HandlerVoice {
 typedef struct HandlerNode {
     s32 id;                  /* 0x00 entity type + 1 while registered, 0 once stopped */
     s32 tick;                /* 0x04 runs so far, counted by HandlerNode_Run */
-    s32 owner;               /* 0x08 the entity, passed back as the handler's first argument */
-    s32 handler;             /* 0x0C the record's handler */
+    void *owner;             /* 0x08 the entity, passed back as the handler's first argument */
+    void (*handler)();       /* 0x0C the record's handler, called as handler(owner, node) */
     s32 fade;                /* 0x10 each step lowers both volumes by volume / fadeSteps; < 0 plays nothing (slot 0x148 by distance) */
     s32 fadeSteps;           /* 0x14 10 */
     HandlerVoice voices[3];  /* 0x18 */
 } HandlerNode;
 
 /* Functions of src/game/handler_node.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 HandlerNode_Start(s32 bank, HandlerNode *node, s32 nodeId, s32 owner, s32 handler);
+s32 HandlerNode_Start(SoundBank *bank, HandlerNode *node, s32 nodeId, void *owner, void (*handler)());
 void HandlerNode_Stop(SoundBank *bank, HandlerNode *node);
 void HandlerNode_Run(SoundBank *bank, HandlerNode *node);
 

@@ -28,9 +28,9 @@ BaseNodeVtbl *SceneNode_GetVtbl(void);
  */
 typedef struct BoxVtbl {
     u8 pad_00[0x8];
-    void (*init)(void *box, s32 size, u8 *color, s32 priority); /* 0x08 Box_Construct */
+    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Construct */
     u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *box, s32 size, s32 color, s32 priority); /* 0x40 Box_Init */
+    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Init */
     u8 pad_44[0x4C - 0x44];
     void (*show)();                           /* 0x4C Box_Show (box, root, position) */
     u8 pad_50[0xB8 - 0x50];
@@ -61,11 +61,11 @@ typedef struct Box {
 
 extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
 static void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
-extern u8 g_boxVtbl[];
+extern BoxVtbl g_boxVtbl;
 
 /* new Box(size, color, priority) */
-void *Box_Create(s32 size, s32 color, s32 priority) {
-    void *box;
+Box *Box_Create(BoxSize *size, u8 *color, s32 priority) {
+    Box *box;
 
     box = Heap_Alloc(0x6C);
     if (box != NULL) {
@@ -76,7 +76,7 @@ void *Box_Create(s32 size, s32 color, s32 priority) {
 }
 
 /* Slot 0x08: base scene node init, then the Box vtable and slot 0x40 */
-void Box_Construct(void **box, s32 size, s32 color, s32 priority) {
+void Box_Construct(void **box, BoxSize *size, u8 *color, s32 priority) {
     BoxVtbl *vtbl;
 
     SceneNode_GetVtbl()->init(box);
@@ -86,7 +86,7 @@ void Box_Construct(void **box, s32 size, s32 color, s32 priority) {
 }
 
 /* Slot 0x40: relative position (0, 0), the size, the color or the default gray, mask of 13 bits */
-void Box_Init(Box *box, u16 *size, u8 *color, s32 priority) {
+void Box_Init(Box *box, BoxSize *size, u8 *color, s32 priority) {
     BoxVtbl *vtbl;
 
     box->priority = priority;
@@ -95,8 +95,8 @@ void Box_Init(Box *box, u16 *size, u8 *color, s32 priority) {
     box->attribute = 0;
     box->x = 0;
     box->y = 0;
-    box->width = size[0];
-    box->height = size[2];
+    box->width = size->width;
+    box->height = size->height;
     vtbl = box->vtbl;
     if (color == NULL) {
         color = g_boxDefaultColor;
@@ -129,7 +129,7 @@ void Box_SetBlendMode(Box *box, s32 mode) {
 }
 
 /* Slot 0xB8: copies the color, or adds it when copy is 0 */
-void Box_SetColor(Box *box, s32 copy, u8 *color) {
+void Box_SetColor(Box *box, s32 copy, Color3 *color) {
     Rgb_CopyOrAdd(box, &box->color, color, copy);
 }
 
@@ -151,10 +151,10 @@ void Box_SetPosition(Box *box, ScreenPoint *position) {
 }
 
 /* Slot 0xC0: resizes a shown box (size read as u16 halves) */
-void Box_SetSize(Box *box, u16 *size) {
+void Box_SetSize(Box *box, BoxSize *size) {
     if (box->parent != 0) {
-        box->width = size[0];
-        box->height = size[2];
+        box->width = size->width;
+        box->height = size->height;
     }
 }
 
@@ -176,5 +176,5 @@ void Box_SetMask(Box *box, s32 bits) {
 }
 
 BoxVtbl *Box_GetVtbl(void) {
-    return (BoxVtbl *)g_boxVtbl;
+    return &g_boxVtbl;
 }

@@ -60,12 +60,12 @@ typedef struct MapChunk {
     s16 entitiesLoaded;      /* 0x2E StageMap_PollLoads clears it and sends slot message 7 */
     s16 index;               /* 0x30 chunk index in the stage grid (row * cols + col), -1 when empty */
     s16 id;                  /* 0x32 neighbour position 0 to 6 (StageMap_LoadAround) */
-    s32 entities;            /* 0x34 the entity part (heap), first argument of Sym_SpawnOrSpy (Place_SpawnCell) */
+    u8 *entities;            /* 0x34 the entity part (heap), first argument of Sym_SpawnOrSpy (Place_SpawnCell) */
     s32 loadEntities;        /* 0x38 read the entity part as soon as the chunk is in */
 } MapChunk;
 
 /* Functions of src/game/map_chunk.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 MapChunk_New(void);
+MapChunk *MapChunk_New(void);
 MapChunkVtbl *MapChunk_GetVtbl(void);
 
 #endif

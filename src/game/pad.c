@@ -17,15 +17,15 @@ static PadVtbl *Pad_GetVtbl(void);
 extern s32 g_padButtonMasks[16];
 extern PadVtbl g_padVtbl;
 
-s32 Pad_New(s32 padInitMode, s32 padId) {
-    s32 pad;
+Pad *Pad_New(s32 padInitMode, s32 padId) {
+    Pad *pad;
 
     pad = Heap_Alloc(0x20);
-    if (pad != 0) {
+    if (pad != NULL) {
         Pad_GetVtbl()->init(pad, padInitMode, padId);
         return pad;
     }
-    return 0;
+    return NULL;
 }
 
 /* The first pad made calls PadInit, the last one deleted PadStop (g_padCount counts them). */

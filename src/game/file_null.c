@@ -66,7 +66,7 @@ s32 File_NullGetEnabled(s32 *valueOut) {
     return g_fileNullEnabled;
 }
 
-s32 File_NullEnable(s32 firstValue, s32 secondValue) {
+s32 File_NullEnable(s32 firstValue, s32 secondValue, s32 vsyncMode) {
     g_fileNullEnabled = firstValue;
     g_fileNullOption = secondValue;
     return 1;

@@ -61,7 +61,7 @@ typedef struct Task {
     u8 pad_24[0x28 - 0x24];
     s32 result;             /* 0x28 returned by run */
     u32 timeout;            /* 0x2C ticks; -1 never (slot 0x6C) */
-    s32 bankName;           /* 0x30 when not 0, the task made its own sound bank from this name */
+    s8 *bankName;           /* 0x30 when not 0, the task made its own sound bank from this name */
     SoundBank *sound;       /* 0x34 */
 } Task;
 

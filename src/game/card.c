@@ -28,6 +28,24 @@ typedef struct CardIconFrame {
     u8 b[0x80];
 } CardIconFrame;
 
+/* The header Card_WriteFileOnce writes, 0x80 bytes plus 0x80 per icon frame. */
+typedef struct CardSaveHeader {
+    u8 magic[2];               /* 0x00 "SC" */
+    u8 iconFlag;               /* 0x02 0x10 + icon frames: (iconFlag << 7) - 0x780 is the header size */
+    u8 blocks;                 /* 0x03 8 KB blocks */
+    char title[0x60 - 0x04];   /* 0x04 the card title */
+    CardIconPalette palette;   /* 0x60 */
+    CardIconFrame frames[3];   /* 0x80 */
+} CardSaveHeader;
+
+/* The icon TIM (menu.h MenuPicture.tim, CARD\FILEICN1.TIM): its palette and three 16x16 4-bit frames. */
+struct CardIconTim {
+    u8 pad_00[0x14];
+    CardIconPalette palette;   /* 0x14 */
+    u8 pad_34[0x40 - 0x34];
+    CardIconFrame frames[3];   /* 0x40 */
+};
+
 static s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical);
 static s32 Card_WaitAnyEvent(s32 *events, s32 count);
 static void Card_DisableEvents(Card *card);
@@ -40,7 +58,7 @@ static s32 Card_HasSpaceOnce();
 extern char g_cardTempName[];
 static char *Card_MakePath(char *buf, s32 port, char *name);
 static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size);
-static s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name);
+static s32 Card_FindFileOnce(Card *card, char *titleOut, char *name);
 extern s32 g_cardEventSpecs[];
 static s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted);
 static s32 Card_CheckReady();
@@ -57,7 +75,7 @@ extern s32 g_cardMessageRect[];
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
-extern u8 g_cardVtbl[];
+extern CardVtbl g_cardVtbl;
 SjisChar *g_titleLetters;
 static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
 
@@ -65,7 +83,7 @@ static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames
 Card *Card_New(s32 sharePad, s32 port) {
     Card *card;
 
-    card = (Card *)Heap_Alloc(0x84);
+    card = Heap_Alloc(0x84);
     if (card != NULL) {
         Card_GetVtbl()->init(card, sharePad, port);
         return card;
@@ -272,7 +290,7 @@ s32 Card_Format(Card *card) {
 }
 
 /* Card slot 0x54: 1 when the file exists; copies its title to titleOut when that is not 0. */
-s32 Card_FindFile(Card *card, s32 titleOut, u8 *name) {
+s32 Card_FindFile(Card *card, char *titleOut, char *name) {
     s32 found;
     s32 tries = 0;
 
@@ -288,12 +306,12 @@ s32 Card_FindFile(Card *card, s32 titleOut, u8 *name) {
     return found;
 }
 
-static s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name) {
+static s32 Card_FindFileOnce(Card *card, char *titleOut, char *name) {
     char path[32];
     s32 fd;
-    s32 header;
+    char *header;
 
-    fd = open(Card_MakePath(path, card->port, (char *)name), 1);
+    fd = open(Card_MakePath(path, card->port, name), 1);
     if (fd == -1) {
         return 0;
     }
@@ -329,7 +347,7 @@ s32 Card_ListFiles(Card *card, char **titles, char **found, char *prefix, char *
     suffix = suffixes;
     count = 0;
     while (*suffix != NULL) {
-        strcpy((s32)path, (s32)prefix);
+        strcpy(path, prefix);
         strcat(path, *suffix);
         if (card->vtbl->findFile(card, *titles, path) != 0) {
             count++;
@@ -383,7 +401,7 @@ s32 Card_ReadFile(Card *card, char *name, void *buf, s32 size) {
 static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
     char path[32];
     s32 fd;
-    s32 header;
+    CardSaveHeader *header;
     s32 offset;
 
     fd = open(Card_MakePath(path, card->port, name), 1);
@@ -392,7 +410,7 @@ static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
     }
     header = Heap_Alloc(0x80);
     read(fd, header, 0x80);
-    offset = (((u8 *)header)[2] << 7) - 0x780;
+    offset = (header->iconFlag << 7) - 0x780;
     Heap_Free(header);
     lseek(fd, offset, 0);
     read(fd, buf, size);
@@ -430,8 +448,8 @@ static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames
     char pathBuf[0x20];
     char *path;
     s32 fd;
-    u8 *header;
-    u8 *tim;
+    CardSaveHeader *header;
+    struct CardIconTim *tim;
 
     path = Card_MakePath(pathBuf, card->port, name);
     delete(path);
@@ -446,19 +464,19 @@ static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames
         return 0;
     }
     tim = icon->tim;
-    header = (u8 *)Heap_Alloc(0x200);
-    header[0] = 0x53;
-    header[1] = 0x43;
-    header[2] = iconFrames + 0x10;
-    header[3] = (u32)(size + 0x1FFF) >> 13;
-    strcpy((s32)(header + 4), title);
-    *(CardIconPalette *)(header + 0x60) = *(CardIconPalette *)(tim + 0x14);
-    *(CardIconFrame *)(header + 0x80) = *(CardIconFrame *)(tim + 0x40);
-    *(CardIconFrame *)(header + 0x100) = *(CardIconFrame *)(tim + 0xC0);
-    *(CardIconFrame *)(header + 0x180) = *(CardIconFrame *)(tim + 0x140);
+    header = Heap_Alloc(0x200);
+    header->magic[0] = 'S';
+    header->magic[1] = 'C';
+    header->iconFlag = iconFrames + 0x10;
+    header->blocks = (u32)(size + 0x1FFF) >> 13;
+    strcpy(header->title, title);
+    header->palette = tim->palette;
+    header->frames[0] = tim->frames[0];
+    header->frames[1] = tim->frames[1];
+    header->frames[2] = tim->frames[2];
     write(fd, header, (iconFrames << 7) + 0x80);
-    Heap_Free((s32)header);
-    write(fd, (u8 *)data, ((u32)(size + 0x7F) >> 7) << 7);
+    Heap_Free(header);
+    write(fd, data, ((u32)(size + 0x7F) >> 7) << 7);
     close(fd);
     return 1;
 }
@@ -470,7 +488,7 @@ static char *Card_MakePath(char *buf, s32 port, char *name) {
         device = g_cardDevice1;
     }
     memcpy(buf, device, 6);
-    strcat((s8 *)buf, (s8 *)name);
+    strcat(buf, name);
     return buf;
 }
 
@@ -579,11 +597,11 @@ static void Card_AllocFileList(Card *card) {
     s32 i;
 
     if (card->titles == NULL) {
-        card->titles = (char **)Heap_Alloc(0x40);
+        card->titles = Heap_Alloc(0x40);
         for (i = 0; i < 0xF; i++) {
-            card->titles[i] = (char *)Heap_Alloc(0x41);
+            card->titles[i] = Heap_Alloc(0x41);
         }
-        card->foundSuffixes = (char **)Heap_Alloc(0x40);
+        card->foundSuffixes = Heap_Alloc(0x40);
     }
 }
 
@@ -592,7 +610,7 @@ static void Card_TrimFileList(Card *card) {
     s32 i;
 
     for (i = card->fileCount; i < 0xF; i++) {
-        card->titles[i] = (char *)Heap_Free((s32)card->titles[i]);
+        card->titles[i] = Heap_Free(card->titles[i]);
     }
     card->titles[i] = 0;
 }
@@ -601,11 +619,11 @@ static void Card_FreeFileList(Card *card) {
     s32 i;
 
     if (card->titles != NULL) {
-        Heap_Free((s32)card->foundSuffixes);
+        Heap_Free(card->foundSuffixes);
         for (i = 0; i < card->fileCount; i++) {
-            Heap_Free((s32)card->titles[i]);
+            Heap_Free(card->titles[i]);
         }
-        Heap_Free((s32)card->titles);
+        Heap_Free(card->titles);
         card->titles = NULL;
     }
 }
@@ -751,11 +769,11 @@ runOpen:
     }
     if (finished < 2U) {
         if (card->operation == CARD_OP_LOAD && card->titles != 0) {
-            Heap_Free((s32)card->foundSuffixes);
+            Heap_Free(card->foundSuffixes);
             for (i = 0; i < card->fileCount; i++) {
-                Heap_Free((s32)card->titles[i]);
+                Heap_Free(card->titles[i]);
             }
-            Heap_Free((s32)card->titles);
+            Heap_Free(card->titles);
             card->titles = 0;
         }
         card->state = 0;
@@ -770,7 +788,7 @@ void Card_ShowMessage(Card *card, s32 state) {
     s8 path[0x20];
     s8 *dst;
     s8 *name;
-    CardMessage *picture;
+    Tim *picture;
     CardMessage *message;
 
     if (state < 0x11 && card->root != 0 && card->message == NULL) {
@@ -781,10 +799,10 @@ void Card_ShowMessage(Card *card, s32 state) {
         strcat(dst, name);
         strcat(dst, g_timSuffix);
         picture = Tim_New(dst);
-        picture->vt->upload(picture);
-        message = ScreenSprite_Create(picture, g_cardMessageRect, 0);
+        picture->vtbl->upload(picture);
+        message = (CardMessage *)ScreenSprite_Create(picture, g_cardMessageRect, 0);
         card->message = message;
-        picture->vt->delete_(picture);
+        picture->vtbl->base.delete_(picture);
         message->vt->attach(message, card->root, g_cardMessagePos);
     }
 }
@@ -891,7 +909,7 @@ void Card_OnTick(Card *card) {
 void Card_OpenKeyboard(Card *card) {
     if (card->root != 0 && card->pad != 0) {
         if (card->keyboard == NULL) {
-            card->keyboard = CommentObject_New((card->commentStart * 2) + (s32)card->title, 1);
+            card->keyboard = CommentObject_New(card->title + card->commentStart * 2, 1);
             card->ownsDialog = 1;
         }
         card->vtbl->watch(card, card->keyboard);
@@ -983,7 +1001,7 @@ void Card_OnChooser(Card *card, CardDialog *chooser, s32 message) {
 }
 
 static CardVtbl *Card_GetVtbl(void) {
-    return (CardVtbl *)g_cardVtbl;
+    return &g_cardVtbl;
 }
 
 /*

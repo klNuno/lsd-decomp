@@ -12,18 +12,18 @@
 
 extern TodVtbl g_todPackVtbl;
 
-s32 TodPack_Create(s32 source) {
-    s32 todPack;
+TodPack *TodPack_Create(FileSource *source) {
+    TodPack *todPack;
 
     todPack = Heap_Alloc(0x2C);
-    if (todPack == 0) {
-        return 0;
+    if (todPack == NULL) {
+        return NULL;
     }
     if (TodPack_GetVtbl()->base.init(todPack, source) != 0) {
         return todPack;
     }
     Heap_Free(todPack);
-    return 0;
+    return NULL;
 }
 
 TodPack *TodPack_Init(TodPack *todPack, FileSource *source) {
@@ -32,7 +32,7 @@ TodPack *TodPack_Init(TodPack *todPack, FileSource *source) {
     Tod_GetVtbl()->base.init(todPack, source);
     vtbl = TodPack_GetVtbl();
     todPack->vtbl = vtbl;
-    if (source->data != 0) {
+    if (source->data != NULL) {
         if (vtbl->base.onLoaded(todPack) != 0) {
             return NULL;
         }
@@ -42,9 +42,9 @@ TodPack *TodPack_Init(TodPack *todPack, FileSource *source) {
 
 /* The offsets hold Tod objects once loaded */
 void TodPack_Destroy(TodPack *todPack) {
-    u32 *words = todPack->data.words;
+    TodPackHeader *header = todPack->data.header;
 
-    Object_DeleteArray(words + 2, words[1]);
+    Object_DeleteArray(header->table.objects, header->count);
     Tod_GetVtbl()->base.destroy(todPack);
 }
 
@@ -54,22 +54,22 @@ s32 TodPack_OnLoaded(TodPack *todPack) {
     TodPackHeader *header;
     Tod *tod;
     s32 i;
-    s32 *out;
+    Tod **out;
     s32 n;
-    s32 made;
+    Tod *made;
 
-    File_MakeSource(&source, 0, 0, 1);
-    out = todPack->data.header->offsets;
+    File_MakeSource(&source, NULL, NULL, 1);
+    out = todPack->data.header->table.tods;
     n = todPack->data.header->count;
     for (i = 0; i < n; i++, out++) {
         header = todPack->data.header;
-        source.data = (s32)header + header->offsets[i];
-        made = Tod_Create((s32)&source);
+        source.data = (u8 *)header + header->table.offsets[i];
+        made = Tod_Create(&source);
         *out = made;
-        if (made == 0) {
+        if (made == NULL) {
             while (i != 0) {
                 out--;
-                tod = (Tod *)*out;
+                tod = *out;
                 i--;
                 tod->vtbl->base.delete_(tod);
             }

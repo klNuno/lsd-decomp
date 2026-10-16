@@ -31,28 +31,14 @@
 #define PAD_PRESSED_CIRCLE (PAD_PRESSED + 7)
 #define PAD_PRESSED_START (PAD_PRESSED + 15)
 
-/* Bg, BgMap and BgCells (src/game/bg.c, src/game/bg_map.c, src/game/bg_cells.c, include/game/bg.h, bg_map.h and bg_cells.h): the slots this unit calls. */
-typedef struct ScreenBgVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();
-    u8 pad_08[0x4C - 0x08];
-    void (*show)();      /* 0x4C (bg, root, 0) */
-    void (*hide)();      /* 0x50 */
-    u8 pad_54[0xB8 - 0x54];
-    void (*setColor)();  /* 0xB8 Bg_SetColor (bg, 1, color) */
-} ScreenBgVtbl;
-
-typedef struct ScreenBg {
-    ScreenBgVtbl *vtbl;
-} ScreenBg;
 /* not from game/screen.h: other files read this vtable through their own views of the slots */
 ScreenVtbl *Screen_GetVtbl(void);
 extern ScreenVtbl g_menuScreenVtbl[]; /* MenuScreen */
 extern s32 g_pictureRect[];        /* ScreenRect (640, 0) 320 x 240: the VRAM area of pictures and videos */
 extern u8 g_menuScreenColors[];         /* MenuScreen_Reset colors: (0, 0, 0), (0, 0, 0), (128, 128, 128) */
 extern s32 g_screenZeroVec[];        /* ScreenVec (0, 0, 0) */
-extern s32 g_optionBoxSize[];        /* option box: (320, 240) */
-extern u8 g_optionBoxColor[];         /* option box: "  @" */
+extern BoxSize g_optionBoxSize[];    /* option box: (320, 240) */
+extern u8 g_optionBoxColor[];        /* option box: "  @" */
 
 MenuScreen *MenuScreen_New(MenuDef *menu, char *soundPath, SoundBank *sound) {
     MenuScreen *screen;
@@ -67,8 +53,8 @@ MenuScreen *MenuScreen_New(MenuDef *menu, char *soundPath, SoundBank *sound) {
 
 void MenuScreen_Init(MenuScreen *screen, MenuDef *menu, char *soundPath, SoundBank *sound) {
     ScreenVtbl *vtbl;
-    ScreenBg *bgCells;
-    ScreenBg *bgMap;
+    BgCells *bgCells;
+    BgMap *bgMap;
 
     Screen_GetVtbl()->init(screen);
     vtbl = MenuScreen_GetVtbl();
@@ -91,8 +77,8 @@ void MenuScreen_Init(MenuScreen *screen, MenuDef *menu, char *soundPath, SoundBa
 
 void MenuScreen_Destroy(MenuScreen *screen) {
     screen->bg->vtbl->delete_(screen->bg);
-    screen->bgMap->vtbl->delete_(screen->bgMap);
-    screen->bgCells->vtbl->delete_(screen->bgCells);
+    screen->bgMap->vtbl->base.delete_(screen->bgMap);
+    screen->bgCells->vtbl->base.delete_(screen->bgCells);
     if (screen->soundPath != 0) {
         screen->sound->vtbl->delete_(screen->sound);
     }
@@ -152,7 +138,7 @@ void MenuScreen_Begin(MenuScreen *screen) {
 
 void MenuScreen_End(MenuScreen *screen) {
     View *view;
-    ScreenBg *bg;
+    Bg *bg;
     Display *display;
 
     view = screen->view;
@@ -419,7 +405,7 @@ s32 MenuScreen_FadeIn(MenuScreen *screen) {
 s32 MenuScreen_FadeInStep(MenuScreen *screen) {
     s8 color[3];
     s32 level;
-    ScreenBg *bg;
+    Bg *bg;
 
     level = screen->ticks * screen->fadeSpeed;
     color[0] = level + screen->startColor.r;
@@ -444,7 +430,7 @@ s32 MenuScreen_FadeOut(MenuScreen *screen) {
 s32 MenuScreen_FadeOutStep(MenuScreen *screen) {
     s8 color[3];
     s32 level;
-    ScreenBg *bg;
+    Bg *bg;
 
     level = 0x80 - (screen->ticks * screen->fadeSpeed);
     color[0] = level;
@@ -522,7 +508,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
                 i++;
             } while (*text != 0);
         }
-        screen->optionBox = Box_Create((s32)g_optionBoxSize, (s32)g_optionBoxColor, 0);
+        screen->optionBox = Box_Create(g_optionBoxSize, g_optionBoxColor, 0);
         menu->font = font;
     }
 }

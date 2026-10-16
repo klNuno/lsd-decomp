@@ -35,6 +35,12 @@ typedef struct StagePlace {
     s16 z;        /* 0x08 */
 } StagePlace;
 
+/* A graph point: two mood axes in -9..9 (a day of the graph, a chunk, an entity record). */
+typedef struct MoodPoint {
+    s8 x;
+    s8 y;
+} MoodPoint;
+
 /* Functions of src/game/stage.c that other files call or reference (docs/naming.md, Prototypes) */
 StageGrid *Stage_GetGrid(s32 stage);
 u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood);

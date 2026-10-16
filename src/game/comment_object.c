@@ -101,7 +101,7 @@ s32 g_commentOriginX;
 s32 g_commentOriginY;
 u8 *g_alphabet;
 static void CommentObject_ClearSenders(CommentObject *obj);
-extern u8 g_commentVtbl[];
+extern CommentVtbl g_commentVtbl;
 extern s8 g_widgetPrefix[];
 extern s8 g_widgetSuffix[];
 extern s32 g_glyphColor[];
@@ -109,12 +109,12 @@ extern s32 g_inputShowArg[];
 extern s32 g_fontShowArg[];
 extern s32 g_inputBoxRect[];
 
-void *CommentObject_New(s32 text, s32 mode) {
+void *CommentObject_New(u8 *text, s32 mode) {
     void *obj;
 
     obj = Heap_Alloc(0x4C);
     if (obj != NULL) {
-        CommentObject_GetVtbl()->init(obj, (u8 *)text, mode);
+        CommentObject_GetVtbl()->init(obj, text, mode);
         return obj;
     }
     return NULL;
@@ -150,7 +150,7 @@ static void CommentObject_ClearSenders(CommentObject *obj) {
 }
 
 void CommentObject_Destroy(CommentObject *obj) {
-    Heap_Free((s32)obj->textBuf);
+    Heap_Free(obj->textBuf);
     Object_GetBaseVtbl()->destroy(obj);
 }
 
@@ -220,22 +220,22 @@ INCLUDE_RODATA("asm/nonmatchings/game/comment_object", g_alphabetText);
 
 void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
     s8 nameBuf[0x20];
-    CommentWidget *inputWidget;
+    Tim *inputWidget;
     CommentWidget *widget;
-    CommentWidget *fontWidget;
+    Tim *fontWidget;
 
     if ((enable != 0) && (obj->inputBox == NULL)) {
-        inputWidget = Tim_New((s32)File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
+        inputWidget = Tim_New(File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
         inputWidget->vtbl->upload(inputWidget);
-        obj->inputBox = ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
-        inputWidget->vtbl->delete_(inputWidget);
+        obj->inputBox = (CommentWidget *)ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
+        inputWidget->vtbl->base.delete_(inputWidget);
         widget = obj->inputBox;
         widget->vtbl->attach(widget, enable, g_inputShowArg);
-        fontWidget = Tim_New((s32)File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
+        fontWidget = Tim_New(File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->upload(fontWidget);
-        obj->textLabel = (CommentWidget *)Label_Create((s32)fontWidget, obj->textLength, (s32)obj->textBuf);
-        obj->caretGlyph = Glyph_Create((s32)fontWidget, 0x5F);
-        fontWidget->vtbl->delete_(fontWidget);
+        obj->textLabel = (CommentWidget *)Label_Create(fontWidget, obj->textLength, obj->textBuf);
+        obj->caretGlyph = (CommentWidget *)Glyph_Create(fontWidget, 0x5F);
+        fontWidget->vtbl->base.delete_(fontWidget);
         widget = obj->textLabel;
         widget->vtbl->attach(widget, enable, g_fontShowArg);
         widget = obj->textLabel;
@@ -309,9 +309,9 @@ void CommentObject_OnKey(CommentObject *obj, s32 sender, s32 keyCode) {
     switch (keyCode) {
     case 25:
         if (obj->mode == 1) {
-            Text_Encode((s8 *)obj->sourceText, obj->textBuf);
+            Text_Encode(obj->sourceText, obj->textBuf);
         } else {
-            strcpy((s8 *)obj->sourceText, obj->textBuf);
+            strcpy(obj->sourceText, obj->textBuf);
         }
         obj->vtbl->playTone(obj, 0x10);
         obj->vtbl->setState(obj, 2);
@@ -499,5 +499,5 @@ void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 ref
 }
 
 static CommentVtbl *CommentObject_GetVtbl(void) {
-    return (CommentVtbl *)g_commentVtbl;
+    return &g_commentVtbl;
 }

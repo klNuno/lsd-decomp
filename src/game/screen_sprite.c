@@ -4,6 +4,7 @@
 #include "game/heap.h"
 #include "game/display.h"
 #include "game/sprite_node.h"
+#include "game/tim.h"
 
 /*
  * ScreenSprite: vtable g_screenSpriteVtbl 0x8006ED4C (tag 0x144), 0xA8 bytes, ScreenSprite_Create:
@@ -45,7 +46,7 @@ typedef struct SpriteRect {
 /* Slots of g_spriteNodeVtbl this unit calls, with the arguments it passes. */
 typedef struct SpriteNodeVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32, s32, s32, s32, s32);     /* 0x08 SpriteNode_Init */
+    void (*init)(void *, Tim *, s32, SpriteRect *, s32, s32); /* 0x08 SpriteNode_Init */
     u8 pad_0C[0x40 - 0x0C];
     void (*setImage)(void *, s32, s32, s32, s32, s32); /* 0x40 SpriteNode_SetImage */
     u8 pad_44[0x4C - 0x44];
@@ -56,7 +57,7 @@ struct ScreenSprite;
 
 typedef struct ScreenSpriteVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32, SpriteRect *, s32);         /* 0x08 ScreenSprite_Init */
+    void (*init)(void *, Tim *, SpriteRect *, s32);       /* 0x08 ScreenSprite_Init */
     u8 pad_0C[0x40 - 0x0C];
     void (*setup)(void *);                                /* 0x40 ScreenSprite_Setup, empty */
     u8 pad_44[0xBC - 0x44];
@@ -79,19 +80,19 @@ SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
 
-void *ScreenSprite_Create(s32 image, SpriteRect *rect, s32 unused) {
-    void *sprite;
+ScreenSprite *ScreenSprite_Create(Tim *image, SpriteRect *rect, s32 unused) {
+    ScreenSprite *sprite;
 
     sprite = Heap_Alloc(0xA8);
-    if (sprite != 0) {
+    if (sprite != NULL) {
         ScreenSprite_GetVtbl()->init(sprite, image, rect, unused);
         return sprite;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08 */
-void ScreenSprite_Init(ScreenSprite *sprite, s32 image, s32 rect, s32 unused) {
+void ScreenSprite_Init(ScreenSprite *sprite, Tim *image, SpriteRect *rect, s32 unused) {
     SpriteNode_GetVtbl()->init(sprite, image, 0, rect, 0, unused);
     sprite->vtbl = ScreenSprite_GetVtbl();
     sprite->vtbl->setup(sprite);

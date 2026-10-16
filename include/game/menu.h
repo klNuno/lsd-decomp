@@ -51,7 +51,7 @@ typedef struct MenuPictureVtbl {
 typedef struct MenuPicture {
     MenuPictureVtbl *vt;
     u8 pad_04[0x10 - 0x04];
-    u8 *tim;         /* 0x10 the TIM file: palette at +0x14, 16x16 4-bit frames from +0x40 */
+    struct CardIconTim *tim; /* 0x10 the TIM file: palette at +0x14, 16x16 4-bit frames from +0x40 (card.c) */
 } MenuPicture;
 
 struct Menu;
@@ -136,6 +136,6 @@ typedef struct Menu {
 } Menu;
 
 /* Functions of src/game/menu.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Menu_New(s32 dreamSys);
+Screen *Menu_New(DreamSys *dreamSys);
 
 #endif

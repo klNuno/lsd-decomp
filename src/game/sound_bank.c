@@ -16,20 +16,11 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* Vtable of the root object class returned by File_GetBackendVtbl (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
-typedef struct ObjectRootVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *object);     /* 0x08 */
-    void (*destroy)(s32 object);    /* 0x0C, the caller passes the pointer as s32 */
-    u8 pad_10[0x54];
-    void (*onLoaded)(void *object);   /* 0x64, not named in heap.h */
-} ObjectRootVtbl;
-
 /* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
 typedef struct SoundBankVab {
     SoundBankVtbl *vt;
     u8 pad_04[0xC];
-    s32 vabBuffer;
+    u8 *vabBuffer;
     u8 pad_14[0x18];
     u8 vabHeader[0x12];        /* 0x2C, filled by SsUtGetVabHdr (ps at +0x12, ts at +0x14) */
     u16 programCount;          /* 0x3E */
@@ -56,28 +47,28 @@ s32 g_spuReady;
 s32 g_soundRateSet;
 s32 g_seqTimerStarted;
 s32 g_bankCount;
-s32 g_vabBuffer;
+u8 *g_vabBuffer;
 s32 g_soundTickRate;
 extern s8 g_vabHeaderExt[];
 extern s8 g_vabBodyExt[];
 
 
-void *Sound_CreateBank(s32 initParam) {
-    void *bank;
+SoundBank *Sound_CreateBank(s8 *path) {
+    SoundBank *bank;
 
     bank = Heap_Alloc(0x64);
-    if (bank != 0) {
-        Sound_GetBankClass()->init(bank, initParam);
+    if (bank != NULL) {
+        Sound_GetBankClass()->init(bank, path);
         return bank;
     }
-    return 0;
+    return NULL;
 }
 
 void Sound_InitBank(SoundBank *bank, s8 *path) {
     s8 fullPath[0x20];
     s8 *pathCopy;
 
-    ((ObjectRootVtbl *)File_GetBackendVtbl())->init(bank);
+    File_GetBackendVtbl()->init(bank);
     bank->vtbl = Sound_GetBankClass();
     bank->toneData = 0;
     bank->programTones = 0;
@@ -90,7 +81,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     if (g_spuReady == 0) {
         Spu_ResetCold();
         g_spuReady = 1;
-        SsSetTableSize((s8 *)Bgm_GetSeqTable(), 2, 1);
+        SsSetTableSize(Bgm_GetSeqTable(), 2, 1);
     }
     if (g_soundRateSet == 0) {
         g_soundTickRate = 0x3C;
@@ -101,9 +92,9 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     if (path != 0) {
         pathCopy = Heap_Alloc(strlen((u8 *)path) + 1);
         if (pathCopy != NULL) {
-            bank->path = (s32)pathCopy;
+            bank->path = pathCopy;
             strcpy(pathCopy, path);
-            File_JoinPath(fullPath, pathCopy, (s8 *)0, g_vabHeaderExt);
+            File_JoinPath(fullPath, pathCopy, NULL, g_vabHeaderExt);
             bank->state = 1;
             bank->vtbl->loadAsync(bank, fullPath);
         }
@@ -125,12 +116,12 @@ void Sound_DestroyBank(SoundBank *bank) {
     Heap_Free(bank->toneData);
     Heap_Free(bank->programTones);
     Heap_Free(bank->path);
-    ((ObjectRootVtbl *)File_GetBackendVtbl())->destroy((s32)bank);
+    File_GetBackendVtbl()->destroy(bank);
 }
 
 void Sound_UpdateBank(SoundBank *bank) {
-    u8 fullPath[0x20];
-    s32 oldVabBuffer;
+    s8 fullPath[0x20];
+    u8 *oldVabBuffer;
     s16 ret;
 
     switch (bank->state) {
@@ -138,8 +129,8 @@ void Sound_UpdateBank(SoundBank *bank) {
             break;
         case 1:
             if (bank->flags & 0x200) {
-                bank->vabId = SsVabOpenHead((void *)bank->vabBuffer, -1);
-                File_JoinPath((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, g_vabBodyExt);
+                bank->vabId = SsVabOpenHead(bank->vabBuffer, -1);
+                File_JoinPath(fullPath, bank->path, NULL, g_vabBodyExt);
                 bank->state = 6;
                 oldVabBuffer = bank->vabBuffer;
                 bank->vabBuffer = 0;
@@ -153,7 +144,7 @@ void Sound_UpdateBank(SoundBank *bank) {
             break;
         case 6:
             if (bank->flags & 0x200) {
-                ret = SsVabTransBody((void *)bank->vabBuffer, bank->vabId);
+                ret = SsVabTransBody(bank->vabBuffer, bank->vabId);
                 bank->vabId = ret;
                 if (ret != -1) {
                     bank->transferring = 1;
@@ -197,7 +188,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
     if (bank->toneData == NULL) {
         return;
     }
-    bank->programTones = (u8 **)Heap_Alloc(bank->programCount << 2);
+    bank->programTones = Heap_Alloc(bank->programCount << 2);
     if (bank->programTones == NULL) {
         return;
     }

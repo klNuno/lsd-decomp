@@ -15,7 +15,7 @@
 
 s32 g_cdInitDone;
 extern char g_appScreenSize[];
-extern u8 g_appVtbl[];
+extern AppVtbl g_appVtbl;
 
 /* fileDevice picks the file back end: 0x13 is the CD (File_SetBackend, src/game/file_base.c). */
 void App_Init(App *app, s32 fileDevice) {
@@ -89,5 +89,5 @@ void App_Run(App *app) {
 }
 
 AppVtbl *App_GetVtbl(void) {
-    return (AppVtbl *)g_appVtbl;
+    return &g_appVtbl;
 }

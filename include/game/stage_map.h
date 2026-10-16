@@ -111,7 +111,8 @@ typedef struct StageMapVtbl {
     void (*setChunkLoader)(); /* 0xC8 StageMap_SetChunkLoader */
     void (*setMessageFilter)(); /* 0xCC StageMap_SetMessageFilter */
     void (*filterMessage)(); /* 0xD0 StageMap_FilterMessage */
-    u8 pad_D4[0xDC - 0xD4];
+    StagePlace *(*getTellKey)(); /* 0xD4 StageMap_GetTellKey (map, sender): the place of the tile told */
+    u8 pad_D8[0xDC - 0xD8];
     void (*setViewDistance)(); /* 0xDC StageMap_SetViewDistance */
     void (*setGrid)();      /* 0xE0 StageMap_SetGrid */
     void (*setTarget)();    /* 0xE4 StageMap_SetTarget */
@@ -180,6 +181,6 @@ typedef struct StageMap {
 } StageMap;
 
 /* Functions of src/game/stage_map.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 StageMap_New(s32 origin, s32 loadEntities);
+StageMap *StageMap_New(Vec3 *origin, s32 loadEntities);
 
 #endif

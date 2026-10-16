@@ -47,9 +47,9 @@ typedef struct VideoScreen {
     u8 pad_6C[0x70 - 0x6C];
     char *picturePath;
     struct Tim *picture;  
-    struct ScreenBg *bg;
-    struct ScreenBg *bgMap;
-    struct ScreenBg *bgCells;
+    struct Bg *bg;
+    struct BgMap *bgMap;
+    struct BgCells *bgCells;
     s32 fadeSpeed;
     s32 (*fadeInStep)();
     s32 (*fadeOutStep)();
@@ -62,7 +62,7 @@ typedef struct VideoScreen {
     /* VideoScreen */
     s32 finished;           /* 0xA4 the movie reported the end */
     ScreenRect area;        /* 0xA8 VRAM rect the video goes to, default MenuScreen_GetPictureRect: (640, 0) 320 x 240 */
-    struct ScreenMovie *movie; /* 0xB4 the Movie of Movie_Create (include/game/movie.h) */
+    struct Movie *movie;    /* 0xB4 the Movie of Movie_Create (include/game/movie.h) */
     char *path;             /* 0xB8 the .STR file */
     s32 frameCount;         /* 0xBC from g_videoTable, -1 when the length comes from setTimeout; Movie +0x5C */
     s32 autoStart;              /* 0xC0 handed to Movie slot 0x6C (Movie +0x68) */

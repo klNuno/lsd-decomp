@@ -13,30 +13,30 @@
 
 extern MomVtbl g_momVtbl;
 
-s32 Mom_Create(s32 source) {
-    s32 mom;
+Mom *Mom_Create(FileSource *source) {
+    Mom *mom;
 
     mom = Heap_Alloc(0x38);
-    if (mom != 0) {
+    if (mom != NULL) {
         if (Mom_GetVtbl()->base.init(mom, source, 1) != 0) {
             return mom;
         }
         Heap_Free(mom);
     }
-    return 0;
+    return NULL;
 }
 
 Mom *Mom_Init(Mom *mom, FileSource *source, s32 hasParts) {
     MomVtbl *vtbl;
-    s32 data;
+    u8 *data;
 
     File_GetBackendVtbl()->init(mom);
     mom->vtbl = Mom_GetVtbl();
     mom->hasParts = hasParts;
     data = source->data;
-    if (data != 0) {
+    if (data != NULL) {
         vtbl = mom->vtbl;
-        mom->data = (u8 *)data;
+        mom->data.bytes = data;
         mom->size = 0;
         if (vtbl->base.onLoaded(mom) == 0) {
             return mom;
@@ -62,21 +62,21 @@ void Mom_OnLoaded(Mom *mom) {
 /* Slot 0x78: the TMD at data + data[2] and the TodPack at data + 0xC; 1 (parts freed) on failure */
 s32 Mom_LoadParts(Mom *mom) {
     FileSource source;
-    s32 tmd;
-    s32 motions;
+    Tmd *tmd;
+    TodPack *motions;
 
     if (mom->hasParts != 0) {
-        File_MakeSource(&source, (s32)(mom->data + *(s32 *)(mom->data + 8)), 0, 1);
-        tmd = Tmd_Create((s32)&source);
-        mom->tmd = (Tmd *)tmd;
-        if (tmd != 0) {
-            source.data = (s32)(mom->data + 0xC);
-            motions = TodPack_Create((s32)&source);
-            mom->motions = (TodPack *)motions;
-            if (motions != 0) {
+        File_MakeSource(&source, mom->data.bytes + mom->data.header->tmdOffset, NULL, 1);
+        tmd = Tmd_Create(&source);
+        mom->tmd = tmd;
+        if (tmd != NULL) {
+            source.data = mom->data.bytes + sizeof(MomHeader);
+            motions = TodPack_Create(&source);
+            mom->motions = motions;
+            if (motions != NULL) {
                 return 0;
             }
-            mom->motions = 0;
+            mom->motions = NULL;
         }
         mom->vtbl->freeParts(mom);
         return 1;
@@ -85,16 +85,17 @@ s32 Mom_LoadParts(Mom *mom) {
 }
 
 void Mom_FreeParts(Mom *mom) {
-    Object *part;
+    TodPack *motions;
+    Tmd *tmd;
 
     if (mom->hasParts != 0) {
-        part = (Object *)mom->motions;
-        if (part != NULL) {
-            part->vtbl->delete_(part);
+        motions = mom->motions;
+        if (motions != NULL) {
+            motions->vtbl->base.delete_(motions);
         }
-        part = (Object *)mom->tmd;
-        if (part != NULL) {
-            part->vtbl->delete_(part);
+        tmd = mom->tmd;
+        if (tmd != NULL) {
+            tmd->vtbl->base.delete_(tmd);
         }
     }
 }

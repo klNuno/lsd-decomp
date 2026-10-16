@@ -55,25 +55,11 @@ typedef struct RunnerContextHead {
 
 typedef struct RunnerContext {
     RunnerContextHead *display;
-    s32 pad;               /* watched by DreamSys while the runner runs */
+    Object *pad;           /* watched by DreamSys while the runner runs */
     Object *clock;           /* Clock_Create() */
     struct StageMap *map;   /* 0x0C StageMap_New(0, 1) */
-    Object *view;          /* DreamView_New(), class 0x800869D8 */
+    struct View *view;     /* DreamView_New(), class 0x800869D8 */
 } RunnerContext;
-
-/* What the vtable slots of the loaded TIM and model objects do here. */
-typedef struct RunnerResVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();     /* 0x04 */
-    u8 pad_08[0x5C - 0x08];
-    void (*freeData)();
-    u8 pad_60[0x78 - 0x60];
-    void (*upload)();
-} RunnerResVtbl;
-
-typedef struct RunnerRes {
-    RunnerResVtbl *vtbl;
-} RunnerRes;
 
 /* The dream stage (place.h, class id 0x2F230) as the runner drives it. */
 typedef struct RunnerStageVtbl {
@@ -121,7 +107,7 @@ typedef struct DreamRunner {
     DreamRunnerVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];
     RunnerContext *context; /* 0x0C */
-    s32 clock;
+    Object *clock;
     u8 pad_14[0x18 - 0x14];
     RunnerView *view;       /* 0x18 */
     u32 ticks;              /* 0x1C */
@@ -132,13 +118,13 @@ typedef struct DreamRunner {
     DreamSys *dreamSys;     /* 0x38 */
     s32 phase;              /* 0x3C RUNNER_* */
     Object *music;          /* 0x40 Bgm_New(Music_PickBank(0), 0, 1) */
-    RunnerRes *etcTim;      /* 0x44 ETC\ETC.TIM */
-    RunnerRes *dreamerModel; /* 0x48 ETC\DREAMER.TMD */
+    struct Tim *etcTim;     /* 0x44 ETC\ETC.TIM (tim.h) */
+    struct Tmd *dreamerModel; /* 0x48 ETC\DREAMER.TMD (tmd.h) */
     RunnerStage *stage;     /* 0x4C the dream stage, Place_New */
 } DreamRunner;
 
 /* Functions of src/game/dream_runner.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 DreamRunner_New(s32 context, s32 dreamSys, s32 useCdSearch);
+struct DreamRunner *DreamRunner_New(ScreenEnv *context, DreamSys *dreamSys, s32 useCdSearch);
 void File_ResolvePathTablePart(s32 wholeTable);
 
 #endif

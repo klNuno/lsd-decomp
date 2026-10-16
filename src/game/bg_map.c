@@ -12,15 +12,15 @@
 
 extern BgMapVtbl g_bgMapVtbl;
 
-s32 BgMap_Create(s32 skipBuild, s32 cells) {
-    s32 bgMap;
+BgMap *BgMap_Create(s32 skipBuild, BgCells *cells) {
+    BgMap *bgMap;
 
     bgMap = Heap_Alloc(0x44);
-    if (bgMap != 0) {
+    if (bgMap != NULL) {
         BgMap_GetVtbl()->base.init(bgMap, skipBuild, cells);
         return bgMap;
     }
-    return 0;
+    return NULL;
 }
 
 void BgMap_Init(BgMap *bgMap, s32 skipBuild, BgCells *cells) {
@@ -57,14 +57,14 @@ void BgMap_Build(BgMap *bgMap) {
     s32 i;
     s32 n;
 
-    bgMap->cells = (s32)bgMap->cellSource->cells;
+    bgMap->cells = bgMap->cellSource->cells;
     if (bgMap->fullScreen != 0) {
         bgMap->cellsX = 0x14;
         bgMap->cellW = 0x10;
         bgMap->cellH = 0x10;
         bgMap->cellsY = 0xF;
         n = bgMap->cellsX * bgMap->cellsY;
-        index = (s16 *)Heap_Alloc(n * 2);
+        index = Heap_Alloc(n * 2);
         bgMap->index = index;
         if (index != NULL) {
             p = index;

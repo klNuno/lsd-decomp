@@ -56,6 +56,6 @@ typedef struct Scene {
 } Scene;
 
 /* Functions of src/game/scene.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Scene_New(SceneSettings *settings);
+Scene *Scene_New(SceneSettings *settings);
 
 #endif

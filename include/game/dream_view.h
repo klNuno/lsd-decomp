@@ -4,6 +4,7 @@
 #include "common.h"
 
 /* Functions of src/game/dream_view.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 DreamView_New(void);
+struct View;
+struct View *DreamView_New(void);
 
 #endif

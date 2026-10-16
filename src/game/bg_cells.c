@@ -13,15 +13,15 @@
 
 extern BgCellsVtbl g_bgCellsVtbl;
 
-s32 BgCells_Create(s32 skipBuild) {
-    s32 bgCells;
+BgCells *BgCells_Create(s32 skipBuild) {
+    BgCells *bgCells;
 
     bgCells = Heap_Alloc(0x38);
-    if (bgCells != 0) {
+    if (bgCells != NULL) {
         BgCells_GetVtbl()->base.init(bgCells, skipBuild);
         return bgCells;
     }
-    return 0;
+    return NULL;
 }
 
 void BgCells_Init(BgCells *bgCells, s32 skipBuild) {
@@ -72,7 +72,7 @@ void BgCells_Build(BgCells *bgCells) {
         v = 0;
         u = 0;
         tpage = GetTPage(2, 0, 0x280, 0) & 0xFFFF;
-        cells = (GsCell *)Heap_Alloc(0x960);
+        cells = Heap_Alloc(0x960);
         bgCells->cells = cells;
         if (cells != NULL) {
             i = 0;

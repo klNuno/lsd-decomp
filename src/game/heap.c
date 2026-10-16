@@ -281,22 +281,22 @@ void Object_Unwatch(Object *object, Object *other) {
 
 /* vtable slot 0x18 */
 void Object_UnwatchAll(Object *object) {
-    s32 watched;
-    s32 *value;
+    Object *watched;
+    Object **value;
     ListNode *iter;
 
     value = &watched;
     iter = object->watched;
     List_Next(value, &iter);
-    while (watched != 0) {
+    while (watched != NULL) {
         object->vtbl->unwatch(object, watched);
         List_Next(value, &iter);
     }
 }
 
 /* vtable slot 0x1C: start with *value == 0 */
-void Object_NextWatched(Object *object, s32 *value, ListNode **iter) {
-    if (*value == 0) {
+void Object_NextWatched(Object *object, Object **value, ListNode **iter) {
+    if (*value == NULL) {
         *iter = object->watched;
     }
     List_Next(value, iter);
@@ -319,14 +319,14 @@ void Object_FreeWatchers(Object *object) {
 }
 
 /* vtable slot 0x2C: start with *value == 0 */
-void Object_NextWatcher(Object *object, s32 *value, ListNode **iter) {
-    if (*value == 0) {
+void Object_NextWatcher(Object *object, Object **value, ListNode **iter) {
+    if (*value == NULL) {
         *iter = object->watchers;
     }
     List_Next(value, iter);
 }
 
-static s32 List_Push(ListNode **head, s32 value) {
+static s32 List_Push(ListNode **head, Object *value) {
     ListNode *node;
 
     node = Heap_Alloc(8);
@@ -339,7 +339,7 @@ static s32 List_Push(ListNode **head, s32 value) {
     return 0;
 }
 
-static void List_Remove(ListNode **head, s32 value) {
+static void List_Remove(ListNode **head, Object *value) {
     ListNode *node;
     ListNode *prev;
 
@@ -401,7 +401,7 @@ ObjectVtbl *Object_GetBaseVtbl(void) {
 }
 
 /* *value = the node's value and *iter steps to the next node; *value = 0 at the end */
-void List_Next(s32 *value, ListNode **iter) {
+void List_Next(Object **value, ListNode **iter) {
     ListNode *node;
 
     node = *iter;
@@ -410,7 +410,7 @@ void List_Next(s32 *value, ListNode **iter) {
         *iter = (*iter)->next;
         return;
     }
-    *value = 0;
+    *value = NULL;
 }
 
 /* Deletes `count` objects through vtable slot 0x04 and leaves NULL in each slot */

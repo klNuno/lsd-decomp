@@ -14,23 +14,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The STR movie Movie_Create makes (src/game/movie.c, vtable g_movieVtbl). */
-typedef struct ScreenMovieVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();
-    u8 pad_08[0x40 - 0x08];
-    s32 (*open)();       /* 0x40 (movie, path, frameCount, a, b): non-zero when it fails */
-    u8 pad_44[0x48 - 0x44];
-    s32 (*poll)();       /* 0x48 non-zero once the video has ended */
-    void (*stop)();      /* 0x4C */
-    u8 pad_50[0x6C - 0x50];
-    void (*setAutoStart)();  /* 0x6C */
-} ScreenMovieVtbl;
-
-typedef struct ScreenMovie {
-    ScreenMovieVtbl *vtbl;
-} ScreenMovie;
-
 static ScreenVtbl *VideoScreen_GetVtbl(void);
 
 extern ScreenVtbl g_videoScreenVtbl[]; /* VideoScreen */
@@ -60,7 +43,7 @@ void VideoScreen_Init(VideoScreen *video, MenuDef *menu, char *soundPath, SoundB
 }
 
 void VideoScreen_Destroy(VideoScreen *video) {
-    ScreenMovie *movie = video->movie;
+    Movie *movie = video->movie;
     movie->vtbl->delete_(movie);
     MenuScreen_GetVtbl()->destroy(video);
 }
@@ -82,7 +65,7 @@ void VideoScreen_Play(VideoScreen *video, ScreenEnv *env, char *path, s32 frameC
 }
 
 void VideoScreen_Begin(VideoScreen *video) {
-    ScreenMovie *movie;
+    Movie *movie;
 
     MenuScreen_GetVtbl()->begin(video);
     movie = video->movie;
@@ -95,13 +78,13 @@ void VideoScreen_Begin(VideoScreen *video) {
 }
 
 void VideoScreen_OnClock(VideoScreen *video, Clock *clock, s32 message) {
-    ScreenMovie *movie;
+    Movie *movie;
     s32 finished;
 
     MenuScreen_GetVtbl()->onClock(video, clock, message);
     if (video->finished == 0) {
         movie = video->movie;
-        finished = movie->vtbl->poll(movie);
+        finished = movie->vtbl->update(movie);
         video->finished = finished;
         if ((finished != 0) && (video->closing == 0)) {
             video->vtbl->setState(video, SCREEN_CLOSING);

@@ -19,22 +19,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The texture-set loader of Tix_Create (class g_tixVtbl, 0x84 bytes), as Place sees it. */
-typedef struct PlaceTexLoaderVtbl {
-    u8 pad_00[0x04];
-    void (*delete_)();    /* 0x04 Object_Delete */
-    u8 pad_08[0x7C - 0x08];
-    void (*apply)();      /* 0x7C called with the ambience colour once done */
-} PlaceTexLoaderVtbl;
-
-typedef struct PlaceTexLoader {
-    PlaceTexLoaderVtbl *vt;
-    u8 pad_04[0x3C - 0x04];
-    s32 done;             /* 0x3C */
-    u8 pad_40[0x80 - 0x40];
-    s32 failed;           /* 0x80 set by Tix_OnReadDone when Heap_Alloc returned 0 */
-} PlaceTexLoader;
-
 /* The dream runner's object at +0xC (src/game/dream_runner.c): slot 0xC8 registers a callback with an argument. */
 typedef struct PlaceOwnerObjVtbl {
     u8 pad_00[0xC8];
@@ -47,16 +31,16 @@ typedef struct PlaceOwner {
     u8 pad_00[0xC];
     PlaceOwnerObj *callbackObj;
 } PlaceOwner;
-static void Place_CheckTextureLoad(void *place_, void *loader_);
+static void Place_CheckTextureLoad(Place *place, PlaceTexLoader *loader);
 /* the vtable of task.c through this file's view of its slots, so not from game/task.h */
 PlaceBaseVtbl *Task_GetVtbl();
-void Place_StartFade(void *place_, s32 color, s32 holdMode, s32 duration, s32 watch);
+void Place_StartFade(Place *place, s32 color, s32 holdMode, s32 duration, s32 watch);
 static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
 static PlaceVtbl *Place_GetVtbl(void);
 extern u8 g_pauseText[];
 extern s32 g_pauseTextPos[];
 extern s32 g_pauseTextColor[];
-extern u8 g_placeVtbl[];
+extern PlaceVtbl g_placeVtbl;
 extern s32 g_placeViewpoint[];
 extern s32 g_placeRefPoint[];
 extern s32 g_placeMapMessageFilter[];
@@ -65,7 +49,7 @@ extern s32 g_stageBoxMargins[];
 extern s32 g_stage0Bounds[];
 
 /* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreateStage. */
-void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage) {
+void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s32 stage) {
     void *place;
 
     place = Heap_Alloc(0x88);
@@ -77,7 +61,7 @@ void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage) {
 }
 
 /* Slot 0x08 */
-void Place_Construct(Place *place, s32 handlerList, PlaceObj *music, void *font, PlaceObj *models, s32 stage) {
+void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void *font, PlaceObj *models, s32 stage) {
     Task_GetVtbl()->construct(place, 0, handlerList);
     place->vt = Place_GetVtbl();
     place->ready = 0;
@@ -161,7 +145,7 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
     place->texLoader = Tix_Create(Stage_PickTexturePath(place->stage, 0, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0)));
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
     place->refs.view = view;
-    place->ambience = Scenery_Begin((s32)place->map, place->stage, &place->refs, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0), 0);
+    place->ambience = Scenery_Begin(place->map, place->stage, &place->refs, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0), 0);
     if (ambience != 0) {
         place->ambience = ambience;
     }
@@ -215,9 +199,7 @@ void Place_OnDisplay(Place *place, s32 sender, s32 event) {
  * is dropped and the time limit becomes elapsed + 30 s (discoveries "the 30-second dreams");
  * when it is done the ambience colour goes to it. Then, once the map is ready, start the place.
  */
-static void Place_CheckTextureLoad(void *place_, void *loader_) {
-    PlaceTexLoader *loader = loader_;
-    Place *place = place_;
+static void Place_CheckTextureLoad(Place *place, PlaceTexLoader *loader) {
     PlaceTexLoaderVtbl *vt;
     Ambience *ambience;
     u8 *color;
@@ -318,7 +300,7 @@ void Place_Setup(Place *place) {
     ambience = place->ambience;
     view->vtbl->detach(view);
     first = *place->env;
-    view->vtbl->setProjection(view, ((((s32) *first->vt->getScreenRect(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
+    view->vtbl->setProjection(view, (((*first->vt->getScreenRect(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
     Sym_InitStage(place->stage, place->map, place->dreamSys, place->sound, place->clock);
     map = place->map;
@@ -374,7 +356,7 @@ void Place_Start(Place *place) {
 /* Slot 0x8C, every tick while not paused: the scenery tick at the map's position. */
 void Place_Update(Place *place) {
     StageMap *map = place->map;
-    Scenery_Tick((s32)map->vtbl->getLocation(map, 0, 0), 0, 0);
+    Scenery_Tick(map->vtbl->getLocation(map, 0, 0), 0, 0);
 }
 
 /* Slot 0x90: DreamSys messages 10 to 17 go to slots 0x94 to 0xAC while the state is 0. */
@@ -511,8 +493,7 @@ void Place_OnLink17(Place *place) {
 }
 
 /* Start the view's fader towards a colour index (0 to 7), watched when asked. */
-void Place_StartFade(void *place_, s32 color, s32 holdMode, s32 duration, s32 watch) {
-    Place *place = place_;
+void Place_StartFade(Place *place, s32 color, s32 holdMode, s32 duration, s32 watch) {
     View *view;
     Fade *fader;
 
@@ -567,7 +548,7 @@ s32 Place_SpawnCell(Place *place) {
     MapChunk *chunk;
     MapSlot *slot;
     s32 dayNumber;
-    s32 spawned;
+    struct Mml *spawned;
 
     map = place->map;
     slot = map->vtbl->currentSlot(map, &chunkKey);
@@ -619,7 +600,7 @@ void Place_UpdatePause(Place *place) {
     s32 ticks = place->pauseOpen;
 
     if (ticks == 0) {
-        place->pauseText = (Widget *)Label_Create((s32)place->refs.font, 5, (s32)g_pauseText);
+        place->pauseText = (Widget *)Label_Create(place->refs.font, 5, g_pauseText);
         place->pauseText->vtbl->show(place->pauseText, place->map, g_pauseTextPos);
         place->pauseText->vtbl->setColor(place->pauseText, g_pauseTextColor);
         place->pauseOpen = 1;
@@ -647,5 +628,5 @@ void Place_ClosePause(Place *place) {
 }
 
 static PlaceVtbl *Place_GetVtbl(void) {
-    return (PlaceVtbl *)g_placeVtbl;
+    return &g_placeVtbl;
 }

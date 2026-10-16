@@ -35,7 +35,7 @@ extern Color3 g_viewDefaultColor;       /* black */
 /* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: read whole by View_Reset */
 extern ScreenPoint g_viewDefaultScreenSize;
 extern s32 g_overlayPos;          /* ScreenPoint (-100, -100): where the overlay hangs */
-extern s32 g_overlaySize;          /* the overlay: 320, 240, 10, 10 */
+extern BoxSize g_overlaySize;      /* the overlay: 320, 240 (then 10, 10) */
 
 View *View_New(void) {
     View *view;
@@ -56,7 +56,7 @@ void View_Init(View *view) {
     view->display = 0;
     view->node = 0;
     view->root = SceneNode_New();
-    overlay = Fade_Create((s32)&g_overlaySize, 0, 0);
+    overlay = Fade_Create(&g_overlaySize, 0, 0);
     view->overlay = overlay;
     overlay->vtbl->show(overlay, view->root, &g_overlayPos);
     view->vtbl->reset(view);

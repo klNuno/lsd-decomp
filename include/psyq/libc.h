@@ -6,8 +6,8 @@
 /* LIBC and LIBC2 functions the game calls. */
 
 s32 printf(const char *fmt, ...);
-s32 strlen(u8 *s);
-s8 *strcpy(s8 *dst, s8 *src);
+u32 strlen(const char *s);
+char *strcpy(char *dst, const char *src);
 s8 *strcat(s8 *dst, s8 *src);
 char *strstr(char *s, char *find);
 /* the builtin's form: card.c's call compiles to other bytes with any other */

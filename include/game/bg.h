@@ -46,7 +46,9 @@ typedef struct BgVtbl {
     void (*setMap)();         /* 0x40 Bg_SetMap (self, map, mode) */
     void (*setRotation)();    /* 0x44 Bg_SetRotation (self, set, fraction) */
     void (*setScale)();       /* 0x48 Bg_SetScale (self, set, fractions) */
-    u8 pad_4C[0xB8 - 0x4C];
+    void (*show)();           /* 0x4C SceneNode_Attach (self, root, position) */
+    void (*hide)();           /* 0x50 SceneNode_Detach */
+    u8 pad_54[0xB8 - 0x54];
     void (*setColor)();       /* 0xB8 Bg_SetColor (self, set, color) */
     void (*unk_BC)();         /* Bg_EmptySlotBC, empty */
 } BgVtbl;
@@ -58,6 +60,7 @@ typedef struct Bg {
 } Bg;
 
 /* Functions of src/game/bg.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Bg_Create(s32 map, s32 mode);
+struct BgMap;
+Bg *Bg_Create(struct BgMap *map, s32 mode);
 
 #endif

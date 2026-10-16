@@ -112,7 +112,7 @@ typedef struct CardVtbl {
     s32 (*closeEvents)(struct Card *);                                  /* 0x48 Card_CloseEvents */
     s32 (*probe)(struct Card *, s32 *, s32 *, s32 *);                   /* 0x4C Card_Probe */
     s32 (*format)(struct Card *);                                       /* 0x50 Card_Format */
-    s32 (*findFile)(struct Card *, s32, char *);                        /* 0x54 Card_FindFile */
+    s32 (*findFile)(struct Card *, char *, char *);                     /* 0x54 Card_FindFile */
     char *(*findFreeName)(struct Card *, char *, char *, char **);      /* 0x58 Card_FindFreeName */
     s32 (*listFiles)(struct Card *, char **, char **, char *, char **); /* 0x5C Card_ListFiles */
     s32 (*hasSpace)(struct Card *, s32, s32);                           /* 0x60 Card_HasSpace */
@@ -135,7 +135,7 @@ typedef struct CardVtbl {
     void (*onKeyboard)(struct Card *, void *, s32);                     /* 0xA4 Card_OnKeyboard */
     void (*openChooser)(struct Card *);                                 /* 0xA8 Card_OpenChooser */
     void (*closeChooser)(struct Card *);                                /* 0xAC Card_CloseChooser */
-    void (*onChooser)(struct Card *, CardDialog *, s32);                /* 0xB0 Card_OnChooser */
+    void (*onChooser)(struct Card *, void *, s32);                      /* 0xB0 Card_OnChooser (card, the chooser, message) */
 } CardVtbl;
 
 /* The memory card object, 0x84 bytes. */

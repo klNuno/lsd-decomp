@@ -10,21 +10,21 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern char g_mapTileVtbl[];
+extern MapTileVtbl g_mapTileVtbl;
 
 /* not from game/scene_node.h: other files read this vtable through their own views of the slots */
 SceneNodeVtbl *SceneNode_GetVtbl(void);
 static MapTileVtbl *MapTile_GetVtbl(void);
 
-s32 MapTile_New(void) {
-    s32 tile;
+MapTile *MapTile_New(void) {
+    MapTile *tile;
 
     tile = Heap_Alloc(0x3C);
-    if (tile != 0) {
+    if (tile != NULL) {
         MapTile_GetVtbl()->init(tile);
         return tile;
     }
-    return 0;
+    return NULL;
 }
 
 void MapTile_Init(MapTile *tile) {
@@ -58,5 +58,5 @@ s32 MapTile_GetSelf(s32 tile) {
 }
 
 static MapTileVtbl *MapTile_GetVtbl(void) {
-    return (MapTileVtbl *)g_mapTileVtbl;
+    return &g_mapTileVtbl;
 }

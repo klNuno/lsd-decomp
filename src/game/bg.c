@@ -31,17 +31,17 @@ static BgVtbl *Bg_GetVtbl(void);
 extern BgVtbl g_bgVtbl;
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
 
-s32 Bg_Create(s32 map, s32 mode) {
-    void *bg = (void *)Heap_Alloc(0x68);
+Bg *Bg_Create(struct BgMap *map, s32 mode) {
+    Bg *bg = Heap_Alloc(0x68);
 
     if (bg != NULL) {
         Bg_GetVtbl()->init(bg, map, mode);
-        return (s32)bg;
+        return bg;
     }
-    return 0;
+    return NULL;
 }
 
-void Bg_Init(Bg *bg, s32 map, s32 mode) {
+void Bg_Init(Bg *bg, struct BgMap *map, s32 mode) {
     BgVtbl *vtbl;
 
     SceneNode_GetVtbl()->init(bg);

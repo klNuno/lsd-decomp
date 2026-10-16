@@ -41,7 +41,7 @@ typedef struct Heap {
  */
 typedef struct ListNode {
     struct ListNode *next;
-    s32 value;
+    struct Object *value;
 } ListNode;
 
 /*
@@ -94,16 +94,16 @@ void Object_Destroy(Object *object);
 void Object_Watch(Object *object, Object *other);
 void Object_Unwatch(Object *object, Object *other);
 void Object_UnwatchAll(Object *object);
-void Object_NextWatched(Object *object, s32 *value, ListNode **iter);
+void Object_NextWatched(Object *object, Object **value, ListNode **iter);
 void Object_AddWatcher(Object *object);
 void Object_RemoveWatcher(Object *object);
 void Object_FreeWatchers(Object *object);
-void Object_NextWatcher(Object *object, s32 *value, ListNode **iter);
+void Object_NextWatcher(Object *object, Object **value, ListNode **iter);
 void Object_Notify(Object *object, void *message);
 void Object_EmptySlot34(void);
 void Object_OnNotify(Object *object, s32 sender, s32 message);
 ObjectVtbl *Object_GetBaseVtbl(void);
-void List_Next(s32 *value, ListNode **iter);
+void List_Next(Object **value, ListNode **iter);
 void Object_DeleteArray(Object **objects, s32 count);
 s32 Heap_IsBusy(void);
 

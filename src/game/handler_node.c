@@ -10,7 +10,7 @@
  * File boundaries: guess (docs/layout.md)
  */
 
-s32 HandlerNode_Start(s32 bank, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
+s32 HandlerNode_Start(SoundBank *bank, HandlerNode *node, s32 nodeId, void *owner, void (*handler)()) {
     HandlerVoice *voice;
     s32 noVoice;
     s32 i;
@@ -47,7 +47,7 @@ void HandlerNode_Stop(SoundBank *bank, HandlerNode *node) {
 
 void HandlerNode_Run(SoundBank *bank, HandlerNode *node) {
     HandlerVoice *voice;
-    void (*callback)(s32, void *);
+    void (*callback)();
     s32 i;
     s32 activeVoice;
 
@@ -58,7 +58,7 @@ void HandlerNode_Run(SoundBank *bank, HandlerNode *node) {
             voice->volume = 0x7F;
             voice->endVolume = 0x40;
         }
-        callback = (void (*)(s32, void *)) node->handler;
+        callback = node->handler;
         node->fade = 0;
         if (callback != NULL) {
             callback(node->owner, node);

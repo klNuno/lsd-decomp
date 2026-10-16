@@ -4,8 +4,8 @@
 #include "common.h"
 
 /* Functions of src/game/bgm.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Bgm_New(s32 bankPath, s32 seqPath, s32 autoPlay);
+void *Bgm_New(s8 *bankPath, s8 *seqPath, s32 autoPlay);
 s32 Bgm_IsActive(void);
-s32 Bgm_GetSeqTable(void);
+s8 *Bgm_GetSeqTable(void);
 
 #endif

@@ -52,12 +52,12 @@ static void Scene_PlayReel(Scene *scene);
 extern SceneVtbl g_sceneVtbl[];
 
 /* main makes the one scene with g_sceneSettings. */
-s32 Scene_New(SceneSettings *settings) {
-    s32 scene;
+Scene *Scene_New(SceneSettings *settings) {
+    Scene *scene;
 
     scene = Heap_Alloc(0x2C);
-    /* No return on the NULL path: v0 still holds scene (0) from the allocator. */
-    if (scene != 0) {
+    /* No return on the NULL path: v0 still holds scene (NULL) from the allocator. */
+    if (scene != NULL) {
         Scene_GetVtbl()->init(scene, settings);
         return scene;
     }
@@ -70,9 +70,9 @@ void Scene_Init(Scene *scene, SceneSettings *settings) {
     scene->vtbl = Scene_GetVtbl();
     scene->settings = settings;
     File_SetPathPrefix(File_GetRootDir());
-    model.data = 0;
-    model.path = (s32)"ETC\\DREAME5.TMD";
-    scene->dreamSys = DreamSys_New(Tmd_Create((s32)&model), 0, 0);
+    model.data = NULL;
+    model.path = "ETC\\DREAME5.TMD";
+    scene->dreamSys = DreamSys_New(Tmd_Create(&model), NULL, NULL);
     scene->skipGraph = 0;
     scene->dreamSys->vtbl->unk228(scene->dreamSys, settings->unk14);
     scene->vtbl->seedRandom(scene);

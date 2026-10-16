@@ -22,16 +22,9 @@
  * File boundaries: guess (docs/layout.md)
  */
 
-extern u8 g_dreamRunnerVtbl[];
+extern DreamRunnerVtbl g_dreamRunnerVtbl;
 extern s32 g_runnerViewpoint[];        /* {0, -1200, 0} and {0, -1200, 10000}: the points DreamRunner_Start gives the view */
 extern s32 g_runnerRefPoint[];
-
-/* The file argument of Tmd_Create (TMD loader). */
-typedef struct TmdFileArg {
-    s32 data;
-    s32 path;
-    s32 unk8;
-} TmdFileArg;
 
 /* DreamSys slot 0x1BC as called here: the CineRef comes back through a hidden pointer, read as {category, variant}. */
 typedef struct RunnerCine {
@@ -44,6 +37,8 @@ typedef struct RunnerCine {
  * DreamRunner_OnStageMessage calls the dream stage (slots 0x4, 0x48) and DreamSys (0x1B8 endDay, 0x1BC
  * getCinematic) through one pointer variable; typing them apart changes its registers.
  */
+struct RunnerPeer;
+
 typedef struct RunnerPeerVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();
@@ -68,43 +63,43 @@ static DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 void DreamRunner_CreateStage(DreamRunner *runner, s32 stage);
 
 /* Called by Scene_RunDream for each dream with the scene's context and its DreamSys. */
-s32 DreamRunner_New(s32 context, s32 dreamSys, s32 useCdSearch) {
-    s32 runner;
+DreamRunner *DreamRunner_New(ScreenEnv *context, DreamSys *dreamSys, s32 useCdSearch) {
+    DreamRunner *runner;
 
     runner = Heap_Alloc(0x50);
-    if (runner != 0) {
+    if (runner != NULL) {
         DreamRunner_GetVtbl()->init(runner, context, dreamSys, useCdSearch);
         return runner;
     }
-    return 0;
+    return NULL;
 }
 
 /* The world constructor: dreamer model, spawn flags, music bank, the map, and DreamSys watched. */
 void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dreamSys, s32 useCdSearch) {
-    TmdFileArg modelFile;
-    s32 bankName;
-    RunnerRes *tim;
-    RunnerRes *res;
+    FileSource modelFile;
+    s8 *bankName;
+    Tim *tim;
+    Tim *res;
 
     bankName = Music_GetEffectsBank(0);
     Task_GetVtbl()->init(runner, bankName, 0);
     runner->vtbl = DreamRunner_GetVtbl();
     Sym_LoadModels();
-    tim = (RunnerRes *)Tim_New((s32)"ETC\\ETC.TIM");
+    tim = Tim_New("ETC\\ETC.TIM");
     runner->etcTim = tim;
     tim->vtbl->upload(tim);
     res = runner->etcTim;
-    res->vtbl->freeData(res);
-    modelFile.data = 0;
-    modelFile.path = (s32)"ETC\\DREAMER.TMD";
-    runner->dreamerModel = (RunnerRes *)Tmd_Create((s32)&modelFile);
+    res->vtbl->base.freeData(res);
+    modelFile.data = NULL;
+    modelFile.path = "ETC\\DREAMER.TMD";
+    runner->dreamerModel = Tmd_Create(&modelFile);
     runner->music = Bgm_New(Music_PickBank(0), 0, 1);
     File_ResolvePathTablePart(1);
     File_EnableWait(useCdSearch == 0, 1, 1);
     runner->context = context;
-    context->view = (Object *)DreamView_New();
+    context->view = DreamView_New();
     context->clock = Clock_Create();
-    context->map = (StageMap *)StageMap_New(0, 1);
+    context->map = StageMap_New(NULL, 1);
     runner->dreamSys = dreamSys;
     runner->vtbl->watch(runner, dreamSys);
     dreamSys->vtbl->setSoundBank(dreamSys, runner->sound);
@@ -121,8 +116,8 @@ void DreamRunner_Destroy(DreamRunner *runner) {
     context->clock = context->clock->vtbl->delete_(context->clock);
     context->view = context->view->vtbl->delete_(context->view);
     runner->music->vtbl->delete_(runner->music);
-    runner->dreamerModel->vtbl->delete_(runner->dreamerModel);
-    runner->etcTim->vtbl->delete_(runner->etcTim);
+    runner->dreamerModel->vtbl->base.delete_(runner->dreamerModel);
+    runner->etcTim->vtbl->base.delete_(runner->etcTim);
     Sym_FreeModels();
     Task_GetVtbl()->destroy(runner);
 }
@@ -300,7 +295,7 @@ void DreamRunner_OnStageMessage(DreamRunner *runner, s32 sender, s32 message) {
 }
 
 static DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
-    return (DreamRunnerVtbl *)g_dreamRunnerVtbl;
+    return &g_dreamRunnerVtbl;
 }
 
 void File_ResolvePathTablePart(s32 wholeTable) {

@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game/gs.h"
 #include "game/display.h"
+#include "game/box.h"
 
 /*
  * Fade (vtable g_fadeVtbl at 0x8006E99C, class word 0x164, 0xA0 bytes, src/game/fade.c): a Box
@@ -18,7 +19,7 @@ typedef struct Fade Fade;
 typedef struct FadeVtbl {
     u8 pad_00[0x4];
     void *(*delete_)();                       /* 0x04 Object_Delete */
-    void (*init)(void *fade, s32 size, s32 channels, s32 priority); /* 0x08 Fade_Construct */
+    void (*init)(void *fade, BoxSize *size, s32 channels, s32 priority); /* 0x08 Fade_Construct */
     u8 pad_0C[0x10 - 0xC];
     void (*watch)(Fade *fade);                /* 0x10 (fade, ticker) */
     void (*unwatch)(Fade *fade, s32 ticker);  /* 0x14 */
@@ -91,6 +92,6 @@ struct Fade {
 };
 
 /* Functions of src/game/fade.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Fade_Create(s32 size, s32 channels, s32 priority);
+Fade *Fade_Create(BoxSize *size, s32 channels, s32 priority);
 
 #endif

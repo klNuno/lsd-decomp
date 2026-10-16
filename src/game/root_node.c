@@ -18,11 +18,11 @@ typedef struct RootNodeVtbl {
     u8 pad_00[0x08];
     void (*init)(void *);                     /* 0x08 RootNode_Init */
     u8 pad_0C[0x10 - 0x0C];
-    void (*watch)(void *, s32);               /* 0x10 SceneNode_Watch */
+    void (*watch)(void *, void *);            /* 0x10 SceneNode_Watch */
     u8 pad_14[0x40 - 0x14];
     void (*setup)(void *);                    /* 0x40 RootNode_Setup */
     u8 pad_44[0xB8 - 0x44];
-    Object *(*getLight)(void *, s32);         /* 0xB8 RootNode_GetLight */
+    FlatLight *(*getLight)(void *, s32);      /* 0xB8 RootNode_GetLight */
 } RootNodeVtbl;
 
 typedef struct RootNode {
@@ -33,7 +33,7 @@ typedef struct RootNode {
     s32 unk10;
     s32 *coord;             /* 0x14 its GsCOORDINATE2, the first word is flg */
     u8 pad_18[0x44 - 0x18];
-    s32 lights[3];          /* 0x44 FlatLight_New(0 to 2), watched by the node */
+    FlatLight *lights[3];   /* 0x44 FlatLight_New(0 to 2), watched by the node */
     Color3 ambient;         /* 0x50 GsSetAmbient takes it times 16 */
 } RootNode;
 
@@ -43,21 +43,21 @@ ObjectVtbl *SceneNode_GetVtbl(void);
 RootNodeVtbl *RootNode_GetVtbl(void);
 extern RootNodeVtbl g_rootNodeVtbl;
 
-void *RootNode_Create(void) {
-    void *root;
+RootNode *RootNode_Create(void) {
+    RootNode *root;
 
     root = Heap_Alloc(0x54);
-    if (root != 0) {
+    if (root != NULL) {
         RootNode_GetVtbl()->init(root);
         return root;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08: makes and watches its 3 lights. */
 void RootNode_Init(RootNode *root) {
     s32 i;
-    s32 *light;
+    FlatLight **light;
 
     SceneNode_GetVtbl()->init(root);
     root->vtbl = RootNode_GetVtbl();
@@ -71,11 +71,11 @@ void RootNode_Init(RootNode *root) {
 /* Slot 0x0C: deletes its lights. */
 void RootNode_Destroy(RootNode *root) {
     s32 i;
-    Object *light;
+    FlatLight *light;
 
     for (i = 0; i < 3; i++) {
         light = root->vtbl->getLight(root, i);
-        light->vtbl->delete_(light);
+        light->object.vtbl->delete_(light);
     }
     SceneNode_GetVtbl()->destroy(root);
 }
@@ -90,7 +90,7 @@ void RootNode_OnNode(void) {
 }
 
 /* Slot 0xB8 */
-s32 RootNode_GetLight(RootNode *root, s32 index) {
+FlatLight *RootNode_GetLight(RootNode *root, s32 index) {
     return root->lights[index];
 }
 

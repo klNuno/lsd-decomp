@@ -6,7 +6,8 @@
 /* Functions of src/game/file_cd.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/file_cd.c */
 struct DirEntry;
-void *File_GetVtable(void);
+struct FileVtbl;
+struct FileVtbl *File_GetVtable(void);
 s32 File_IsBusy(void);
 s32 File_IsDone(void);
 s32 File_GetOpKind(void);

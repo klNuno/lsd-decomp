@@ -25,7 +25,7 @@ typedef struct MapTileVtbl {
 
 typedef struct MapTileModel {
     u8 pad_00[0x10];
-    s32 tmd;                /* 0x10 handed to GsLinkObject4 */
+    u32 *tmd;               /* 0x10 handed to GsLinkObject4 */
 } MapTileModel;
 
 typedef struct MapTile {
@@ -33,7 +33,7 @@ typedef struct MapTile {
     u8 pad_04[0x10 - 0x04];
     s32 attribute;          /* 0x10 GsDOBJ2.attribute; bit 31 (GsDOFF) hides the tile */
     Coord2 *coord;          /* 0x14 GsDOBJ2.coord2 */
-    s32 tmd;                /* 0x18 GsDOBJ2.tmd */
+    u32 *tmd;               /* 0x18 GsDOBJ2.tmd */
     u8 pad_1C[0x20 - 0x1C];
     MapTileModel *model;    /* 0x20 */
     u8 pad_24[0x34 - 0x24];
@@ -46,6 +46,6 @@ typedef struct MapTile {
 #define MAP_SLOT_TILES 410      /* 20 x 20 squares and 10 extra tiles */
 
 /* Functions of src/game/map_tile.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 MapTile_New(void);
+MapTile *MapTile_New(void);
 
 #endif

@@ -39,7 +39,7 @@ void Clock_Destroy(Clock *clock) {
 }
 
 /* Slot 0x24: a watcher removed while Clock_Notify runs moves its cursor past it. */
-void Clock_RemoveWatcher(Clock *clock, s32 watcher) {
+void Clock_RemoveWatcher(Clock *clock, Object *watcher) {
     ListNode *node;
 
     node = clock->notifyIter;
@@ -54,10 +54,10 @@ void Clock_Notify(Clock *clock, s32 message) {
     Object *watcher;
 
     clock->notifyIter = clock->watchers;
-    List_Next((s32 *)&watcher, &clock->notifyIter);
+    List_Next(&watcher, &clock->notifyIter);
     while (watcher != NULL) {
         watcher->vtbl->onNotify(watcher, clock, message);
-        List_Next((s32 *)&watcher, &clock->notifyIter);
+        List_Next(&watcher, &clock->notifyIter);
     }
     clock->notifyIter = 0;
 }

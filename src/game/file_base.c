@@ -57,15 +57,15 @@ void File_DestroyBase(File *file) {
 void File_LoadWhole(File *file, char *path) {
     s32 wasOpen;
     s32 size;
-    s32 buffer;
+    u8 *buffer;
 
-    if (file->data == 0) {
+    if (file->data == NULL) {
         wasOpen = file->isOpen;
         file->isOpen = 0;
         file->vtbl->open(file, path, 1, 0);
         size = file->vtbl->seek(file, 0, 2);
         buffer = Heap_Alloc(size);
-        if (buffer != 0) {
+        if (buffer != NULL) {
             file->vtbl->seek(file, 0, 0);
             file->vtbl->read(file, buffer, size);
             file->vtbl->close(file);
@@ -107,7 +107,7 @@ FileVtbl *File_GetBackendVtbl(void) {
     return File_GetVtable();
 }
 
-FileSource *File_MakeSource(FileSource *source, s32 data, s32 path, s32 unk_08) {
+FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unk_08) {
     source->data = data;
     source->path = path;
     source->unk_08 = unk_08;

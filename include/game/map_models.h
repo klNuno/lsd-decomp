@@ -18,13 +18,13 @@ typedef struct MapModels {
     void *data;             /* 0x10 */
     s32 size;
     u8 pad_18[0x2C - 0x18];
-    Object *tmd;            /* 0x2C the chunk's TMD, Tmd_Create */
+    struct Tmd *tmd;        /* 0x2C the chunk's TMD, Tmd_Create (tmd.h) */
 } MapModels;
 
 /* Functions of src/game/map_models.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/map_models.c */
 struct ModelSetVtbl;
-s32 MapModels_New(s32 path);
+MapModels *MapModels_New(s32 path);
 struct ModelSetVtbl *MapModels_GetVtbl(void);
 
 #endif

@@ -7,6 +7,7 @@
 #include "game/stage_map.h"
 #include "game/scenery.h"
 #include "game/dream_sys.h"
+#include "game/sound_bank.h"
 
 /*
  * Place: the object that runs one stage while the dreamer is in it (the "dream stage class"
@@ -97,9 +98,25 @@ typedef struct PlaceVtbl {
     void (*closePause)();             /* 0xD4 Place_ClosePause */
 } PlaceVtbl;
 
+/* The texture-set loader of Tix_Create (class g_tixVtbl, 0x84 bytes), as Place sees it. */
+typedef struct PlaceTexLoaderVtbl {
+    u8 pad_00[0x04];
+    void (*delete_)();    /* 0x04 Object_Delete */
+    u8 pad_08[0x7C - 0x08];
+    void (*apply)();      /* 0x7C called with the ambience colour once done */
+} PlaceTexLoaderVtbl;
+
+typedef struct PlaceTexLoader {
+    PlaceTexLoaderVtbl *vt;
+    u8 pad_04[0x3C - 0x04];
+    s32 done;             /* 0x3C */
+    u8 pad_40[0x80 - 0x40];
+    s32 failed;           /* 0x80 set by Tix_OnReadDone when Heap_Alloc returned 0 */
+} PlaceTexLoader;
+
 /* Place +0x6C to +0x7C, the four words the scenery code keeps a pointer to (g_placeRefs). */
 typedef struct PlaceRefs {
-    s32 handlerList;      /* +0x0 list the spot handlers are registered in (HandlerNode_Start) */
+    SoundBank *handlerList; /* +0x0 list the spot handlers are registered in (HandlerNode_Start) */
     PlaceObj *models;     /* +0x4 slot 0x80 returns a model by index (Scenery_Build, Scenery_SetPlaceRefs) */
     void *font;           /* +0x8 font of the "Pause" text and of the kind 2 and 3 scenery parts */
     View *view;           /* +0xC the view again, set by load */
@@ -124,7 +141,7 @@ typedef struct Place {
     s32 unk4C;            /* 0x4C load argument */
     Ambience *ambience;   /* 0x50 Scenery_Begin's record, or the one given to load */
     PlaceObj *music;      /* 0x54 slot 0x5C plays Music_PickTrack's sequence */
-    void *texLoader;      /* 0x58 Tix_Create's texture-set loader (discoveries "texture set") */
+    PlaceTexLoader *texLoader; /* 0x58 Tix_Create's texture-set loader (discoveries "texture set") */
     u8 pad_5C[0x60 - 0x5C];
     s32 texLoading;       /* 0x60 set at load, cleared when the loader is done or failed */
     s32 ready;            /* 0x64 set once the map is ready, then slot 0x88 starts the place */
@@ -136,6 +153,6 @@ typedef struct Place {
 } Place;
 
 /* Functions of src/game/place.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Place_New(s32 handlerList, s32 music, s32 font, s32 models, s32 stage);
+void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s32 stage);
 
 #endif

@@ -20,7 +20,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern u8 g_stageMapVtbl[];
+extern StageMapVtbl g_stageMapVtbl;
 extern Vec3 g_mapDefaultOrigin;         /* default map origin (0, 0, 0) */
 extern Vec3 g_chunkNeighborOffsets[];       /* per neighbour: offset of its chunk corner from the centre chunk's centre */
 extern s32 g_neighborBits[];        /* per neighbour: 1 << neighbour */
@@ -94,15 +94,15 @@ static void StageMap_ResetOneTileScale(s32 map, MapTile *tile);
 static void StageMap_ForEachTile(StageMap *map, void (*perTile)(), void (*perSlot)(void *, void *));
 static void StageMap_ForEachSlotTile(StageMap *map, void (*perTile)(), MapSlot *slot);
 
-s32 StageMap_New(s32 origin, s32 loadEntities) {
-    s32 map;
+StageMap *StageMap_New(Vec3 *origin, s32 loadEntities) {
+    StageMap *map;
 
     map = Heap_Alloc(0x1E8);
-    if (map != 0) {
+    if (map != NULL) {
         StageMap_GetVtbl()->init(map, origin, loadEntities);
         return map;
     }
-    return 0;
+    return NULL;
 }
 
 /* Constructor: 7 slots, each with its chunk object, model set, origin node and 410 tiles laid 0x800 apart. */
@@ -141,19 +141,19 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 loadEntities) {
         slot->index = i;
         slot->loading = 0;
         slot->models = MapModels_New(0);
-        tile = (MapTile *)MapTile_New();
+        tile = MapTile_New();
         slot->root = tile;
         tile->vtbl->attach(tile, map, &map->origin);
-        slot->tiles = (MapTile **)Heap_Alloc(0x668);
+        slot->tiles = Heap_Alloc(0x668);
         if (slot->tiles == NULL) {
             return;
         }
         pos.x = 0x400;
         pos.y = 0;
         pos.z = 0x400;
-        end = (MapTile **)((u8 *)slot->tiles + 0x668);
+        end = slot->tiles + 0x19A;
         for (p = slot->tiles; p < end; p++) {
-            tile = (MapTile *)MapTile_New();
+            tile = MapTile_New();
             *p = tile;
             tile->vtbl->attach(tile, slot->root, &pos);
             pos.x += 0x800;
@@ -187,7 +187,7 @@ void StageMap_Destroy(StageMap *map) {
         }
         if (slot->models != NULL) {
             if (slot->models->tmd != NULL) {
-                slot->models->tmd->vtbl->delete_(slot->models->tmd);
+                slot->models->tmd->vtbl->base.delete_(slot->models->tmd);
             }
             slot->models = slot->models->vtbl->delete_(slot->models);
         }
@@ -269,7 +269,7 @@ void StageMap_ClearSlots(StageMap *map) {
         map->vtbl->hideSlot(map, slot);
         models = slot->models;
         if (models->tmd != NULL) {
-            models->tmd = models->tmd->vtbl->delete_(models->tmd);
+            models->tmd = models->tmd->vtbl->base.delete_(models->tmd);
         }
         map->vtbl->onSlotMessage(map, 6, slot, i);
         slot->chunk->vtbl->freeEntities(slot->chunk);
@@ -780,12 +780,12 @@ void StageMap_BuildTiles(StageMap *map, MapSlot *slot) {
     models->data = (u8 *)chunk->data + chunk->data->modelsOffset;
     models->size = 0;
     if (models->tmd != NULL) {
-        models->tmd->vtbl->delete_(models->tmd);
+        models->tmd->vtbl->base.delete_(models->tmd);
     }
     data = chunk->data;
     modelsSize = data->modelsSize;
     tmdFile[0] = (u8 *)data + data->modelsOffset + modelsSize;
-    models->tmd = (Object *)Tmd_Create((s32)tmdFile);
+    models->tmd = Tmd_Create((FileSource *)tmdFile);
     record.chained = 0;
     i = 0;
     j = 400;
@@ -1202,7 +1202,7 @@ static void StageMap_ShowView(StageMap *map, s32 show) {
     MapTile *next;
     s32 attribute;
 
-    view = (MapView *)((u8 *)map + 0x8C);
+    view = map->v.views;
     for (i = 0; i < map->viewCount; i++) {
         slot = &map->slots[view->slot];
         rows = &view->rows;
@@ -1293,10 +1293,10 @@ static void StageMap_ResetOneTileScale(s32 map, MapTile *tile) {
 /* Calls perTile(map, tile) on the tiles of the 7 slots, after perSlot(map, slot) when given. */
 static void StageMap_ForEachTile(StageMap *map, void (*perTile)(), void (*perSlot)(void *, void *)) {
     s32 i;
-    u8 *slot;
+    MapSlot *slot;
 
     for (i = 0; i < 7; i++) {
-        slot = (u8 *)map + 0xEC + i * 0x1C;
+        slot = &map->slots[i];
         if (perSlot != NULL) {
             perSlot(map, slot);
         }
@@ -1315,5 +1315,5 @@ static void StageMap_ForEachSlotTile(StageMap *map, void (*perTile)(), MapSlot *
 }
 
 static StageMapVtbl *StageMap_GetVtbl(void) {
-    return (StageMapVtbl *)g_stageMapVtbl;
+    return &g_stageMapVtbl;
 }

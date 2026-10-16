@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "game/heap.h"
+#include "game/display.h"
 
 /*
  * Movie (vtable g_movieVtbl, 0x6C bytes, Movie_Create): the MDEC player. A stream object
@@ -64,6 +65,6 @@ typedef struct Movie {
 } Movie;
 
 /* Functions of src/game/movie.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Movie_Create(s32 rect, s32 streamArg, s32 skipAlloc);
+Movie *Movie_Create(ScreenRect *rect, s32 streamArg, s32 skipAlloc);
 
 #endif

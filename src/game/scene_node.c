@@ -4,6 +4,7 @@
 #include "game/heap.h"
 #include "game/model_object.h"
 #include "game/entity.h"
+#include "game/dream_sys.h"
 #include "psyq/libgte.h"
 #include "psyq/libgs.h"
 
@@ -21,26 +22,6 @@
  * File boundaries: proven (docs/layout.md)
  */
 
-/* Three shorts: a box corner, a point of a ray. */
-typedef struct SVec3 {
-    s16 x;
-    s16 y;
-    s16 z;
-} SVec3;
-
-/* An axis-aligned box: min and max corners (ModelObject_GetBox, the ray tests). */
-typedef struct NodeBox {
-    SVec3 min;
-    SVec3 max;
-} NodeBox;
-
-/* A box list (ModelObject_GetBoxList): a count of boxes, then 8 corners per box (0x30 bytes). */
-typedef struct NodeBoxList {
-    s32 count;
-    SVec3 corners[8];
-    s32 pad_34;
-} NodeBoxList;
-
 /* Message a node sends to the node it hit, and that the hit node keeps as contact. */
 #define NODE_MSG_CONTACT 4
 
@@ -48,13 +29,13 @@ typedef struct NodeBoxList {
 SceneNodeVtbl *SceneNode_GetVtbl(void);
 static void SceneNode_UnlinkModel(SceneNode *node);
 static s32 Fraction_ToFixed(Fraction *fraction);
-static s32 ModelBox_OutCode(NodeBox *box, SVec3 *point);
-static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end);
-static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside);
-static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to);
-static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix);
+static s32 ModelBox_OutCode(ModelBox *box, ModelVec *point);
+static s32 ModelBox_ClipSegment(ModelVec *out, ModelBox *box, ModelVec *start, ModelVec *end);
+static void ModelBox_FindExit(ModelVec *out, ModelBox *box, ModelVec *inside, ModelVec *outside);
+static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to);
+static void Render_TransformVectors(ModelVec *dst, ModelVec *src, s32 count, void *matrix);
 
-extern s32 g_sceneNodeVtbl[];
+extern SceneNodeVtbl g_sceneNodeVtbl;
 extern s32 g_nodeZeroRotation[];
 extern s32 g_nodeUnitScale[];
 s32 g_rayHeightCheck;
@@ -274,7 +255,7 @@ void SceneNode_NextChild(SceneNode *node, SceneNode **child, ListNode **iter) {
         if (*child == NULL) {
             *iter = node->watched;
         }
-        List_Next((s32 *)child, iter);
+        List_Next((Object **)child, iter);
         obj = *child;
         if (obj != NULL && (obj->vtbl->classWord & 0xF) == 4 && obj->parent == node) {
             return;
@@ -351,28 +332,28 @@ void SceneNode_GetRotMatrix(SceneNode *node, void *matrix, s32 invert) {
 
 /* Slot 0x88: for messages 2 and 3, sends the model's box list to the watchers. */
 void SceneNode_SendBoxes(SceneNode *node, s32 message) {
-    s32 boxList[14];
+    NodeBoxList boxList;
     ModelObject *model;
 
     if (message < 4) {
         if (message >= 2) {
             model = node->model;
             if ((model != NULL) && (ModelObject_IsReady(model) != 0)) {
-                node->vtbl->getBoxList(node, boxList);
-                node->vtbl->sendShape(node, boxList, message);
+                node->vtbl->getBoxList(node, &boxList);
+                node->vtbl->sendShape(node, &boxList, message);
             }
         }
     }
 }
 
 /* Slot 0x8C: the model's box list: one box, 8 corners. */
-void SceneNode_GetBoxList(SceneNode *node, s32 *boxList) {
+void SceneNode_GetBoxList(SceneNode *node, NodeBoxList *boxList) {
     ModelObject_GetBoxList(node->model, boxList);
 }
 
 /* Slot 0x90: moves the box list into world space and notifies the watchers with it. */
-void SceneNode_SendShape(SceneNode *node, s32 *boxList, s32 message) {
-    Render_TransformVectors((SVec3 *)(boxList + 1), (SVec3 *)(boxList + 1), boxList[0] * 8, &node->coord->workm);
+void SceneNode_SendShape(SceneNode *node, NodeBoxList *boxList, s32 message) {
+    Render_TransformVectors(boxList->corners, boxList->corners, boxList->count * 8, &node->coord->workm);
     node->contact = NULL;
     node->hitMask = 0;
     node->boxList = boxList;
@@ -411,7 +392,7 @@ void SceneNode_CheckContact(SceneNode *node, SceneNode *sender) {
     NodeBoxList boxes;
     Vec3 *senderPos;
     Vec3 *pos;
-    s32 *corners;
+    ModelVec *corners;
 
     if (node->model != NULL && ModelObject_IsReady(node->model) != 0) {
         senderPos = NULL;
@@ -432,8 +413,8 @@ void SceneNode_CheckContact(SceneNode *node, SceneNode *sender) {
             localOffset[0] = offset.x;
             localOffset[1] = offset.y;
             localOffset[2] = offset.z;
-            boxes.count = *sender->boxList;
-            corners = sender->boxList + 1;
+            boxes.count = sender->boxList->count;
+            corners = sender->boxList->corners;
             node->vtbl->worldToLocal(node, localOffset, boxes.corners, corners, boxes.count * 8);
             if (node->vtbl->boxesOverlap(node, &boxes, localOffset) != 0
              && node->vtbl->rayTestBoxes(node, &sender->hitMask, localOffset, &boxes) != 0) {
@@ -448,7 +429,7 @@ void SceneNode_CheckContact(SceneNode *node, SceneNode *sender) {
  * Slot 0xA4: rotates count short vectors from world axes into the node's axes (the inverse
  * rotations of the node and of every parent), and the offset with them when there is one.
  */
-void SceneNode_WorldToLocal(SceneNode *node, SVec3 *offset, SVec3 *dst, SVec3 *src, s32 count) {
+void SceneNode_WorldToLocal(SceneNode *node, ModelVec *offset, ModelVec *dst, ModelVec *src, s32 count) {
     s32 parentMtx[8];
     s32 worldMtx[8];
     SceneNode *parent;
@@ -468,14 +449,14 @@ void SceneNode_WorldToLocal(SceneNode *node, SVec3 *offset, SVec3 *dst, SVec3 *s
  * Slot 0xA8: moves the box list by offset and tests the bounding box of all its corners
  * against the bounding box of the node model's boxes.
  */
-s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, SVec3 *offset) {
-    NodeBox own;
-    NodeBox other;
+s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, ModelVec *offset) {
+    ModelBox own;
+    ModelBox other;
     u8 *end;
-    SVec3 *p;
-    NodeBox *box;
-    NodeBox *b;
-    NodeBox *bend;
+    ModelVec *p;
+    ModelBox *box;
+    ModelBox *b;
+    ModelBox *bend;
     s32 n;
 
     p = &boxList->corners[0];
@@ -524,21 +505,21 @@ s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, SVec3 *offset)
  * node->hitMask, a sender box that hit sets its bit in *senderHits. With g_rayHeightCheck set,
  * a hit counts only when the ray test's height output is 0x201 or more (always for edges).
  */
-s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, SVec3 *hitPos, NodeBoxList *boxList) {
-    SVec3 axis[2];
-    NodeBox unused[2];
+s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, ModelVec *hitPos, NodeBoxList *boxList) {
+    ModelVec axis[2];
+    ModelBox unused[2];
     s32 hitDist;
     s32 hitHeight;
-    SVec3 *p;
-    SVec3 *q;
-    SVec3 *dst;
+    ModelVec *p;
+    ModelVec *q;
+    ModelVec *dst;
     s32 count;
     s32 ret;
     s32 i;
     s32 j;
     s32 k;
     s32 n;
-    NodeBox *box;
+    ModelBox *box;
 
     hitDist = 0x7FFFFFFF;
     p = &boxList->corners[0];
@@ -602,8 +583,8 @@ s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, SVec3 *hitPos, Node
  * Segment against box by bisection with outcodes: 0 no part inside, 1 both ends inside,
  * 2 start inside, 3 end inside; for 2 and 3, *out gets the point where it leaves the box.
  */
-static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end) {
-    SVec3 mid;
+static s32 ModelBox_ClipSegment(ModelVec *out, ModelBox *box, ModelVec *start, ModelVec *end) {
+    ModelVec mid;
     u8 startCode;
     u8 endCode;
     s32 result;
@@ -646,7 +627,7 @@ static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *e
 }
 
 /* Bisects from a point inside the box to a point outside until the midpoint stops moving. */
-static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside)
+static void ModelBox_FindExit(ModelVec *out, ModelBox *box, ModelVec *inside, ModelVec *outside)
 {
     s16 tmp[2][4];
     u8 bits;
@@ -678,12 +659,12 @@ static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *ou
         }
         if (bits != 0) {
             t = tmp[1];
-            outside = (SVec3 *)t;
+            outside = (ModelVec *)t;
         } else {
             t = tmp[0];
-            inside = (SVec3 *)t;
+            inside = (ModelVec *)t;
         }
-        *(SVec3 *)t = *out;
+        *(ModelVec *)t = *out;
     }
 }
 
@@ -697,16 +678,16 @@ void SceneNode_EmptySlotB0(void) {
 void SceneNode_AddActorWatchers(s32 node, Object *object) {
     WatcherVtbl *vtbl;
     Object *watcher;
-    s32 more;
+    ListNode *more;
 
     watcher = NULL;
     do {
         for (;;) {
-            Object_NextWatcher(object, (s32 *)&watcher, &more);
+            Object_NextWatcher(object, &watcher, &more);
             if (watcher != NULL && (watcher->vtbl->classWord & 0xF) == 4) {
                 break;
             }
-            if (more == 0) {
+            if (more == NULL) {
                 watcher = NULL;
                 break;
             }
@@ -721,27 +702,27 @@ void SceneNode_AddActorWatchers(s32 node, Object *object) {
 }
 
 SceneNodeVtbl *SceneNode_GetVtbl(void) {
-    return (SceneNodeVtbl *)g_sceneNodeVtbl;
+    return &g_sceneNodeVtbl;
 }
 
 /* Rotates a short vector by the node's own rotation into dst (no translation, no parents). */
-void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, SVec3 *src) {
-    s32 rotMtx[8];
+void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, ModelVec *src) {
+    Matrix rotMtx;
 
-    node->vtbl->getRotMatrix(node, rotMtx, 0);
+    node->vtbl->getRotMatrix(node, &rotMtx, 0);
     dst->x = src->x;
     dst->y = src->y;
     dst->z = src->z;
-    Render_TransformLongVectors(dst, dst, 1, rotMtx);
+    Render_TransformLongVectors(dst, dst, 1, &rotMtx);
 }
 
 /* Rotates src by the node's own rotation and adds the node's world position. */
 void SceneNode_LocalToWorld(SceneNode *node, Vec3 *dst, Vec3 *src) {
-    s32 rotMtx[8];
+    Matrix rotMtx;
     Vec3 *worldPos;
 
-    node->vtbl->getRotMatrix(node, rotMtx, 0);
-    Render_TransformLongVectors(dst, src, 1, rotMtx);
+    node->vtbl->getRotMatrix(node, &rotMtx, 0);
+    Render_TransformLongVectors(dst, src, 1, &rotMtx);
     worldPos = NULL;
     if (node->parent != NULL) {
         worldPos = &node->coord->workm.t;
@@ -775,7 +756,7 @@ void SceneNode_GetRotation(SceneNode *node, Fraction *degrees) {
 /* Links the model object's TMD object to the node's GsDOBJ2 (GsLinkObject4). */
 void SceneNode_LinkModel(SceneNode *node, ModelObject *model) {
     node->model = model;
-    node->tmd = model->tmdObject;
+    node->tmd = model->entry;
     GsLinkObject4((u32 *)(node->model->tmdObjectBase + 0xC), &node->attribute, 0);
 }
 
@@ -790,9 +771,9 @@ static void SceneNode_UnlinkModel(SceneNode *node) {
  * drawn, so its world position is first rebuilt from its parents' positions.
  */
 s32 SceneNode_ProbeHeight(SceneNode *node, Vec3 *offset, Vec3 *point) {
-    SVec3 from;
-    SVec3 to;
-    SVec3 hit;
+    ModelVec from;
+    ModelVec to;
+    ModelVec hit;
     s32 dist;
     Vec3 *base;
     SceneNode *n;
@@ -833,7 +814,7 @@ s32 SceneNode_ProbeHeight(SceneNode *node, Vec3 *offset, Vec3 *point) {
     return 1;
 }
 
-static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to) {
+static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to) {
     out->x = to->x - from->x;
     out->y = to->y - from->y;
     out->z = to->z - from->z;
@@ -843,7 +824,7 @@ static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to) {
  * Turns entity toward target (docs/discoveries.md, touch range): yaw and pitch from ratan2 in
  * degrees; noPitch keeps it level, facing == 0 turns it away (yaw + 180), extra is added after.
  */
-void Entity_FaceDreamer(Entity *entity, SceneNode *target, s32 noPitch, s32 facing, Fraction *extra) {
+void Entity_FaceDreamer(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra) {
     Fraction rot[3];
     Vec3 *targetPos;
     Vec3 *pos;
@@ -851,7 +832,7 @@ void Entity_FaceDreamer(Entity *entity, SceneNode *target, s32 noPitch, s32 faci
 
     pos = &entity->pos.coord->coord.t;
     if (target->parent != NULL) {
-        targetPos = &target->coord->workm.t;
+        targetPos = &target->pos.coord->workm.t;
     } else {
         targetPos = NULL;
     }
@@ -895,7 +876,7 @@ static s32 Fraction_ToFixed(Fraction *fraction) {
 }
 
 /* Outcode of a point against a box: 8 or 4 past max or min x, 2 or 1 for y, 0x20 or 0x10 for z. */
-static s32 ModelBox_OutCode(NodeBox *box, SVec3 *point) {
+static s32 ModelBox_OutCode(ModelBox *box, ModelVec *point) {
     s32 code;
 
     code = 0;
@@ -935,9 +916,9 @@ s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value) {
     return (u32)(mask & old) >> shift;
 }
 
-static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix) {
-    SVec3 tmp;
-    SVec3 *end;
+static void Render_TransformVectors(ModelVec *dst, ModelVec *src, s32 count, void *matrix) {
+    ModelVec tmp;
+    ModelVec *end;
 
     end = dst + count;
     while (dst < end) {
@@ -949,21 +930,21 @@ static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *mat
 }
 
 /* ApplyMatrixLV on count long vectors (12 bytes each). */
-void Render_TransformLongVectors(void *dstVecs, void *srcVecs, s32 count, s32 *matrix) {
-    u8 *dst;
-    u8 *src;
-    u8 *end;
-    s32 *mtx;
+void Render_TransformLongVectors(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix) {
+    Vec3 *dst;
+    Vec3 *src;
+    Vec3 *end;
+    Matrix *mtx;
     s32 pad[2];
 
     dst = dstVecs;
     src = srcVecs;
     mtx = matrix;
-    end = (u8 *)dstVecs + count * 12;
+    end = dstVecs + count;
     while (dst < end) {
         ApplyMatrixLV(mtx, src, dst);
-        dst += 12;
-        src += 12;
+        dst++;
+        src++;
     }
 }
 

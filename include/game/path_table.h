@@ -6,9 +6,9 @@
 /* Functions of src/game/path_table.c that other files call or reference (docs/naming.md, Prototypes) */
 void *File_GetRootDir(void);
 s32 Rand_SeedAndNext(); /* K&R definition: two callers pass an extra argument it ignores */
-void *File_GetPathTable(s32 *count);
-s32 Music_PickBank(s32 unused);
-s32 Music_GetEffectsBank(); /* unprototyped: dream_runner.c passes an argument */
+u8 *File_GetPathTable(s32 *count);
+s8 *Music_PickBank(s32 unused);
+s8 *Music_GetEffectsBank(); /* unprototyped: dream_runner.c passes an argument */
 u8 *Stage_PickTexturePath(s32 stage, s32 unused, s32 dayNumber);
 u8 *Music_PickTrack(); /* unprototyped: place.c passes a second argument */
 u8 *Stage_GetChunkPath(); /* unprototyped: place.c passes only the stage */

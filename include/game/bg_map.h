@@ -23,7 +23,7 @@ typedef struct BgMap {
     u16 cellsX;
     s16 cellsY;
     u8 pad_32[0x34 - 0x32];
-    s32 cells;                /* 0x34 the BgCells' GsCell table */
+    GsCell *cells;            /* 0x34 the BgCells' GsCell table */
     s16 *index;               /* 0x38 cellsX * cellsY cell numbers, 0 to n - 1 */
     BgCells *cellSource;      /* 0x3C */
     u16 fullScreen;           /* 0x40 */
@@ -31,7 +31,7 @@ typedef struct BgMap {
 } BgMap;
 
 /* Functions of src/game/bg_map.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 BgMap_Create(s32 skipBuild, s32 cells);
+BgMap *BgMap_Create(s32 skipBuild, BgCells *cells);
 BgMapVtbl *BgMap_GetVtbl(void);
 
 #endif

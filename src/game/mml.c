@@ -12,18 +12,18 @@
 
 extern MomVtbl g_mmlVtbl;
 
-s32 Mml_Create(s32 source) {
-    s32 mml;
+Mml *Mml_Create(FileSource *source) {
+    Mml *mml;
 
     mml = Heap_Alloc(0x3C);
-    if (mml != 0) {
+    if (mml != NULL) {
         if (Mml_GetVtbl()->base.init(mml, source) == 0) {
             Heap_Free(mml);
-            return 0;
+            return NULL;
         }
         return mml;
     }
-    return 0;
+    return NULL;
 }
 
 Mml *Mml_Init(Mml *mml, FileSource *source) {
@@ -32,9 +32,9 @@ Mml *Mml_Init(Mml *mml, FileSource *source) {
     Mom_GetVtbl()->base.init(mml, source, 0);
     vtbl = Mml_GetVtbl();
     mml->vtbl = vtbl;
-    if (source->data != 0) {
+    if (source->data != NULL) {
         if (vtbl->base.onLoaded(mml) != 0) {
-            return 0;
+            return NULL;
         }
     }
     return mml;
@@ -53,20 +53,20 @@ void Mml_OnLoaded(Mml *mml) {
 /* Slot 0x78: one Mom per offset, written over the offset; 1 (Moms freed) on failure */
 s32 Mml_LoadParts(Mml *mml) {
     FileSource source;
-    s32 *entry;
+    Mom **entry;
     s32 count;
     s32 i;
-    s32 mom;
+    Mom *mom;
 
-    File_MakeSource(&source, 0, 0, 1);
-    entry = &mml->data[2];
-    count = mml->data[1];
+    File_MakeSource(&source, NULL, NULL, 1);
+    entry = mml->data.header->table.moms;
+    count = mml->data.header->count;
     mml->momCount = 0;
     for (i = 0; i < count; i++) {
-        source.data = (s32)((u8 *)mml->data + mml->data[i + 2]);
-        mom = Mom_Create((s32)&source);
+        source.data = mml->data.bytes + mml->data.header->table.offsets[i];
+        mom = Mom_Create(&source);
         *entry = mom;
-        if (mom == 0) {
+        if (mom == NULL) {
             goto fail;
         }
         mml->momCount++;
@@ -79,18 +79,18 @@ fail:
 }
 
 void Mml_FreeParts(Mml *mml) {
-    Object_DeleteArray(mml->data + 2, mml->momCount);
+    Object_DeleteArray(mml->data.header->table.objects, mml->momCount);
     mml->momCount = 0;
 }
 
 /* Slot 0x88: Mom number index, 0 past the count */
-u32 Mml_GetMom(Mml *mml, u32 index) {
-    u32 *words = (u32 *)mml->data;
+Mom *Mml_GetMom(Mml *mml, u32 index) {
+    MmlHeader *header = mml->data.header;
 
-    if (index < words[1]) {
-        return words[index + 2];
+    if (index < header->count) {
+        return header->table.moms[index];
     }
-    return 0;
+    return NULL;
 }
 
 MomVtbl *Mml_GetVtbl(void) {

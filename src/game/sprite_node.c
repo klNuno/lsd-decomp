@@ -3,6 +3,7 @@
 #include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
+#include "game/tim.h"
 #include "psyq/libgpu.h"
 
 /*
@@ -75,9 +76,9 @@ struct SpriteNode;
 /* Slots of g_spriteNodeVtbl this unit calls, with the arguments it passes. */
 typedef struct SpriteNodeVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32, s32, s32, s32, s32);     /* 0x08 SpriteNode_Init */
+    void (*init)(void *, Tim *, s32, SpriteRect *, s32, s32);     /* 0x08 SpriteNode_Init */
     u8 pad_0C[0x40 - 0x0C];
-    void (*setImage)(void *, s32, s32, s32, s32, s32); /* 0x40 SpriteNode_SetImage */
+    void (*setImage)(void *, Tim *, s32, SpriteRect *, s32, s32); /* 0x40 SpriteNode_SetImage */
     u8 pad_44[0x4C - 0x44];
     void (*attach)(void *, s32, void *);               /* 0x4C SceneNode_Attach (node, parent, Vec3 position) */
 } SpriteNodeVtbl;
@@ -89,7 +90,7 @@ typedef struct SpriteNode {
     ListNode *watchers;
     s32 parent;             /* 0x0C SceneNode *, 0 until attached */
     u8 pad_10[0x48 - 0x10];
-    s32 tim;                /* 0x48 SpriteTim *, the GsIMAGE inside the image object */
+    TimImage *tim;          /* 0x48 the GsIMAGE inside the image object (read as a SpriteTim) */
     SpriteRect rect;        /* 0x4C */
     s32 unk58;              /* 0x58 0 */
     u8 pad_5C[0x64 - 0x5C];
@@ -104,19 +105,19 @@ static void SpriteNode_FillSprite();
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 
-static void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 unused4, s32 unused5) {
-    void *node;
+static SpriteNode *SpriteNode_Create(Tim *image, s32 blendRate, SpriteRect *rect, s32 unused4, s32 unused5) {
+    SpriteNode *node;
 
     node = Heap_Alloc(0xA0);
-    if (node != 0) {
+    if (node != NULL) {
         SpriteNode_GetVtbl()->init(node, image, blendRate, rect, unused4, unused5);
         return node;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08 */
-void SpriteNode_Init(SpriteNode *node, s32 image, s32 blendRate, s32 rect, s32 unused4, s32 unused5) {
+void SpriteNode_Init(SpriteNode *node, Tim *image, s32 blendRate, SpriteRect *rect, s32 unused4, s32 unused5) {
     SpriteNodeVtbl *vtbl;
 
     SceneNode_GetVtbl()->init(node);
@@ -126,8 +127,8 @@ void SpriteNode_Init(SpriteNode *node, s32 image, s32 blendRate, s32 rect, s32 u
 }
 
 /* Slot 0x40 (node, image object, blend rate, rect) */
-void SpriteNode_SetImage(SpriteNode *node, s32 image, s32 blendRate, SpriteRect *rect) {
-    node->tim = image + 0x2C;
+void SpriteNode_SetImage(SpriteNode *node, Tim *image, s32 blendRate, SpriteRect *rect) {
+    node->tim = &image->image;
     node->rect = *rect;
     SpriteNode_FillSprite(&node->sprite, blendRate, rect, node->tim);
     node->unk58 = 0;

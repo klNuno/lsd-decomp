@@ -5,6 +5,7 @@
 #include "game/gs.h"
 #include "game/sound_bank.h"
 #include "game/stage.h"
+#include "game/handler_node.h"
 
 /*
  * DreamSys: the game-state object, one instance at 0x80091530, class vtable
@@ -14,14 +15,10 @@
  * Evidence for each named field: docs/discoveries.md (rows cited below).
  */
 
-struct DreamPlayer;
 struct DreamSys;
-
-/* A graph point: two mood axes in -9..9. */
-typedef struct MoodPoint {
-    s8 x;
-    s8 y;
-} MoodPoint;
+struct StageMap;
+struct Tmd;
+struct Tim;
 
 /* One mood accumulator (Mood_Log): last point logged, sums per axis, count. */
 typedef struct MoodAccum {
@@ -68,35 +65,6 @@ typedef struct DreamSysObj28 {
     u16 flags;
 } DreamSysObj28;
 
-/* What player slot 0x11C returns. */
-typedef struct DreamPlayerInfoSub {
-    u8 pad_00[0x2C];
-    s16 loaded;
-} DreamPlayerInfoSub;
-
-typedef struct DreamPlayerInfo {
-    u8 pad_00[4];
-    DreamPlayerInfoSub *chunk;
-} DreamPlayerInfo;
-
-/* The player object at +0x4C (discoveries: flashbacks need it): slots used here. */
-typedef struct DreamPlayerVtbl {
-    u8 pad_00[0xD4];
-    StagePlace *(*getTellKey)(struct DreamPlayer *, s32 **);
-    u8 pad_D8[0xE8 - 0xD8];
-    void (*placeToWorld)(struct DreamPlayer *, void *, void *);
-    u8 pad_EC[0xF0 - 0xEC];
-    void (*deactivate)(struct DreamPlayer *);
-    u8 pad_F4[0x10C - 0xF4];
-    s32 (*getLocation)(struct DreamPlayer *, s32, s32); /* the current place, kept by flashbacks */
-    u8 pad_110[0x11C - 0x110];
-    DreamPlayerInfo *(*slotAt)(struct DreamPlayer *, s32);
-} DreamPlayerVtbl;
-
-typedef struct DreamPlayer {
-    DreamPlayerVtbl *vt;
-} DreamPlayer;
-
 /* The 0x700-byte block the memory card saves and loads: DreamSys +0x178 to +0x878 (DreamSys_GetSaveBlock,
    SaveMenu_Save, menu.h Menu +0xBC). Offsets below are from the block; add 0x178 for DreamSys. */
 typedef struct SaveBlock {
@@ -126,7 +94,7 @@ typedef struct SaveBlock {
 typedef struct DreamSysVtbl {
     s32 classWord;                                                        /* 0x1F34 */
     void (*delete_)();                                                  /* 0x004 Object_Delete */
-    void (*init)(struct DreamSys *, void **, s32, s32);              /* 0x008 DreamSys_Init */
+    void (*init)(struct DreamSys *, struct Tmd *, SoundBank *, DreamCamera *);              /* 0x008 DreamSys_Init */
     void (*destroy)();                                                  /* 0x00C SceneNode_Destroy */
     void (*watch)(struct DreamSys *, void *);                        /* 0x010 Actor_Watch: Actor watch, keeps a watched map at +0x4C */
     void (*unwatch)(struct DreamSys *, void *);                      /* 0x014 Actor_Unwatch: Actor unwatch */
@@ -196,7 +164,7 @@ typedef struct DreamSysVtbl {
     void (*setEtcTim)();                                                /* 0x114 DreamSys_SetEtcTim */
     void (*tickBegin)(struct DreamSys *);                               /* 0x118 DreamSys_TickBegin */
     void (*tickHandlers)(struct DreamSys *);                               /* 0x11C DreamSys_TickHandlers */
-    void (*testPointAhead)();                                                /* 0x120 DreamSys_TestPointAhead */
+    s32 (*testPointAhead)();                                                 /* 0x120 DreamSys_TestPointAhead */
     void (*unk124)();                                                /* 0x124 func_80059590 */
     void (*unk128)();                                                /* 0x128 func_80059598 */
     void (*beforeWalk)(struct DreamSys *);                               /* 0x12C DreamSys_EmptySlot12C */
@@ -225,7 +193,7 @@ typedef struct DreamSysVtbl {
     void (*popSpeed)();                                                /* 0x188 DreamSys_PopSpeed */
     void (*setLinkFlags)(struct DreamSys *, s32, s32, s32, s32);           /* 0x18C DreamSys_SetLinkFlags */
     void (*setLinkPeriod)(struct DreamSys *, s32);                          /* 0x190 DreamSys_SetLinkPeriod */
-    void (*fallSoundHandler)(s32, void *);                                     /* 0x194 DreamSys_FallSoundHandler */
+    void (*fallSoundHandler)(void *owner, HandlerNode *node);                  /* 0x194 DreamSys_FallSoundHandler */
     void (*initNewGame)(struct DreamSys *);                          /* 0x198 DreamSys_InitNewGame */
     void (*swapShake)(struct DreamSys *, s32 *);                     /* 0x19C DreamSys_SwapShake */
     s32 (*getDayNumber)(struct DreamSys *, s32 *);                   /* 0x1A0 DreamSys_GetDayNumber */
@@ -240,17 +208,17 @@ typedef struct DreamSysVtbl {
     void (*linkDynamic)(struct DreamSys *);                          /* 0x1C4 DreamSys_LinkDynamic */
     s32 (*linkStatic)(struct DreamSys *, void *);                    /* 0x1C8 DreamSys_LinkStatic */
     s32 (*loadNextFlashback)(struct DreamSys *, s32);                /* 0x1CC DreamSys_LoadNextFlashback */
-    s32 (*linkFacing)(struct DreamSys *, s32);                           /* 0x1D0 DreamSys_LinkFacing */
-    s32 (*linkFall)(struct DreamSys *, s32);                           /* 0x1D4 DreamSys_LinkFall */
-    s32 (*linkExtra)(struct DreamSys *, s32);                           /* 0x1D8 DreamSys_LinkExtra */
-    s32 (*startLinkStep)(struct DreamSys *, s32);                           /* 0x1DC DreamSys_StartLinkStep */
+    s32 (*linkFacing)(struct DreamSys *, StagePlace *);                           /* 0x1D0 DreamSys_LinkFacing */
+    s32 (*linkFall)(struct DreamSys *, StagePlace *);                           /* 0x1D4 DreamSys_LinkFall */
+    s32 (*linkExtra)(struct DreamSys *, StagePlace *);                           /* 0x1D8 DreamSys_LinkExtra */
+    s32 (*startLinkStep)(struct DreamSys *, StagePlace *);                           /* 0x1DC DreamSys_StartLinkStep */
     s32 (*getStage)(struct DreamSys *);                              /* 0x1E0 DreamSys_GetStage */
-    void (*onMapMessage)(struct DreamSys *, s32 **, s32);                  /* 0x1E4 DreamSys_OnMapMessage */
+    void (*onMapMessage)(struct DreamSys *, struct StageMap *, s32);                  /* 0x1E4 DreamSys_OnMapMessage */
     void (*onEntityEvent)(struct DreamSys *, s32 **, s32);           /* 0x1E8 DreamSys_OnEntityEvent */
     void (*getPreviousPoint)(struct DreamSys *, void *, s32);        /* 0x1EC DreamSys_GetPreviousPoint */
-    void (*resetMoodAccumulators)(struct DreamSys *, s32);           /* 0x1F0 DreamSys_ResetMoodAccumulators */
-    void (*logChunkMood)(struct DreamSys *, s8 *);                   /* 0x1F4 DreamSys_LogChunkMood */
-    void (*logEntityMood)(struct DreamSys *, s32);                   /* 0x1F8 DreamSys_LogEntityMood */
+    void (*resetMoodAccumulators)(struct DreamSys *, MoodPoint *);           /* 0x1F0 DreamSys_ResetMoodAccumulators */
+    void (*logChunkMood)(struct DreamSys *, StagePlace *);                 /* 0x1F4 DreamSys_LogChunkMood */
+    void (*logEntityMood)(struct DreamSys *, MoodPoint *);                 /* 0x1F8 DreamSys_LogEntityMood */
     void (*computeDayPoint)(struct DreamSys *, struct MoodPoint *);  /* 0x1FC DreamSys_ComputeDayPoint */
     s32 (*getDreamColor)(struct DreamSys *);                         /* 0x200 DreamSys_GetDreamColor: colour index 0 to 7 */
     void (*moodReset)(struct DreamSys *, struct MoodAccum *);        /* 0x204 Mood_Reset */
@@ -268,7 +236,7 @@ typedef struct DreamSysVtbl {
 typedef struct DreamSys {
     DreamSysVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];
-    s32 parent;
+    void *parent;
     u8 pad_10[0x14 - 0x10];
     union {
         Coord2 *coord;
@@ -280,22 +248,23 @@ typedef struct DreamSys {
     u8 pad_2C[0x44 - 0x2C];
     s32 transition;         /* link or event code while one runs, 0 when idle */
     u8 pad_48[0x4C - 0x48];
-    DreamPlayer *map;
+    struct StageMap *map;   /* 0x4C the stage map it walks on (stage_map.h), watched while attached */
     u8 pad_50[0x58 - 0x50];
     SoundBank *soundBank;      /* 0x58 the model's sound bank (sound_bank.h, Model +0x58), DreamSys_New's second argument */
     union {
         DreamCamera *obj;
+        struct View *view;  /* the DreamView (g_viewVtbl): Behavior_Type74 sets its clear color */
         u8 *bytes;
     } camera;
-    void **tmd;
-    s32 etcTim;
+    struct Tmd *tmd;        /* the dreamer's TMD (tmd.h); model 0 is watched */
+    struct Tim *etcTim;     /* ETC\ETC.TIM, set by the dream runner (DreamSys_SetEtcTim) */
     s32 flashbackMode;      /* DreamSys_SetFlashbackMode */
     s32 autoWalk;
     s32 controlsLocked;
     s32 circlePressed;
     s32 unk78;
     s32 unk7C;
-    void (*lookHandler)(void);    /* one of slots 0x140, 0x14C, 0x150, picked by unk84 */
+    void (*lookHandler)();        /* one of slots 0x140, 0x14C, 0x150, picked by unk84; called without arguments */
     s32 lookMode;
     s32 pitchInput;
     s32 pitch;
@@ -314,11 +283,7 @@ typedef struct DreamSys {
     u8 pad_C0[0xC4 - 0xC0];
     s32 falling;
     s32 fallSoundOn;
-    union {
-        s32 word;
-        u8 bytes[4];
-    } fallSound;
-    u8 pad_D0[0x120 - 0xD0];
+    HandlerNode fallSound;  /* 0xCC plays the fall sounds (DreamSys_FallSoundHandler) while falling */
     u32 linkPeriod;
     s32 dynamicLinkOn;      /* links dynamically only when set (DreamSys_OnWallTouch) */
     s32 unk128;
@@ -358,6 +323,6 @@ typedef struct DreamSys {
 } DreamSys;
 
 /* Functions of src/game/dream_sys.c that other files call or reference (docs/naming.md, Prototypes) */
-void *DreamSys_New(s32 tmd, s32 soundBank, s32 camera);
+DreamSys *DreamSys_New(struct Tmd *tmd, SoundBank *soundBank, DreamCamera *camera);
 
 #endif

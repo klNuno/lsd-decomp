@@ -18,9 +18,9 @@
  */
 typedef struct BoxVtbl {
     u8 pad_00[0x8];
-    void (*init)(void *box, s32 size, u8 *color, s32 priority); /* 0x08 Box_Construct */
+    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Construct */
     u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *box, s32 size, s32 color, s32 priority); /* 0x40 Box_Init */
+    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Init */
     u8 pad_44[0x4C - 0x44];
     void (*show)();                           /* 0x4C Box_Show (box, root, position) */
     u8 pad_50[0xB8 - 0x50];
@@ -33,11 +33,11 @@ typedef struct BoxVtbl {
 extern u8 g_fadePalette[][3];
 extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */
 static FadeVtbl *Fade_GetVtbl(void);
-extern u8 g_fadeVtbl[];
+extern FadeVtbl g_fadeVtbl;
 
 /* new Fade(size, channels, priority) */
-void *Fade_Create(s32 size, s32 channels, s32 priority) {
-    void *fade;
+Fade *Fade_Create(BoxSize *size, s32 channels, s32 priority) {
+    Fade *fade;
 
     fade = Heap_Alloc(0xA0);
     if (fade != NULL) {
@@ -48,7 +48,7 @@ void *Fade_Create(s32 size, s32 channels, s32 priority) {
 }
 
 /* Slot 0x08: builds the Box with the channels' color, then sets the Fade vtable and runs slot 0x40 */
-void Fade_Construct(void **fade, s32 size, s32 channels, s32 priority) {
+void Fade_Construct(void **fade, BoxSize *size, s32 channels, s32 priority) {
     BoxVtbl *boxVtbl;
     u8 *color;
     FadeVtbl *vtbl;
@@ -237,5 +237,5 @@ void Fade_SetTint(Fade *fade, s32 tint, s32 tintDivisor) {
 }
 
 static FadeVtbl *Fade_GetVtbl(void) {
-    return (FadeVtbl *)g_fadeVtbl;
+    return &g_fadeVtbl;
 }

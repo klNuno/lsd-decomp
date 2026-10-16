@@ -81,9 +81,9 @@ typedef struct MenuScreen {
     u8 pad_6C[0x70 - 0x6C];
     char *picturePath;      /* 0x70 setPicture loads and owns the picture when set */
     struct Tim *picture;    /* 0x74 */
-    struct ScreenBg *bg;    /* 0x78 Bg over bgMap: draws VRAM x 640 (the picture area) full screen, takes the fade color */
-    struct ScreenBg *bgMap; /* 0x7C BgMap over bgCells */
-    struct ScreenBg *bgCells; /* 0x80 BgCells: 300 cells of 16x16 on VRAM x 640 to 960 (include/game/bg_cells.h) */
+    struct Bg *bg;         /* 0x78 Bg over bgMap: draws VRAM x 640 (the picture area) full screen, takes the fade color */
+    struct BgMap *bgMap; /* 0x7C BgMap over bgCells */
+    struct BgCells *bgCells; /* 0x80 BgCells: 300 cells of 16x16 on VRAM x 640 to 960 (include/game/bg_cells.h) */
     s32 fadeSpeed;          /* 0x84 brightness added per tick, 9 */
     s32 (*fadeInStep)();    /* 0x88 NULL: no fade in */
     s32 (*fadeOutStep)();   /* 0x8C NULL: no fade out */

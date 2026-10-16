@@ -48,7 +48,7 @@ typedef struct Tix {
     u16 state;                /* 0x2A 9 reading the header, 10 reading parts, 0 done */
     u32 partIndex;            /* 0x2C part being read */
     struct TimPack **parts;   /* 0x30 one TimPack per part */
-    s32 buffer;               /* 0x34 read buffer: 0x800 for the header, then the largest part */
+    u8 *buffer;               /* 0x34 read buffer: 0x800 for the header, then the largest part */
     u32 bufferSize;           /* 0x38 */
     s32 loaded;               /* 0x3C 1 once every part is uploaded */
     TixFade fades[4];         /* 0x40 */
@@ -56,7 +56,7 @@ typedef struct Tix {
 } Tix;
 
 /* Functions of src/game/tix.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Tix_Create(s32 path);
+Tix *Tix_Create(char *path);
 TixVtbl *Tix_GetVtbl(void);
 
 #endif

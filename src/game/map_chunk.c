@@ -13,17 +13,17 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern u8 g_mapChunkVtbl[];      /* MapChunkVtbl */
+extern MapChunkVtbl g_mapChunkVtbl;
 
-s32 MapChunk_New(void) {
-    s32 chunk;
+MapChunk *MapChunk_New(void) {
+    MapChunk *chunk;
 
     chunk = Heap_Alloc(0x3C);
-    if (chunk != 0) {
+    if (chunk != NULL) {
         MapChunk_GetVtbl()->init(chunk);
         return chunk;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08 */
@@ -36,7 +36,7 @@ void MapChunk_Init(MapChunk *chunk) {
     chunk->id = 0;
     chunk->entities = 0;
     chunk->loadEntities = 1;
-    chunk->data = ((void *)Heap_Alloc(0xB358));
+    chunk->data = Heap_Alloc(0xB358);
     if (chunk->data != NULL) {
         chunk->size = 0xB358;
     }
@@ -105,14 +105,14 @@ void MapChunk_Clear(MapChunk *chunk) {
 /* Slot 0x80: reads the entity part of the chunk file into a new heap block; 1 when started */
 s32 MapChunk_LoadEntities(MapChunk *chunk) {
     s32 size;
-    s32 entities;
+    u8 *entities;
 
     if ((chunk->data->hasEntities != 0) && (chunk->state == 0)) {
         chunk->vtbl->freeEntities(chunk);
         size = chunk->data->entitiesSize;
         entities = Heap_Alloc(size);
         chunk->entities = entities;
-        if (entities != 0) {
+        if (entities != NULL) {
             chunk->state = 10;
             chunk->vtbl->seek(chunk, chunk->data->entitiesOffset, 0);
             chunk->vtbl->read(chunk, chunk->entities, size);
@@ -124,11 +124,11 @@ s32 MapChunk_LoadEntities(MapChunk *chunk) {
 
 /* Slot 0x84 */
 void MapChunk_FreeEntities(MapChunk *chunk) {
-    s32 entities;
+    u8 *entities;
 
     entities = chunk->entities;
     chunk->entitiesLoaded = 0;
-    if (entities != 0) {
+    if (entities != NULL) {
         chunk->entities = Heap_Free(entities);
     }
 }
@@ -139,5 +139,5 @@ void MapChunk_SetLoadEntities(MapChunk *chunk, s32 loadEntities) {
 }
 
 MapChunkVtbl *MapChunk_GetVtbl(void) {
-    return (MapChunkVtbl *)g_mapChunkVtbl;
+    return &g_mapChunkVtbl;
 }

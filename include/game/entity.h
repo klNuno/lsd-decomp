@@ -4,6 +4,7 @@
 #include "common.h"
 #include "game/gs.h"
 #include "game/handler_node.h"
+#include "game/stage.h"
 
 /*
  * Characters ("entities"): the per-type record table, the spawn tables that place them,
@@ -14,7 +15,7 @@
 
 /* One record per entity type, 16 bytes, table g_entityRecords indexed by Entity.type (dump: work/hunt3/recs.txt). */
 typedef struct EntityRecord {
-    s8 mood[2];      /* 0x00 graph point logged when touched (slot 0x14C returns the record) */
+    MoodPoint mood;  /* 0x00 graph point logged when touched (slot 0x14C returns the record) */
     s8 points;       /* 0x02 points / 1000 (slot 0x150) */
     s8 wakeMode;     /* 0x03 0 at spawn, 1 in range, 2 out of range, 3 in range and 1/128, 4 1/128 anywhere */
     u8 sleepMode;    /* 0x04 1 in range, 2 out of range, >= 10 after sleepMode * 15 ticks */
@@ -51,39 +52,59 @@ typedef struct SpawnPlace {
     s8 offsetIndex;  /* 0x03 index of a 6-byte record at g_spawnPlaceOffsets, copied into the placement query */
 } SpawnPlace;
 
+struct DreamSys;
+struct StageMap;
+struct ModelPart;
+struct Fade;
+
 /*
- * Class vtable 0x80089AD4 (returned by Entity_GetVtbl). Slots 0x8 to 0x180 named from the functions
- * stored there; the slots the class inherits from its base (vtable 0x8008A6C4) keep unk names.
- * distanceTo is called with two and with three arguments, so it has no prototype.
+ * Class vtable 0x80089AD4 (returned by Entity_GetVtbl). Slots up to 0x140 belong to the model base
+ * class (vtable 0x8008A6C4, src/game/model.c), 0x144 on are the entity's own; slots named from the
+ * functions stored there. distanceTo is called with two and with three arguments and moveX with
+ * three and two, so they have no prototype.
  */
 typedef struct EntityVtbl {
-    u8 pad_00[0x8];
-    s32 (*construct)(s32 self, s32 type, s32 arg2, s32 arg3); /* 0x08 Entity_Construct */
+    u8 pad_00[0x4];
+    void *(*delete_)(void *self);                             /* 0x04 Object_Delete */
+    s32 (*construct)(void *self, s32 type, void *source, SoundBank *soundBank); /* 0x08 Entity_Construct */
     void (*destruct)(void *self);                             /* 0x0C Entity_Destruct */
     u8 pad_10[0x30 - 0x10];
     void (*postEvent)(void *self, s32 event);                 /* 0x30 entity event: 9 touch, 10 link, 11 video end, 12 end */
-    u8 pad_34[0x40 - 0x34];
+    u8 pad_34[0x38 - 0x34];
+    void (*onNotify)(void *self, void *sender, s32 message);  /* 0x38 Model_OnNotify */
+    u8 pad_3C[0x40 - 0x3C];
     void (*init)(void *self);                                 /* 0x40 Entity_Init, last step of construct */
-    void (*rotate)(void *self, s32 arg1, void *arg2);        /* 0x44 SceneNode_SetRotation (self, assign, degrees) */
-    u8 pad_48[0x4C - 0x48];
-    void (*attach)(void *self, void *dreamSys, s32 arg2, s32 arg3, void *place); /* 0x4C Entity_Attach */
+    void (*rotate)(void *self, s32 absolute, void *angles);   /* 0x44 SceneNode_SetRotation: degrees as {num, den} s16 pairs */
+    void (*scale)(void *self, s32 absolute, void *factors);   /* 0x48 SceneNode_SetScale: {num, den} s16 pairs */
+    void (*attach)(void *self, struct DreamSys *dreamSys, void *watched, struct StageMap *map, void *placement); /* 0x4C Entity_Attach */
     void (*detach)(void *self);                               /* 0x50 Entity_Detach */
     u8 pad_54[0x60 - 0x54];
-    void (*setVisible)(void *self, s32 arg1);
+    void (*setVisible)(void *self, s32 visible);              /* 0x60 Model_SetVisible, 1 on wake, 0 on sleep */
     u8 pad_64[0x70 - 0x64];
-    void (*setLightFlags)(void *self, s32 arg1);
+    void (*setLightFlags)(void *self, s32 flags);             /* 0x70 SceneNode_SetLightFlags */
     u8 pad_74[0x98 - 0x74];
-    void (*update)(void *self, void *arg1, s32 arg2);         /* 0x98 Entity_Update */
-    u8 pad_9C[0x10C - 0x9C];
-    void (*setTickMode)(void *self, s32 arg1);                /* 0x10C */
-    void (*startTick)(void *self);                            /* 0x110 */
-    void (*stopTick)(void *self);                             /* 0x114 */
-    u8 pad_118[0x120 - 0x118];
-    s32 (*testPointAhead)(void *self, s32 arg1, s32 range, void *pos, s32 arg4); /* the range test Entity_IsInRange runs on the dreamer */
-    u8 pad_124[0x12C - 0x124];
-    void (*playAnimation)(void *self);                        /* 0x12C */
-    void (*stopAnimation)(void *self);                        /* 0x130 */
-    u8 pad_134[0x144 - 0x134];
+    void (*update)(void *self, void *sender, s32 phase);      /* 0x98 Entity_Update */
+    u8 pad_9C[0xB8 - 0x9C];
+    void (*setPosition)(void *self, void *pos);               /* 0xB8 Actor_SetPos */
+    void (*move)(void *self, void *delta);                    /* 0xBC Actor_MovePos: adds a world vector to the position */
+    u8 pad_C0[0xC4 - 0xC0];
+    void (*moveZ)(void *self, s32 amount, s32 animate);       /* 0xC4 Actor_MoveZ: along the model's own z axis */
+    void (*moveX)();                                          /* 0xC8 Actor_MoveX (self, amount, animate): own x axis */
+    void (*moveY)(void *self, s32 amount, s32 animate);       /* 0xCC Actor_MoveY: own y axis, negative is up */
+    void (*moveZOnGround)(void *self, s32 amount, s32 animate); /* 0xD0 Actor_MoveZOnGround: moveZ, then the ground test Actor_SnapToGround */
+    u8 pad_D4[0xDC - 0xD4];
+    void (*onActorTouch)(void *self, void *sender, s32 message); /* 0xDC Entity_OnActorTouch */
+    void (*onWallTouch)(void *self, void *sender, s32 message);  /* 0xE0 Entity_OnWallTouch */
+    u8 pad_E4[0x10C - 0xE4];
+    void (*setTickMode)(void *self, s32 mode);                /* 0x10C Model_SetTickMode */
+    void (*startTick)(void *self);                            /* 0x110 Model_StartTick */
+    void (*stopTick)(void *self);                             /* 0x114 Model_StopTick */
+    u8 pad_118[0x128 - 0x118];
+    void (*setAnimation)(void *self, s32 animation);          /* 0x128 Model_SetAnimation */
+    void (*playAnimation)(void *self);                        /* 0x12C Model_PlayAnimation */
+    void (*stopAnimation)(void *self);                        /* 0x130 Model_StopAnimation */
+    u8 *(*applyFrame)(void *self, u8 *frame, void *context);  /* 0x134 Model_ApplyFrame: runs one frame's commands, returns the next frame */
+    u8 pad_138[0x144 - 0x138];
     s32 (*distanceTo)();                                      /* 0x144 Entity_GroundDistance */
     s32 (*getSoundFade)(void *self);                          /* 0x148 Entity_GetSoundFade */
     EntityRecord *(*getRecord)(void *self);                   /* 0x14C Entity_GetRecord */
@@ -102,6 +123,7 @@ typedef struct EntityVtbl {
     void (*checkHandlerStop)(void *self);                     /* 0x180 Entity_CheckHandlerStop */
 } EntityVtbl;
 
+/* The entity, 0x108 bytes (Entity_Create). Fields up to +0x94 are the model base class's (Model in src/game/model.c). */
 typedef struct Entity {
     EntityVtbl *vt;
     u8 pad_04[0xC - 0x4];
@@ -113,15 +135,15 @@ typedef struct Entity {
     } pos;                   /* 0x14 its GsCOORDINATE2 (gs.h): position t, world position workT */
     u8 pad_18[0x24 - 0x18];
     u32 timer;               /* 0x24 cleared on waking; sleep mode >= 10 compares it with mode * 15 */
-    s32 contact;               /* 0x28 result of the ground test after moveZOnGround */
+    s32 contact;             /* 0x28 result of the ground test after moveZOnGround */
     u8 pad_2C[0x44 - 0x2C];
     s32 state;               /* 0x44 handler state; 1 stops Entity_CheckWake for good */
     s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
-    s32 map;                 /* 0x4C StageMap * (stage_map.h): third argument of attach, cleared by detach; slot 0x110 ground query */
-    void *clock;             /* 0x50 */
+    struct StageMap *map;    /* 0x4C the map it stands on (stage_map.h): third argument of attach, cleared by detach; slot 0x110 ground query */
+    void *clock;             /* 0x50 Model.watched, the ticker Fade_StartIn and Fade_StartOut take */
     u8 pad_54[0x58 - 0x54];
-    s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
+    SoundBank *soundBank;    /* 0x58 the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
     u8 pad_5C[0x6C - 0x5C];
     s32 partCount;           /* 0x6C model parts (Model in src/game/model.c) */
     struct ModelPart **parts; /* 0x70 */
@@ -132,7 +154,7 @@ typedef struct Entity {
     u8 *animData;            /* 0x88 the next frame's commands (applyFrame) */
     s32 tickEnabled;         /* 0x8C */
     s32 animPlaying;         /* 0x90 playAnimation sets it, stopAnimation clears it */
-    struct Entity *dreamSys; /* 0x94 the object passed to attach (g_symDreamSys, the DreamSys); range tests measure from it */
+    struct DreamSys *dreamSys; /* 0x94 the object passed to attach (g_symDreamSys); range tests measure from it */
     s32 type;                /* 0x98 entity type, index of EntityRecord */
     HandlerNode handlerNode; /* 0x9C the record's handler (handler_node.h); its fadeSteps divides slot 0x148's range */
     s32 awake;               /* 0xF0 set by wake, cleared by sleep */
@@ -144,6 +166,6 @@ typedef struct Entity {
 } Entity;
 
 /* Functions of src/game/entity.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Entity_Create(s32 type, s32 params, s32 soundBank);
+Entity *Entity_Create(s32 type, void *source, SoundBank *soundBank);
 
 #endif

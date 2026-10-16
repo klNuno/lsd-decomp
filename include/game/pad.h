@@ -38,6 +38,6 @@ typedef struct Pad {
 #define PAD_RELEASED 0x22 /* up this frame */
 
 /* Functions of src/game/pad.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Pad_New(s32 padInitMode, s32 padId);
+Pad *Pad_New(s32 padInitMode, s32 padId);
 
 #endif

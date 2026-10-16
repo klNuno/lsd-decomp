@@ -33,7 +33,7 @@ typedef struct TextPart {
 } TextPart;
 
 /* The class SpriteNode_GetVtbl returns, base of TextPart. */
-typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32, s32, void *, s32, s32); } TextPartBaseVtbl;
+typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, void *, s32, void *, s32, s32); } TextPartBaseVtbl;
 /* CLUT position of each part in VRAM (SceneryPart_Init). */
 typedef struct SceneryPartClut { u16 x; u16 y; } SceneryPartClut;
 extern SceneryPartClut g_sceneryPartCluts[];
@@ -41,10 +41,10 @@ static TextPartVtbl *SceneryPart_GetVtbl(void);
 extern u8 g_sceneryPartRects[];
 /* the vtable of sprite_node.c through this file's view of its slots, so not from game/sprite_node.h */
 TextPartBaseVtbl *SpriteNode_GetVtbl(void);
-extern u8 g_sceneryPartVtbl[];
+extern TextPartVtbl g_sceneryPartVtbl;
 
 /* Allocate a scenery part of class g_sceneryPartVtbl (0xA8 bytes) for kinds 2 and 3. */
-void *SceneryPart_New(s32 index, s32 blendRate, s32 font) {
+void *SceneryPart_New(s32 index, s32 blendRate, void *font) {
     void *part;
 
     part = Heap_Alloc(0xA8);
@@ -56,7 +56,7 @@ void *SceneryPart_New(s32 index, s32 blendRate, s32 font) {
 }
 
 /* Slot 0x08 of g_sceneryPartVtbl: base construct with the font and the 12-byte entry g_sceneryPartRects[index]. */
-void SceneryPart_Construct(TextPart *part, s32 index, s32 blendRate, s32 font) {
+void SceneryPart_Construct(TextPart *part, s32 index, s32 blendRate, void *font) {
     SpriteNode_GetVtbl()->construct(part, font, 0, g_sceneryPartRects + index * 0xC, blendRate, 0);
     part->vt = SceneryPart_GetVtbl();
     part->unkA4 = 0;
@@ -99,5 +99,5 @@ void SceneryPart_EmptySlotC4(void) {
 }
 
 static TextPartVtbl *SceneryPart_GetVtbl(void) {
-    return (TextPartVtbl *)g_sceneryPartVtbl;
+    return &g_sceneryPartVtbl;
 }

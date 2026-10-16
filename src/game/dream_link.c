@@ -7,6 +7,15 @@
  * File boundaries: guess (docs/layout.md)
  */
 
+/* The first 4 bytes of a StagePlace, copied as one: chunk column and row, tile x and y. */
+typedef struct { u8 col, row, tileX, tileY; } PlaceTile;
+/* One g_tileOffsets entry, 6 bytes copied into StagePlace +4: the x, y (as one word) and z offsets in the tile. */
+typedef struct { PlaceTile xy; s16 z; } TileOffset;
+/* A spawn point or link target, 6 bytes: the tile, an index into g_tileOffsets and the navigation flag a link sets. */
+typedef struct { PlaceTile tile; u8 offsetIndex; s8 navFlag; } SpawnPoint;
+/* One entry of a stage link list: chunk key (col | row << 8), tile key (x | y << 8, negative for any tile), target stage and index. */
+typedef struct { s16 chunkKey; s16 tileKey; s8 toStage; u8 toIndex; } LinkEntry;
+
 u8 *g_navFlags;
 s32 *g_dynamicLinkCount;
 extern s32 g_fallTurn[];
@@ -18,18 +27,18 @@ extern ScriptedTarget *g_scriptedLinkTargets[];
 s32 g_linkToIndex;
 extern s16 g_stageTimeLimits[];
 extern u8 g_staticLinkCounts[];
-extern s32 g_staticLinkLists[];
-extern s32 g_staticLinkTargets[];
-static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag);
+extern LinkEntry *g_staticLinkLists[];
+extern SpawnPoint *g_staticLinkTargets[];
+static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, LinkEntry **lists, SpawnPoint **targets, s32 setNavFlag);
 extern u8 g_facingLinkCounts[];
-extern void *g_facingLinkLists[];
-extern void *g_facingLinkTargets[];
+extern LinkEntry *g_facingLinkLists[];
+extern SpawnPoint *g_facingLinkTargets[];
 extern u8 g_extraLinkCounts;
-extern s32 g_extraLinkLists;
-extern s32 g_extraLinkTargets;
+extern LinkEntry *g_extraLinkLists;
+extern SpawnPoint *g_extraLinkTargets;
 s32 g_extraListOn;
 extern u8 g_scriptedLinkCounts[];
-extern s32 g_scriptedLinkLists[];
+extern LinkEntry *g_scriptedLinkLists[];
 extern u16 g_linkHeadingYaws[];
 /* A rotation in degrees (three Fractions, SceneNode_GetRotation) read for its yaw numerator. */
 typedef struct RotationYaw {
@@ -37,7 +46,7 @@ typedef struct RotationYaw {
     u16 yaw;
 } RotationYaw;
 extern s16 g_specialDays[42];
-extern s32 g_specialDayPoint;
+extern MoodPoint g_specialDayPoint;
 /* DreamSys +0x168 as Day_FindSpecial writes it: {category, variant} (dream_sys.h cinematic.id). */
 typedef struct SpecialCine {
     s16 category;
@@ -57,14 +66,6 @@ typedef struct FallLocation {
     s16 x;
     s16 y;
 } FallLocation;
-/* The first 4 bytes of a StagePlace, copied as one: chunk column and row, tile x and y. */
-typedef struct { u8 col, row, tileX, tileY; } PlaceTile;
-/* One g_tileOffsets entry, 6 bytes copied into StagePlace +4: the x, y (as one word) and z offsets in the tile. */
-typedef struct { PlaceTile xy; s16 z; } TileOffset;
-/* A spawn point or link target, 6 bytes: the tile, an index into g_tileOffsets and the navigation flag a link sets. */
-typedef struct { PlaceTile tile; u8 offsetIndex; s8 navFlag; } SpawnPoint;
-/* One entry of a stage link list: chunk key (col | row << 8), tile key (x | y << 8, negative for any tile), target stage and index. */
-typedef struct { s16 chunkKey; s16 tileKey; s8 toStage; u8 toIndex; } LinkEntry;
 /* A StagePlace as the link and spawn pickers write it. */
 typedef struct { PlaceTile tile; TileOffset offset; } PlaceOut;
 extern TileOffset g_tileOffsets[];
@@ -122,7 +123,7 @@ s32 Spawn_PickRandom(void *place, s32 stage, s32 unused) {
     } else {
         newStage = -stage;
     }
-    target = (SpawnPoint *)((s32)g_spawnPoints[newStage] + (rand() % g_spawnCounts[newStage]) * 6);
+    target = g_spawnPoints[newStage] + rand() % g_spawnCounts[newStage];
     out = place;
     out->tile = target->tile;
     out->offset = g_tileOffsets[target->offsetIndex];
@@ -134,7 +135,7 @@ s32 Link_FindStatic(void *out, void *location, s32 stage) {
     return Link_Find(out, location, stage, g_staticLinkCounts, g_staticLinkLists, g_staticLinkTargets, 1);
 }
 
-s32 Link_FindFacing(void *out, s16 *location, s32 stage) {
+s32 Link_FindFacing(void *out, void *location, s32 stage) {
     return Link_Find(out, location, stage, g_facingLinkCounts, g_facingLinkLists, g_facingLinkTargets, 1);
 }
 
@@ -168,7 +169,8 @@ static s32 Link_IsFacing(RotationYaw *rotation, u8 heading) {
     return (u16)(wrapped + 0x2C) < 0x59U;
 }
 
-s32 Link_PickFallStage(void *place, s32 stage, FallLocation *location, s32 timer) {
+s32 Link_PickFallStage(void *place, s32 stage, void *where, s32 timer) {
+    FallLocation *location = where;
     s32 ret;
 
     if (stage != 3 && stage != 1 && stage != 5 && stage != 9 && stage != 12) {
@@ -216,7 +218,7 @@ s32 Link_GetExtraSeconds(void) {
 
 s32 Link_FindScripted(void *out, void *location, s32 stage) {
     if (stage == 0) {
-        return Link_Find(out, location, 0, g_scriptedLinkCounts, g_scriptedLinkLists, (s32 *)g_scriptedLinkTargets, 0);
+        return Link_Find(out, location, 0, g_scriptedLinkCounts, g_scriptedLinkLists, (SpawnPoint **)g_scriptedLinkTargets, 0);
     }
     return -1;
 }
@@ -241,7 +243,7 @@ s32 Link_GetStepScript(void) {
     return g_scriptedLinkTargets[g_linkToStage][g_linkToIndex].stepScript;
 }
 
-static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *lists, s32 *targets, s32 setNavFlag) {
+static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, LinkEntry **lists, SpawnPoint **targets, s32 setNavFlag) {
     LinkEntry *entry;
     SpawnPoint *target;
     PlaceOut *out;
@@ -255,7 +257,7 @@ static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *li
     key = location;
     n = counts[stage];
     if (n != 0) {
-        entry = (LinkEntry *)lists[stage];
+        entry = lists[stage];
         for (i = 0; i < n; i++, entry++) {
             if (key[0] == entry->chunkKey && (key[1] == entry->tileKey || entry->tileKey < 0)) {
                 g_linkFromStage = stage;
@@ -263,7 +265,7 @@ static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, s32 *li
                 toStage = entry->toStage;
                 g_linkToStage = toStage;
                 toIndex = entry->toIndex;
-                target = (SpawnPoint *)targets[toStage] + toIndex;
+                target = targets[toStage] + toIndex;
                 g_linkToIndex = toIndex;
                 out->tile = target->tile;
                 out->offset = g_tileOffsets[target->offsetIndex];
@@ -307,7 +309,7 @@ found:
     return idx;
 }
 
-s32 Day_FindSpecial(void *cinematic, s32 dayNumber) {
+MoodPoint *Day_FindSpecial(void *cinematic, s32 dayNumber) {
     SpecialCine *o = cinematic;
     s32 i;
 
@@ -315,8 +317,8 @@ s32 Day_FindSpecial(void *cinematic, s32 dayNumber) {
         if (dayNumber == g_specialDays[i]) {
             o->variant = rand() % 6;
             o->category = i % 12;
-            return (s32) &g_specialDayPoint;
+            return &g_specialDayPoint;
         }
     }
-    return 0;
+    return NULL;
 }

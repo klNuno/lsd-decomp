@@ -43,84 +43,6 @@ typedef struct AmbienceBand {
     AmbienceBandVtbl *vt;
 } AmbienceBand;
 
-/* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, Scenery_Init). */
-typedef struct SceneryParams {
-    s32 x;        /* 0x00 offset from the origin: random +-22 tiles (<< 11) in Scenery_RandomizeParams */
-    s32 y;        /* 0x04 */
-    s32 z;        /* 0x08 */
-    u8 *rotation;     /* 0x0C 12-byte entry of g_sceneryRotations */
-    u8 *scale;    /* 0x10 12-byte entry of g_sceneryScales, or g_sceneryKind1Scale */
-    s32 direction;    /* 0x14 rand() % 5 */
-    s32 variant;    /* 0x18 */
-    u8 *color;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
-    s32 dayMark;    /* 0x20 kind 2: day number % 20, or g_sceneryDayMark */
-} SceneryParams;
-
-/* A part of a scenery object (classes g_actorVtbl for kind 0, g_sceneryPartVtbl for kinds 2 and 3). */
-typedef struct SceneryPartVtbl {
-    u8 pad_00[0x44];
-    void (*setRotation)();
-    void (*setScale)();
-    void (*attach)();
-    u8 pad_50[0x60 - 0x50];
-    void (*setVisible)();
-    void (*setSemiTrans)();
-    void (*setBlendRate)();
-    u8 pad_6C[0xB8 - 0x6C];
-    void (*setColor)();
-    void (*setPosition)();
-} SceneryPartVtbl;
-
-typedef struct SceneryPart {
-    SceneryPartVtbl *vt;
-    u8 pad_04[0x84 - 0x04];
-    s32 angle;    /* 0x84 random angle (rand() % 360) << 12 for kind 3 */
-} SceneryPart;
-
-/*
- * A scenery object (class g_sceneryVtbl returned by Scenery_GetVtbl, 0x98 bytes, made by Scenery_New):
- * one of 4 kinds made around the dreamer at a place's first tick (Scenery_CreateAll, work/hunt6/F-findings.md).
- * Its base class is g_actorVtbl (constructor Actor_Construct, 0x58 bytes).
- */
-typedef struct SceneryVtbl {
-    u8 pad_00[0x08];
-    s32 (*construct)();   /* 0x08 Scenery_Construct */
-    void (*destruct)();   /* 0x0C Scenery_Destruct */
-    u8 pad_10[0x40 - 0x10];
-    void (*init)();       /* 0x40 Scenery_Init */
-    void (*setRotation)();
-    void (*setScale)();
-    void (*attach)();
-    u8 pad_50[0xB8 - 0x50];
-    void (*setPos)();     /* 0xB8 Actor_SetPos */
-    void (*movePos)();    /* 0xBC Actor_MovePos */
-    u8 pad_C0[0xEC - 0xC0];
-    void (*update)();     /* 0xEC Scenery_Update */
-} SceneryVtbl;
-
-typedef struct Scenery {
-    SceneryVtbl *vt;
-    u8 pad_04[0x14 - 0x04];
-    s32 *posBlock;        /* 0x14 its first word is cleared once moved */
-    u8 pad_18[0x20 - 0x18];
-    void *model;          /* 0x20 */
-    u32 ticks;            /* 0x24 counted by update (Scenery_Update) */
-    u8 pad_28[0x44 - 0x28];
-    s32 state;            /* 0x44 cleared by the constructor */
-    u8 pad_48[0x54 - 0x48];
-    s32 kind;             /* 0x54 0 to 3 */
-    Vec3 offset;          /* 0x58 params x, y, z: offset from the origin */
-    s32 rotation;            /* 0x64 params unkC */
-    s16 *scale;           /* 0x68 params unk10 */
-    s32 direction;            /* 0x6C params unk14, kind 0: direction 1 to 4 of its two parts */
-    s32 variant;            /* 0x70 params unk18 */
-    s32 color;            /* 0x74 params unk1C */
-    s32 dayMark;
-    union {
-        SceneryPart *pair[2];                                 /* 0x7C kind 0 */
-        struct { u8 pad_7C[0x84 - 0x7C]; SceneryPart *parts[5]; } many; /* 0x84 kinds 2 and 3 */
-    } u;
-} Scenery;
 
 /*
  * A spot: an 8-byte record of g_stageSoundSpots[stage] (count g_stageSoundSpotCounts[stage]) with a map tile
@@ -155,47 +77,8 @@ typedef struct SpotSlot {
     SpotRecord *record;   /* 0x00 */
     s32 pos[3];           /* 0x04 the spot's position (map slot 0xE8) */
     s32 distance;         /* 0x10 ground distance to the dreamer */
-    s32 node;             /* 0x14 handler node, registered with HandlerNode_Start */
-    u8 pad_18[0x28 - 0x18];
-    s32 fadeSteps;            /* 0x28 SoundSpot_CalcFade divides the range by it */
-    u8 pad_2C[0x68 - 0x2C];
+    HandlerNode node;     /* 0x14 registered with HandlerNode_Start; SoundSpot_CalcFade divides the range by its fadeSteps */
 } SpotSlot;
-
-/* The same slot as SoundSpot_Release reads it (the range byte unsigned). */
-typedef struct SpotRecordU {
-    u8 pad_00[6];
-    u8 range;
-} SpotRecordU;
-
-typedef struct SpotSlotU {
-    SpotRecordU *record;
-    s32 pos[3];
-    s32 distance;
-    s32 node;
-} SpotSlotU;
-
-/* The handler state the spot handlers SoundSpot_Type1 to SoundSpot_Type14 get: a tick count and three {value, step} channels. */
-typedef struct SpotState {
-    u8 pad_00[0x4];
-    s32 tick;             /* 0x04 the handler sets -1 to stop */
-    u8 pad_08[0x10 - 0x8];
-    s32 level;            /* 0x10 SoundSpot_CalcFade: distance / (range / slot +0x28) */
-    u8 pad_14[0x1C - 0x14];
-    s32 sound0;
-    s32 octave0;
-    s32 volume0;
-    s32 endVolume0;
-    u8 pad_2C[0x30 - 0x2C];
-    s32 sound1;
-    s32 octave1;
-    s32 volume1;
-    s32 endVolume1;
-    u8 pad_40[0x44 - 0x40];
-    s32 sound2;
-    s32 octave2;
-    s32 volume2;
-    s32 endVolume2;
-} SpotState;
 
 /* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: pairs read whole by Ambience_UpdateBands, Ambience_CreateBands */
 extern Point g_bandPos;
@@ -204,19 +87,21 @@ s32 g_ambienceFamily;
 extern s32 g_soundSpotRanges[];
 s32 g_bandLayout;
 s32 g_sceneryCount;
-extern u8 g_scenery[];
-s32 g_ambienceTintColor;
+extern Scenery *g_scenery[];
+u8 *g_ambienceTintColor;
 AmbienceBand *g_ambienceTint;
 static s32 SoundSpot_CalcFade(SpotSlot *slot);
+static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin);
+static SpotSlot *SoundSpot_Release(SpotSlot *slot);
 PlaceRefs *g_placeRefs;
 extern u8 g_ambienceColors[];
 extern s32 g_ambienceDepths[];
-extern s32 g_clutCycleRectA[];
-extern s32 g_clutCycleSpareA[];
-extern s32 g_clutCycleRectB[];
-extern s32 g_clutCycleSpareB[];
+extern ScreenRect g_clutCycleRectA[];
+extern ScreenRect g_clutCycleSpareA[];
+extern ScreenRect g_clutCycleRectB[];
+extern ScreenRect g_clutCycleSpareB[];
 s32 g_placeStage;
-s32 g_sceneryMap;
+StageMap *g_sceneryMap;
 s32 g_placeTicks;
 s32 g_placeDayNumber;
 s32 D_8008AC78;
@@ -231,19 +116,19 @@ void Scenery_RandomizeParams(void *origin, s32 height);
 extern s32 g_sceneryHeights2;
 extern u8 g_sceneryKind1Scale[];
 extern SceneryParams g_sceneryParams;
-void SoundSpot_Type11(void *slot, SpotState *state);
+void SoundSpot_Type11(SpotSlot *slot, HandlerNode *node);
 extern AmbienceBand *g_ambienceBands[];
 extern s32 g_ambienceTintPos[];
-extern s32 g_ambienceTintSize[];
-static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin);
-extern s32 g_soundSpotHandlers[];
+extern BoxSize g_ambienceTintSize[];
+static SpotRecord *SoundSpot_FindInRange(s32 *pos, s32 *distance, s32 *origin);
+extern void (*g_soundSpotHandlers[])();
 extern s8 g_sceneryKind0Counts[];
-static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin);
-static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin);
-static s32 *Scenery_CreateKind3(s32 *out, s32 origin);
-static s32 *Scenery_CreateKind2(s32 *out, s32 origin);
+static Scenery **Scenery_CreateKind0(Scenery **out, s32 count, void *origin);
+static Scenery **Scenery_CreateKind1(Scenery **out, s32 count, void *origin);
+static Scenery **Scenery_CreateKind3(Scenery **out, void *origin);
+static Scenery **Scenery_CreateKind2(Scenery **out, void *origin);
 s32 g_ambienceIndex;
-void *g_bandPalette;
+u8 *g_bandPalette;
 u8 *g_bandClearColor;
 extern s8 g_ambienceFamilyCycle[];
 extern s8 g_ambienceFamilyCounts[];
@@ -252,7 +137,7 @@ extern u8 g_bandPaletteB[];
 extern AmbienceRecord *g_ambienceFamilies[];
 extern s32 g_sceneryHeights1;
 extern u8 g_sceneryRotations[];
-static void Scenery_RandomizeParamsDay7();
+static void Scenery_RandomizeParamsDay7(void *origin, s32 height);
 extern s32 g_sceneryHeights[];
 extern u8 g_sceneryScales[];
 s32 g_soundSpotNext;
@@ -264,7 +149,6 @@ extern SpotTileExtra g_soundSpotTileExtras[];
 extern SpotRecord *g_stageSoundSpots[];
 extern u8 g_stageSoundSpotCounts[];
 extern u8 g_sceneryKind3Colors[];
-static void Scenery_RandomizeParamsDay7(void);
 static void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
 extern s32 g_sceneryDayMark;
 extern u8 g_sceneryKind2Colors[];
@@ -274,7 +158,7 @@ extern u8 g_sceneryKind2Colors[];
  * tick counter g_placeTicks and the two spot slots (g_soundSpotSlots[0..1], g_soundSpotSlot1 is [1]), and
  * return the ambience. Runs only while no place is up (g_sceneryMap is 0 again after Scenery_Teardown).
  */
-Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused) {
+Ambience *Scenery_Begin(StageMap *map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 unused) {
     s32 *slot;
     s32 n;
 
@@ -308,7 +192,7 @@ static Ambience *Ambience_Get(void) {
     }
     Ambience_Fill(&g_ambience, record);
     if (record->depth >= 4) {
-        g_ambienceTintColor = (s32)(g_ambienceColors + record->colorB * 3);
+        g_ambienceTintColor = g_ambienceColors + record->colorB * 3;
     }
     return &g_ambience;
 }
@@ -326,7 +210,7 @@ static void Ambience_CreateTint(void) {
     View *view;
 
     if (g_ambienceTintColor != 0) {
-        band = Box_Create((s32)g_ambienceTintSize, g_ambienceTintColor, 0);
+        band = (AmbienceBand *)Box_Create(g_ambienceTintSize, g_ambienceTintColor, 0);
         g_ambienceTint = band;
         band->vt->setSemiTrans(band, 1);
         g_ambienceTint->vt->setBlendMode(g_ambienceTint, 0);
@@ -352,7 +236,7 @@ static AmbienceRecord *Ambience_PickFamily(void) {
     s32 family;
     s32 index;
     AmbienceRecord *record;
-    void *palette;
+    u8 *palette;
 
     sum = g_placeDayNumber + g_placeStage;
     family = g_ambienceFamilyCycle[sum & 0xF];
@@ -389,11 +273,11 @@ static void Ambience_CreateBands(void) {
             layout[0].y += 0x1E;
         }
         layout[1] = g_bandSize;
-        g_ambienceBands[0] = Box_Create((s32)&layout[1], (s32)g_bandPalette, 0x1FFF);
+        g_ambienceBands[0] = (AmbienceBand *)Box_Create((BoxSize *)&layout[1], g_bandPalette, 0x1FFF);
         for (i = 1; i < 0x12; i++) {
-            band = Box_Create((s32)&layout[1], (s32)g_bandPalette + i * 3, 0x1FFF);
+            band = (AmbienceBand *)Box_Create((BoxSize *)&layout[1], g_bandPalette + i * 3, 0x1FFF);
             g_ambienceBands[i] = band;
-            band->vt->attach(band, (s32)g_ambienceBands[0], layout);
+            band->vt->attach(band, g_ambienceBands[0], layout);
             layout[0].y += 3;
             layout[1].y -= 7;
         }
@@ -458,8 +342,8 @@ static void Ambience_DeleteBands(void) {
  * (work/hunt6/F-findings.md): count of kind 0 from g_sceneryKind0Counts, kind 1 up to 16 for family 2,
  * plus one of kind 3 for family 0 or of kind 2 for family 2.
  */
-void Scenery_CreateAll(s32 origin) {
-    s32 *end;
+void Scenery_CreateAll(void *origin) {
+    Scenery **end;
     s32 extra;
     s32 count;
 
@@ -468,7 +352,7 @@ void Scenery_CreateAll(s32 origin) {
         count = g_sceneryKind0Counts[rand() & 3];
         extra = (g_ambienceFamily == 2) ? (0x10 - count) : 0;
         g_sceneryCount = count + extra;
-        end = Scenery_CreateKind1(Scenery_CreateKind0(g_scenery, count, origin), extra, (void *)origin);
+        end = Scenery_CreateKind1(Scenery_CreateKind0(g_scenery, count, origin), extra, origin);
         if (g_ambienceFamily == 0) {
             Scenery_CreateKind3(end, origin);
             g_sceneryCount += 1;
@@ -480,12 +364,12 @@ void Scenery_CreateAll(s32 origin) {
 }
 
 /* Every tick: slot 0xEC (Scenery_Update) of every scenery object. */
-static void Scenery_UpdateAll(s32 origin) {
+static void Scenery_UpdateAll(void *origin) {
     s32 i;
     Scenery **objs;
 
     if (g_ambienceFamily >= 0) {
-        objs = (Scenery **)g_scenery;
+        objs = g_scenery;
         for (i = 0; i < g_sceneryCount; i++) {
             Scenery *obj = objs[i];
             obj->vt->update(obj, origin);
@@ -507,7 +391,7 @@ void Scenery_Teardown(void) {
     Ambience_DeleteBands();
     Scenery_DeleteAll();
     for (i = 0; i < 2; i++) {
-        g_soundSpotSlots[i] = (SpotSlot *)SoundSpot_Release(g_soundSpotSlots[i]);
+        g_soundSpotSlots[i] = SoundSpot_Release(g_soundSpotSlots[i]);
     }
     if (g_sceneryMap != 0) {
         g_sceneryMap = 0;
@@ -515,7 +399,7 @@ void Scenery_Teardown(void) {
 }
 
 /* Kind 0: count objects at random offsets (Scenery_RandomizeParamsDay7 on day numbers divisible by 7, else Scenery_RandomizeParams). */
-static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
+static Scenery **Scenery_CreateKind0(Scenery **out, s32 count, void *origin) {
     void (*randomize)(void *, s32);
     s32 i;
     s32 height;
@@ -534,14 +418,14 @@ static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin) {
 
     for (i = 0; i < count; i++) {
         randomize(origin, height);
-        *out = (s32)Scenery_New(0, (s32)&g_sceneryParams, g_sceneryMap, (s32)origin);
+        *out = Scenery_New(0, &g_sceneryParams, g_sceneryMap, origin);
         out++;
     }
     return out;
 }
 
 /* Kind 1 */
-static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
+static Scenery **Scenery_CreateKind1(Scenery **out, s32 count, void *origin) {
     s32 i;
     s32 height = g_sceneryHeights2;
 
@@ -555,8 +439,8 @@ static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin) {
 }
 
 /* Kind 3, one object: a fixed offset with the second band palette, else a random one behind the origin. */
-static s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
-    Scenery_RandomizeParams((void *)origin, g_sceneryHeights2);
+static Scenery **Scenery_CreateKind3(Scenery **out, void *origin) {
+    Scenery_RandomizeParams(origin, g_sceneryHeights2);
     if (g_bandLayout != 0 && g_bandPalette == g_bandPaletteB) {
         g_sceneryParams.x = 0xFFFF5000;
         g_sceneryParams.y = -0x2000;
@@ -572,14 +456,14 @@ static s32 *Scenery_CreateKind3(s32 *out, s32 origin) {
         g_sceneryParams.color = g_sceneryKind3Colors + ((u32)rand() % 3) * 3;
     }
     g_sceneryParams.rotation = g_sceneryRotations;
-    *out++ = (s32)Scenery_New(3, (s32)&g_sceneryParams, g_sceneryMap, origin);
+    *out++ = Scenery_New(3, &g_sceneryParams, g_sceneryMap, origin);
     return out;
 }
 
-/* Kind 2, one object; the word after unk1C gets day number % 20 (or g_sceneryDayMark when it is 0). */
-static s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
+/* Kind 2, one object: a colour of g_sceneryKind2Colors, and dayMark g_sceneryDayMark (0 on day numbers divisible by 20). */
+static Scenery **Scenery_CreateKind2(Scenery **out, void *origin) {
     ParamWord *p;
-    s32 *q;
+    u8 **q;
     s32 x;
     s32 v;
 
@@ -593,11 +477,11 @@ static s32 *Scenery_CreateKind2(s32 *out, s32 origin) {
         x = g_placeDayNumber % 20;
     }
     p->v = x;
-    Scenery_RandomizeParams((void *)origin, g_sceneryHeights2);
-    q = (s32 *)&g_sceneryParams.rotation;
-    *q = (s32)g_sceneryRotations;
+    Scenery_RandomizeParams(origin, g_sceneryHeights2);
+    q = &g_sceneryParams.rotation;
+    *q = g_sceneryRotations;
     g_sceneryParams.variant = rand() % 6;
-    *out++ = (s32)Scenery_New(2, (s32)&g_sceneryParams, g_sceneryMap, origin);
+    *out++ = Scenery_New(2, &g_sceneryParams, g_sceneryMap, origin);
     return out;
 }
 
@@ -620,7 +504,7 @@ void Scenery_RandomizeParams(void *origin, s32 height) {
 }
 
 /* Day numbers divisible by 7: x in 0..19 tiles, z 0xA000, -0x6000 or 0x800 by day number % 3. */
-static void Scenery_RandomizeParamsDay7(void) {
+static void Scenery_RandomizeParamsDay7(void *origin, s32 height) {
     s32 v;
     s32 m;
 
@@ -640,7 +524,7 @@ static void Scenery_RandomizeParamsDay7(void) {
 }
 
 /* Hold the next free spot in range of origin in slot and register its handler. */
-static SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 unused) {
+static SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, void *origin, s32 unused) {
     SpotRecord *record;
 
     record = SoundSpot_FindInRange(slot->pos, &slot->distance, origin);
@@ -657,7 +541,7 @@ static SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, s32 origin, s32 u
 }
 
 /* Walk the stage's spots from g_soundSpotNext and return the first free one within its range of origin. */
-static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) {
+static SpotRecord *SoundSpot_FindInRange(s32 *pos, s32 *distance, s32 *origin) {
     SpotQuery query;
     SpotRecord *record;
     s32 *from;
@@ -667,7 +551,7 @@ static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) 
     s32 dz;
     s32 dist;
 
-    from = (s32 *)origin;
+    from = origin;
     if (from != NULL) {
         n = g_stageSoundSpotCounts[g_placeStage] - g_soundSpotNext;
         record = g_stageSoundSpots[g_placeStage] + g_soundSpotNext;
@@ -676,14 +560,14 @@ static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) 
             if (record->range > 0) {
                 query.a = record->tile;
                 query.b = g_soundSpotTileExtras[record->idx];
-                (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)g_sceneryMap + 0xE8))(g_sceneryMap, pos, (s32)&query);
-                dx = ((s32 *)pos)[0] - from[0];
+                g_sceneryMap->vtbl->placeToWorld(g_sceneryMap, pos, &query);
+                dx = pos[0] - from[0];
                 if (dx < 0) {
                     dx = ~dx + 1;
                 }
-                dz = ((s32 *)pos)[2] - from[2];
+                dz = pos[2] - from[2];
                 dist = dx + (dz < 0 ? ~dz + 1 : dz);
-                *(s32 *)distance = dist;
+                *distance = dist;
                 if (dist < g_soundSpotRanges[record->range]) {
                     return record;
                 }
@@ -694,15 +578,15 @@ static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin) 
 }
 
 /* Release a slot: unregister its handler and free its spot. */
-static s32 SoundSpot_Release(SpotSlotU *slot) {
-    HandlerNode_Stop((void *)g_placeRefs->handlerList, &slot->node);
+static SpotSlot *SoundSpot_Release(SpotSlot *slot) {
+    HandlerNode_Stop(g_placeRefs->handlerList, &slot->node);
     slot->record->range = -slot->record->range;
-    return 0;
+    return NULL;
 }
 
-static s32 SoundSpot_Update(s32 slot, void *origin, s32 unused) {
+static s32 SoundSpot_Update(SpotSlot *slot, void *origin, s32 unused) {
     if (SoundSpot_IsInRange(slot, origin) != 0) {
-        HandlerNode_Run(g_placeRefs->handlerList, slot + 0x14);
+        HandlerNode_Run(g_placeRefs->handlerList, &slot->node);
         return 1;
     }
     return 0;
@@ -724,7 +608,7 @@ static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (o
  * leak, work/hunt6/F-findings.md). Then it updates them and the two spot slots, and returns the
  * range of a spot just taken when it equals found.
  */
-s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found) {
+s32 Scenery_Tick(void *mapPos, s32 ignored, s32 found) {
     s32 posBuf[4];
     void *origin;
     s32 i;
@@ -734,25 +618,25 @@ s32 Scenery_Tick(s32 mapPos, s32 ignored, s32 found) {
     origin = 0;
     if (mapPos != 0) {
         origin = posBuf;
-        (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)g_sceneryMap + 0xE8))(g_sceneryMap, origin, mapPos);
+        g_sceneryMap->vtbl->placeToWorld(g_sceneryMap, origin, mapPos);
     }
     if (g_placeTicks++ == 0) {
         Ambience_CreateTint();
         Ambience_CreateBands();
-        Scenery_CreateAll((s32)origin);
+        Scenery_CreateAll(origin);
     }
     Ambience_UpdateBands();
-    Scenery_UpdateAll((s32)origin);
+    Scenery_UpdateAll(origin);
     Stage_CyclePalettes();
     g_soundSpotNext = 0;
     slot = g_soundSpotSlots;
     for (i = 0; i < 2; i++, slot++) {
         if (*slot != NULL) {
             if (SoundSpot_Update(*slot, origin, ignored) == 0) {
-                *slot = (SpotSlot *)SoundSpot_Release(*slot);
+                *slot = SoundSpot_Release(*slot);
             }
         } else {
-            *slot = (SpotSlot *)SoundSpot_Acquire(&g_soundSpotSlotData[i], &found, origin, ignored);
+            *slot = SoundSpot_Acquire(&g_soundSpotSlotData[i], &found, origin, ignored);
         }
     }
     return found;
@@ -766,242 +650,242 @@ void Stage_CyclePalettes(void) {
     }
 }
 
-/* Spot handlers (table g_soundSpotHandlers, by range): slot is the SpotSlot, state the handler's state. */
-void SoundSpot_Type1(void *slot, SpotState *state) {
+/* Spot handlers (table g_soundSpotHandlers, by range): slot is the SpotSlot, node its handler node (voices 0 to 2, fade from SoundSpot_CalcFade). */
+void SoundSpot_Type1(SpotSlot *slot, HandlerNode *node) {
     s32 tick;
 
-    state->level = SoundSpot_CalcFade(slot);
-    tick = state->tick;
+    node->fade = SoundSpot_CalcFade(slot);
+    tick = node->tick;
     if (tick == 0) {
-        state->sound0 = 7;
-        state->octave0 = 0;
+        node->voices[0].sound = 7;
+        node->voices[0].octave = 0;
     } else if (tick == 2) {
-        state->sound1 = 7;
-        state->octave1 = 0;
+        node->voices[1].sound = 7;
+        node->voices[1].octave = 0;
     } else if (tick == 5) {
-        state->sound2 = 7;
-        state->octave2 = 0;
+        node->voices[2].sound = 7;
+        node->voices[2].octave = 0;
     } else if (tick >= 8) {
-        state->tick = -1;
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type2(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade(slot);
-    if (state->tick == 0) {
-        state->sound0 = 0x18;
-        state->octave0 = -2;
+void SoundSpot_Type2(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick == 0) {
+        node->voices[0].sound = 0x18;
+        node->voices[0].octave = -2;
         return;
     }
-    if (state->tick >= 0x401) {
-        state->tick = -1;
+    if (node->tick >= 0x401) {
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type3(void *slot, SpotState *state) {
+void SoundSpot_Type3(SpotSlot *slot, HandlerNode *node) {
     s32 tick;
 
-    state->level = SoundSpot_CalcFade(slot);
-    tick = state->tick;
+    node->fade = SoundSpot_CalcFade(slot);
+    tick = node->tick;
     if (tick == 0) {
-        state->sound0 = 0xC;
-        state->octave0 = 2;
+        node->voices[0].sound = 0xC;
+        node->voices[0].octave = 2;
         return;
     }
     if (tick >= 5) {
-        state->tick = -1;
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type4(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade(slot);
-    if (state->tick % 20 == 0) {
-        state->sound0 = 0x1E;
-        state->volume0 = 0x20;
-        state->octave0 = 0;
-        state->endVolume0 = 0xA;
+void SoundSpot_Type4(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick % 20 == 0) {
+        node->voices[0].sound = 0x1E;
+        node->voices[0].volume = 0x20;
+        node->voices[0].octave = 0;
+        node->voices[0].endVolume = 0xA;
     }
-    if (state->tick % 400 == 0) {
-        state->sound1 = 0x1E;
-        state->octave1 = 0;
+    if (node->tick % 400 == 0) {
+        node->voices[1].sound = 0x1E;
+        node->voices[1].octave = 0;
     }
-    state->sound2 = 6;
-    state->volume2 = 0x20;
-    state->octave2 = 0;
-    state->endVolume2 = 0xA;
+    node->voices[2].sound = 6;
+    node->voices[2].volume = 0x20;
+    node->voices[2].octave = 0;
+    node->voices[2].endVolume = 0xA;
 }
 
-void SoundSpot_Type5(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade((SpotSlot *)slot);
-    if (state->tick % 3 == 0) {
-        state->sound0 = 0x1E;
-        state->octave0 = 0;
+void SoundSpot_Type5(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick % 3 == 0) {
+        node->voices[0].sound = 0x1E;
+        node->voices[0].octave = 0;
     }
-    if (state->tick % 5 == 0) {
-        state->sound1 = 0x1E;
-        state->octave1 = 0;
-        state->volume1 = 0x18;
-        state->endVolume1 = 0x18;
+    if (node->tick % 5 == 0) {
+        node->voices[1].sound = 0x1E;
+        node->voices[1].octave = 0;
+        node->voices[1].volume = 0x18;
+        node->voices[1].endVolume = 0x18;
     }
-    if (state->tick % 7 == 0) {
-        state->sound0 = 0x1E;
-        state->octave0 = 0;
+    if (node->tick % 7 == 0) {
+        node->voices[0].sound = 0x1E;
+        node->voices[0].octave = 0;
     }
-    state->sound2 = 6;
-    state->octave2 = 1;
-    state->volume2 = 0x2A;
-    state->endVolume2 = 0xA;
+    node->voices[2].sound = 6;
+    node->voices[2].octave = 1;
+    node->voices[2].volume = 0x2A;
+    node->voices[2].endVolume = 0xA;
 }
 
-void SoundSpot_Type6(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade((SpotSlot *)slot);
-    if (state->tick == 0) {
-        state->sound0 = 0x1E;
-        state->octave0 = -1;
+void SoundSpot_Type6(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick == 0) {
+        node->voices[0].sound = 0x1E;
+        node->voices[0].octave = -1;
         return;
     }
-    if (state->tick < 50 && state->tick % 5 == 4) {
-        state->sound1 = 0x1E;
-        state->octave1 = 0;
-        state->endVolume1 = state->volume1 -= state->tick * 2;
+    if (node->tick < 50 && node->tick % 5 == 4) {
+        node->voices[1].sound = 0x1E;
+        node->voices[1].octave = 0;
+        node->voices[1].endVolume = node->voices[1].volume -= node->tick * 2;
         return;
     }
-    if (state->tick >= 0x65 && state->tick < 0x6E) {
-        state->sound2 = 0xD;
-        state->octave2 = 1;
+    if (node->tick >= 0x65 && node->tick < 0x6E) {
+        node->voices[2].sound = 0xD;
+        node->voices[2].octave = 1;
         return;
     }
-    if (state->tick >= 0xC9) {
-        state->tick = -1;
+    if (node->tick >= 0xC9) {
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type7(void *slot, SpotState *state) {
+void SoundSpot_Type7(SpotSlot *slot, HandlerNode *node) {
     s32 tick;
 
-    state->level = SoundSpot_CalcFade(slot);
-    tick = state->tick;
+    node->fade = SoundSpot_CalcFade(slot);
+    tick = node->tick;
     if (tick == 0) {
-        state->sound0 = 7;
-        state->octave0 = 2;
+        node->voices[0].sound = 7;
+        node->voices[0].octave = 2;
         return;
     }
     if (tick >= 0x1B) {
-        state->tick = -1;
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type8(void *slot, SpotState *state) {
+void SoundSpot_Type8(SpotSlot *slot, HandlerNode *node) {
     s32 tick;
 
-    state->level = SoundSpot_CalcFade(slot);
-    tick = state->tick;
+    node->fade = SoundSpot_CalcFade(slot);
+    tick = node->tick;
     if (tick == 0) {
-        state->sound0 = 0x14;
-        state->octave0 = 1;
+        node->voices[0].sound = 0x14;
+        node->voices[0].octave = 1;
         return;
     }
     if (tick == 3) {
-        state->octave0 = 2;
-        state->volume0 = 0x18;
-        state->sound0 = 3;
-        state->endVolume0 = 0x14;
+        node->voices[0].octave = 2;
+        node->voices[0].volume = 0x18;
+        node->voices[0].sound = 3;
+        node->voices[0].endVolume = 0x14;
         return;
     }
     if (tick >= 0x33) {
-        state->tick = -1;
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type9(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade(slot);
-    if (state->tick % 20 == 0) {
-        state->sound0 = 9;
-        state->octave0 = 0;
-        state->volume0 = 0x40;
-        state->endVolume0 = 0x40;
+void SoundSpot_Type9(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick % 20 == 0) {
+        node->voices[0].sound = 9;
+        node->voices[0].octave = 0;
+        node->voices[0].volume = 0x40;
+        node->voices[0].endVolume = 0x40;
     }
 }
 
-void SoundSpot_Type10(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade(slot);
-    if (state->tick == ((state->tick / 20) * 20)) {
-        state->sound0 = 9;
-        state->octave0 = -2;
+void SoundSpot_Type10(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick == ((node->tick / 20) * 20)) {
+        node->voices[0].sound = 9;
+        node->voices[0].octave = -2;
     }
 }
 
-void SoundSpot_Type11(void *slot, SpotState *state) {
+void SoundSpot_Type11(SpotSlot *slot, HandlerNode *node) {
     s32 phase;
 
-    state->level = SoundSpot_CalcFade(slot);
-    phase = state->tick % 20;
+    node->fade = SoundSpot_CalcFade(slot);
+    phase = node->tick % 20;
     if (phase == 1) {
-        state->sound0 = 9;
-        state->octave0 = -2;
+        node->voices[0].sound = 9;
+        node->voices[0].octave = -2;
     } else if (phase == 16) {
-        state->sound1 = 9;
-        state->octave1 = -2;
+        node->voices[1].sound = 9;
+        node->voices[1].octave = -2;
     }
 }
 
-void SoundSpot_Type12(void *slot, SpotState *state) {
+void SoundSpot_Type12(SpotSlot *slot, HandlerNode *node) {
     s32 phase;
 
-    SoundSpot_Type11(slot, state);
-    phase = state->tick % 70;
+    SoundSpot_Type11(slot, node);
+    phase = node->tick % 70;
     if (phase == 50) {
-        state->sound2 = 20;
-        state->octave2 = 1;
+        node->voices[2].sound = 20;
+        node->voices[2].octave = 1;
     } else if (phase >= 54 && phase < 59) {
-        state->sound2 = 13;
-        state->octave2 = 1;
+        node->voices[2].sound = 13;
+        node->voices[2].octave = 1;
     } else if (phase == 61) {
-        state->sound2 = 9;
-        state->octave2 = -1;
+        node->voices[2].sound = 9;
+        node->voices[2].octave = -1;
     }
 }
 
-void SoundSpot_Type13(void *slot, SpotState *state) {
+void SoundSpot_Type13(SpotSlot *slot, HandlerNode *node) {
     s32 tick;
 
-    state->level = SoundSpot_CalcFade(slot);
-    tick = state->tick;
+    node->fade = SoundSpot_CalcFade(slot);
+    tick = node->tick;
     if (tick == 0) {
-        state->sound0 = 0x14;
-        state->octave0 = -2;
-        state->sound1 = 0x14;
-        state->octave1 = -2;
+        node->voices[0].sound = 0x14;
+        node->voices[0].octave = -2;
+        node->voices[1].sound = 0x14;
+        node->voices[1].octave = -2;
         return;
     }
     if (tick == 4) {
-        state->sound1 = 0x14;
-        state->octave1 = -2;
+        node->voices[1].sound = 0x14;
+        node->voices[1].octave = -2;
         return;
     }
     if (tick == 20) {
-        state->sound0 = 0x10;
-        state->octave0 = -2;
-        state->sound1 = 0x12;
-        state->octave1 = -2;
+        node->voices[0].sound = 0x10;
+        node->voices[0].octave = -2;
+        node->voices[1].sound = 0x12;
+        node->voices[1].octave = -2;
         return;
     }
     if (tick >= 0xC9) {
-        state->tick = -1;
+        node->tick = -1;
     }
 }
 
-void SoundSpot_Type14(void *slot, SpotState *state) {
-    state->level = SoundSpot_CalcFade(slot);
-    if (state->tick == 0) {
-        state->sound0 = 0x18;
-        state->octave0 = 0;
+void SoundSpot_Type14(SpotSlot *slot, HandlerNode *node) {
+    node->fade = SoundSpot_CalcFade(slot);
+    if (node->tick == 0) {
+        node->voices[0].sound = 0x18;
+        node->voices[0].octave = 0;
     }
 }
 
-/* distance / (range / unk28): grows with the distance to the spot. */
+/* distance / (range / node.fadeSteps): grows with the distance to the spot. */
 static s32 SoundSpot_CalcFade(SpotSlot *slot) {
-    return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->fadeSteps);
+    return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->node.fadeSteps);
 }
 
 /* Spawn rule 7 (Sym_CheckRule): 1 when the ambience family is even, 0 for odd ones and none (-1). */

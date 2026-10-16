@@ -39,24 +39,24 @@ static void Tix_BuildFade(TixFade *fade, s32 palette);
 extern TixVtbl g_tixVtbl;
 s16 g_clutFadeShift;                /* 3: a palette fade has 1 << this rows */
 
-s32 Tix_Create(s32 path) {
-    s32 tix;
+Tix *Tix_Create(char *path) {
+    Tix *tix;
 
     tix = Heap_Alloc(0x84);
-    if (tix != 0) {
+    if (tix != NULL) {
         Tix_GetVtbl()->base.init(tix, path);
         return tix;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08: opens the file and reads its first 0x800 bytes (state 9) */
-void Tix_Init(Tix *tix, s32 path) {
+void Tix_Init(Tix *tix, char *path) {
     s32 i;
     s16 rowOffset;
     s16 rows;
-    s32 header;
-    s32 buffer;
+    u32 *header;
+    u8 *buffer;
     TixFade *fade;
 
     File_GetBackendVtbl()->init(tix);
@@ -64,7 +64,7 @@ void Tix_Init(Tix *tix, s32 path) {
     tix->partIndex = 0;
     tix->parts = 0;
     tix->loaded = 0;
-    tix->buffer = 0;
+    tix->buffer = NULL;
     tix->bufferSize = 0;
     rows = 1 << g_clutFadeShift;
     rowOffset = 0;
@@ -80,12 +80,12 @@ void Tix_Init(Tix *tix, s32 path) {
     }
 
     header = Heap_Alloc(0x24);
-    if (header != 0) {
+    if (header != NULL) {
         buffer = Heap_Alloc(0x800);
         tix->buffer = buffer;
-        if (buffer != 0) {
+        if (buffer != NULL) {
             tix->size = 0x24;
-            tix->header = (u32 *)header;
+            tix->header = header;
             tix->state = 9;
             tix->failed = 0;
             tix->vtbl->base.open(tix, path, 1, 0);
@@ -118,8 +118,8 @@ void Tix_OnReadDone(Tix *tix) {
             *(TixHeaderBytes *)tix->header = *(TixHeaderBytes *)tix->buffer;
             Heap_Free(tix->buffer);
             maxSize = Tix_GetMaxPartSize(tix);
-            if (((tix->parts = (TimPack **)Heap_Alloc(tix->header[0] * 4)) != 0)
-                && ((tix->buffer = Heap_Alloc(maxSize)) != 0)) {
+            if (((tix->parts = Heap_Alloc(tix->header[0] * 4)) != NULL)
+                && ((tix->buffer = Heap_Alloc(maxSize)) != NULL)) {
                 tix->bufferSize = maxSize;
                 tix->vtbl->base.seek(tix, tix->header[1], 0);
                 tix->vtbl->base.read(tix, tix->buffer, maxSize);
@@ -133,10 +133,10 @@ void Tix_OnReadDone(Tix *tix) {
         if (tix->flags & 0x80) {
             index = tix->partIndex;
             slot = tix->parts + index;
-            *slot = (TimPack *)TimPack_Create(0);
-            (*slot)->data.addr = tix->buffer;
+            *slot = TimPack_Create(NULL);
+            (*slot)->data.bytes = tix->buffer;
             (*slot)->size = 0;
-            (*slot)->fades = (s32)tix->fades;
+            (*slot)->fades = tix->fades;
             index = index + 1;
             (*slot)->vtbl->base.onLoaded(*slot);
             (*slot)->vtbl->uploadAll(*slot);
@@ -147,7 +147,7 @@ void Tix_OnReadDone(Tix *tix) {
                 tix->state = 0xA;
             } else {
                 Heap_Free(tix->buffer);
-                tix->buffer = 0;
+                tix->buffer = NULL;
                 tix->bufferSize = 0;
                 tix->state = 0;
                 tix->loaded = 1;

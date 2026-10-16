@@ -17,7 +17,7 @@ extern s16 g_videoTable[];   /* frame count of each video, by video id */
 s32 g_musicBankOverride;              /* forced music bank + 1, 0 = random (Music_SetOverride) */
 s32 g_musicTrackOverride;              /* forced track + 1, 0 = random (Music_SetOverride) */
 static u8 *Stage_GetPathBase(s32 stage);
-static s32 *Music_GetEffectsBankPtr(void);
+static s8 **Music_GetEffectsBankPtr(void);
 extern s16 g_stageFirstPath[];     /* first path of each stage in the path table */
 static u8 *Stage_GetChunkPaths(s32 stage);
 static u8 *Cine_GetEventPaths(s32 *videoId);
@@ -37,7 +37,7 @@ static u8 *Stage_GetTexturePaths(s32 stage);
 static u8 *Music_GetBanks(void);
 void *g_rootDir;            /* "CDI\\", the root directory of every path */
 extern u8 g_musicBanks[];      /* the 7 sound bank paths, SND\AMBIENT to SND\STANDERD */
-extern s32 g_effectsBank[];     /* points to "SND\\SE" */
+extern s8 *g_effectsBank[];     /* points to "SND\\SE" */
 
 void *File_GetRootDir(void) {
     return g_rootDir;
@@ -62,7 +62,7 @@ static void Music_SetOverride(s32 bank, s32 track) {
     }
 }
 
-void *File_GetPathTable(s32 *count) {
+u8 *File_GetPathTable(s32 *count) {
     if (count != NULL) {
         *count = 0x230;
     }
@@ -74,7 +74,7 @@ static u8 *Music_GetBanks(void) {
 }
 
 /* unused goes to Rand_SeedAndNext as an extra argument it ignores */
-s32 Music_PickBank(s32 unused) {
+s8 *Music_PickBank(s32 unused) {
     s32 r;
     u8 *banks;
     s32 ofs;
@@ -86,19 +86,19 @@ s32 Music_PickBank(s32 unused) {
     } else {
         ofs = r * 4;
     }
-    return *(s32 *)(banks + ofs);
+    return *(s8 **)(banks + ofs);
 }
 
-static s32 *Music_GetEffectsBankPtr(void) {
+static s8 **Music_GetEffectsBankPtr(void) {
     return g_effectsBank;
 }
 
-s32 Music_GetEffectsBank(void) {
+s8 *Music_GetEffectsBank(void) {
     return *Music_GetEffectsBankPtr();
 }
 
 static u8 *Stage_GetPathBase(s32 stage) {
-    return (u8 *)File_GetPathTable(NULL) + g_stageFirstPath[stage] * 0x1C;
+    return File_GetPathTable(NULL) + g_stageFirstPath[stage] * 0x1C;
 }
 
 static u8 *Stage_GetTexturePaths(s32 stage) {
@@ -216,7 +216,7 @@ static u8 *Cine_GetEventPaths(s32 *videoId) {
     if (videoId != NULL) {
         *videoId = 8;
     }
-    return (u8 *)File_GetPathTable(NULL) + 0x3E20;
+    return File_GetPathTable(NULL) + 0x3E20;
 }
 
 static u8 *Cine_GetEventPath(s32 *videoId, s32 event) {

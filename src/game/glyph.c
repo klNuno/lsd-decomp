@@ -4,6 +4,7 @@
 #include "game/heap.h"
 #include "game/display.h"
 #include "game/screen_sprite.h"
+#include "game/tim.h"
 
 /*
  * Glyph: vtable g_glyphVtbl 0x8006EC74 (tag 0x1144), 0xAC bytes, Glyph_Create: a ScreenSprite
@@ -48,7 +49,7 @@ struct ScreenSprite;
 
 typedef struct ScreenSpriteVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32, SpriteRect *, s32);         /* 0x08 ScreenSprite_Init */
+    void (*init)(void *, Tim *, SpriteRect *, s32);       /* 0x08 ScreenSprite_Init */
     u8 pad_0C[0x40 - 0x0C];
     void (*setup)(void *);                                /* 0x40 ScreenSprite_Setup, empty */
     u8 pad_44[0xBC - 0x44];
@@ -70,7 +71,7 @@ struct Glyph;
 
 typedef struct GlyphVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32, s32);           /* 0x08 Glyph_Init (glyph, font, code) */
+    void (*init)(void *, Tim *, s32);         /* 0x08 Glyph_Init (glyph, font, code) */
     u8 pad_0C[0x40 - 0x0C];
     void (*setup)(void *, s32);               /* 0x40 Glyph_Setup (glyph, code) */
     u8 pad_44[0xC4 - 0x44];
@@ -90,8 +91,8 @@ static void Glyph_GetRect(SpriteRect *rect, u32 code);
 extern GlyphVtbl g_glyphVtbl;
 extern SpriteRect g_glyphCellRect;      /* {0, 0, 8, 8}: the cell of character 0 */
 
-void *Glyph_Create(s32 font, u8 code) {
-    void *glyph;
+Glyph *Glyph_Create(Tim *font, u8 code) {
+    Glyph *glyph;
 
     glyph = Heap_Alloc(0xAC);
     if (glyph != NULL) {
@@ -102,7 +103,7 @@ void *Glyph_Create(s32 font, u8 code) {
 }
 
 /* Slot 0x08: a screen sprite on the cell of a space (0x20), then the code. */
-void Glyph_Init(Glyph *glyph, s32 font, u8 code) {
+void Glyph_Init(Glyph *glyph, Tim *font, u8 code) {
     SpriteRect rect;
     GlyphVtbl *vtbl;
 

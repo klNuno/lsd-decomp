@@ -15,15 +15,6 @@ typedef struct RootObject {
     s32 loaded;
 } RootObject;
 
-/* Vtable of the root object class returned by File_GetBackendVtbl (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
-typedef struct ObjectRootVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *object);     /* 0x08 */
-    void (*destroy)(s32 object);    /* 0x0C, the caller passes the pointer as s32 */
-    u8 pad_10[0x54];
-    void (*onLoaded)(void *object);   /* 0x64, not named in heap.h */
-} ObjectRootVtbl;
-
 /* Vtable of the 0x34-byte object class at g_mapModelsVtbl (MapModels_New; map_models.h calls it a model set). */
 typedef struct ModelSetVtbl {
     u8 pad_00[0x8];
@@ -84,19 +75,19 @@ typedef struct GridContext {
     u8 pad_14[0x18];
     GridObject *tmd;
 } GridContext;
-s32 MapModels_New(s32 path) {
-    s32 modelSet;
+MapModels *MapModels_New(s32 path) {
+    MapModels *modelSet;
 
-    modelSet = (s32)Heap_Alloc(0x34);
-    if (modelSet != 0) {
-        MapModels_GetVtbl()->init((void *)modelSet, path);
+    modelSet = Heap_Alloc(0x34);
+    if (modelSet != NULL) {
+        MapModels_GetVtbl()->init(modelSet, path);
         return modelSet;
     }
-    return 0;
+    return NULL;
 }
 
 void MapModels_Init(ModelSet *modelSet, s32 path) {
-    ((ObjectRootVtbl *)File_GetBackendVtbl())->init(modelSet);
+    File_GetBackendVtbl()->init(modelSet);
     modelSet->vt = MapModels_GetVtbl();
     modelSet->tmd = 0;
     modelSet->loaded = 0;
@@ -105,13 +96,13 @@ void MapModels_Init(ModelSet *modelSet, s32 path) {
     }
 }
 
-void MapModels_Destroy(s32 object) {
-    ((ObjectRootVtbl *)File_GetBackendVtbl())->destroy(object);
+void MapModels_Destroy(ModelSet *object) {
+    File_GetBackendVtbl()->destroy(object);
 }
 
 void MapModels_OnLoaded(RootObject *object) {
     object->loaded = 1;
-    ((ObjectRootVtbl *)File_GetBackendVtbl())->onLoaded(object);
+    File_GetBackendVtbl()->onLoaded(object);
 }
 
 s32 MapModels_NextModel(GridContext *context, GridItem *item, s32 cellIndex) {

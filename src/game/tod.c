@@ -11,27 +11,27 @@
 
 extern TodVtbl g_todVtbl;
 
-s32 Tod_Create(s32 source) {
-    s32 tod;
+Tod *Tod_Create(FileSource *source) {
+    Tod *tod;
 
     tod = Heap_Alloc(0x2C);
-    if (tod != 0) {
+    if (tod != NULL) {
         Tod_GetVtbl()->base.init(tod, source);
         return tod;
     }
-    return 0;
+    return NULL;
 }
 
 void Tod_Init(Tod *tod, FileSource *source) {
-    s32 data;
+    u8 *data;
     TodVtbl *vtbl;
 
     File_GetBackendVtbl()->init(tod);
     vtbl = Tod_GetVtbl();
     tod->vtbl = vtbl;
     data = source->data;
-    if (data != 0) {
-        tod->data = data;
+    if (data != NULL) {
+        tod->data.bytes = data;
         tod->size = 0;
         tod->vtbl->base.onLoaded(tod);
         return;
@@ -45,7 +45,7 @@ void Tod_Destroy(Tod *tod) {
 
 /* Slot 0x78: slot 0x7C on the first frame, after the 8-byte file header */
 s32 Tod_ScanFirstFrame(Tod *tod, s32 ids, s32 tmdId) {
-    return tod->vtbl->scanFrame(tod, ids, tmdId, tod->data + 8) & 0xFF;
+    return tod->vtbl->scanFrame(tod, ids, tmdId, tod->data.bytes + 8) & 0xFF;
 }
 
 /*
@@ -53,7 +53,7 @@ s32 Tod_ScanFirstFrame(Tod *tod, s32 ids, s32 tmdId) {
  * in ids. With ids and tmdId, *tmdId becomes the index among them of the object the type 2
  * packet with TMD *tmdId names; with tmdId alone, the count of type 2 packets.
  */
-s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet) {
+s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, TodCursor packet) {
     u8 fields[4];              /* id, type, flag, length */
     u16 count;
     u32 i;
@@ -61,13 +61,13 @@ s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet) {
     s32 found;
     s32 j;
 
-    count = ((TodFrame *)packet)->packetCount;
-    packet = (u8 *)packet + 8;
+    count = packet.frame->packetCount;
+    packet.frame++;
     i = 0;
     created = 0;
     found = 0;
     for (; i < count; i++) {
-        Tod_ReadPacket(tod, (u32 *)packet, (s8 *)&fields[0], (s8 *)&fields[1], (s8 *)&fields[2], (s8 *)&fields[3]);
+        Tod_ReadPacket(tod, packet.words, &fields[0], &fields[1], &fields[2], &fields[3]);
         if (fields[1] == 8 && fields[2] == 0) {
             created++;
             if (ids != NULL) {
@@ -75,7 +75,7 @@ s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet) {
             }
         } else if (fields[1] == 2) {
             if (ids != NULL) {
-                if (tmdId != NULL && ((TodPacket *)packet)->tmdId == *tmdId) {
+                if (tmdId != NULL && packet.packet->tmdId == *tmdId) {
                     j = 0;
                     ids -= created;
                     for (; j < created; j++) {
@@ -89,7 +89,7 @@ s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet) {
                 found++;
             }
         }
-        packet = (u8 *)packet + fields[3] * 4;
+        packet.words += fields[3];
     }
     if (tmdId != NULL) {
         *tmdId = found;
@@ -98,7 +98,7 @@ s32 Tod_ScanFrame(Tod *tod, u8 *ids, s32 *tmdId, void *packet) {
 }
 
 /* Slot 0x80: splits a TOD packet header; returns the word after it */
-u32 *Tod_ReadPacket(void *tod, u32 *packet, s8 *id, s8 *type, s8 *flag, s8 *length) {
+u32 *Tod_ReadPacket(void *tod, u32 *packet, u8 *id, u8 *type, u8 *flag, u8 *length) {
     u32 header = *packet;
 
     *id = header;

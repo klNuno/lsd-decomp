@@ -11,29 +11,29 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern u8 g_taskVtbl[];
+extern TaskVtbl g_taskVtbl;
 
 /* the vtable of screen.c through this file's view of its slots, so not from game/screen.h */
 TaskBaseVtbl *Screen_GetVtbl(void);
 /* not in game/task.h: each file that calls it reads the vtable through its own view of the slots */
 TaskVtbl *Task_GetVtbl(void);
 
-static s32 Task_New(s32 bankName, s32 sound) {
-    s32 task;
+static Task *Task_New(s8 *bankName, SoundBank *sound) {
+    Task *task;
 
     task = Heap_Alloc(0x38);
-    if (task != 0) {
+    if (task != NULL) {
         Task_GetVtbl()->init(task, bankName, sound);
         return task;
     }
-    return 0;
+    return NULL;
 }
 
 /* With a bank name the task makes and owns its sound bank, else it uses the one given. */
-void Task_Init(Task *task, s32 bankName, void *sound) {
+void Task_Init(Task *task, s8 *bankName, SoundBank *sound) {
     Screen_GetVtbl()->init(task);
     task->vtbl = Task_GetVtbl();
-    if (bankName != 0) {
+    if (bankName != NULL) {
         task->sound = Sound_CreateBank(bankName);
     } else {
         task->sound = sound;
@@ -60,7 +60,7 @@ s32 Task_Run(Task *task, s32 context, s32 noLoop) {
     return task->result;
 }
 
-void Task_Finish(s32 task) {
+void Task_Finish(Task *task) {
     Screen_GetVtbl()->finish(task);
 }
 
@@ -98,5 +98,5 @@ void Task_PlayTone(Task *task, s32 tone) {
 }
 
 TaskVtbl *Task_GetVtbl(void) {
-    return (TaskVtbl *)g_taskVtbl;
+    return &g_taskVtbl;
 }

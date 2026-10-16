@@ -46,22 +46,22 @@ s32 g_movieRestartCounter;                /* calls of Movie_OnStopped since the 
 s32 g_mdecReady;                /* 1 once DecDCTReset ran */
 extern u8 g_movieClearColor[];
 
-s32 Movie_Create(s32 rect, s32 streamArg, s32 skipAlloc) {
-    s32 movie;
+Movie *Movie_Create(ScreenRect *rect, s32 streamArg, s32 skipAlloc) {
+    Movie *movie;
 
     movie = Heap_Alloc(0x6C);
-    if (movie == 0) {
-        return 0;
+    if (movie == NULL) {
+        return NULL;
     }
     if (Movie_GetVtbl()->init(movie, rect, streamArg, skipAlloc) != 0) {
         Heap_Free(movie);
-        return 0;
+        return NULL;
     }
     return movie;
 }
 
 /* Slot 0x08: the stream, the buffers, the MDEC callback; 0 on success */
-s32 Movie_Init(Movie *movie, s32 rect, void *streamArg, s32 skipAlloc) {
+s32 Movie_Init(Movie *movie, MovieRect *rect, s32 streamArg, s32 skipAlloc) {
     Stream *stream;
 
     Object_GetBaseVtbl()->init(movie);

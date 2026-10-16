@@ -37,7 +37,7 @@ s32 _card_load(s32 channel);
 /* Files (the memory card device "bu00:") */
 s32 open(char *name, s32 flags);
 s32 close(s32 fd);
-s32 read(s32 fd, s32 buf, s32 n);
+s32 read(s32 fd, void *buf, s32 n);
 s32 write(s32 fd, void *buf, s32 n);
 s32 lseek(s32 fd, s32 offset, s32 whence);
 s32 delete(char *name);

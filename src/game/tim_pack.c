@@ -3,6 +3,7 @@
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/tim.h"
+#include "game/tix.h"
 
 /*
  * TimPack: one part of a TIX, a list of TIM images (include/game/tim_pack.h).
@@ -28,24 +29,24 @@ typedef struct GsImage {
 extern TimPackVtbl g_timPackVtbl;
 s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette index */
 
-s32 TimPack_Create(s32 path) {
-    s32 timPack;
+TimPack *TimPack_Create(char *path) {
+    TimPack *timPack;
 
     timPack = Heap_Alloc(0x3C);
-    if (timPack != 0) {
+    if (timPack != NULL) {
         TimPack_GetVtbl()->base.init(timPack, path);
         return timPack;
     }
-    return 0;
+    return NULL;
 }
 
-void TimPack_Init(TimPack *timPack, s32 path) {
+void TimPack_Init(TimPack *timPack, char *path) {
     File_GetBackendVtbl()->init(timPack);
     timPack->vtbl = TimPack_GetVtbl();
     timPack->count = 0;
     timPack->tims = 0;
     timPack->loaded = 0;
-    if (path != 0) {
+    if (path != NULL) {
         timPack->vtbl->base.loadAsync(timPack, path);
     }
 }
@@ -70,19 +71,19 @@ void TimPack_OnLoaded(TimPack *timPack) {
 
     if ((timPack->flags & 0x200) || timPack->data.words != NULL) {
         timPack->count = *timPack->data.words;
-        tims = (Tim **)Heap_Alloc(*timPack->data.words * 4);
+        tims = Heap_Alloc(*timPack->data.words * 4);
         timPack->tims = tims;
         if (tims != NULL) {
             slot = tims;
             offset = timPack->data.words + 1;
             for (i = 0; i < timPack->count; i++) {
-                tim = (Tim *)Tim_New(0);
+                tim = Tim_New(NULL);
                 *slot = tim;
-                tim->data = (u32 *)((u8 *)timPack->data.words + *offset);
+                tim->data = (u32 *)(timPack->data.bytes + *offset);
                 (*slot)->size = 0;
                 offset++;
                 (*slot)->vtbl->getInfo(*slot, &info);
-                (*slot)->fade = ((((s32)info.cy - 0x1E0) >> g_clutPaletteShift) * 0x10) + timPack->fades;
+                (*slot)->fade = timPack->fades + (((s32)info.cy - 0x1E0) >> g_clutPaletteShift);
                 slot++;
             }
             timPack->loaded = 1;

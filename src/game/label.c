@@ -14,7 +14,7 @@
 typedef struct Glyph Glyph;
 typedef struct GlyphVtbl {
     u8 pad_00[0x8];
-    void (*init)(void *glyph, s32 font, s32 c); /* 0x08 */
+    void (*init)(void *glyph, Tim *font, s32 c); /* 0x08 */
     void (*destroy)(void *glyph);             /* 0x0C */
     u8 pad_10[0x4C - 0x10];
     void (*show)();                           /* 0x4C (glyph, root, position) */
@@ -33,21 +33,21 @@ struct Glyph {
 };
 
 static LabelVtbl *Label_GetVtbl(void);
-extern u8 g_labelVtbl[];
+extern LabelVtbl g_labelVtbl;
 
 /* new Label(font, count, text) */
-s32 Label_Create(s32 font, s32 count, s32 text) {
-    s32 label = Heap_Alloc(0xB8);
+Label *Label_Create(Tim *font, s32 count, char *text) {
+    Label *label = Heap_Alloc(0xB8);
 
-    if (label != 0) {
-        Label_GetVtbl()->init((void *)label, font, count, text);
+    if (label != NULL) {
+        Label_GetVtbl()->init(label, font, count, text);
         return label;
     }
-    return 0;
+    return NULL;
 }
 
 /* Slot 0x08: a space glyph of font with count space glyphs under it, then slot 0x40 with the text */
-void Label_Construct(Label *label, s32 font, s32 count, s32 text) {
+void Label_Construct(Label *label, Tim *font, s32 count, char *text) {
     Glyph **glyphs;
     s32 i;
 
@@ -57,7 +57,7 @@ void Label_Construct(Label *label, s32 font, s32 count, s32 text) {
     label->shownCount = count;
     label->firstShown = 0;
     label->gapAt = 0;
-    glyphs = ((void *)Heap_Alloc(count * 4));
+    glyphs = Heap_Alloc(count * 4);
     if (glyphs != NULL) {
         label->glyphs = glyphs;
         for (i = 0; i < count; i++) {
@@ -76,7 +76,7 @@ void Label_Destroy(Label *label) {
 }
 
 /* Slot 0x40: spacing 7, then the text */
-void Label_Init(Label *label, s32 text) {
+void Label_Init(Label *label, char *text) {
     label->vtbl->setSpacing(label, 7);
     label->vtbl->setText(label, text);
 }
@@ -200,5 +200,5 @@ void Label_SetSpacing(Label *label, s32 spacing) {
 }
 
 static LabelVtbl *Label_GetVtbl(void) {
-    return (LabelVtbl *)g_labelVtbl;
+    return &g_labelVtbl;
 }

@@ -7,6 +7,8 @@
 #include "game/model_object.h"
 #include "game/entity.h"
 
+struct DreamSys;
+
 /* A {numerator, denominator} pair: scene node rotations in degrees and scales (Fraction_ToFixed). */
 typedef struct Fraction {
     s16 num;
@@ -71,20 +73,18 @@ typedef struct SceneNode {
     struct SceneNode *parent; /* 0x0C */
     s32 attribute;               /* 0x10 GsDOBJ2.attribute: bit 31 GsDOFF hides the node */
     Coord2 *coord;               /* 0x14 GsDOBJ2.coord2: a view watching the node takes it as super */
-    s32 tmd;                     /* 0x18 GsDOBJ2.tmd */
+    ModelEntry *tmd;             /* 0x18 GsDOBJ2.tmd: the model object's TMD object */
     s32 id;                      /* 0x1C GsDOBJ2.id */
     ModelObject *model;          /* 0x20 the watched model object (sender type 9) */
     s32 ticks;                   /* 0x24 cleared by reset */
     struct SceneNode *contact; /* 0x28 the last node that hit this one (message 4) */
     s32 hitMask;                 /* 0x2C boxes hit by the last test, one bit per box */
-    s32 *boxList;                /* 0x30 the box list being sent, NULL otherwise */
+    NodeBoxList *boxList;        /* 0x30 the box list being sent, NULL otherwise */
     u8 pad_34[0x44 - 0x34];
 } SceneNode;
 
 /* Functions of src/game/scene_node.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/scene_node.c */
-struct NodeBoxList;
-struct SVec3;
 SceneNode *SceneNode_New(void);
 void SceneNode_Destroy(SceneNode *node);
 void SceneNode_Watch(SceneNode *node, Object *other);
@@ -109,25 +109,25 @@ void SceneNode_SetDivision(SceneNode *node, s32 division);
 s32 SceneNode_SetBackfaceClip(SceneNode *node, s32 backfaceClip);
 void SceneNode_GetRotMatrix(SceneNode *node, void *matrix, s32 invert);
 void SceneNode_SendBoxes(SceneNode *node, s32 message);
-void SceneNode_GetBoxList(SceneNode *node, s32 *boxList);
-void SceneNode_SendShape(SceneNode *node, s32 *boxList, s32 message);
+void SceneNode_GetBoxList(SceneNode *node, NodeBoxList *boxList);
+void SceneNode_SendShape(SceneNode *node, NodeBoxList *boxList, s32 message);
 void SceneNode_OnPad(void);
 void SceneNode_OnClock(void);
 void SceneNode_OnNode(SceneNode *node, SceneNode *sender, s32 message);
 void SceneNode_CheckContact(SceneNode *node, SceneNode *sender);
-void SceneNode_WorldToLocal(SceneNode *node, struct SVec3 *offset, struct SVec3 *dst, struct SVec3 *src, s32 count);
-s32 SceneNode_BoxesOverlap(SceneNode *node, struct NodeBoxList *boxList, struct SVec3 *offset);
-s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, struct SVec3 *hitPos, struct NodeBoxList *boxList);
+void SceneNode_WorldToLocal(SceneNode *node, ModelVec *offset, ModelVec *dst, ModelVec *src, s32 count);
+s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, ModelVec *offset);
+s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, ModelVec *hitPos, NodeBoxList *boxList);
 void SceneNode_EmptySlotB0(void);
 void SceneNode_AddActorWatchers(s32 node, Object *object);
-void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, struct SVec3 *src);
+void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, ModelVec *src);
 void SceneNode_LocalToWorld(); /* unprototyped: dream_sys.c and sym.c pass a fourth argument */
 void SceneNode_GetRotation(SceneNode *node, Fraction *degrees);
 void SceneNode_LinkModel(SceneNode *node, ModelObject *model);
 s32 SceneNode_ProbeHeight(); /* unprototyped: actor.c calls it with no arguments */
-void Entity_FaceDreamer(Entity *entity, SceneNode *target, s32 noPitch, s32 facing, Fraction *extra);
+void Entity_FaceDreamer(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra);
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
-void Render_TransformLongVectors(void *dstVecs, void *srcVecs, s32 count, s32 *matrix);
+void Render_TransformLongVectors(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix);
 s32 Entity_IsWithinBox(s32 *center, s32 range, s32 *pos);
 s32 SceneNode_SetRayHeightCheck(s32 enable);
 

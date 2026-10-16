@@ -19,16 +19,26 @@ typedef struct MomVtbl {
     s32 (*loadParts)();       /* 0x78 Mom Mom_LoadParts, Mml Mml_LoadParts */
     void (*freeParts)();      /* 0x7C Mom Mom_FreeParts, Mml Mml_FreeParts */
     s32 (*scanFirstFrame)();  /* 0x80 Mom_ScanFirstFrame: the TodPack's slot 0x78 */
-    void (*readPacket)();     /* 0x84 Mom_ReadPacket: the TodPack's slot 0x80 */
-    s32 (*getMom)();          /* 0x88 MML only: Mml_GetMom (self, index) */
+    s32 *(*readPacket)();     /* 0x84 Mom_ReadPacket: the TodPack's slot 0x80, returns the packet's data */
+    struct Mom *(*getMom)();  /* 0x88 MML only: Mml_GetMom (self, index) */
 } MomVtbl;
+
+/* The start of a MOM file: the TMD is at tmdOffset, the TodPack right after this header */
+typedef struct MomHeader {
+    u32 unk_00;
+    u32 unk_04;
+    s32 tmdOffset;            /* 0x08 */
+} MomHeader;
 
 typedef struct Mom {
     MomVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
     u8 pad_0C[0x10 - 0x0C];
-    u8 *data;                 /* 0x10 */
+    union {
+        u8 *bytes;
+        MomHeader *header;
+    } data;                   /* 0x10 */
     s32 size;                 /* 0x14 */
     u8 pad_18[0x2C - 0x18];
     Tmd *tmd;                 /* 0x2C */
@@ -37,7 +47,7 @@ typedef struct Mom {
 } Mom;
 
 /* Functions of src/game/mom.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 Mom_Create(s32 source);
+Mom *Mom_Create(FileSource *source);
 s32 Mom_ScanFirstFrame(Mom *mom);
 void Mom_ReadPacket(Mom *mom, s32 packet, s32 id, s32 type, s32 flag, s32 length);
 MomVtbl *Mom_GetVtbl(void);

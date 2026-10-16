@@ -33,21 +33,7 @@ typedef struct BgmVtbl {
     void (*setBank)();         /* 0x60 Bgm_SetBank (bgm, path) */
 } BgmVtbl;
 
-/* The SEQ file as this unit reads it; the bank is a SoundBank (sound_bank.h) */
-typedef struct BgmFileVtbl {
-    u8 pad_00[0x4];
-    void (*delete_)(void *);
-} BgmFileVtbl;
-
-/* The SEQ file of SeqFile_Create (src/game/seq_file.c), a file object */
-typedef struct BgmSeq {
-    BgmFileVtbl *vtbl;
-    u8 pad_04[0x10 - 0x04];
-    s32 data;                  /* 0x10 the SEQ data */
-    u8 pad_14[0x2C - 0x14];
-    s32 loaded;                /* 0x2C set to 1 once the file is read */
-} BgmSeq;
-
+/* The bank is a SoundBank (sound_bank.h), the SEQ a SeqFile (seq_file.h). */
 /* SEQ state at +0x1A */
 #define BGM_NONE 0              /* no SEQ open */
 #define BGM_WAITING 1           /* bank or SEQ still loading: the next frames retry */
@@ -58,7 +44,7 @@ typedef struct Bgm {
     ListNode *watched;
     ListNode *watchers;
     SoundBank *bank;           /* 0x0C */
-    BgmSeq *seq;               /* 0x10 */
+    SeqFile *seq;               /* 0x10 */
     s16 seqId;                 /* 0x14 SsSeqOpen's access number */
     u8 pad_16[0x1A - 0x16];
     u16 state;                 /* 0x1A BGM_NONE, BGM_WAITING, BGM_OPEN */
@@ -71,9 +57,9 @@ static s32 Bgm_Open();
 static BgmVtbl *Bgm_GetVtbl(void);
 s32 g_bgmActive;
 extern BgmVtbl g_bgmVtbl;
-extern u8 g_seqTable[];
+extern s8 g_seqTable[];
 
-void *Bgm_New(s32 bankPath, s32 seqPath, s32 autoPlay) {
+void *Bgm_New(s8 *bankPath, s8 *seqPath, s32 autoPlay) {
     void *bgm;
 
     bgm = Heap_Alloc(0x24);
@@ -101,18 +87,19 @@ void Bgm_Init(Bgm *bgm, s32 bankPath, s32 seqPath, s32 autoPlay) {
 }
 
 void Bgm_Destroy(Bgm *bgm) {
-    Object *file;
+    SoundBank *bank;
+    SeqFile *seq;
 
     g_bgmActive = 0;
     bgm->vtbl->stop(bgm);
     SsSeqClose(bgm->seqId);
-    file = (Object *)bgm->bank;
-    if (file != NULL) {
-        file->vtbl->delete_(file);
+    bank = bgm->bank;
+    if (bank != NULL) {
+        bank->vtbl->delete_(bank);
     }
-    file = (Object *)bgm->seq;
-    if (file != NULL) {
-        file->vtbl->delete_(file);
+    seq = bgm->seq;
+    if (seq != NULL) {
+        seq->vtbl->delete_(seq);
     }
     bgm->vtbl->base.unwatch(bgm, Display_GetCurrent());
     Object_GetBaseVtbl()->destroy(bgm);
@@ -136,7 +123,7 @@ void Bgm_OnDisplayEvent(Bgm *bgm, s32 display, s32 message) {
 /* Opens the SEQ with the bank's VAB once both are loaded; returns 1 when opened. */
 static s32 Bgm_Open(Bgm *bgm) {
     SoundBank *bank;
-    BgmSeq *seq;
+    SeqFile *seq;
     s16 seqId;
 
     bank = bgm->bank;
@@ -205,8 +192,8 @@ void Bgm_FadeVolume(Bgm *bgm, s16 volume, s32 seconds) {
 }
 
 /* Stops the current SEQ, frees its file, loads path (0: none) and opens it when it can. */
-void Bgm_SetSeq(Bgm *bgm, s32 path) {
-    BgmSeq *seq;
+void Bgm_SetSeq(Bgm *bgm, s8 *path) {
+    SeqFile *seq;
 
     if (bgm->playing != 0) {
         bgm->vtbl->stop(bgm);
@@ -229,7 +216,7 @@ void Bgm_SetSeq(Bgm *bgm, s32 path) {
 }
 
 /* The same for the sound bank. */
-void Bgm_SetBank(Bgm *bgm, s32 path) {
+void Bgm_SetBank(Bgm *bgm, s8 *path) {
     SoundBank *bank;
 
     if (bgm->playing != 0) {
@@ -262,6 +249,6 @@ s32 Bgm_IsActive(void) {
 }
 
 /* The SEQ attribute table area given to SsSetTableSize (src/game/sound_bank.c). */
-s32 Bgm_GetSeqTable(void) {
-    return (s32)g_seqTable;
+s8 *Bgm_GetSeqTable(void) {
+    return g_seqTable;
 }

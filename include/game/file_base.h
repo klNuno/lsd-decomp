@@ -20,8 +20,8 @@
 
 /* File_MakeSource(source, data, path, unk_08): data != 0 borrows it, else the path is loaded */
 typedef struct FileSource {
-    s32 data;   /* address inside a parent file, or 0 */
-    s32 path;   /* char *, used when data is 0 */
+    u8 *data;   /* address inside a parent file, or NULL */
+    char *path; /* used when data is NULL */
     s32 unk_08; /* 1 from every creator here and in Sym_LoadModels */
 } FileSource;
 
@@ -59,7 +59,7 @@ typedef struct File {
     ListNode *watched;
     ListNode *watchers;
     s32 isOpen;      /* 0x0C set by open (File_LoadByName), cleared by close (File_Unload) */
-    s32 data;        /* 0x10 the whole file, or a parent's bytes */
+    u8 *data;        /* 0x10 the whole file, or a parent's bytes */
     s32 size;        /* 0x14 0 when the data is borrowed */
     s32 cdPos;       /* 0x18 CdlLOC of the file, copied whole from its directory entry */
     s32 cdSize;      /* 0x1C its size on the disc, from the same entry */
@@ -78,7 +78,7 @@ void File_EmptySlot60(void);
 void File_MarkLoaded(File *file);
 FileVtbl *File_GetBaseVtbl(void);
 FileVtbl *File_GetBackendVtbl(void);
-FileSource *File_MakeSource(FileSource *source, s32 data, s32 path, s32 unk_08);
+FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unk_08);
 void File_SetBackend(s32 backend);
 void File_LockBackend(void);
 void File_UnlockBackend(void);

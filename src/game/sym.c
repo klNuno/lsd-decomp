@@ -19,6 +19,11 @@
  */
 
 DreamSys *g_symDreamSys;
+/* The source record a spawned model is built from: a FileSource (file_base.h) for Mml_Create, the model at +0xC for Entity_Create. */
+typedef struct SpawnSource {
+    FileSource file;
+    Mom *model;
+} SpawnSource;
 extern s8 g_ruleColors[];
 /* g_spyModel: the model loaded from ETC\SYMSPY.MOM and the Grey Man entity built on it */
 typedef struct SpyModel {
@@ -34,31 +39,24 @@ typedef struct SpyEntityRef {
 } SpyEntityRef;
 extern SpyEntityRef g_spyEntity[];
 s32 g_currentStage;
-typedef struct Unk_80065CEC_Obj {
-    ObjectVtbl *vt;
-} Unk_80065CEC_Obj;
 extern s8 g_spawnSlotCounts[];
-extern s16 *g_spawnSlots[];
-static s32 Sym_PickSlotVariant(s32 slot, s32 index);
+extern SpawnSlot *g_spawnSlots[];
+static SpawnSlot *Sym_PickSlotVariant(SpawnSlot *slot, s32 index);
 static void Sym_InitExtraList(s32);
-s32 g_symMap;
-s32 g_symSoundBank;
-s32 g_symClock;
-typedef struct Unk_80065C5C {
-    u8 pad[0xC];
-    Unk_80065CEC_Obj *unkC;
-} Unk_80065C5C;
-static s32 Sym_FindSlot(s16 *chunkKey);
+StageMap *g_symMap;
+SoundBank *g_symSoundBank;
+void *g_symClock;
+static SpawnSlot *Sym_FindSlot(s16 *chunkKey);
 static s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot);
-static s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square);
+static Mml *Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, u8 *square);
 static void Sym_SpawnSpy(SpyModel *spyModel);
 static s32 Sym_SpawnGroup();
-extern void *g_spawnGroups[];
+extern SpawnGroup *g_spawnGroups[];
 extern s8 g_spawnGroupCounts[];
 
 static void Sym_CheckExtraListType(s32 type);
 s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
-static s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place);
+static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 place);
 static s32 Sym_CheckColorRule(s32 rule);
 static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month);
 /* The 6-byte records of g_spawnPlaceOffsets: four bytes copied whole, then the height. */
@@ -85,14 +83,14 @@ void Sym_LoadModels(void) {
     /* clear the done flag of every spawn group of every stage */
     for (i = 0; i < 14; i++) {
         for (j = 0; j < g_spawnGroupCounts[i]; j++) {
-            ((u8 *)g_spawnGroups[i])[j * 8] = 0;
+            g_spawnGroups[i][j].done = 0;
         }
     }
     File_MakeSource(&file, 0, "ETC\\SYMSPY.MOM", 1);
     /* one pass: SYMDOG.MOM would be the second model, the loop never reaches it */
     for (i = 0; i < 1; i++) {
-        g_spyModel[i].model = (Mom *)Mom_Create((Unk_80065C5C *)&file);
-        file.path = (s32)"ETC\\SYMDOG.MOM";
+        g_spyModel[i].model = Mom_Create(&file);
+        file.path = "ETC\\SYMDOG.MOM";
     }
 }
 
@@ -109,8 +107,8 @@ void Sym_FreeModels(void) {
     }
 }
 
-void Sym_InitStage(s32 stage, s32 map, DreamSys *dreamSys, s32 soundBank, s32 watched) {
-    s32 params[4];
+void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank, void *watched) {
+    SpawnSource source;
     SpyModel *entry;
     u32 i;
 
@@ -122,8 +120,8 @@ void Sym_InitStage(s32 stage, s32 map, DreamSys *dreamSys, s32 soundBank, s32 wa
     g_symClock = watched;
     /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
-        params[3] = (s32) entry->model;
-        entry->spy = Entity_Create(i + 0x62, params, g_symSoundBank);
+        source.model = entry->model;
+        entry->spy = Entity_Create(i + 0x62, &source, g_symSoundBank);
         entry++;
     }
     Sym_InitExtraList(stage);
@@ -156,19 +154,19 @@ void Sym_FreeSpy(void) {
 
     for (i = 0, entry = g_spyEntity; i < 1; i++) {
         if (entry->obj != NULL) {
-            entry->obj = ((Object *)entry->obj)->vtbl->delete_(entry->obj);
+            entry->obj = entry->obj->vt->delete_(entry->obj);
         }
         entry++;
     }
 }
 
-s32 Sym_SpawnOrSpy(s32 square, void *chunkKey, s32 dayNumber) {
-    s32 slot;
+Mml *Sym_SpawnOrSpy(u8 *square, void *chunkKey, s32 dayNumber) {
+    SpawnSlot *slot;
 
-    slot = Sym_FindSlot((s16 *) chunkKey);
-    if (slot != 0) {
-        if (Sym_CheckDayParity(dayNumber, (SpawnSlot *) slot) != 0) {
-            return Sym_SpawnSlot(dayNumber, (SpawnSlot *) slot, square);
+    slot = Sym_FindSlot(chunkKey);
+    if (slot != NULL) {
+        if (Sym_CheckDayParity(dayNumber, slot) != 0) {
+            return Sym_SpawnSlot(dayNumber, slot, square);
         }
         if (g_currentStage != 0) {
             if (rand() % 12 == 0 && !(dayNumber & 1)) {
@@ -176,11 +174,11 @@ s32 Sym_SpawnOrSpy(s32 square, void *chunkKey, s32 dayNumber) {
             }
         }
     }
-    return 0;
+    return NULL;
 }
 
-static s32 Sym_FindSlot(s16 *chunkKey) {
-    s16 *slot;
+static SpawnSlot *Sym_FindSlot(s16 *chunkKey) {
+    SpawnSlot *slot;
     s32 i;
     s32 count;
     s32 pad[2];
@@ -190,23 +188,23 @@ static s32 Sym_FindSlot(s16 *chunkKey) {
     i = 0;
     if (count > 0) {
         do {
-            if (*chunkKey == *slot) {
-                return Sym_PickSlotVariant((s32) slot, i);
+            if (*chunkKey == slot->chunkKey) {
+                return Sym_PickSlotVariant(slot, i);
             }
             i++;
-            slot += 3;
+            slot++;
         } while (i < count);
     }
-    return 0;
+    return NULL;
 }
 
 /* Stage 4, slot 16: on a red day (colour 4) use slot 21, 30 bytes further. */
-static s32 Sym_PickSlotVariant(s32 slot, s32 index) {
+static SpawnSlot *Sym_PickSlotVariant(SpawnSlot *slot, s32 index) {
     s32 stage = g_currentStage;
 
     if (stage == 4 && index == 0x10) {
         if (g_symDreamSys->vtbl->getDreamColor(g_symDreamSys) == stage) {
-            slot += 30;
+            slot += 5;
         }
     }
     return slot;
@@ -225,43 +223,43 @@ static s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
     return pass;
 }
 
-static s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square) {
-    s32 params[4];
-    s32 squareObj;
+static Mml *Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, u8 *square) {
+    SpawnSource source;
+    Mml *squareObj;
     s8 *group;
     s8 *end;
-    u8 *groups;
+    SpawnGroup *groups;
 
-    params[0] = square;
-    squareObj = Mml_Create((s32)params);
-    if (squareObj != 0) {
+    source.file.data = square;
+    squareObj = Mml_Create(&source.file);
+    if (squareObj != NULL) {
         group = slot->groups;
         end = slot->groups + 3;
         groups = g_spawnGroups[g_currentStage];
         while (group < end && *group != -1) {
-            Sym_SpawnGroup(dayNumber, slot, groups + *group * 8, squareObj);
+            Sym_SpawnGroup(dayNumber, slot, groups + *group, squareObj);
             group++;
         }
         return squareObj;
     }
-    return 0;
+    return NULL;
 }
 
 static s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml *squareObj) {
-    s32 params[4];
+    SpawnSource source;
     s8 *place;
     s8 *placesEnd;
-    s32 model;
+    Mom *model;
 
     if (Sym_CheckRule(dayNumber, group) != 0) {
         place = group->places;
         Sym_CheckExtraListType(group->type);
         model = squareObj->vtbl->getMom(squareObj, group->model);
-        params[3] = model;
+        source.model = model;
         placesEnd = group->places + 4;
-        if (model != 0) {
+        if (model != NULL) {
             for (; place < placesEnd && *place != -1; place++) {
-                if (Sym_SpawnAtPlace(group->type, params, slot, (u8)*place) != 0) {
+                if (Sym_SpawnAtPlace(group->type, &source, slot, (u8)*place) != 0) {
                     return 1;
                 }
             }
@@ -366,21 +364,21 @@ static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
     return 0;
 }
 
-static s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
+static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 place) {
     SpawnQuery query;
     s32 placement[4];
     Entity *entity;
     SpawnPlace *placeInfo;
     s32 recIndex;
 
-    entity = (Entity *) Entity_Create(type, (s32) params, g_symSoundBank);
+    entity = Entity_Create(type, source, g_symSoundBank);
     if (entity != NULL) {
-        query.chunkKey = *(u16 *) slot;
+        query.chunkKey = slot->chunkKey;
         placeInfo = &g_spawnPlaces[place];
         query.placeWord = placeInfo->tile;
         recIndex = placeInfo->offsetIndex;
         query.offset = g_spawnPlaceOffsets[recIndex];
-        ((StageMap *) g_symMap)->vtbl->placeToWorld((void *) g_symMap, placement, &query);
+        g_symMap->vtbl->placeToWorld(g_symMap, placement, &query);
         entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->rotationIndex * 12]);
         entity->vt->attach(entity, g_symDreamSys, g_symClock, g_symMap, placement);
         return 0;

@@ -25,9 +25,9 @@ typedef struct SoundTone {
 typedef struct SoundBankVtbl {
     u8 pad_00[0x4];
     void *(*delete_)();                                                      /* 0x04 Object_Delete */
-    void (*init)(void *bank, s32 param);                                     /* 0x08 Sound_InitBank, from Sound_CreateBank */
+    void (*init)(void *bank, s8 *path);                                      /* 0x08 Sound_InitBank, from Sound_CreateBank */
     u8 pad_0C[0x58 - 0x0C];
-    void (*load)(void *bank, void *fullPath, s32 vabBuffer);               /* 0x58 */
+    void (*load)(void *bank, void *fullPath, u8 *vabBuffer);               /* 0x58 */
     void (*freeData)(void);                                                    /* 0x5C */
     u8 pad_60[0x6C - 0x60];
     void (*loadAsync)(void *bank, s8 *fullPath);                                /* 0x6C */
@@ -45,24 +45,24 @@ typedef struct SoundBankVtbl {
 typedef struct SoundBank {
     /* 0x00 */ SoundBankVtbl *vtbl;
     /* 0x04 */ u8 pad_04[0xC];
-    /* 0x10 */ s32 vabBuffer;     /* VAB data being loaded; g_vabBuffer keeps it between calls */
+    /* 0x10 */ u8 *vabBuffer;     /* VAB data being loaded; g_vabBuffer keeps it between calls */
     /* 0x14 */ u8 pad_14[0x10];
     /* 0x24 */ s32 flags;        /* flags: bit 0x200 means the file has been read */
     /* 0x28 */ u8 pad_28[0x2];
     /* 0x2A */ u16 state;         /* 0 idle, 1 open the VAB header, 6 transfer the body */
     /* 0x2C */ u8 pad_2C[0x20];   /* the VAB header, see SoundBankVab */
-    /* 0x4C */ s32 toneData;      /* SoundBankVab: u8 *, one 0x20-byte tone per entry */
-    /* 0x50 */ s32 programTones;  /* SoundBankVab: u8 **, SoundBankTones: SoundTone ** */
+    /* 0x4C */ u8 *toneData;      /* SoundBankVab: u8 *, one 0x20-byte tone per entry */
+    /* 0x50 */ u8 **programTones; /* one u8 * per program into toneData (SoundBankTones reads them as SoundTone **) */
     /* 0x54 */ s16 vabId;
     /* 0x56 */ s16 muted;         /* 1 after SsSetMute(1) */
     /* 0x58 */ u16 transferDone;  /* 1 once SsVabTransCompleted has run */
     /* 0x5A */ u16 transferring;  /* 1 while the VAB body is sent */
-    /* 0x5C */ s32 path;          /* heap copy of the file path given to Sound_InitBank */
+    /* 0x5C */ s8 *path;          /* heap copy of the file path given to Sound_InitBank */
     /* 0x60 */ s32 noteShift;     /* octave * 12 - 24, set by Sound_SetOctave */
 } SoundBank;
 
 /* Functions of src/game/sound_bank.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Sound_CreateBank(s32 initParam);
+SoundBank *Sound_CreateBank(s8 *path);
 SoundBankVtbl *Sound_GetBankClass(void);
 s32 Sound_GetTickRate(void);
 

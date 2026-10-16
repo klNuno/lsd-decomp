@@ -15,7 +15,7 @@ typedef struct ModelObjectMapView {
 } ModelObjectMapView;
 
 extern u8 g_modelBox[];
-static void ModelObject_ComputeBox(void *modelObject, u8 *out);
+static void ModelObject_ComputeBox(ModelObject *modelObject, u8 *out);
 /* A CLUT offset in VRAM pixels, added to a primitive's CLUT by ModelObject_OffsetClut */
 typedef struct ClutOffset {
     s32 x;
@@ -28,25 +28,8 @@ typedef struct ClutPos {
     s16 y;
 } ClutPos;
 
-static s32 ModelObject_GetVtbl(void);
+static ObjectVtbl *ModelObject_GetVtbl(void);
 static void ModelObject_SetReady(void *modelObject);
-
-/*
- * Output of ModelObject_GetBoxList: count 1, then the eight corners of the box, three u16 each.
- * c0 is (min, min, min), c1 (min, max y, min), c2 (max, max y, min), c3 (max, min y, min),
- * and c4 to c7 repeat them with max z. Same layout as ModelBoxRecord.
- */
-typedef struct ModelBoxOut {
-    s32 count;
-    u16 c0x, c0y, c0z;
-    u16 c1x, c1y, c1z;
-    u16 c2x, c2y, c2z;
-    u16 c3x, c3y, c3z;
-    u16 c4x, c4y, c4z;
-    u16 c5x, c5y, c5z;
-    u16 c6x, c6y, c6z;
-    u16 c7x, c7y, c7z;
-} ModelBoxOut;
 
 /* Scratch buffer of ModelObject_GetBoxList: min x, y, z then max x, y, z */
 typedef struct ModelBoxBuf {
@@ -54,70 +37,13 @@ typedef struct ModelBoxBuf {
     u16 buf[6];
 } ModelBoxBuf;
 
-extern u8 g_modelObjectVtbl[];
+extern ObjectVtbl g_modelObjectVtbl;
 s32 g_modelObjectReady;
 
-/*
- * One primitive of a TMD object, the Sony packet (psx-spx "TMD - Modeling Data for OS Library").
- * The GPU polygon code is in mode (0x20 to 0x3F). flag bit 2 selects the gouraud layout, which
- * pushes the vertex index words 8 bytes down, so one offset holds a different word per code.
- * ModelObject_NextPrim reads only the vertex index words. The names below are those indexes for
- * the flat layout. In the gouraud layout the same field is read as the next vertex's index.
- */
-typedef struct ModelPrim {
-    u8 olen;     /* +0x00 output packet size in words */
-    u8 ilen;     /* +0x01 input packet size in words */
-    u8 flag;     /* +0x02 bit 2: gouraud, the vertex indexes move */
-    u8 mode;     /* +0x03 GPU command 0x20 to 0x3F */
-    u16 i04;
-    u16 clut;    /* +0x06 CBA of a textured primitive: clut x / 16 + clut y * 64 */
-    u16 v0;      /* +0x08 flat untextured (0x21, 0x23, 0x29, 0x2B); gouraud puts a normal here */
-    u16 v1;      /* +0x0A */
-    u16 v2;      /* +0x0C */
-    u16 v3;      /* +0x0E quad only; a triangle ends here */
-    u16 i10;     /* +0x10 flat textured quad's fourth vertex (0x28) */
-    u16 i12;
-    u16 i14;     /* +0x14 flat textured unlit quad's first vertex (0x39) */
-    u16 i16;
-    u16 i18;
-    u16 i1A;
-    u16 i1C;     /* +0x1C gouraud textured unlit triangle's first vertex (0x35) */
-    u16 i1E;
-    u16 i20;
-    u16 i22;
-    u16 i24;     /* +0x24 gouraud textured unlit quad's first vertex (0x3D) */
-    u16 i26;
-    u16 i28;
-    u16 i2A;
-} ModelPrim;
 
-typedef struct ModelVec {
-    s16 x;
-    s16 y;
-    s16 z;
-} ModelVec;
 
-typedef struct ModelVertex {
-    ModelVec pos;
-    s16 pad;
-} ModelVertex;
 
-/* One TMD object table entry, 0x1C bytes (the same layout as TmdObjectEntry in tmd.h) */
-typedef struct ModelEntry {
-    ModelVertex *vertices;  /* +0x00 */
-    s32 vertexCount;        /* +0x04, read by ModelObject_ComputeBox */
-    void *normals;          /* +0x08 */
-    s32 normalCount;        /* +0x0C */
-    ModelPrim *primitives;  /* +0x10, read by ModelObject_NextPrim */
-    u32 primitiveCount;     /* +0x14, read by ModelObject_NextPrim */
-    s32 scale;              /* +0x18 */
-} ModelEntry;
 
-/* A model object as the mesh and draw functions read it: its TMD entry is at +0x10 */
-typedef struct ModelObjectView {
-    u8 pad_00[0x10];
-    ModelEntry *entry;
-} ModelObjectView;
 
 /* One box corner, u16 coordinates */
 typedef struct ModelBoxCorner {
@@ -135,12 +61,8 @@ typedef struct ModelBoxList {
     ModelBoxRecord recs[1];
 } ModelBoxList;
 
-typedef struct ModelBox {
-    ModelVec min;
-    ModelVec max;
-} ModelBox;
 
-static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
+static void *ModelObject_NextPrim(ModelObject *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
 
 typedef struct HitLongVec { s32 x; s32 y; s32 z; s32 pad; } HitLongVec;
 typedef struct HitShortVec { s16 x; s16 y; s16 z; s16 pad; } HitShortVec;
@@ -148,25 +70,25 @@ typedef struct HitFraction { s32 num; s32 den; } HitFraction;
 #define ABS(x) ((x) < 0 ? ~(x) + 1 : (x))
 #define FIX_DIV(n, d) ((((n) / (d)) != 0 ? ((n) / (d)) << 16 : ((n) * (d)) & 0x80000000) | (ABS((n) % (d)) << 16) / ABS(d))
 
-void *ModelObject_Create(s32 tmdObject) {
-    void *modelObject;
+ModelObject *ModelObject_Create(ModelEntry *tmdObject) {
+    ModelObject *modelObject;
 
     modelObject = Heap_Alloc(0x24);
     if (modelObject != 0) {
-        ((ObjectVtbl *)ModelObject_GetVtbl())->init(modelObject, tmdObject);
+        ModelObject_GetVtbl()->init(modelObject, tmdObject);
         return modelObject;
     }
     return 0;
 }
 
-void ModelObject_Init(ModelObject *modelObject, s32 tmdObject) {
-    s32 vtbl;
+void ModelObject_Init(ModelObject *modelObject, ModelEntry *tmdObject) {
+    ObjectVtbl *vtbl;
 
-    ((ObjectVtbl *)Object_GetBaseVtbl())->init(modelObject);
+    Object_GetBaseVtbl()->init(modelObject);
     vtbl = ModelObject_GetVtbl();
-    modelObject->tmdObject = tmdObject;
+    modelObject->entry = tmdObject;
     modelObject->vtbl = vtbl;
-    modelObject->tmdObjectBase = tmdObject - 0xC;
+    modelObject->tmdObjectBase = (s32)tmdObject - 0xC;
     ModelObject_SetReady(modelObject);
 }
 
@@ -186,19 +108,19 @@ s32 ModelObject_GetObjectAt(ModelObject *modelObject, s32 index) {
 void ModelObject_EmptySlot4C(void) {
 }
 
-static s32 ModelObject_GetVtbl(void) {
-    return (s32)g_modelObjectVtbl;
+static ObjectVtbl *ModelObject_GetVtbl(void) {
+    return &g_modelObjectVtbl;
 }
 
 static void ModelObject_SetReady(void *modelObject) {
     g_modelObjectReady = 1;
 }
 
-s32 ModelObject_IsReady(s32 modelObject) {
+s32 ModelObject_IsReady(ModelObject *modelObject) {
     return g_modelObjectReady;
 }
 
-static void ModelObject_ComputeBox(void *modelObject, u8 *out) {
+static void ModelObject_ComputeBox(ModelObject *modelObject, u8 *out) {
     ModelBox *box;
     ModelVertex *v;
     s16 *miny;
@@ -215,8 +137,8 @@ static void ModelObject_ComputeBox(void *modelObject, u8 *out) {
     maxx = &box->max.x;
     maxy = &box->max.y;
     maxz = &box->max.z;
-    v = ((ModelObjectView *)modelObject)->entry->vertices;
-    remaining = ((ModelObjectView *)modelObject)->entry->vertexCount - 1;
+    v = modelObject->entry->vertices;
+    remaining = modelObject->entry->vertexCount - 1;
     box->min.x = v->pos.x;
     box->min.y = v->pos.y;
     box->min.z = v->pos.z;
@@ -244,7 +166,7 @@ static void ModelObject_ComputeBox(void *modelObject, u8 *out) {
     }
 }
 
-void ModelObject_UpdateBox(void *modelObject) {
+void ModelObject_UpdateBox(ModelObject *modelObject) {
     ModelObject_ComputeBox(modelObject, g_modelBox);
 }
 
@@ -252,35 +174,35 @@ void *ModelObject_GetBox(void) {
     return g_modelBox;
 }
 
-void ModelObject_GetBoxList(void *modelObject, ModelBoxOut *out) {
+void ModelObject_GetBoxList(ModelObject *modelObject, NodeBoxList *out) {
     ModelBoxBuf box;
 
     ModelObject_ComputeBox(modelObject, (u8 *)box.buf);
     box.one = 1;
-    out->c0x = box.buf[0];
-    out->c0y = box.buf[1];
-    out->c0z = box.buf[2];
-    out->c1x = box.buf[0];
-    out->c1y = box.buf[4];
-    out->c1z = box.buf[2];
-    out->c2x = box.buf[3];
-    out->c2y = box.buf[4];
-    out->c2z = box.buf[2];
-    out->c3x = box.buf[3];
-    out->c3y = box.buf[1];
-    out->c3z = box.buf[2];
-    out->c4x = box.buf[0];
-    out->c4y = box.buf[1];
-    out->c4z = box.buf[5];
-    out->c5x = box.buf[0];
-    out->c5y = box.buf[4];
-    out->c5z = box.buf[5];
-    out->c6x = box.buf[3];
-    out->c6y = box.buf[4];
-    out->c6z = box.buf[5];
-    out->c7x = box.buf[3];
-    out->c7y = box.buf[1];
-    out->c7z = box.buf[5];
+    out->corners[0].x = box.buf[0];
+    out->corners[0].y = box.buf[1];
+    out->corners[0].z = box.buf[2];
+    out->corners[1].x = box.buf[0];
+    out->corners[1].y = box.buf[4];
+    out->corners[1].z = box.buf[2];
+    out->corners[2].x = box.buf[3];
+    out->corners[2].y = box.buf[4];
+    out->corners[2].z = box.buf[2];
+    out->corners[3].x = box.buf[3];
+    out->corners[3].y = box.buf[1];
+    out->corners[3].z = box.buf[2];
+    out->corners[4].x = box.buf[0];
+    out->corners[4].y = box.buf[1];
+    out->corners[4].z = box.buf[5];
+    out->corners[5].x = box.buf[0];
+    out->corners[5].y = box.buf[4];
+    out->corners[5].z = box.buf[5];
+    out->corners[6].x = box.buf[3];
+    out->corners[6].y = box.buf[4];
+    out->corners[6].z = box.buf[5];
+    out->corners[7].x = box.buf[3];
+    out->corners[7].y = box.buf[1];
+    out->corners[7].z = box.buf[5];
     out->count = 1;
 }
 
@@ -335,7 +257,7 @@ void ModelBox_ShiftList(ModelBoxList *list, s32 alongX, s32 side, s32 delta) {
 }
 
 /* Ray against the triangles and quads of one model object: keeps the nearest hit */
-s32 ModelObject_RayTest(ModelObjectView *modelObject, s32 *hitDist, ModelVec *hitPos, s32 *hitHeight,
+s32 ModelObject_RayTest(ModelObject *modelObject, s32 *hitDist, ModelVec *hitPos, s32 *hitHeight,
                   ModelVec *from, ModelVec *to) {
     ModelVec corners[4];
     HitLongVec normal;
@@ -473,7 +395,7 @@ s32 ModelObject_RayTest(ModelObjectView *modelObject, s32 *hitDist, ModelVec *hi
 }
 
 /* Walks the primitives of a model object, one per call, and copies up to four corners to out */
-static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex) {
+static void *ModelObject_NextPrim(ModelObject *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex) {
     s32 idx[4];
     s32 size;
     s32 i;
@@ -663,14 +585,14 @@ static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim,
 }
 
 /* Moves the CLUT of the model's first primitive: CBA = clut x / 16 + clut y * 64 */
-static void ModelObject_OffsetClut(ModelObjectView *modelObject, ClutOffset *offset) {
+static void ModelObject_OffsetClut(ModelObject *modelObject, ClutOffset *offset) {
     ModelPrim *prim = modelObject->entry->primitives;
     prim->clut += offset->x / 16;
     prim->clut += offset->y * 64;
 }
 
 /* Sets the CLUT of the model's first primitive to the VRAM position pos */
-void ModelObject_SetClut(ModelObjectView *modelObject, ClutPos *pos) {
+void ModelObject_SetClut(ModelObject *modelObject, ClutPos *pos) {
     ModelPrim *prim = modelObject->entry->primitives;
 
     prim->clut = pos->x / 16;

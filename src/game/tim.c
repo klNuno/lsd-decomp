@@ -10,7 +10,7 @@
  * File boundaries: proven (docs/layout.md)
  */
 
-extern u8 g_timVtbl[];
+extern TimVtbl g_timVtbl;
 
 Tim *Tim_New(char *path) {
     Tim *tim;
@@ -28,7 +28,7 @@ void Tim_Init(Tim *tim, char *path) {
     File_GetBackendVtbl()->init(tim);
     tim->vtbl = Tim_GetVtbl();
     tim->unk48 = 0;
-    tim->fade = 0;
+    tim->fade = NULL;
     if (path != 0) {
         tim->vtbl->base.loadAsync(tim, path);
     }
@@ -92,7 +92,7 @@ void Tim_GetInfo(Tim *tim, void *image) {
 }
 
 TimVtbl *Tim_GetVtbl(void) {
-    return (TimVtbl *)g_timVtbl;
+    return &g_timVtbl;
 }
 
 /*

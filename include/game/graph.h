@@ -4,6 +4,8 @@
 #include "common.h"
 
 /* Functions of src/game/graph.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Graph_New(s32 dreamSys);
+struct Screen;
+struct DreamSys;
+struct Screen *Graph_New(struct DreamSys *dreamSys);
 
 #endif

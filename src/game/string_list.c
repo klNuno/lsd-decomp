@@ -19,7 +19,7 @@ typedef struct StringListVtbl StringListVtbl;
 struct StringListVtbl {
     s32 classWord;                              /* 0x00 first word, value 0x20 in the data, meaning unknown */
     u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this file */
-    void (*init)(StringList *, s32 **, s32);                  /* 0x08 StringList_Init */
+    void (*init)(StringList *, char **, s32);                 /* 0x08 StringList_Init */
     void (*destroy)(StringList *);                            /* 0x0C StringList_Destroy */
     void (*watch)();                                          /* 0x10 StringList_Watch */
     void (*unwatch)();                                        /* 0x14 StringList_Unwatch */
@@ -55,7 +55,7 @@ struct StringList {
     s32 mode;                                /* 0x0C set by init (StringList_Init) */
     s32 count;                               /* 0x10 set by init */
     s32 maxLength;                           /* 0x14 set by init */
-    s32 **strings;                           /* 0x18 set by init */
+    u8 **strings;                            /* 0x18 set by init: a copy of each string */
     s32 *lengths;                            /* 0x1C set by init */
     s32 top;                              /* 0x20 cleared by reset (StringList_Reset) */
     s32 column;                              /* 0x24 cleared by reset (StringList_Reset) */
@@ -71,21 +71,21 @@ struct StringList {
 static StringListVtbl *StringList_GetVtbl(void);
 static void StringList_ClearSenders(StringList *list);
 
-s32 StringList_New(s32 strings, s32 mode) {
+void *StringList_New(char **strings, s32 mode) {
     void *list;
 
     list = Heap_Alloc(0x54);
     if (list != NULL) {
-        StringList_GetVtbl()->init(list, (s32 **)strings, mode);
-        return (s32)list;
+        StringList_GetVtbl()->init(list, strings, mode);
+        return list;
     }
-    return 0;
+    return NULL;
 }
 
-void StringList_Init(StringList *list, s32 **strings, s32 mode) {
+void StringList_Init(StringList *list, char **strings, s32 mode) {
     s32 len;
     s32 index;
-    s32 **cursor;
+    char **cursor;
     s32 unused[2];
 
     index = 0;
@@ -105,16 +105,16 @@ void StringList_Init(StringList *list, s32 **strings, s32 mode) {
 
     if (list->count > 0) {
         do {
-            len = strlen((u8 *)*cursor);
+            len = strlen(*cursor);
             if (mode == 1) {
                 len /= 2;
             }
             list->lengths[index] = len;
             list->strings[index] = Heap_Alloc(len + 4);
             if (mode == 1) {
-                Text_Decode((s8 *)list->strings[index], (u8 *)*cursor);
+                Text_Decode(list->strings[index], *cursor);
             } else {
-                strcpy((s8 *)list->strings[index], (u8 *)*cursor);
+                strcpy(list->strings[index], *cursor);
             }
             list->maxLength = (list->maxLength < len) ? len : list->maxLength;
             cursor++;
@@ -137,10 +137,10 @@ void StringList_Destroy(StringList *list) {
     s32 index;
 
     for (index = 0; index < list->count; index++) {
-        Heap_Free((s32)list->strings[index]);
+        Heap_Free(list->strings[index]);
     }
-    Heap_Free((s32)list->lengths);
-    Heap_Free((s32)list->strings);
+    Heap_Free(list->lengths);
+    Heap_Free(list->strings);
     Object_GetBaseVtbl()->destroy(list);
 }
 
@@ -238,7 +238,7 @@ typedef struct CardList {
     u8 pad_04[0x10 - 0x04];
     s32 count;            /* 0x10 rows in the list */
     s32 width;            /* 0x14 characters of the longest row */
-    s32 *offsets;         /* 0x18 row i starts at text + offsets[i] */
+    u8 **strings;         /* 0x18 the rows (StringList.strings) */
     u8 pad_1C[0x20 - 0x1C];
     s32 top;              /* 0x20 first visible row */
     s32 column;           /* 0x24 first visible character (text base for StringList_FormatRow) */
@@ -247,7 +247,7 @@ typedef struct CardList {
     s32 stateTicks;        /* 0x30 */
     s32 pad;            /* 0x34 unwatched by setMode and the destructor */
     s32 clock;
-    s32 sound;
+    CardListOwner *sound; /* 0x3C its slot 0x80 plays a tone */
     CardText *rows[4];    /* 0x40 visible rows */
     CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
 } CardList;
@@ -255,35 +255,35 @@ extern u8 g_stringListCursorColor[];
 extern u8 g_stringListRowColor[];
 s32 g_stringListRowX;
 s32 g_stringListRowY;
-static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text);
+static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, s32 column);
 static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight);
 extern s8 g_selectTimName[];
 extern s8 g_cardDirName[];
 extern s8 g_timExtension[];
 extern s32 g_stringListBgPos[];
 extern s32 g_stringListBgRect[];
-extern u8 g_stringListVtbl[];
+extern StringListVtbl g_stringListVtbl;
 
 INCLUDE_RODATA("asm/nonmatchings/game/string_list", g_stringListAlphabetText);
 
 /* Slot 0x44: open the list with background CARD\SELECT.TIM and the rows in FONTICON. */
 void StringList_Open(CardList *list, s32 parent) {
     s8 path[0x20];
-    CardText *file;
+    Tim *file;
     CardText *background;
-    CardText *iconFile;
+    Tim *iconFile;
 
     if ((parent != 0) && (list->background == NULL)) {
-        file = Tim_New((s32)File_JoinPath(path, g_selectTimName, g_cardDirName, g_timExtension));
-        file->vt->upload(file);
-        list->background = ScreenSprite_Create(file, g_stringListBgRect, 0);
-        file->vt->delete_(file);
+        file = Tim_New(File_JoinPath(path, g_selectTimName, g_cardDirName, g_timExtension));
+        file->vtbl->upload(file);
+        list->background = (CardText *)ScreenSprite_Create(file, g_stringListBgRect, 0);
+        file->vtbl->base.delete_(file);
         background = list->background;
         background->vt->attach(background, parent, g_stringListBgPos);
-        iconFile = Tim_New((s32)File_JoinPath(path, (s8 *)"FONTICON\0\0\0\0\0\0\0", g_cardDirName, g_timExtension));
-        iconFile->vt->upload(iconFile);
+        iconFile = Tim_New(File_JoinPath(path, "FONTICON\0\0\0\0\0\0\0", g_cardDirName, g_timExtension));
+        iconFile->vtbl->upload(iconFile);
         list->vt->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
-        iconFile->vt->delete_(iconFile);
+        iconFile->vtbl->base.delete_(iconFile);
     }
 }
 
@@ -298,7 +298,7 @@ void StringList_Close(CardList *list) {
     }
 }
 
-void StringList_WatchPair(CardList *list, s32 pad, s32 clock, s32 sound) {
+void StringList_WatchPair(CardList *list, s32 pad, s32 clock, CardListOwner *sound) {
     list->vt->watch(list, pad);
     list->vt->watch(list, clock);
     list->sound = sound;
@@ -377,7 +377,7 @@ void StringList_OnKey(CardList *list, s32 sender, s32 code) {
 }
 
 void StringList_PlayTone(CardList *list, s32 tone) {
-    CardListOwner *owner = (CardListOwner *)list->sound;
+    CardListOwner *owner = list->sound;
     if (owner != NULL) {
         owner->vt->playTone(owner, tone, 0x60, 0x60);
     }
@@ -443,7 +443,7 @@ void StringList_CursorDown(CardList *list) {
 }
 
 /* Slot 0x8C: build up to 4 row texts 10 pixels apart, then highlight the cursor row. */
-void StringList_CreateRows(CardList *list, s32 parent, s32 font, s32 top, s32 column, s32 cursor) {
+void StringList_CreateRows(CardList *list, s32 parent, Tim *font, s32 top, s32 column, s32 cursor) {
     u8 text[0x1C];
     s32 pos[4];
     s32 i;
@@ -463,8 +463,8 @@ void StringList_CreateRows(CardList *list, s32 parent, s32 font, s32 top, s32 co
         i = 0;
         if (n > 0) {
             do {
-                StringList_FormatRow(list, text, i, top, (u8 *)column);
-                created = (CardText *)Label_Create(font, 0x1A, (s32)text);
+                StringList_FormatRow(list, text, i, top, column);
+                created = (CardText *)Label_Create(font, 0x1A, text);
                 *row = created;
                 created->vt->attach(created, parent, pos);
                 obj = *row;
@@ -524,17 +524,17 @@ void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 
     }
 }
 
-/* Copy row (top + i) into out, padded with spaces to 26 characters. */
-static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, u8 *text) {
+/* Copy row (top + i) from character column into out, padded with spaces to 26 characters. */
+static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, s32 column) {
     s32 idx = top + i;
     s32 len;
     s32 j;
 
-    len = strlen(text + list->offsets[idx]);
+    len = strlen(list->strings[idx] + column);
     if (len >= 0x1B) {
         len = 0x1A;
     }
-    memcpy(out, text + list->offsets[idx], len);
+    memcpy(out, list->strings[idx] + column, len);
     for (j = len; j < 0x1A; j++) {
         out[j] = 0x20;
     }
@@ -585,5 +585,5 @@ s32 StringList_GetCursor(CardList *list) {
 }
 
 static StringListVtbl *StringList_GetVtbl(void) {
-    return (StringListVtbl *)g_stringListVtbl;
+    return &g_stringListVtbl;
 }

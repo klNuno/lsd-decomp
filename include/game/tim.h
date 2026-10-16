@@ -51,7 +51,7 @@ typedef struct Tim {
     u8 pad_18[0x2C - 0x18];   /* the other File fields */
     TimImage image;           /* 0x2C filled by getInfo before each upload */
     s32 unk48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
-    s32 fade;                 /* 0x4C address of the TixFade of its palette row, 0 at init */
+    struct TixFade *fade;     /* 0x4C the TixFade of its palette row (tix.h), NULL at init */
 } Tim;
 
 /* Functions of src/game/tim.c that other files call or reference (docs/naming.md, Prototypes) */

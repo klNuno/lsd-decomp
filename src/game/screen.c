@@ -53,24 +53,24 @@ void Screen_Run(Screen *screen, ScreenEnv *env, s32 noLoop) {
     ScreenVtbl *vtbl;
     View *view;
     SceneNode *root;
-    s32 object;
+    void *object;           /* the clock, the root, then the view: each from env or made new */
 
     vtbl = screen->vtbl;
-    object = (s32)env->clock;
-    if (object == 0) {
-        object = (s32)Clock_Create();
+    object = env->clock;
+    if (object == NULL) {
+        object = Clock_Create();
     }
-    screen->clock = (Clock *)object;
-    object = (s32)env->root;
-    if (object == 0) {
-        object = (s32)RootNode_Create();
+    screen->clock = object;
+    object = env->root;
+    if (object == NULL) {
+        object = RootNode_Create();
     }
-    screen->root = (SceneNode *)object;
-    object = (s32)env->view;
-    if (object == 0) {
-        object = (s32)View_New();
+    screen->root = object;
+    object = env->view;
+    if (object == NULL) {
+        object = View_New();
     }
-    screen->view = (View *)object;
+    screen->view = object;
     screen->env = env;
     view = screen->view;
     vtbl->watch(screen, env->display);

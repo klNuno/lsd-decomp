@@ -15,78 +15,11 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The animations of a model file (+0x30): animation i is anims->list->entries[i]->data. */
-typedef struct ModelAnimData {
-    u8 pad_00[0x4];
-    s32 frameCount; /* 0x04 */
-    /* 0x08 the first frame: u16 command count at +2, commands from +8 (Model_ApplyFrame) */
-} ModelAnimData;
-
-typedef struct ModelAnimEntry {
-    u8 pad_00[0x10];
-    ModelAnimData *data; /* 0x10 */
-} ModelAnimEntry;
-
-typedef struct ModelAnimList {
-    u8 pad_00[0x8];
-    ModelAnimEntry *entries[1]; /* 0x08 */
-} ModelAnimList;
-
-typedef struct ModelAnimSet {
-    u8 pad_00[0x10];
-    ModelAnimList *list; /* 0x10 */
-} ModelAnimSet;
-
-/* The object at +0x2C of a model file: frame command 2 asks its slot 0x80 for a texture. */
-typedef struct ModelTexturesVtbl {
-    u8 pad_00[0x80];
-    s32 (*getModel)(void *self, s32 index); /* 0x80 Tmd_GetModel (tmd.h TmdVtbl) */
-} ModelTexturesVtbl;
-
-typedef struct ModelTextures {
-    ModelTexturesVtbl *vt;
-} ModelTextures;
-
-/* A model's file object at +0x5C: part ids, frame commands, animations. */
-typedef struct ModelFileVtbl {
-    u8 pad_00[0x4];
-    void *(*delete_)(void *self);            /* 0x04 */
-    u8 pad_08[0x64 - 0x08];
-    void (*onLoaded)(void *self, void *arg);  /* 0x64 Mom_OnLoaded (file_base.h FileVtbl); Behavior_Type74 passes a 4-byte word */
-    u8 pad_68[0x80 - 0x68];
-    s32 (*getPartIds)();                     /* 0x80 (self, ids, &current): fills the part ids, returns their count */
-    s32 *(*readCommand)();                   /* 0x84 (self, command, &part, &type, &flags, &size): a frame command's data */
-} ModelFileVtbl;
-
-typedef struct ModelFile {
-    ModelFileVtbl *vt;
-    u8 pad_04[0x2C - 0x04];
-    ModelTextures *textures; /* 0x2C */
-    ModelAnimSet *anims;     /* 0x30 */
-} ModelFile;
-
-/* A part of a model (one per object of its TMD, made by Actor_New). */
-typedef struct ModelPartVtbl {
-    u8 pad_00[0x4];
-    void *(*delete_)(void *self);                         /* 0x04 */
-    u8 pad_08[0x4C - 0x08];
-    void (*attach)(void *self, void *parent, s32 child); /* 0x4C SceneNode_Attach */
-    u8 pad_50[0x60 - 0x50];
-    void (*setVisible)(void *self, s32 visible);         /* 0x60 SceneNode_SetVisible (SpriteNode_SetVisible in the part class) */
-    u8 pad_64[0x70 - 0x64];
-    void (*setLightFlags)(void *self, s32 flags);        /* 0x70 SceneNode_SetLightFlags */
-    u8 pad_74[0x88 - 0x74];
-    void (*sendBoxes)(void *self, s32 message);          /* 0x88 Actor_SendBoxes: messages 6, 7, 8 after a move */
-} ModelPartVtbl;
-
-typedef struct ModelPart {
-    ModelPartVtbl *vt;
-    u8 pad_04[0x10 - 0x04];
-    s32 flags;              /* 0x10 frame command 0 masks and sets it */
-    Coord2 *coord;      /* 0x14 */
-    u8 pad_18[0x20 - 0x18];
-    s32 texture;            /* 0x20 frame command 2 gives it a texture only while it is 0 */
-} ModelPart;
+/* What Model_LoadFile loads a model from: a ready file object at +0xC, else what Mom_Create reads. */
+typedef struct ModelSource {
+    FileSource source;
+    Mom *file;       /* 0x0C */
+} ModelSource;
 
 /* The parent class of Model (returned by Actor_GetVtbl, unit 80051F24): the slots Model's methods chain to. */
 typedef struct ModelParentVtbl {
@@ -113,7 +46,7 @@ typedef struct ModelParentVtbl {
 typedef struct ModelVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(void *self);                          /* 0x04 Object_Delete */
-    s32 (*construct)(void *self, s32 source, s32 soundBank); /* 0x08 Model_Construct */
+    s32 (*construct)(void *self, ModelSource *source, SoundBank *soundBank); /* 0x08 Model_Construct */
     u8 pad_0C[0x10 - 0x0C];
     void (*watch)(void *self, void *other);                /* 0x10 */
     void (*unwatch)(void *self, void *other);              /* 0x14 */
@@ -129,7 +62,7 @@ typedef struct ModelVtbl {
     void (*setSpeed)(void *self, s32 speed);               /* 0xE4 Actor_SetSpeed */
     u8 pad_E8[0xF0 - 0xE8];
     void (*setAnim6Flag)(void *self, s32 value);           /* 0xF0 Model_SetAnim6Flag */
-    s32 (*load)(void *self, s32 source);                   /* 0xF4 Model_Load */
+    s32 (*load)(void *self, ModelSource *source);   /* 0xF4 Model_Load */
     void (*unload)(void *self);                            /* 0xF8 Model_Unload */
     u8 pad_FC[0x100 - 0xFC];
     s32 (*createParts)(void *self);                        /* 0x100 Model_CreateParts */
@@ -163,12 +96,12 @@ typedef struct Model {
     void *clock;             /* 0x50 the object Model_Attach watches, unwatched by Model_Detach */
     u8 pad_54[0x58 - 0x54];
     struct SoundBank *soundBank; /* 0x58 */
-    ModelFile *file;           /* 0x5C */
+    Mom *file;                 /* 0x5C */
     s32 ownsFile;              /* 0x60 1 when the file was loaded here, 0 when borrowed */
     s32 anim6Flag;             /* 0x64 setAnim6Flag; 1 makes tickA play part animation 6 */
-    ModelPart *part;           /* 0x68 the part the file names as current */
+    SceneNode *part;           /* 0x68 the part the file names as current */
     s32 partCount;             /* 0x6C */
-    ModelPart **parts;         /* 0x70 */
+    SceneNode **parts;         /* 0x70 one actor (Actor_New) per object of the file's TMD */
     u8 *partIds;               /* 0x74 one id per part, the file's numbering */
     void (*tickFn)(void *self); /* 0x78 run each tick while tickEnabled, chosen by setTickMode */
     s32 animation;             /* 0x7C */
@@ -180,11 +113,6 @@ typedef struct Model {
     struct Model *target;      /* 0x94 */
 } Model;
 
-/* What Model_LoadFile loads a model from: a ready file object at +0xC, else what Mom_Create reads. */
-typedef struct ModelSource {
-    u8 pad_00[0xC];
-    ModelFile *file; /* 0x0C */
-} ModelSource;
 static s32 Model_LoadFile();
 static void Model_FreeFile();
 static s32 Model_BuildParts(Model *model);
@@ -193,7 +121,7 @@ static void Model_ReleaseParts(Model *model);
 ModelParentVtbl *Actor_GetVtbl(void);
 typedef struct ModelBaseVtbl {
     u8 pad[0x8];
-    s32 (*construct)(void *, s32, s32);                 /* 0x08 Model_Construct */
+    s32 (*construct)(void *, ModelSource *, SoundBank *); /* 0x08 Model_Construct */
     void (*destruct)(void *);                           /* 0x0C Model_Destruct */
     u8 pad1[0x4C - 0x10];
     void (*attach)(void *, void *, void *, s32, s32);   /* 0x4C Model_Attach */
@@ -204,23 +132,16 @@ typedef struct ModelBaseVtbl {
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
 } ModelBaseVtbl;
-typedef struct Unk_80065CEC_Obj {
-    ObjectVtbl *vt;
-} Unk_80065CEC_Obj;
-typedef struct Unk_80065C5C {
-    u8 pad[0xC];
-    Unk_80065CEC_Obj *unkC;
-} Unk_80065C5C;
 static void Model_ReleaseParts(Model *model);
-extern u8 g_modelVtbl[];
+extern ModelBaseVtbl g_modelVtbl;
 
-void *Model_New(s32 source, s32 soundBank) {
-    void *model;
+Model *Model_New(ModelSource *source, SoundBank *soundBank) {
+    Model *model;
 
-    model = ((void *)Heap_Alloc(0x98));
+    model = Heap_Alloc(0x98);
     if (model != NULL) {
-        if (((ModelVtbl *)Model_GetVtbl())->construct(model, source, soundBank) == 0) {
-            Heap_Free((s32)model);
+        if (Model_GetVtbl()->construct(model, source, soundBank) == 0) {
+            Heap_Free(model);
             return NULL;
         }
         return model;
@@ -228,7 +149,7 @@ void *Model_New(s32 source, s32 soundBank) {
     return NULL;
 }
 
-void *Model_Construct(Model *model, s32 source, SoundBank *soundBank) {
+void *Model_Construct(Model *model, ModelSource *source, SoundBank *soundBank) {
     if (Actor_GetVtbl()->construct(model) != 0) {
         model->vt = (ModelVtbl *)Model_GetVtbl();
         model->soundBank = soundBank;
@@ -261,7 +182,7 @@ void Model_OnNotify(Model *model, u16 **sender, s32 message) {
 }
 
 void Model_Init(Model *model) {
-    ModelPart *part;
+    SceneNode *part;
 
     Actor_GetVtbl()->setVisible(model, 0);
     model->vt->setAnim6Flag(model, 1);
@@ -272,7 +193,7 @@ void Model_Init(Model *model) {
     model->vt->setAnimation(model, 0);
     part = model->part;
     if (part != NULL) {
-        SceneNode_LinkModel(model, part->texture);
+        SceneNode_LinkModel(model, part->model);
     }
 }
 
@@ -300,22 +221,22 @@ void Model_Detach(Model *model) {
 }
 
 void Model_SetVisible(Model *model, s32 visible) {
-    ModelPart **p;
+    SceneNode **p;
     s32 i;
 
     p = model->parts;
     for (i = 0; i < model->partCount; i++, p++) {
-        (*p)->vt->setVisible(*p, visible);
+        (*p)->vtbl->setVisible(*p, visible);
     }
 }
 
 void Model_SetLightFlags(Model *model, s32 flags) {
-    ModelPart **p;
+    SceneNode **p;
     s32 i;
 
     p = model->parts;
     for (i = 0; i < model->partCount; i++, p++) {
-        (*p)->vt->setLightFlags(*p, flags);
+        (*p)->vtbl->setLightFlags(*p, flags);
     }
     Actor_GetVtbl()->setLightFlags(model, flags);
 }
@@ -353,7 +274,7 @@ static s32 Model_LoadFile(Model *model, ModelSource *source) {
         model->file = source->file;
         model->ownsFile = 0;
     } else {
-        model->file = Mom_Create(source);
+        model->file = Mom_Create(&source->source);
         model->ownsFile = 1;
     }
     if (model->file != NULL) {
@@ -364,11 +285,11 @@ static s32 Model_LoadFile(Model *model, ModelSource *source) {
 }
 
 static void Model_FreeFile(Model *model) {
-    ModelFile *file;
+    Mom *file;
 
     model->vt->freeParts(model);
     if (model->ownsFile != 0) {
-        file = model->file->vt->delete_(model->file);
+        file = model->file->vtbl->base.delete_(model->file);
     } else {
         file = 0;
     }
@@ -405,21 +326,21 @@ void Model_FreeParts(Model *model) {
 }
 
 static s32 Model_BuildParts(Model *model) {
-    ModelFile *file;
+    Mom *file;
     s32 current;
     s32 n;
     s32 i;
-    ModelPart **p;
-    ModelPart *part;
+    SceneNode **p;
+    SceneNode *part;
 
     file = model->file;
-    n = file->vt->getPartIds(file, 0, &current) & 0xFF;
-    model->parts = (ModelPart **)Heap_Alloc(n * 4);
+    n = file->vtbl->scanFirstFrame(file, 0, &current) & 0xFF;
+    model->parts = Heap_Alloc(n * 4);
     if (model->parts != NULL) {
-        model->partIds = (u8 *)Heap_Alloc(n);
+        model->partIds = Heap_Alloc(n);
         if (model->partIds != NULL) {
             file = model->file;
-            file->vt->getPartIds(file, model->partIds, &current);
+            file->vtbl->scanFirstFrame(file, model->partIds, &current);
             p = model->parts;
             model->partCount = 0;
             for (i = 0; i < n; i++) {
@@ -441,14 +362,14 @@ fail:
 }
 
 static void Model_ReleaseParts(Model *model) {
-    ModelPart **p;
-    ModelPart *part;
+    SceneNode **p;
+    SceneNode *part;
 
     if (model->parts != NULL && model->partIds != NULL) {
         p = model->parts;
         while (model->partCount-- > 0) {
             part = *p++;
-            part->vt->delete_(part);
+            part->vtbl->delete_(part);
         }
         model->part = 0;
     }
@@ -466,7 +387,7 @@ void Model_TickAnimation(Model *model) {
         model->animData = model->vt->applyFrame(model, model->animData, 0);
         if (++model->animFrame >= model->animLength) {
             model->animFrame = 0;
-            model->animData = (u8 *)model->file->anims->list->entries[model->animation]->data + 8;
+            model->animData = model->file->motions->data.header->table.tods[model->animation]->data.bytes + 8;
         }
     }
     model->coord->flg = 0;
@@ -495,13 +416,13 @@ void Model_StopTick(Model *model) {
 }
 
 void Model_TickForward(Model *model) {
-    ModelPart *part;
+    SceneNode *part;
 
     model->vt->moveZ(model, -0x1E, 0);
     if (model->anim6Flag == 1) {
         part = model->part;
         if (part != NULL) {
-            part->vt->sendBoxes(part, 6);
+            part->vtbl->sendBoxes(part, 6);
         }
     }
 }
@@ -524,8 +445,8 @@ void Model_PlaySound(Model *model, s32 sound) {
 
 void Model_SetAnimation(Model *model, s32 animation) {
     model->animation = animation;
-    model->animLength = model->file->anims->list->entries[animation]->data->frameCount;
-    model->animData = (u8 *) model->file->anims->list->entries[model->animation]->data + 8;
+    model->animLength = model->file->motions->data.header->table.tods[animation]->data.header->frameCount;
+    model->animData = model->file->motions->data.header->table.tods[model->animation]->data.bytes + 8;
     model->animFrame = 0;
     model->vt->applyFrame(model, model->animData, 0);
 }
@@ -568,7 +489,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
     u8 size;
     s32 *data;
     s32 n;
-    ModelPart *part;
+    SceneNode *part;
     Coord2 *coord;
     Coord2Param *param;
     s16 *s;
@@ -576,7 +497,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
     s32 *v;
     s32 i;
 
-    data = model->file->vt->readCommand(model->file, command, &id, &type, &flags, &size);
+    data = model->file->vtbl->readPacket(model->file, command, &id, &type, &flags, &size);
     n = Model_FindPart(model, id);
     if (n >= 0) {
         part = model->parts[n];
@@ -585,7 +506,7 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
         param = coord->param;
         switch (type) {
         case 0:
-            part->flags = (part->flags & data[0]) | data[1];
+            part->attribute = (part->attribute & data[0]) | data[1];
             break;
         case 1:
             if (flags & 1) {
@@ -643,15 +564,15 @@ s32 Model_ApplyCommand(Model *model, s32 command) {
             }
             break;
         case 2:
-            if (*(u16 *)data != 0 && part->texture == 0) {
-                SceneNode_LinkModel(part, model->file->textures->vt->getModel(model->file->textures, *(u16 *)data - 1));
+            if (*(u16 *)data != 0 && part->model == NULL) {
+                SceneNode_LinkModel(part, model->file->tmd->vtbl->getModel(model->file->tmd, *(u16 *)data - 1));
             }
             break;
         case 3:
             if (data[0] == 0 || data[0] == 0xFFFF) {
-                part->vt->attach(part, model, 0);
+                part->vtbl->attach(part, model, 0);
             } else {
-                part->vt->attach(part, model->parts[Model_FindPart(model, data[0])], 0);
+                part->vtbl->attach(part, model->parts[Model_FindPart(model, data[0])], 0);
             }
             break;
         }
@@ -680,5 +601,5 @@ void Model_ClearTarget(Model *model) {
 }
 
 ModelBaseVtbl *Model_GetVtbl(void) {
-    return (ModelBaseVtbl *)g_modelVtbl;
+    return &g_modelVtbl;
 }

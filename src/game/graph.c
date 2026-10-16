@@ -29,7 +29,7 @@ typedef struct Graph {
 /* g_graphVtbl: the MenuScreen slots (ScreenVtbl, slot 0x40 is Graph_LoadImage), plus one of its own. */
 typedef struct GraphVtbl {
     u8 pad_00[0x08];
-    void (*init)(void *, s32);       /* 0x008 Graph_Init */
+    void (*init)(void *, DreamSys *); /* 0x008 Graph_Init */
     u8 pad_0C[0x124 - 0x0C];
     void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
 } GraphVtbl;
@@ -37,15 +37,16 @@ typedef struct GraphVtbl {
 static GraphVtbl *Graph_GetVtable(void);
 
 /* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
-void *Graph_New(s32 dreamSys) {
-    void *graph;
+/* Returns a Screen *, the type Scene_RunScreen's factories return (Menu_New too). */
+Screen *Graph_New(DreamSys *dreamSys) {
+    Graph *graph;
 
     graph = Heap_Alloc(0x244);
-    if (graph != 0) {
+    if (graph != NULL) {
         Graph_GetVtable()->init(graph, dreamSys);
-        return graph;
+        return (Screen *)graph;
     }
-    return 0;
+    return NULL;
 }
 
 /* Graph_New's init (slot 0x08 of the graph vtable): the MenuScreen init with the sound file ETC\\ETCSE,
@@ -59,8 +60,8 @@ void Graph_Init(Graph *graph, DreamSys *dreamSys) {
     graph->screen.vtbl->reset(graph, dreamSys);
 }
 extern s32 g_graphReelColor;
-extern u8 g_graphBoxSize[];
-extern s32 g_graphNewestColor[];
+extern BoxSize g_graphBoxSize[];  /* incomplete: an 8-byte extern would be read through gp */
+extern u8 g_graphNewestColor[];
 /* A box color the graph steps down; signed bytes, as the code subtracts. */
 typedef struct GraphColor {
     s8 r;
@@ -125,11 +126,11 @@ void Graph_CreateSprites(Graph *graph) {
     s32 i;
     s32 step;
 
-    graph->boxes[0] = Box_Create((s32)g_graphBoxSize, (s32)g_graphNewestColor, 0);
+    graph->boxes[0] = Box_Create(g_graphBoxSize, g_graphNewestColor, 0);
     color = g_graphOldColor;
     i = 1;
     do {
-        graph->boxes[i] = Box_Create((s32)g_graphBoxSize, (s32)&color, 0);
+        graph->boxes[i] = Box_Create(g_graphBoxSize, (u8 *)&color, 0);
         step = (i < 7) ? 0x14 : 1;
         i++;
         color.r -= step;
@@ -144,7 +145,7 @@ void Graph_FreeSprites(Graph *graph) {
     s32 i;
     Widget *box;
 
-    Heap_Free((s32)graph->reelDays);
+    Heap_Free(graph->reelDays);
     for (i = 0; i < 100; i++) {
         box = graph->boxes[i];
         box->vtbl->delete_(box);

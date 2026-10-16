@@ -100,6 +100,21 @@ typedef struct TmdCtx {
 } TmdCtx;
 
 /* GPU packets, laid out by their code byte (0x20 F3 ... 0x3C GT4, set in Render_SortModel) */
+typedef struct PolyF3 {
+    u32 tag;
+    Rgbc rgbc;
+    s32 xy0;
+    s32 xy1;
+    s32 xy2;
+} PolyF3;
+typedef struct PolyF4 {
+    u32 tag;
+    Rgbc rgbc;
+    s32 xy0;
+    s32 xy1;
+    s32 xy2;
+    s32 xy3;
+} PolyF4;
 typedef struct PolyG3 {
     u32 tag;
     Rgbc c0;
@@ -111,7 +126,7 @@ typedef struct PolyG3 {
 } PolyG3;
 typedef struct PolyFT3 {
     u32 tag;
-    s32 rgbc;
+    Rgbc rgbc;
     s32 xy0;
     u16 uv0;
     u16 clut;
@@ -135,7 +150,7 @@ typedef struct PolyG4 {
 } PolyG4;
 typedef struct PolyFT4 {
     u32 tag;
-    s32 rgbc;
+    Rgbc rgbc;
     s32 xy0;
     u16 uv0;
     u16 clut;
@@ -183,31 +198,194 @@ typedef struct PolyGT4 {
     u16 pad3;
 } PolyGT4;
 
-/* The scene node's model reference: same layout as the coordinate system that
-   Scene_DrawNode passes to GsGetLs, and the model's vertex, normal and primitive tables */
-typedef struct TmdModel {
-    u8 *vertices;
-    s32 vertexCount;         /* TmdObjectEntry.vertexCount, not read by the renderer */
-    u8 *normals;
-    s32 normalCount;         /* TmdObjectEntry.normalCount, not read by the renderer */
-    u8 *primitives;          /* groups: u16 count, u16 type, then count faces */
-    s32 primitiveCount;
-} TmdModel;
-typedef struct TmdObject {
-    u32 attribute;           /* bit 31 skips the object; bits 3-4, 5, 6, 9-11 read below */
-    Coord2 *coord;
-    TmdModel *model;
-} TmdObject;
-typedef struct TmdOt {
-    u32 length;
-    s32 *org;
-} TmdOt;
+/* The packet being written, seen through the layout its code byte selects */
+typedef union GpuPacket {
+    u8 *b;
+    PrimHeader *head;
+    PolyF3 *f3;
+    PolyG3 *g3;
+    PolyFT3 *ft3;
+    PolyF4 *f4;
+    PolyG4 *g4;
+    PolyFT4 *ft4;
+    PolyGT3 *gt3;
+    PolyGT4 *gt4;
+} GpuPacket;
+
+/* One face of a model's primitive table. The first face of a group starts with the group's
+   count and type (Render_SortModel reads them there); the face layout depends on the type. */
+typedef struct TmdFaceHead {
+    u16 count;
+    u16 type;
+} TmdFaceHead;
+typedef struct TmdFaceF3 {
+    TmdFaceHead head;
+    Rgbc rgb;
+    u16 normal;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+} TmdFaceF3;
+typedef struct TmdFaceF3Grad {
+    TmdFaceHead head;
+    Rgbc rgb0;
+    Rgbc rgb1;
+    Rgbc rgb2;
+    u16 normal;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+} TmdFaceF3Grad;
+typedef struct TmdFaceF3Unlit {
+    TmdFaceHead head;
+    Rgbc rgb;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 pad;
+} TmdFaceF3Unlit;
+typedef struct TmdFaceFT3 {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    u16 normal;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+} TmdFaceFT3;
+typedef struct TmdFaceFT3Unlit {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    Rgbc rgb;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 pad;
+} TmdFaceFT3Unlit;
+typedef struct TmdFaceF4 {
+    TmdFaceHead head;
+    Rgbc rgb;
+    u16 normal;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+    u16 pad;
+} TmdFaceF4;
+typedef struct TmdFaceF4Unlit {
+    TmdFaceHead head;
+    Rgbc rgb;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+} TmdFaceF4Unlit;
+typedef struct TmdFaceFT4 {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    s32 uv3;
+    u16 normal;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+    u16 pad;
+} TmdFaceFT4;
+typedef struct TmdFaceFT4Unlit {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    s32 uv3;
+    Rgbc rgb;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+} TmdFaceFT4Unlit;
+typedef struct TmdFaceG3Unlit {
+    TmdFaceHead head;
+    Rgbc rgb0;
+    Rgbc rgb1;
+    Rgbc rgb2;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 pad;
+} TmdFaceG3Unlit;
+typedef struct TmdFaceGT3Unlit {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    Rgbc rgb0;
+    Rgbc rgb1;
+    Rgbc rgb2;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 pad;
+} TmdFaceGT3Unlit;
+typedef struct TmdFaceG4Unlit {
+    TmdFaceHead head;
+    Rgbc rgb0;
+    Rgbc rgb1;
+    Rgbc rgb2;
+    Rgbc rgb3;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+} TmdFaceG4Unlit;
+typedef struct TmdFaceGT4Unlit {
+    TmdFaceHead head;
+    s32 uv0;
+    s32 uv1;
+    s32 uv2;
+    s32 uv3;
+    Rgbc rgb0;
+    Rgbc rgb1;
+    Rgbc rgb2;
+    Rgbc rgb3;
+    u16 v0;
+    u16 v1;
+    u16 v2;
+    u16 v3;
+} TmdFaceGT4Unlit;
+typedef union TmdFace {
+    u8 *b;
+    TmdFaceHead *head;
+    TmdFaceF3 *f3;
+    TmdFaceF3Grad *f3Grad;
+    TmdFaceF3Unlit *f3Unlit;
+    TmdFaceFT3 *ft3;
+    TmdFaceFT3Unlit *ft3Unlit;
+    TmdFaceF4 *f4;
+    TmdFaceF4Unlit *f4Unlit;
+    TmdFaceFT4 *ft4;
+    TmdFaceFT4Unlit *ft4Unlit;
+    TmdFaceG3Unlit *g3Unlit;
+    TmdFaceGT3Unlit *gt3Unlit;
+    TmdFaceG4Unlit *g4Unlit;
+    TmdFaceGT4Unlit *gt4Unlit;
+} TmdFace;
 
 /* Views of triClip, quadClip and src for Render_CopyClipTri and Render_CopyClipQuad */
 typedef struct ClipRefs { ClipVertex *v[4]; } ClipRefs;
 
-extern u8 g_clipTriWork[];
-extern u8 g_clipQuadWork[];
+/* A clipper work area: the header, then the vertices and the slot table of Render_InitClipSlots */
+typedef union ClipWork {
+    ClipHeader header;
+    u8 b[1];
+} ClipWork;
+
+extern ClipWork g_clipTriWork;
+extern ClipWork g_clipQuadWork;
 extern s32 g_renderDivision;
 s32 g_clipScreenWidth; /* 320 in .sdata, never written */
 s32 g_clipScreenHeight; /* 240 in .sdata, never written */
@@ -219,18 +397,18 @@ static void Render_CheckScreenBox(TmdCtx *ctx, s32 count);
 static void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx);
 static s32 Render_ProjectTri(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, void (*storeXy)(u8 *));
 static s32 Render_ProjectQuad(u8 *prim, TmdCtx *ctx, u16 i0, u16 i1, u16 i2, u16 i3, void (*storeXy)(u8 *, s32));
-static void Render_StoreXyF3(void *prim);
-static void Render_StoreXyG3(void *prim);
-static void Render_StoreXyFT3(void *prim);
-static void Render_StoreXyGT3(void *prim);
+static void Render_StoreXyF3(u8 *prim);
+static void Render_StoreXyG3(u8 *prim);
+static void Render_StoreXyFT3(u8 *prim);
+static void Render_StoreXyGT3(u8 *prim);
 static void Render_StoreXyF4(u8 *prim, s32 firstThree);
 static void Render_StoreXyG4(u8 *prim, s32 firstThree);
 static void Render_StoreXyFT4(u8 *prim, s32 firstThree);
 static void Render_StoreXyGT4(u8 *prim, s32 firstThree);
-static void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx);
+static void *Render_AddPolyF3(PolyF3 *prim, TmdCtx *ctx);
 static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx);
 static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx);
-static void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx);
+static void *Render_AddPolyF4(PolyF4 *prim, TmdCtx *ctx);
 static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx);
 static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx);
 static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx);
@@ -243,10 +421,10 @@ extern u8 *g_packetCursor; /* next free byte of the packet buffer, set by the ps
 extern TmdRgb g_texturedRgb; /* {0x80, 0x80, 0x80} in .sdata */
 
 /* Sorts one model into the ordering table (called by Scene_DrawNode for each scene node) */
-void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) {
+void Render_SortModel(TmdObject *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     TmdCtx *ctx;
-    u8 *prim;
-    u8 *packet;
+    GpuPacket prim;
+    TmdFace packet;
     s32 remaining;
     s32 count;
 
@@ -256,10 +434,10 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
     ctx = scratch;
     ctx->ot = ot->org;
     ctx->shift = shift;
-    Render_InitClipSlots(ctx->triClip.b, g_clipTriWork, 3);
-    Render_InitClipSlots(ctx->quadClip.b, g_clipQuadWork, 4);
+    Render_InitClipSlots(ctx->triClip.b, g_clipTriWork.b, 3);
+    Render_InitClipSlots(ctx->quadClip.b, g_clipQuadWork.b, 4);
     remaining = object->model->primitiveCount;
-    packet = object->model->primitives;
+    packet.b = object->model->primitives;
     ctx->vertices = object->model->vertices;
     ctx->normals = object->model->normals;
     if (object->coord->super != NULL) {
@@ -279,268 +457,268 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
         ctx->depthShift = 16;
     }
     while (remaining != 0) {
-        prim = g_packetCursor;
-        ctx->type = *(u16 *)(packet + 2) & 0xFD07;
-        count = *(u16 *)packet;
-        ctx->semiTrans = (*(u32 *)packet >> 25) & 1;
+        prim.b = g_packetCursor;
+        ctx->type = packet.head->type & 0xFD07;
+        count = packet.head->count;
+        ctx->semiTrans = (*(u32 *)packet.head >> 25) & 1;
         remaining -= count;
         switch (ctx->type) {
         case 0x2000:
-            prim[3] = 4;
-            prim[7] = 0x20;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 4;
+            prim.head->code = 0x20;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0xA), *(u16 *)(packet + 0xC), *(u16 *)(packet + 0xE), Render_StoreXyF3) == 0) {
-                    gte_ldv0(ctx->normals + *(u16 *)(packet + 8) * 8);
-                    gte_ldrgb(packet + 4);
+                if (Render_ProjectTri(prim.b, ctx, packet.f3->v0, packet.f3->v1, packet.f3->v2, Render_StoreXyF3) == 0) {
+                    gte_ldv0(ctx->normals + packet.f3->normal * 8);
+                    gte_ldrgb(&packet.f3->rgb);
                     gte_ncds();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyF3(prim, (void *)ctx);
+                    gte_strgb(&prim.f3->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyF3(prim.f3, ctx);
                 }
-                packet += 0x10;
+                packet.f3++;
                 count--;
             } while (count != 0);
             break;
         case 0x2004:
-            prim[3] = 6;
-            prim[7] = 0x30;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 6;
+            prim.head->code = 0x30;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0x12), *(u16 *)(packet + 0x14), *(u16 *)(packet + 0x16), Render_StoreXyG3) == 0) {
-                    gte_ldv0(ctx->normals + *(u16 *)(packet + 0x10) * 8);
-                    gte_ldrgb(packet + 4);
+                if (Render_ProjectTri(prim.b, ctx, packet.f3Grad->v0, packet.f3Grad->v1, packet.f3Grad->v2, Render_StoreXyG3) == 0) {
+                    gte_ldv0(ctx->normals + packet.f3Grad->normal * 8);
+                    gte_ldrgb(&packet.f3Grad->rgb0);
                     gte_ncds();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    gte_ldrgb(packet + 8);
+                    gte_strgb(&prim.g3->c0);
+                    prim.head->code = ctx->primCode;
+                    gte_ldrgb(&packet.f3Grad->rgb1);
                     gte_ncds();
-                    gte_strgb(prim + 0xC);
-                    gte_ldrgb(packet + 0xC);
+                    gte_strgb(&prim.g3->c1);
+                    gte_ldrgb(&packet.f3Grad->rgb2);
                     gte_ncds();
-                    gte_strgb(prim + 0x14);
-                    prim = Render_AddPolyG3((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.g3->c2);
+                    prim.b = Render_AddPolyG3(prim.g3, ctx);
                 }
-                packet += 0x18;
+                packet.f3Grad++;
                 count--;
             } while (count != 0);
             break;
         case 0x2101:
-            prim[3] = 4;
-            prim[7] = 0x20;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 4;
+            prim.head->code = 0x20;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 8), *(u16 *)(packet + 0xA), *(u16 *)(packet + 0xC), Render_StoreXyF3) == 0) {
-                    gte_ldrgb(packet + 4);
+                if (Render_ProjectTri(prim.b, ctx, packet.f3Unlit->v0, packet.f3Unlit->v1, packet.f3Unlit->v2, Render_StoreXyF3) == 0) {
+                    gte_ldrgb(&packet.f3Unlit->rgb);
                     gte_dpcs();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyF3(prim, (void *)ctx);
+                    gte_strgb(&prim.f3->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyF3(prim.f3, ctx);
                 }
-                packet += 0x10;
+                packet.f3Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x2400:
-            prim[3] = 7;
-            prim[7] = 0x24;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 7;
+            prim.head->code = 0x24;
+            Render_SetPrimFlags(prim.head, ctx);
             gte_ldrgb(&ctx->baseRgb);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0x12), *(u16 *)(packet + 0x14), *(u16 *)(packet + 0x16), Render_StoreXyFT3) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x14) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x1C) = *(s32 *)(packet + 0xC);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldv0(ctx->normals + *(u16 *)(packet + 0x10) * 8);
+                if (Render_ProjectTri(prim.b, ctx, packet.ft3->v0, packet.ft3->v1, packet.ft3->v2, Render_StoreXyFT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.ft3->uv0;
+                    *(s32 *)(prim.b + 0x14) = packet.ft3->uv1;
+                    *(s32 *)(prim.b + 0x1C) = packet.ft3->uv2;
+                    prim.ft3->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldv0(ctx->normals + packet.ft3->normal * 8);
                     gte_ncds();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyFT3((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.ft3->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyFT3(prim.ft3, ctx);
                 }
-                packet += 0x18;
+                packet.ft3++;
                 count--;
             } while (count != 0);
             break;
         case 0x2501:
-            prim[3] = 7;
-            prim[7] = 0x24;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 7;
+            prim.head->code = 0x24;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0x14), *(u16 *)(packet + 0x16), *(u16 *)(packet + 0x18), Render_StoreXyFT3) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x14) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x1C) = *(s32 *)(packet + 0xC);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb(packet + 0x10);
+                if (Render_ProjectTri(prim.b, ctx, packet.ft3Unlit->v0, packet.ft3Unlit->v1, packet.ft3Unlit->v2, Render_StoreXyFT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.ft3Unlit->uv0;
+                    *(s32 *)(prim.b + 0x14) = packet.ft3Unlit->uv1;
+                    *(s32 *)(prim.b + 0x1C) = packet.ft3Unlit->uv2;
+                    prim.ft3->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldrgb(&packet.ft3Unlit->rgb);
                     gte_dpcs();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyFT3((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.ft3->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyFT3(prim.ft3, ctx);
                 }
-                packet += 0x1C;
+                packet.ft3Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x2800:
-            prim[3] = 5;
-            prim[7] = 0x28;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 5;
+            prim.head->code = 0x28;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 0xA), *(u16 *)(packet + 0xC), *(u16 *)(packet + 0xE), *(u16 *)(packet + 0x10), Render_StoreXyF4) == 0) {
-                    gte_ldv0(ctx->normals + *(u16 *)(packet + 8) * 8);
-                    gte_ldrgb(packet + 4);
+                if (Render_ProjectQuad(prim.b, ctx, packet.f4->v0, packet.f4->v1, packet.f4->v2, packet.f4->v3, Render_StoreXyF4) == 0) {
+                    gte_ldv0(ctx->normals + packet.f4->normal * 8);
+                    gte_ldrgb(&packet.f4->rgb);
                     gte_ncds();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyF4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.f4->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyF4(prim.f4, ctx);
                 }
-                packet += 0x14;
+                packet.f4++;
                 count--;
             } while (count != 0);
             break;
         case 0x2901:
-            prim[3] = 5;
-            prim[7] = 0x28;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 5;
+            prim.head->code = 0x28;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 8), *(u16 *)(packet + 0xA), *(u16 *)(packet + 0xC), *(u16 *)(packet + 0xE), Render_StoreXyF4) == 0) {
-                    gte_ldrgb(packet + 4);
+                if (Render_ProjectQuad(prim.b, ctx, packet.f4Unlit->v0, packet.f4Unlit->v1, packet.f4Unlit->v2, packet.f4Unlit->v3, Render_StoreXyF4) == 0) {
+                    gte_ldrgb(&packet.f4Unlit->rgb);
                     gte_dpcs();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyF4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.f4->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyF4(prim.f4, ctx);
                 }
-                packet += 0x10;
+                packet.f4Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x2C00:
-            prim[3] = 9;
-            prim[7] = 0x2C;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 9;
+            prim.head->code = 0x2C;
+            Render_SetPrimFlags(prim.head, ctx);
             gte_ldrgb(&ctx->baseRgb);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 0x16), *(u16 *)(packet + 0x18), *(u16 *)(packet + 0x1A), *(u16 *)(packet + 0x1C), Render_StoreXyFT4) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x14) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x1C) = *(s32 *)(packet + 0xC);
-                    *(s32 *)(prim + 0x24) = *(s32 *)(packet + 0x10);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldv0(ctx->normals + *(u16 *)(packet + 0x14) * 8);
+                if (Render_ProjectQuad(prim.b, ctx, packet.ft4->v0, packet.ft4->v1, packet.ft4->v2, packet.ft4->v3, Render_StoreXyFT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.ft4->uv0;
+                    *(s32 *)(prim.b + 0x14) = packet.ft4->uv1;
+                    *(s32 *)(prim.b + 0x1C) = packet.ft4->uv2;
+                    *(s32 *)(prim.b + 0x24) = packet.ft4->uv3;
+                    prim.ft4->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldv0(ctx->normals + packet.ft4->normal * 8);
                     gte_ncds();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyFT4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.ft4->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyFT4(prim.ft4, ctx);
                 }
-                packet += 0x20;
+                packet.ft4++;
                 count--;
             } while (count != 0);
             break;
         case 0x2D01:
-            prim[3] = 9;
-            prim[7] = 0x2C;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 9;
+            prim.head->code = 0x2C;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 0x18), *(u16 *)(packet + 0x1A), *(u16 *)(packet + 0x1C), *(u16 *)(packet + 0x1E), Render_StoreXyFT4) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x14) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x1C) = *(s32 *)(packet + 0xC);
-                    *(s32 *)(prim + 0x24) = *(s32 *)(packet + 0x10);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb(packet + 0x14);
+                if (Render_ProjectQuad(prim.b, ctx, packet.ft4Unlit->v0, packet.ft4Unlit->v1, packet.ft4Unlit->v2, packet.ft4Unlit->v3, Render_StoreXyFT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.ft4Unlit->uv0;
+                    *(s32 *)(prim.b + 0x14) = packet.ft4Unlit->uv1;
+                    *(s32 *)(prim.b + 0x1C) = packet.ft4Unlit->uv2;
+                    *(s32 *)(prim.b + 0x24) = packet.ft4Unlit->uv3;
+                    prim.ft4->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldrgb(&packet.ft4Unlit->rgb);
                     gte_dpcs();
-                    gte_strgb(prim + 4);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyFT4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.ft4->rgbc);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyFT4(prim.ft4, ctx);
                 }
-                packet += 0x20;
+                packet.ft4Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x3101:
-            prim[3] = 6;
-            prim[7] = 0x30;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 6;
+            prim.head->code = 0x30;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0x10), *(u16 *)(packet + 0x12), *(u16 *)(packet + 0x14), Render_StoreXyG3) == 0) {
-                    gte_ldrgb3c(packet + 4);
+                if (Render_ProjectTri(prim.b, ctx, packet.g3Unlit->v0, packet.g3Unlit->v1, packet.g3Unlit->v2, Render_StoreXyG3) == 0) {
+                    gte_ldrgb3c(&packet.g3Unlit->rgb0);
                     gte_dpct();
-                    gte_strgb3_g3(prim);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyG3((void *)prim, (void *)ctx);
+                    gte_strgb3_g3(prim.b);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyG3(prim.g3, ctx);
                 }
-                packet += 0x18;
+                packet.g3Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x3501:
-            prim[3] = 9;
-            prim[7] = 0x34;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 9;
+            prim.head->code = 0x34;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim, (void *)ctx, *(u16 *)(packet + 0x1C), *(u16 *)(packet + 0x1E), *(u16 *)(packet + 0x20), Render_StoreXyGT3) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x18) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x24) = *(s32 *)(packet + 0xC);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb3(packet + 0x10, packet + 0x14, packet + 0x18);
+                if (Render_ProjectTri(prim.b, ctx, packet.gt3Unlit->v0, packet.gt3Unlit->v1, packet.gt3Unlit->v2, Render_StoreXyGT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.gt3Unlit->uv0;
+                    *(s32 *)(prim.b + 0x18) = packet.gt3Unlit->uv1;
+                    *(s32 *)(prim.b + 0x24) = packet.gt3Unlit->uv2;
+                    prim.gt3->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldrgb3(&packet.gt3Unlit->rgb0, &packet.gt3Unlit->rgb1, &packet.gt3Unlit->rgb2);
                     gte_dpct();
-                    gte_strgb3(prim + 4, prim + 0x10, prim + 0x1C);
-                    prim[7] = ctx->primCode;
-                    prim = Render_AddPolyGT3((void *)prim, (void *)ctx);
+                    gte_strgb3(&prim.gt3->c0, &prim.gt3->c1, &prim.gt3->c2);
+                    prim.head->code = ctx->primCode;
+                    prim.b = Render_AddPolyGT3(prim.gt3, ctx);
                 }
-                packet += 0x24;
+                packet.gt3Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x3901:
-            prim[3] = 8;
-            prim[7] = 0x38;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 8;
+            prim.head->code = 0x38;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 0x14), *(u16 *)(packet + 0x16), *(u16 *)(packet + 0x18), *(u16 *)(packet + 0x1A), Render_StoreXyG4) == 0) {
-                    gte_ldrgb3c(packet + 4);
+                if (Render_ProjectQuad(prim.b, ctx, packet.g4Unlit->v0, packet.g4Unlit->v1, packet.g4Unlit->v2, packet.g4Unlit->v3, Render_StoreXyG4) == 0) {
+                    gte_ldrgb3c(&packet.g4Unlit->rgb0);
                     gte_dpct();
-                    gte_strgb3_g3(prim);
-                    prim[7] = ctx->primCode;
-                    gte_ldrgb(packet + 0x10);
+                    gte_strgb3_g3(prim.b);
+                    prim.head->code = ctx->primCode;
+                    gte_ldrgb(&packet.g4Unlit->rgb3);
                     gte_dpcs();
-                    gte_strgb(prim + 0x1C);
-                    prim = Render_AddPolyG4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.g4->c3);
+                    prim.b = Render_AddPolyG4(prim.g4, ctx);
                 }
-                packet += 0x1C;
+                packet.g4Unlit++;
                 count--;
             } while (count != 0);
             break;
         case 0x3D01:
-            prim[3] = 12;
-            prim[7] = 0x3C;
-            Render_SetPrimFlags((void *)prim, (void *)ctx);
+            prim.head->len = 12;
+            prim.head->code = 0x3C;
+            Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim, (void *)ctx, *(u16 *)(packet + 0x24), *(u16 *)(packet + 0x26), *(u16 *)(packet + 0x28), *(u16 *)(packet + 0x2A), Render_StoreXyGT4) == 0) {
-                    *(s32 *)(prim + 0xC) = *(s32 *)(packet + 4);
-                    *(s32 *)(prim + 0x18) = *(s32 *)(packet + 8);
-                    *(s32 *)(prim + 0x24) = *(s32 *)(packet + 0xC);
-                    *(s32 *)(prim + 0x30) = *(s32 *)(packet + 0x10);
-                    *(u16 *)(prim + 0xE) += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb3(packet + 0x14, packet + 0x18, packet + 0x1C);
+                if (Render_ProjectQuad(prim.b, ctx, packet.gt4Unlit->v0, packet.gt4Unlit->v1, packet.gt4Unlit->v2, packet.gt4Unlit->v3, Render_StoreXyGT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = packet.gt4Unlit->uv0;
+                    *(s32 *)(prim.b + 0x18) = packet.gt4Unlit->uv1;
+                    *(s32 *)(prim.b + 0x24) = packet.gt4Unlit->uv2;
+                    *(s32 *)(prim.b + 0x30) = packet.gt4Unlit->uv3;
+                    prim.gt4->clut += (ctx->depth >> ctx->depthShift) << 6;
+                    gte_ldrgb3(&packet.gt4Unlit->rgb0, &packet.gt4Unlit->rgb1, &packet.gt4Unlit->rgb2);
                     gte_dpct();
-                    gte_strgb3(prim + 4, prim + 0x10, prim + 0x1C);
-                    prim[7] = ctx->primCode;
-                    gte_ldrgb(packet + 0x20);
+                    gte_strgb3(&prim.gt4->c0, &prim.gt4->c1, &prim.gt4->c2);
+                    prim.head->code = ctx->primCode;
+                    gte_ldrgb(&packet.gt4Unlit->rgb3);
                     gte_dpcs();
-                    gte_strgb(prim + 0x28);
-                    prim = Render_AddPolyGT4((void *)prim, (void *)ctx);
+                    gte_strgb(&prim.gt4->c3);
+                    prim.b = Render_AddPolyGT4(prim.gt4, ctx);
                 }
-                packet += 0x2C;
+                packet.gt4Unlit++;
                 count--;
             } while (count != 0);
             break;
         default:
             return;
         }
-        g_packetCursor = prim;
+        g_packetCursor = prim.b;
     }
 }
 
@@ -626,19 +804,19 @@ static s32 Render_TransformTri(u8 *prim, TmdCtx *ctx) {
     return 0;
 }
 
-static void Render_StoreXyF3(void *prim) {
+static void Render_StoreXyF3(u8 *prim) {
     gte_stsxy3_f3(prim);
 }
 
-static void Render_StoreXyG3(void *prim) {
+static void Render_StoreXyG3(u8 *prim) {
     gte_stsxy3_g3(prim);
 }
 
-static void Render_StoreXyFT3(void *prim) {
+static void Render_StoreXyFT3(u8 *prim) {
     gte_stsxy3_ft3(prim);
 }
 
-static void Render_StoreXyGT3(void *prim) {
+static void Render_StoreXyGT3(u8 *prim) {
     gte_stsxy3_gt3(prim);
 }
 
@@ -679,20 +857,20 @@ static void Render_StoreXyGT4(u8 *prim, s32 firstThree) {
  * else linked at the head of its OT entry (24-bit next pointer in the tag). They return the
  * next free byte of the packet buffer.
  */
-static void *Render_AddPolyF3(u8 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyF3(PolyF3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipTriWork, ctx, prim + 4, 0, 0, 0);
-        Render_CopyClipTri(ctx->triClip.v, ctx->src, prim + 8, prim + 0xC, prim + 0x10);
-        return RCpolyF3(prim, g_clipTriWork);
+        Render_FillClipHeader(&g_clipTriWork.header, ctx, &prim->rgbc, 0, 0, 0);
+        Render_CopyClipTri(ctx->triClip.v, ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
+        return RCpolyF3(prim, &g_clipTriWork);
     }
-    *(s32 *)prim = (*(s32 *)prim & 0xFF000000) | (*ctx->otEntry.s & 0xFFFFFF);
-    *ctx->otEntry.s = (*ctx->otEntry.s & 0xFF000000) | ((s32)prim & 0xFFFFFF);
-    return prim + 0x14;
+    prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
+    *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
+    return prim + 1;
 }
 
 static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 0, 0, 0);
+        Render_FillClipHeader(&g_clipTriWork.header, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
         ctx->triClip.v[0]->uvPad = prim->c1.cd;
         ctx->triClip.v[1]->uvPad = prim->c1.cd;
@@ -700,7 +878,7 @@ static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
         ctx->triClip.v[0]->rgb = prim->c0;
         ctx->triClip.v[1]->rgb = prim->c1;
         ctx->triClip.v[2]->rgb = prim->c2;
-        return RCpolyG3(prim, g_clipTriWork);
+        return RCpolyG3(prim, &g_clipTriWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
@@ -709,7 +887,7 @@ static void *Render_AddPolyG3(PolyG3 *prim, TmdCtx *ctx) {
 
 static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipTriWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
+        Render_FillClipHeader(&g_clipTriWork.header, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
         ctx->triClip.v[0]->uvPad = prim->pad1;
         ctx->triClip.v[1]->uvPad = prim->pad1;
@@ -717,27 +895,27 @@ static void *Render_AddPolyFT3(PolyFT3 *prim, TmdCtx *ctx) {
         ctx->triClip.v[0]->uv = prim->uv0;
         ctx->triClip.v[1]->uv = prim->uv1;
         ctx->triClip.v[2]->uv = prim->uv2;
-        return RCpolyFT3(prim, g_clipTriWork);
+        return RCpolyFT3(prim, &g_clipTriWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
-    return (u8 *)prim + 0x20;
+    return prim + 1;
 }
 
-static void *Render_AddPolyF4(u32 *prim, TmdCtx *ctx) {
+static void *Render_AddPolyF4(PolyF4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipQuadWork, ctx, (u8 *)prim + 4, 0, 0, 0);
-        Render_CopyClipQuad(ctx->quadClip.v, ctx->src, (u8 *)prim + 8, (u8 *)prim + 0xC, (u8 *)prim + 0x10, (u8 *)prim + 0x14);
-        return RCpolyF4(prim, g_clipQuadWork);
+        Render_FillClipHeader(&g_clipQuadWork.header, ctx, &prim->rgbc, 0, 0, 0);
+        Render_CopyClipQuad(ctx->quadClip.v, ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
+        return RCpolyF4(prim, &g_clipQuadWork);
     }
-    *prim = (*prim & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
+    prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
-    return (u8 *)prim + 0x18;
+    return prim + 1;
 }
 
 static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 0, 0, 0);
+        Render_FillClipHeader(&g_clipQuadWork.header, ctx, &prim->c0, 0, 0, 0);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->x0, &prim->x1, &prim->x2, &prim->x3);
         ctx->quadClip.v[0]->uvPad = prim->c1.cd;
         ctx->quadClip.v[1]->uvPad = prim->c1.cd;
@@ -747,7 +925,7 @@ static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
         ctx->quadClip.v[1]->rgb = prim->c1;
         ctx->quadClip.v[2]->rgb = prim->c2;
         ctx->quadClip.v[3]->rgb = prim->c3;
-        return RCpolyG4(prim, g_clipQuadWork);
+        return RCpolyG4(prim, &g_clipQuadWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
@@ -756,7 +934,7 @@ static void *Render_AddPolyG4(PolyG4 *prim, TmdCtx *ctx) {
 
 static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipQuadWork, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
+        Render_FillClipHeader(&g_clipQuadWork.header, ctx, &prim->rgbc, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
         ctx->quadClip.v[0]->uvPad = prim->pad1;
         ctx->quadClip.v[1]->uvPad = prim->pad1;
@@ -766,16 +944,16 @@ static void *Render_AddPolyFT4(PolyFT4 *prim, TmdCtx *ctx) {
         ctx->quadClip.v[1]->uv = prim->uv1;
         ctx->quadClip.v[2]->uv = prim->uv2;
         ctx->quadClip.v[3]->uv = prim->uv3;
-        return RCpolyFT4(prim, g_clipQuadWork);
+        return RCpolyFT4(prim, &g_clipQuadWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
-    return (u8 *)prim + 0x28;
+    return prim + 1;
 }
 
 static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipTriWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
+        Render_FillClipHeader(&g_clipTriWork.header, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipTri(&ctx->triClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2);
         ctx->triClip.v[0]->uvPad = prim->pad2;
         ctx->triClip.v[1]->uvPad = prim->pad2;
@@ -786,7 +964,7 @@ static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
         ctx->triClip.v[0]->uv = prim->uv0;
         ctx->triClip.v[1]->uv = prim->uv1;
         ctx->triClip.v[2]->uv = prim->uv2;
-        return RCpolyGT3(prim, g_clipTriWork);
+        return RCpolyGT3(prim, &g_clipTriWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);
@@ -795,7 +973,7 @@ static void *Render_AddPolyGT3(PolyGT3 *prim, TmdCtx *ctx) {
 
 static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
     if (ctx->clip != 0) {
-        Render_FillClipHeader(g_clipQuadWork, ctx, &prim->c0, 1, prim->clut, prim->tpage);
+        Render_FillClipHeader(&g_clipQuadWork.header, ctx, &prim->c0, 1, prim->clut, prim->tpage);
         Render_CopyClipQuad(&ctx->quadClip, &ctx->src, &prim->xy0, &prim->xy1, &prim->xy2, &prim->xy3);
         ctx->quadClip.v[0]->uvPad = prim->pad2;
         ctx->quadClip.v[1]->uvPad = prim->pad2;
@@ -809,7 +987,7 @@ static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx) {
         ctx->quadClip.v[1]->uv = prim->uv1;
         ctx->quadClip.v[2]->uv = prim->uv2;
         ctx->quadClip.v[3]->uv = prim->uv3;
-        return RCpolyGT4(prim, g_clipQuadWork);
+        return RCpolyGT4(prim, &g_clipQuadWork);
     }
     prim->tag = (prim->tag & 0xFF000000) | (*ctx->otEntry.u & 0xFFFFFF);
     *ctx->otEntry.u = (*ctx->otEntry.u & 0xFF000000) | ((u32)prim & 0xFFFFFF);

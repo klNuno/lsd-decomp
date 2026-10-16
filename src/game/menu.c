@@ -20,29 +20,29 @@
 static MenuVtbl *Menu_GetVtbl(void);
 
 /* Allocates the menu (0xC4 bytes) and runs slot 0x8 of its class, Menu_Init. */
-s32 Menu_New(s32 dreamSys) {
-    s32 obj;
+Screen *Menu_New(DreamSys *dreamSys) {
+    void *obj;
 
     obj = Heap_Alloc(0xC4);
     if (obj != 0) {
         Menu_GetVtbl()->init(obj, dreamSys);
         return obj;
     }
-    return 0;
+    return NULL;
 }
-s32 g_cardFileName;
-s32 g_cardTitle;
+char *g_cardFileName;
+char *g_cardTitle;
 extern MenuFillRect g_menuFillRects[];
 extern s32 g_menuTitlePos;
-s32 g_cardBlankComment;
-extern u8 g_cardFileSuffixes[];
-void *g_cardFilePrefix;
+char *g_cardBlankComment;
+extern char *g_cardFileSuffixes[];
+char *g_cardFilePrefix;
 static MenuVtbl *Menu_GetVtbl(void);
 static void SaveMenu_SetTitleDay(s32 dayNumber);
-extern u8 g_mainMenuDesc[];
+extern MenuDef g_mainMenuDesc;
 u8 g_titleBlinkChannel;
 s32 g_titleBlinkTick;
-extern u8 g_menuVtbl[];
+extern MenuVtbl g_menuVtbl;
 s8 *g_titleDayDigits;
 
 INCLUDE_RODATA("asm/nonmatchings/game/menu", g_menuFlashbackText);
@@ -59,14 +59,14 @@ INCLUDE_RODATA("asm/nonmatchings/game/menu", g_cardTitleText);
 
 /* Menu slot 0x08: base constructor with the menu description and ETC\ETCSE, then the save block. */
 void Menu_Init(Menu *menu, DreamSys *dreamSys) {
-    MenuScreen_GetVtbl()->init(menu, g_mainMenuDesc, "ETC\\ETCSE", 0);
+    MenuScreen_GetVtbl()->init(menu, &g_mainMenuDesc, "ETC\\ETCSE", 0);
     menu->vtbl = Menu_GetVtbl();
     menu->sound->vtbl->setOctave(menu->sound, -1);
     menu->dreamSys = dreamSys;
     menu->card = 0;
     menu->saveBlock = dreamSys->vtbl->getSaveBlock(dreamSys, &menu->saveSize);
     SaveMenu_SetTitleDay(dreamSys->vtbl->getDayNumber(dreamSys, 0));
-    menu->vtbl->setMenu(menu, g_mainMenuDesc);
+    menu->vtbl->setMenu(menu, &g_mainMenuDesc);
     menu->vtbl->reset(menu, dreamSys);
 }
 
@@ -188,19 +188,19 @@ void Menu_Close(Menu *menu) {
 /* Menu slot 0xD8 (setMenu): makes the title label; a game never saved gets a blank comment and no letter. */
 void Menu_CreateTitleLabel(Menu *menu, MenuDef *desc) {
     s32 size;
-    s32 label;
-    s32 text;
+    Label *label;
+    s8 *text;
 
     if (desc != NULL) {
         if (menu->dreamSys->vtbl->isNeverSaved(menu->dreamSys) != 0) {
             strcpy(g_cardTitle + 0x18, g_cardBlankComment);
-            Card_SetTitleLetter(g_cardTitle, 0);
+            Card_SetTitleLetter((CardTitle *)g_cardTitle, 0);
         }
         size = ((u32)strlen(g_cardTitle) >> 1) + 4;
         text = Heap_Alloc(size);
-        Text_Decode((s8 *)text, (u8 *)g_cardTitle);
+        Text_Decode(text, g_cardTitle);
         label = Label_Create(desc->font, size, text);
-        menu->titleLabel = (Label *)label;
+        menu->titleLabel = label;
         menu->titleLabel->shownCount = 8;
         menu->titleLabel->firstShown = 4;
         menu->titleLabel->gapAt = 9;
@@ -266,12 +266,12 @@ void Menu_SetItemsColor(Menu *menu, MenuRgb *color) {
  */
 void Menu_RefreshFromSave(Menu *menu) {
     s32 shake;
-    s32 text;
+    s8 *text;
     s32 selected;
 
     selected = menu->selected;
     text = Heap_Alloc(menu->titleLabel->count);
-    Text_Decode((s8 *)text, (u8 *)g_cardTitle);
+    Text_Decode(text, g_cardTitle);
     menu->titleLabel->vtbl->setText(menu->titleLabel, text);
     Heap_Free(text);
     Menu_UpdateFlashbackItem(menu, menu->desc, menu->dreamSys);
@@ -288,7 +288,7 @@ void Menu_RefreshFromSave(Menu *menu) {
 /* Menu slot 0x128: makes the card (first time) and hands it the pad and the clock. */
 void Menu_OpenCard(Menu *menu) {
     if (menu->card == NULL) {
-        menu->fileIcon = (MenuPicture *)Tim_New((s32)"CARD\\FILEICN1.TIM");
+        menu->fileIcon = (MenuPicture *)Tim_New("CARD\\FILEICN1.TIM");
         menu->card = Card_New(1, 0);
     }
     menu->card->vtbl->open(menu->card, g_cardFilePrefix, g_cardFileSuffixes, menu->env->pad, menu->clock, menu->root, menu->sound);
@@ -313,7 +313,7 @@ void SaveMenu_Save(Menu *menu) {
     menu->dreamSys->vtbl->swapShake(menu->dreamSys, &shake);
     menu->vtbl->openCard(menu);
     if (menu->dreamSys->vtbl->isNeverSaved(menu->dreamSys) != 0) {
-        *(s8 *)g_cardFileName = 0;
+        *g_cardFileName = 0;
     }
     menu->card->vtbl->save(menu->card, g_cardFileName, g_cardTitle, 0xD, 3, menu->fileIcon, menu->saveBlock, menu->saveSize);
 }
@@ -342,5 +342,5 @@ void Menu_OnCardNotify(Menu *menu, s32 **sender, s32 state) {
 }
 
 static MenuVtbl *Menu_GetVtbl(void) {
-    return (MenuVtbl *)g_menuVtbl;
+    return &g_menuVtbl;
 }

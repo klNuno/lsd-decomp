@@ -4,6 +4,6 @@
 #include "common.h"
 
 /* Functions of src/game/string_list.c that other files call or reference (docs/naming.md, Prototypes) */
-s32 StringList_New(s32 strings, s32 mode);
+void *StringList_New(char **strings, s32 mode);
 
 #endif

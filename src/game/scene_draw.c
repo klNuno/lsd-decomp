@@ -40,12 +40,11 @@ typedef struct Sprite {
    Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
 typedef struct DrawNode {
     u32 *vtbl;              /* 0x00 vtable; its first word is the tag: low 4 bits the sender type, low byte the kind */
-    s32 firstChild;         /* 0x04 first child for List_Next; the walk ends when it reaches 0 */
+    ListNode *watched;      /* 0x04 the watched objects, its children among them (List_Next) */
     u8 pad_08[0x4];
     ParentNode *parent;     /* 0x0C */
-    s32 model;              /* 0x10 embedded model object, given to Render_SortModel; negative skips kind 0x24 */
-    Coord2 *coord;          /* 0x14 */
-    s32 modelShown;         /* 0x18 when set, the model is sorted */
+    TmdObject object;       /* 0x10 the GsDOBJ2 given to Render_SortModel: attribute bit 31 skips kind 0x24,
+                               the model is sorted only when set */
     u8 pad_1C[0x28];
     u16 priority;           /* 0x44 box priority; for kind 0x54 its address is the bg data */
     u8 pad_46[0x2];
@@ -66,7 +65,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     Matrix lsbuf;
     Matrix lwbuf;
     DrawNode *child;
-    s32 iter;
+    ListNode *iter;
     Matrix *ls = &lsbuf;
     Matrix *lw = &lwbuf;
     Coord2 *coord;
@@ -81,10 +80,10 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     u32 kind;
 
     scaled = 0;
-    if ((*node->vtbl & 0xFF) == 0x24 && node->model < 0) {
+    if ((*node->vtbl & 0xFF) == 0x24 && (s32)node->object.attribute < 0) {
         return;
     }
-    coord = node->coord;
+    coord = node->object.coord;
     if (coord->flg == 0) {
         s = (u32 *)&coord->param->scale[0];
         scaled = 1;
@@ -106,24 +105,24 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     do {
         for (;;) {
             if (child == NULL) {
-                iter = node->firstChild;
+                iter = node->watched;
             }
-            List_Next(&child, &iter);
+            List_Next((Object **)&child, &iter);
             if (child != NULL && (*child->vtbl & 0xF) == 4 && child->parent == (ParentNode *)node) {
                 break;
             }
-            if (iter == 0) {
+            if (iter == NULL) {
                 child = NULL;
                 break;
             }
         }
         if (child != NULL) {
             if (scaled) {
-                child->coord->flg = 0;
+                child->object.coord->flg = 0;
             }
             Scene_DrawNode(view, child);
         }
-    } while (iter != 0);
+    } while (iter != NULL);
 
     type = *node->vtbl;
     kind = type & 0xFF;
@@ -140,11 +139,11 @@ void Scene_DrawNode(View *view, DrawNode *node) {
         }
         GsSortBoxFill(&boxNode->boxFill, view->ot[view->buffer], boxNode->priority);
     } else if (kind != 0x44) {
-        GsGetLws(node->coord, lw, ls);
+        GsGetLws(node->object.coord, lw, ls);
         GsSetLightMatrix(lw);
         GsSetLsMatrix(ls);
-        if (node->modelShown != 0) {
-            Render_SortModel(&node->model, view->ot[view->buffer], 14 - view->otBits, (u32 *)0x1F800000);
+        if (node->object.model != NULL) {
+            Render_SortModel(&node->object, view->ot[view->buffer], 14 - view->otBits, (struct TmdCtx *)0x1F800000);
         }
     } else {
         Vec3 pos[2];
@@ -162,12 +161,12 @@ void Scene_DrawNode(View *view, DrawNode *node) {
             GsSortSprite(sp, view->ot[view->buffer], 0);
             return;
         }
-        GsGetLs(node->coord, ls);
+        GsGetLs(node->object.coord, ls);
         if (ls->t.z - 1 > 0xFFFEU) {
             return;
         }
         if (node->parent->parent != 0) {
-            Render_TransformLongVectors(pos, &node->coord->coord.t, 1, ls);
+            Render_TransformLongVectors(pos, &node->object.coord->coord.t, 1, ls);
             pos->x += lsbuf.t.x;
             pos->y += lsbuf.t.y;
             pos->z += lsbuf.t.z;
