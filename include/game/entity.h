@@ -47,7 +47,7 @@ typedef struct SpawnSlot {
 /* A place a group can stand on, 4 bytes, table g_spawnPlaces indexed by SpawnGroup.places (Sym_SpawnAtPlace). */
 typedef struct SpawnPlace {
     u16 unk0; /* 0x00 copied into the placement query */
-    s8 unk2;  /* 0x02 index of a 12-byte record at D_80088F18, given to the new entity's slot 0x44 */
+    s8 unk2;  /* 0x02 index of a 12-byte record at g_spawnPlaceRotations, given to the new entity's slot 0x44 */
     s8 unk3;  /* 0x03 index of a 6-byte record at D_80088D3C, copied into the placement query */
 } SpawnPlace;
 
@@ -117,12 +117,12 @@ typedef struct Entity {
     s32 unk28;               /* 0x28 result of the ground test after moveZOnGround */
     u8 pad_2C[0x44 - 0x2C];
     s32 state;               /* 0x44 handler state; 1 stops Entity_CheckWake for good */
-    s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (func_80057534) */
+    s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
     s32 map;                 /* 0x4C StageMap * (stage.h): third argument of attach, cleared by detach; slot 0x110 ground query */
     void *unk50;             /* 0x50 */
     u8 pad_54[0x58 - 0x54];
-    s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (func_8002CC34, func_8002CD08) */
+    s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
     u8 pad_5C[0x6C - 0x5C];
     s32 partCount;           /* 0x6C model parts (Model in src/game/8005C508.c) */
     struct ModelPart **parts; /* 0x70 */
@@ -133,7 +133,7 @@ typedef struct Entity {
     u8 *animData;            /* 0x88 the next frame's commands (applyFrame) */
     s32 tickEnabled;         /* 0x8C */
     s32 animPlaying;         /* 0x90 playAnimation sets it, stopAnimation clears it */
-    struct Entity *dreamSys; /* 0x94 the object passed to attach (D_8008AC00, the DreamSys); range tests measure from it */
+    struct Entity *dreamSys; /* 0x94 the object passed to attach (g_symDreamSys, the DreamSys); range tests measure from it */
     s32 type;                /* 0x98 entity type, index of EntityRecord */
     HandlerNode handlerNode; /* 0x9C the record's handler (sound.h); its fadeSteps divides slot 0x148's range */
     s32 awake;               /* 0xF0 set by wake, cleared by sleep */

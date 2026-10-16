@@ -236,7 +236,7 @@ typedef struct SceneNodeVtbl {
     s32 (*boxesOverlap)();    /* 0xA8 SceneNode_BoxesOverlap (node, box list, offset) */
     s32 (*rayTestBoxes)();    /* 0xAC SceneNode_RayTestBoxes (node, &sender hit mask, hit position, box list) */
     void (*unkB0)();          /* 0xB0 func_8001E49C, empty */
-    void (*unkB4)();          /* 0xB4 func_8001E4A4 */
+    void (*unkB4)();          /* 0xB4 SceneNode_AddActorWatchers */
 } SceneNodeVtbl;
 
 typedef struct SceneNode {

@@ -92,7 +92,7 @@ ScreenVtbl *Screen_GetVtbl(void);
 View *View_New(void);
 ViewVtbl *View_GetVtbl(void);
 SceneNode *SceneNode_GetRoot(SceneNode *node);
-void func_8003F28C(s32 projection);
+void View_SetGeomScreen(s32 projection);
 
 extern ScreenVtbl g_videoScreenVtbl[]; /* VideoScreen */
 extern ScreenVtbl g_menuScreenVtbl[]; /* MenuScreen */
@@ -100,15 +100,15 @@ extern ScreenVtbl g_screenVtbl[]; /* Screen */
 extern ViewVtbl g_viewVtbl[];   /* View */
 extern s32 g_pictureRect[];        /* ScreenRect (640, 0) 320 x 240: the VRAM area of pictures and videos */
 extern u8 g_menuScreenColors[];         /* MenuScreen_Reset colors: (0, 0, 0), (0, 0, 0), (128, 128, 128) */
-extern s32 D_8006E86C[];        /* ScreenVec (0, 0, 0) */
-extern s32 D_8008A8E8[];        /* option box: (320, 240) */
-extern u8 D_8008A8F0[];         /* option box: "  @" */
-extern s32 D_8008A8F4;          /* ViewRatio (0, 1): no twist */
-extern Color3 D_8008A8F8;       /* black */
+extern s32 g_screenZeroVec[];        /* ScreenVec (0, 0, 0) */
+extern s32 g_optionBoxSize[];        /* option box: (320, 240) */
+extern u8 g_optionBoxColor[];         /* option box: "  @" */
+extern s32 g_viewNoTwist;          /* ViewRatio (0, 1): no twist */
+extern Color3 g_viewDefaultColor;       /* black */
 /* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: read whole by View_Reset */
-extern ScreenPoint D_8008A8FC;
-extern s32 D_8008A904;          /* ScreenPoint (-100, -100): where the overlay hangs */
-extern s32 D_8008A90C;          /* the overlay: 320, 240, 10, 10 */
+extern ScreenPoint g_viewDefaultScreenSize;
+extern s32 g_overlayPos;          /* ScreenPoint (-100, -100): where the overlay hangs */
+extern s32 g_overlaySize;          /* the overlay: 320, 240, 10, 10 */
 
 /* VideoScreen */
 
@@ -222,11 +222,11 @@ void VideoScreen_OnCircle(VideoScreen *video) {
     }
 }
 
-void func_8003BD74(VideoScreen *video) {
+void VideoScreen_OnUp(VideoScreen *video) {
     MenuScreen_GetVtbl()->onUp(video);
 }
 
-void func_8003BDAC(VideoScreen *video) {
+void VideoScreen_OnDown(VideoScreen *video) {
     MenuScreen_GetVtbl()->onDown(video);
 }
 
@@ -260,7 +260,7 @@ void func_8003BE74(VideoScreen *video, s32 value) {
     video->unkD0 = value;
 }
 
-void func_8003BE7C(VideoScreen *video, s32 value) {
+void VideoScreen_SetCloseAtOnce(VideoScreen *video, s32 value) {
     video->unkD4 = value;
 }
 
@@ -361,7 +361,7 @@ void MenuScreen_Begin(MenuScreen *screen) {
     viewVtbl->setOtBits(view, screen->viewOtBits);
     viewVtbl->setPacketCount(view, screen->viewPacketCount);
     viewVtbl->setPacketSize(view, screen->viewPacketSize);
-    viewVtbl->setCamera(view, screen->root, D_8006E86C, D_8006E86C, 0);
+    viewVtbl->setCamera(view, screen->root, g_screenZeroVec, g_screenZeroVec, 0);
     viewVtbl->allocOt(view);
     screen->result = 0;
 }
@@ -738,7 +738,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
                 i++;
             } while (*text != 0);
         }
-        screen->optionBox = Box_Create((s32)D_8008A8E8, (s32)D_8008A8F0, 0);
+        screen->optionBox = Box_Create((s32)g_optionBoxSize, (s32)g_optionBoxColor, 0);
         menu->font = font;
     }
 }
@@ -1281,9 +1281,9 @@ void View_Init(View *view) {
     view->display = 0;
     view->node = 0;
     view->root = SceneNode_New();
-    overlay = Fade_Create((s32)&D_8008A90C, 0, 0);
+    overlay = Fade_Create((s32)&g_overlaySize, 0, 0);
     view->overlay = overlay;
-    overlay->vtbl->show(overlay, view->root, &D_8008A904);
+    overlay->vtbl->show(overlay, view->root, &g_overlayPos);
     view->vtbl->reset(view);
 }
 
@@ -1347,7 +1347,7 @@ void View_OnNotify(View *view, Object *sender, s32 message) {
 void View_Reset(View *view) {
     view->clockCount = 0;
     view->otReady = 0;
-    view->screenSize = D_8008A8FC;
+    view->screenSize = g_viewDefaultScreenSize;
     view->otBits = 0xD;
     view->packetCount = 0x7D0;
     view->packetSize = 0x40;
@@ -1356,8 +1356,8 @@ void View_Reset(View *view) {
     view->unk50 = 0x10000;
     view->lightMode = 0;
     view->fogNear = 0x4E20;
-    view->fogColor = D_8008A8F8;
-    view->clearColor = D_8008A8F8;
+    view->fogColor = g_viewDefaultColor;
+    view->clearColor = g_viewDefaultColor;
     view->unkB4 = 0;
     view->unkB8 = 1;
 }
@@ -1421,7 +1421,7 @@ void View_SetCamera(View *view, SceneNode *node, ScreenVec *viewpoint, ScreenVec
         vtbl->setRefPoint(view, refPoint);
         ratio = twist;
         if (ratio == NULL) {
-            ratio = (ViewRatio *)&D_8008A8F4;
+            ratio = (ViewRatio *)&g_viewNoTwist;
         }
         vtbl->setTwist(view, ratio);
         GsSetRefView2(&view->viewpoint);
@@ -1526,7 +1526,7 @@ void View_Render(View *view) {
         if (view->node->parent != NULL) {
             view->vtbl->drawNode(view, view->node);
         }
-        func_8003F28C(view->projection);
+        View_SetGeomScreen(view->projection);
         func_8003FB0C(view->unk4C);
         GsSetLightMode(view->lightMode);
         if (view->lightMode == 1 || view->lightMode == 3) {
@@ -1575,7 +1575,7 @@ void View_SetOverlay(View *view, Fade *overlay) {
         }
         view->overlay = overlay;
         if (overlay != NULL) {
-            overlay->vtbl->show(overlay, view->root, &D_8008A904);
+            overlay->vtbl->show(overlay, view->root, &g_overlayPos);
         }
     }
 }
@@ -1584,11 +1584,11 @@ Fade *View_GetOverlay(View *view) {
     return view->overlay;
 }
 
-void func_8003F23C(View *view, s32 value) {
+void View_SetExtraSwap(View *view, s32 value) {
     view->unkB4 = value;
 }
 
-void func_8003F244(View *view, s32 value) {
+void View_SetPresentEnabled(View *view, s32 value) {
     view->unkB8 = value;
 }
 
@@ -1603,8 +1603,8 @@ SceneNode *SceneNode_GetRoot(SceneNode *node) {
     return node;
 }
 
-void func_8003F28C(s32 projection) {
+void View_SetGeomScreen(s32 projection) {
     SetGeomScreen(projection);
 }
 
-ScreenPoint D_8008A8FC = { 0x100, 0xF0 };
+ScreenPoint g_viewDefaultScreenSize = { 0x100, 0xF0 };

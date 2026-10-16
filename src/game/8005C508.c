@@ -6,7 +6,7 @@
 /*
  * Behaviour handlers (record +0xC, the second half of this unit) and the model base class.
  * A handler runs once per tick as handler(entity, node): Entity_StartHandler registers it in the
- * node at Entity +0x9C (func_8002CC34) and slot 0x11C (func_8005D6D4) runs func_8002CD08, which
+ * node at Entity +0x9C (HandlerNode_Start) and slot 0x11C (Entity_RunHandler) runs HandlerNode_Run, which
  * calls the handler, then plays the sounds the handler asked for on the entity's sound bank (+0x58).
  */
 
@@ -67,25 +67,25 @@ typedef union BehaviorPos {
 } BehaviorPos;
 
 /*
- * The DreamSys (D_8008AC00) as the handlers see it through Entity +0x94: the dreamer they face,
+ * The DreamSys (g_symDreamSys) as the handlers see it through Entity +0x94: the dreamer they face,
  * push and test. Slots 0x44 to 0xCC are the model base class's (ModelVtbl).
  */
 typedef struct BehaviorDreamSysVtbl {
     u8 pad_00[0x44];
     void (*rotate)(void *self, s32 absolute, void *angles); /* 0x44 SceneNode_SetRotation */
     u8 pad_48[0x94 - 0x48];
-    void (*unk94)(void *self, s32 arg1, s32 arg2);          /* 0x94 func_80058C58 */
+    void (*unk94)(void *self, s32 arg1, s32 arg2);          /* 0x94 DreamSys_OnPad */
     u8 pad_98[0xB8 - 0x98];
     void (*setPosition)(void *self, void *pos);             /* 0xB8 Actor_SetPos */
     u8 pad_BC[0xC4 - 0xBC];
-    void (*moveZ)(void *self, s32 amount, s32 animate);     /* 0xC4 func_8005748C */
-    void (*moveX)(void *self, s32 amount, s32 animate);     /* 0xC8 func_800574C4 */
-    void (*moveY)(void *self, s32 amount, s32 animate);     /* 0xCC func_800574FC */
+    void (*moveZ)(void *self, s32 amount, s32 animate);     /* 0xC4 Actor_MoveZ */
+    void (*moveX)(void *self, s32 amount, s32 animate);     /* 0xC8 Actor_MoveX */
+    void (*moveY)(void *self, s32 amount, s32 animate);     /* 0xCC Actor_MoveY */
     u8 pad_D0[0x100 - 0xD0];
-    s32 (*unk100)(void *self);                              /* 0x100 func_8005931C, returns DreamSys +0x74 */
+    s32 (*unk100)(void *self);                              /* 0x100 DreamSys_WasCirclePressed, returns DreamSys +0x74 */
     u8 pad_104[0x130 - 0x104];
-    void (*unk130)(void *self, s32 arg1);                   /* 0x130 func_800595A8 */
-    void (*unk134)(void *self, s32 arg1, s32 arg2);         /* 0x134 func_80059610 */
+    void (*unk130)(void *self, s32 arg1);                   /* 0x130 DreamSys_StopControls */
+    void (*unk134)(void *self, s32 arg1, s32 arg2);         /* 0x134 DreamSys_SetControls */
     u8 pad_138[0x1A0 - 0x138];
     s32 (*getDayNumber)(void *self, s32 *out);              /* 0x1A0 DreamSys_GetDayNumber */
     u8 pad_1A4[0x200 - 0x1A4];
@@ -113,15 +113,15 @@ typedef struct BehaviorEntityVtbl {
     void (*rotate)(void *self, s32 absolute, void *angles);  /* 0x44 SceneNode_SetRotation: degrees as {num, den} s16 pairs */
     void (*scale)(void *self, s32 absolute, void *factors);  /* 0x48 SceneNode_SetScale: {num, den} s16 pairs */
     u8 pad_4C[0x60 - 0x4C];
-    void (*unk60)(void *self, s32 arg1);                     /* 0x60 func_80065A5C, 1 on wake, 0 on sleep */
+    void (*unk60)(void *self, s32 arg1);                     /* 0x60 Model_SetVisible, 1 on wake, 0 on sleep */
     u8 pad_64[0xB8 - 0x64];
     void (*setPosition)(void *self, void *pos);              /* 0xB8 Actor_SetPos */
     void (*move)(void *self, void *delta);                   /* 0xBC Actor_MovePos: adds a world vector to the position */
     u8 pad_C0[0xC4 - 0xC0];
-    void (*moveZ)(void *self, s32 amount, s32 animate);      /* 0xC4 func_8005748C: along the model's own z axis */
-    void (*moveX)();                                         /* 0xC8 func_800574C4 (self, amount, animate): own x axis */
-    void (*moveY)(void *self, s32 amount, s32 animate);      /* 0xCC func_800574FC: own y axis, negative is up */
-    void (*moveZOnGround)(void *self, s32 amount, s32 animate); /* 0xD0 func_800575B0: moveZ, then the ground test func_80057668 */
+    void (*moveZ)(void *self, s32 amount, s32 animate);      /* 0xC4 Actor_MoveZ: along the model's own z axis */
+    void (*moveX)();                                         /* 0xC8 Actor_MoveX (self, amount, animate): own x axis */
+    void (*moveY)(void *self, s32 amount, s32 animate);      /* 0xCC Actor_MoveY: own y axis, negative is up */
+    void (*moveZOnGround)(void *self, s32 amount, s32 animate); /* 0xD0 Actor_MoveZOnGround: moveZ, then the ground test Actor_SnapToGround */
     u8 pad_D4[0x128 - 0xD4];
     void (*setAnimation)(void *self, s32 animation);         /* 0x128 Model_SetAnimation */
     void (*playAnimation)(void *self);                       /* 0x12C Model_PlayAnimation */
@@ -138,7 +138,7 @@ typedef struct BehaviorEntityVtbl {
     void (*stopHandler)(void *self);                         /* 0x16C Entity_StopHandler */
 } BehaviorEntityVtbl;
 
-/* The object at Entity +0x4C (the map the entity stands on: func_80057668 asks its slot 0x110 for the ground). */
+/* The object at Entity +0x4C (the map the entity stands on: Actor_SnapToGround asks its slot 0x110 for the ground). */
 typedef struct BehaviorMapVtbl {
     u8 pad_00[0x138];
     void (*unk138)(void *self, s32 arg1, s32 arg2);
@@ -148,7 +148,7 @@ typedef struct BehaviorMap {
     BehaviorMapVtbl *vt;
 } BehaviorMap;
 
-/* A part of a model (one per object of its TMD, made by func_80056FE4). */
+/* A part of a model (one per object of its TMD, made by Actor_New). */
 typedef struct ModelPartVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(void *self);                         /* 0x04 */
@@ -171,7 +171,7 @@ typedef struct ModelPart {
     s32 unk20;              /* 0x20 frame command 2 gives it a texture only while it is 0 */
 } ModelPart;
 
-/* The parent class of Model (returned by func_80057C84, unit 80051F24): the slots Model's methods chain to. */
+/* The parent class of Model (returned by Actor_GetVtbl, unit 80051F24): the slots Model's methods chain to. */
 typedef struct ModelParentVtbl {
     u8 pad_00[0x8];
     s32 (*construct)();   /* 0x08 */
@@ -203,9 +203,9 @@ typedef struct ModelVtbl {
     u8 pad_18[0x40 - 0x18];
     void (*init)(void *self);                              /* 0x40 Model_Init */
     u8 pad_44[0xC4 - 0x44];
-    void (*moveZ)(void *self, s32 amount, s32 animate);    /* 0xC4 func_8005748C */
+    void (*moveZ)(void *self, s32 amount, s32 animate);    /* 0xC4 Actor_MoveZ */
     u8 pad_C8[0xE4 - 0xC8];
-    void (*unkE4)(void *self, s32 arg1);                   /* 0xE4 func_80057C6C */
+    void (*unkE4)(void *self, s32 arg1);                   /* 0xE4 Actor_SetSpeed */
     u8 pad_E8[0xF0 - 0xE8];
     void (*setUnk64)(void *self, s32 value);               /* 0xF0 func_80065BF4 */
     s32 (*load)(void *self, s32 arg1);                     /* 0xF4 Model_Load */
@@ -218,7 +218,7 @@ typedef struct ModelVtbl {
     void (*startTick)(void *self);                         /* 0x110 Model_StartTick */
     void (*stopTick)(void *self);                          /* 0x114 Model_StopTick */
     void (*tickA)(void *self);                             /* 0x118 Model_TickForward */
-    void (*tickB)(void *self);                             /* 0x11C empty here, the entity's handler run (func_8005D6D4) */
+    void (*tickB)(void *self);                             /* 0x11C empty here, the entity's handler run (Entity_RunHandler) */
     void (*tickC)(void *self);                             /* 0x120 empty */
     u8 pad_124[0x128 - 0x124];
     void (*setAnimation)(void *self, s32 animation);       /* 0x128 Model_SetAnimation */
@@ -280,7 +280,7 @@ typedef struct BehaviorEntity {
     s32 unk28;                 /* 0x28 result of the ground test after moveZOnGround */
     u8 pad_2C[0x44 - 0x2C];
     s32 state;                 /* 0x44 handler state; 1 stops Entity_CheckWake for good */
-    s16 speed;                 /* 0x48 last amount given to moveX, moveY or moveZ (func_80057534) */
+    s16 speed;                 /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
     BehaviorMap *map;          /* 0x4C */
     void *unk50;               /* 0x50 */
@@ -306,24 +306,24 @@ typedef struct BehaviorEntity {
 
 extern void Object_DeleteArray(void *, s32);
 extern EntityRecord g_entityRecords[];
-extern void Behavior_Gunman();
-void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
-extern s8 D_80089EAC[];
-extern void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
+extern void Behavior_Type51();
+void Actor_ApplyPos(void *arg0, s32 arg1, s32 *arg2);
+extern s8 g_entityRecordVideo[];
+extern void Scenery_CreateSpriteParts(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
 extern void Place_CheckTextureLoad(void *, void *);
 s32 Model_LoadFile();
 extern void Model_FreeFile();
 s32 Model_BuildParts(Model *model);
 void Model_ReleaseParts(Model *model);
-void func_8002CC84(void *, void *);
-extern s32 D_80089DD8;
-extern s32 D_80089E38;
-extern s32 D_80089DCC;
-extern s8 D_80089EA6[];
-void func_8005BF68(s32 arg0);
-extern s8 D_80089EAB[];
-extern void func_8002CD08(s32, void *);
-extern void func_80062570();
+void HandlerNode_Stop(void *, void *);
+extern s32 g_scaleHalf;
+extern s32 g_scaleSix;
+extern s32 g_scaleQuarter;
+extern s8 g_entityRecordPoints[];
+void Link_SetExtraListOn(s32 arg0);
+extern s8 g_entityRecordLink[];
+extern void HandlerNode_Run(s32, void *);
+extern void Behavior_Type71();
 typedef struct Unk_8005CD58_Vtbl {
     u8 pad_00[0x200];
     s32 (*unk200)(void *);
@@ -331,11 +331,11 @@ typedef struct Unk_8005CD58_Vtbl {
 typedef struct Unk_8005CD58 {
     Unk_8005CD58_Vtbl *vt;
 } Unk_8005CD58;
-Unk_8005CD58 *D_8008AC00;
+Unk_8005CD58 *g_symDreamSys;
 extern s8 g_ruleColors[];
-ModelParentVtbl *func_80057C84(void);
-extern s32 D_80089DF0[];
-extern s32 D_80089D78[];
+ModelParentVtbl *Actor_GetVtbl(void);
+extern s32 g_scaleDouble[];
+extern s32 g_moveYNeg64[];
 typedef struct Unk_8005C5E8_Vtbl {
     u8 pad0[0x4];
     void *(*unk4)(void *);
@@ -362,7 +362,7 @@ typedef struct Unk_8005C76C_Entry {
     Unk_8005C76C *obj;
     u8 pad[0x14 - 4];
 } Unk_8005C76C_Entry;
-extern Unk_8005C76C_Entry D_80088D2C[];
+extern Unk_8005C76C_Entry g_spyEntity[];
 typedef struct Unk_80066818_Vtbl {
     u8 pad[0x8];
     s32 (*unk8)(void *, s32, s32);
@@ -377,7 +377,7 @@ Unk_80066818_Vtbl *Model_GetVtbl(void);
 extern s32 rand(void);
 s32 g_currentStage;
 extern void Entity_FaceDreamer(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4);
-extern s32 D_80089E80;
+extern s32 g_scaleTiny;
 typedef struct Unk_80065CEC_Obj_Vtbl {
     u8 pad[0x4];
     void *(*unk4)(void *);
@@ -390,11 +390,11 @@ extern s16 *g_spawnSlots[];
 s32 Sym_PickSlotVariant(s32 arg0, s32 arg1);
 s32 Entity_Create(s32 arg0, s32 arg1, s32 arg2);
 extern void Sym_InitExtraList(s32);
-s32 D_8008ABFC;
-s32 D_8008AC04;
+s32 g_symMap;
+s32 g_symSoundBank;
 s32 D_8008AC08;
-extern s32 func_8002CC34(s32, void *, s32, void *, s32);
-extern s32 D_80089EB0[];
+extern s32 HandlerNode_Start(s32, void *, s32, void *, s32);
+extern s32 g_entityRecordHandler[];
 s32 Entity_IsDreamerNear();
 EntityVtbl *Entity_GetVtbl(void);
 s32 Heap_Alloc(s32);
@@ -406,14 +406,14 @@ typedef struct Unk_80065C5C {
 extern Unk_80065CEC_Obj *Mom_Create(Unk_80065C5C *arg0);
 s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 extern void SceneNode_LocalToWorld(void *arg0, void *arg1, void *arg2, s32 arg3);
-extern s16 D_80089C64[];
-extern s16 D_80089C70[];
-extern s32 D_80089D54[];
-extern s32 D_80089C7C[];
+extern s16 g_rotY9[];
+extern s16 g_rotYNeg9[];
+extern s32 g_moveYNeg512[];
+extern s32 g_rotY180[];
 extern s32 Entity_StartEffect();
-void func_80063CAC(HandlerNode *node);
-extern s32 D_80089C88;
-extern s16 D_80089DFC[];
+void Behavior_QueueSound18And3(HandlerNode *node);
+extern s32 g_rotY90;
+extern s16 g_scaleShrinkStep[];
 s32 Sym_FindSlot(s16 *arg0);
 s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot);
 s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square);
@@ -425,22 +425,22 @@ typedef struct Unk_8005D480_Fn {
     u8 pad[0x98];
     void (*unk98)(void *, void *, s32);
 } Unk_8005D480_Fn;
-extern s8 D_80089EAE[];
-extern s32 D_80089E50;
-extern s16 D_80089E8C[];
-extern s32 D_80089DC0[];
-extern s32 D_80089CA0[];
+extern s8 g_entityRecordSoundRange[];
+extern s32 g_scaleTallTwo;
+extern s16 g_scaleWideThree[];
+extern s32 g_moveZNeg256[];
+extern s32 g_rotY2[];
 void SceneNode_LinkModel(void *, s32);
-extern s32 D_80089D00[];
-extern s32 D_80089E44[];
-extern s8 D_80089C58[];
-void func_80060710(BehaviorEntity *entity);
+extern s32 g_rotY4[];
+extern s32 g_scaleTwoFifths[];
+extern s8 g_rotXEighth[];
+void Behavior_RollWideOrSlide(BehaviorEntity *entity);
 typedef struct Unk_8005D560_Fn {
     u8 pad[0xDC];
     void (*unkDC)(void *, void *, s32);
 } Unk_8005D560_Fn;
-extern s32 D_80089D18;
-extern s32 D_80089E74;
+extern s32 g_rotY1;
+extern s32 g_scaleTriple;
 struct Unk_80026CE8 {
     s32 unk0;
     char *unk4;
@@ -449,16 +449,16 @@ struct Unk_80026CE8 {
 struct Unk_80026CE8 *File_MakeSource(struct Unk_80026CE8 *arg0, s32 arg1, char *arg2, s32 arg3);
 extern s8 g_spawnGroupCounts[];
 void *Fade_Create(void *arg0, s32 arg1, s32 arg2);
-extern s32 D_8008AC0C[];
-extern s32 D_8008AC14[];
-extern s8 D_80089EA7[];
-extern s8 D_80089EAF[];
+extern s32 g_effectDefaultPos[];
+extern s32 g_effectDefaultSize[];
+extern s8 g_entityRecordWakeMode[];
+extern s8 g_entityRecordHandlerRange[];
 extern s32 Heap_Alloc(s32);
-extern void *func_80056FE4(void);
+extern void *Actor_New(void);
 extern void Model_ReleaseParts(Model *model);
-extern s32 D_80089C94;
-extern s32 D_80089E2C[];
-extern s16 D_80089DE4[];
+extern s32 g_rotYNeg90;
+extern s32 g_scaleThinTall[];
+extern s16 g_scaleSquash[];
 typedef struct Unk_8005CAB4_Vtbl {
     u8 pad[0x88];
     s32 (*unk88)(void *self, s32 arg1);
@@ -469,12 +469,12 @@ typedef struct Unk_8005CAB4_Obj {
 void Sym_CheckExtraListType(s32 arg0);
 s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
 s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place);
-extern s32 D_80089DB4[];
-extern s16 D_80089CB8[];
+extern s32 g_moveYNeg1500Z1024[];
+extern s16 g_rotYNegHalf[];
 void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed);
-extern s32 D_80089D48[];
-extern s32 D_80089D60[];
-extern s32 D_80089D9C[];
+extern s32 g_moveYNeg4096[];
+extern s32 g_moveY64[];
+extern s32 g_moveXNeg64[];
 void Entity_CheckLinkRadius();
 extern s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 s32 Ambience_IsEvenFamily(void);
@@ -483,25 +483,25 @@ s32 Sym_CheckMonthRule(s32 arg0, s32 arg1);
 extern u8 g_entityVtbl[];
 extern u8 g_modelVtbl[];
 extern s8 D_8008AC1C[];
-extern s32 D_80089D90[];
-extern s32 D_80089E5C[];
-extern s32 D_80089D3C[];
-extern s32 D_80089CC4[];
-extern s32 D_80089D6C[];
-extern s32 D_80089CAC;
-extern s32 D_80089E14;
-extern s32 D_80089E20;
-extern s32 D_80089CE8[];
-extern s32 D_80089CF4[];
-extern s32 D_80089DA8[];
+extern s32 g_moveYNeg256[];
+extern s32 g_scaleTallFour[];
+extern s32 g_moveY256[];
+extern s32 g_rotZ9[];
+extern s32 g_moveY8[];
+extern s32 g_rotYNegThird;
+extern s32 g_scaleOne;
+extern s32 g_scaleEighth;
+extern s32 g_rotYNeg120[];
+extern s32 g_astronautBarPose[];
+extern s32 g_moveY64ZNeg64[];
 s32 Model_FindPart(Model *model, u8 id);
-extern s16 D_80089EA2[];
+extern s16 g_type41ScaleDepthDen[];
 s32 Entity_IsDreamerNear(Entity *entity, s32 radius);
-extern s16 D_80089CD0[];
-extern s16 D_80089CDC[];
+extern s16 g_rotZ1[];
+extern s16 g_rotZNeg9[];
 s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg4);
-void func_80063C84(HandlerNode *node);
-extern s32 D_80089D24[];
+void Behavior_QueueLowSound7(HandlerNode *node);
+extern s32 g_rotZNeg90[];
 typedef struct Unk_8005CDF8_C {
     u8 r, g, b, cd;
 } Unk_8005CDF8_C;
@@ -527,10 +527,10 @@ typedef struct Unk_8005CDF8_Obj {
 } Unk_8005CDF8_Obj;
 extern SpawnPlace g_spawnPlaces[];
 extern Unk_8005CDF8_Rec D_80088D3C[];
-extern u8 D_80088F18[];
-extern s32 D_80089D0C;
-s32 D_8008ACCC;
-extern s32 D_80089E08[];
+extern u8 g_spawnPlaceRotations[];
+extern s32 g_rotX90;
+s32 g_type78Stopped;
+extern s32 g_scaleGrowStep[];
 
 void Sym_LoadModels(void) {
     struct Unk_80026CE8 file;
@@ -571,14 +571,14 @@ void Sym_InitStage(s32 stage, s32 arg1, Unk_8005CD58 *dreamSys, s32 arg3, s32 ar
 
     entry = g_spyModel;
     g_currentStage = stage;
-    D_8008ABFC = arg1;
-    D_8008AC00 = dreamSys;
-    D_8008AC04 = arg3;
+    g_symMap = arg1;
+    g_symDreamSys = dreamSys;
+    g_symSoundBank = arg3;
     D_8008AC08 = arg4;
     /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
         params[3] = (s32) entry->model;
-        entry->spy = Entity_Create(i + 0x62, params, D_8008AC04);
+        entry->spy = Entity_Create(i + 0x62, params, g_symSoundBank);
         entry++;
     }
     Sym_InitExtraList(stage);
@@ -591,7 +591,7 @@ void Sym_InitExtraList(s32 stage) {
     if ((stage == 0xB) || (stage == 3)) {
         extraList = 1;
     }
-    func_8005BF68(extraList);
+    Link_SetExtraListOn(extraList);
 }
 
 void Sym_CheckExtraListType(s32 type) {
@@ -600,16 +600,16 @@ void Sym_CheckExtraListType(s32 type) {
         case 0x38:
         case 0x4E:
         case 0x5D:
-            func_8005BF68(1);
+            Link_SetExtraListOn(1);
             break;
     }
 }
 
-void func_8005C76C(void) {
+void Sym_FreeSpy(void) {
     Unk_8005C76C_Entry *entry;
     u32 i;
 
-    for (i = 0, entry = D_80088D2C; i < 1; i++) {
+    for (i = 0, entry = g_spyEntity; i < 1; i++) {
         if (entry->obj != NULL) {
             entry->obj = entry->obj->vt->fn4(entry->obj);
         }
@@ -660,7 +660,7 @@ s32 Sym_PickSlotVariant(s32 slot, s32 index) {
     s32 stage = g_currentStage;
 
     if (stage == 4 && index == 0x10) {
-        if (D_8008AC00->vt->unk200(D_8008AC00) == stage) {
+        if (g_symDreamSys->vt->unk200(g_symDreamSys) == stage) {
             slot += 30;
         }
     }
@@ -803,7 +803,7 @@ s32 Sym_CheckColorRule(s32 rule) {
     s32 colour;
 
     colour = g_ruleColors[rule];
-    return colour == D_8008AC00->vt->unk200(D_8008AC00);
+    return colour == g_symDreamSys->vt->unk200(g_symDreamSys);
 }
 
 /* Rules 2 to 4: the 30-day month (day - 1) / 30 + 1 equals month, month + 3, + 6 or + 9. */
@@ -828,16 +828,16 @@ s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
     SpawnPlace *placeInfo;
     s32 recIndex;
 
-    entity = (Entity *) Entity_Create(type, (s32) params, D_8008AC04);
+    entity = (Entity *) Entity_Create(type, (s32) params, g_symSoundBank);
     if (entity != NULL) {
         query.a = *(u16 *) slot;
         placeInfo = &g_spawnPlaces[place];
         query.b = placeInfo->unk0;
         recIndex = placeInfo->unk3;
         query.rec = D_80088D3C[recIndex];
-        ((Unk_8005CDF8_Obj *) D_8008ABFC)->vt->unkE8((void *) D_8008ABFC, placement, &query);
-        entity->vt->rotate(entity, 1, &D_80088F18[placeInfo->unk2 * 12]);
-        entity->vt->attach(entity, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
+        ((Unk_8005CDF8_Obj *) g_symMap)->vt->unkE8((void *) g_symMap, placement, &query);
+        entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->unk2 * 12]);
+        entity->vt->attach(entity, g_symDreamSys, D_8008AC08, g_symMap, placement);
         return 0;
     }
     return 1;
@@ -850,9 +850,9 @@ void Sym_SpawnSpy(SpyModel *spyModel) {
     spy = spyModel->spy;
     if (spy != NULL) {
         spy->vt->detach(spy);
-        SceneNode_LocalToWorld(D_8008AC00, placement, &spyModel->unk8, 0);
-        spyModel->spy->vt->attach(spyModel->spy, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
-        Entity_FaceDreamer(spyModel->spy, D_8008AC00, 1, 0, 0);
+        SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->unk8, 0);
+        spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, D_8008AC08, g_symMap, placement);
+        Entity_FaceDreamer(spyModel->spy, g_symDreamSys, 1, 0, 0);
     }
 }
 
@@ -888,7 +888,7 @@ s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg
 
     if (entity->effect == NULL) {
         if (arg1 == NULL) {
-            arg1 = D_8008AC14;
+            arg1 = g_effectDefaultSize;
         }
         effect = Fade_Create(arg1, 0, arg4);
         if (effect == NULL) {
@@ -899,7 +899,7 @@ s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg
         effect = entity->effect;
     }
     effect->vtbl->hide(effect);
-    effect->vtbl->show(effect, entity, arg2 ? arg2 : D_8008AC0C);
+    effect->vtbl->show(effect, entity, arg2 ? arg2 : g_effectDefaultPos);
     effect->vtbl->setStep(effect, arg3);
     return (s32)effect;
 }
@@ -920,7 +920,7 @@ void Entity_Destruct(Entity *entity) {
 
 void Entity_Init(Entity *entity) {
     /* record points byte (+2) of 1 to 9 */
-    if ((u8)D_80089EA6[entity->type * 16] - 1U < 9) {
+    if ((u8)g_entityRecordPoints[entity->type * 16] - 1U < 9) {
         entity->vt->unk70(entity, 1);
     }
     entity->vt->setTickMode(entity, 0x42);
@@ -932,9 +932,9 @@ void Entity_Attach(Entity *entity, void *dreamSys, void *arg2, s32 arg3, s32 arg
         Model_GetVtbl()->unk4C(entity, dreamSys, arg2, arg3, arg4);
         entity->map = arg3;
         /* record +3 wake mode 0: awake at spawn; +0xB handler range 0: handler from the start */
-        if (D_80089EA7[entity->type * 16] == 0) {
+        if (g_entityRecordWakeMode[entity->type * 16] == 0) {
             entity->vt->wake(entity);
-            if (D_80089EAF[entity->type * 16] == 0) {
+            if (g_entityRecordHandlerRange[entity->type * 16] == 0) {
                 entity->vt->startHandler(entity);
             }
         }
@@ -960,11 +960,11 @@ void Entity_Update(Entity *entity, void *arg1, s32 arg2) {
     ((Unk_8005D480_Fn *)Model_GetVtbl())->unk98(entity, arg1, arg2);
 }
 
-void func_8005D560(Entity *entity, void *arg1, s32 message) {
+void Entity_OnActorTouch(Entity *entity, void *arg1, s32 message) {
     s32 link;
 
     /* record +7 link */
-    link = D_80089EAB[entity->type * 16];
+    link = g_entityRecordLink[entity->type * 16];
     if (message < 2 || message >= 9 || link > 0) {
         ((Unk_8005D560_Fn *)Model_GetVtbl())->unkDC(entity, arg1, message);
         /* entity events: 10 link, 11 end with the record's video (+8), 12 end; link 0x7F ends the dream */
@@ -973,7 +973,7 @@ void func_8005D560(Entity *entity, void *arg1, s32 message) {
                 message = 0xA;
             } else {
                 message = 0xC;
-                if (D_80089EAC[entity->type * 16] != 0) {
+                if (g_entityRecordVideo[entity->type * 16] != 0) {
                     message = 0xB;
                 }
             }
@@ -982,15 +982,15 @@ void func_8005D560(Entity *entity, void *arg1, s32 message) {
     }
 }
 
-void func_8005D658(Entity *entity, void *arg1, s32 message) {
+void Entity_OnWallTouch(Entity *entity, void *arg1, s32 message) {
     Model_GetVtbl()->unkE0(entity, arg1, message);
     if (message == 4) {
         entity->vt->sleep(entity);
     }
 }
 
-void func_8005D6D4(Entity *entity) {
-    func_8002CD08(entity->soundBank, &entity->handlerNode);
+void Entity_RunHandler(Entity *entity) {
+    HandlerNode_Run(entity->soundBank, &entity->handlerNode);
     entity->handlerTicks++;
 }
 
@@ -1000,7 +1000,7 @@ s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
     u8 points;
 
     point = *(Vec3 *)pos;
-    points = *(u8 *)(D_80089EA6 + (entity->type * 0x10));
+    points = *(u8 *)(g_entityRecordPoints + (entity->type * 0x10));
     if ((u32)((points + 9) & 0xFF) < 9U) {
         point.y += (s32)(points << 0x18) >> 0xE;
     }
@@ -1044,7 +1044,7 @@ s32 Entity_GetSoundFade(Entity *entity) {
 
     if (entity->dreamSys != NULL) {
         dist = entity->vt->distanceTo(entity, entity->dreamSys);
-        range = D_80089EAE[entity->type * 16] << 11;
+        range = g_entityRecordSoundRange[entity->type * 16] << 11;
         if (range >= dist) {
             return dist / (range / entity->handlerNode.fadeSteps);
         }
@@ -1057,13 +1057,13 @@ EntityRecord *Entity_GetRecord(Entity *entity) {
 }
 
 s32 Entity_GetPoints(Entity *entity) {
-    return D_80089EA6[entity->type * 16] * 1000;
+    return g_entityRecordPoints[entity->type * 16] * 1000;
 }
 
 s32 Entity_GetLinkStage(Entity *entity) {
     s8 link;
 
-    link = D_80089EAB[entity->type * 16];
+    link = g_entityRecordLink[entity->type * 16];
     if (link < 0) {
         return ~link;
     }
@@ -1071,7 +1071,7 @@ s32 Entity_GetLinkStage(Entity *entity) {
 }
 
 s32 Entity_GetVideo(Entity *entity) {
-    return D_80089EAC[entity->type * 16] - 1;
+    return g_entityRecordVideo[entity->type * 16] - 1;
 }
 
 void Entity_Wake(Entity *entity) {
@@ -1096,7 +1096,7 @@ void Entity_SetTouched(Entity *entity, s32 touched) {
 
 void Entity_StartHandler(Entity *entity) {
     /* register the record's handler (+0xC) */
-    func_8002CC34(entity->soundBank, &entity->handlerNode, entity->type + 1, entity, D_80089EB0[entity->type * 4]);
+    HandlerNode_Start(entity->soundBank, &entity->handlerNode, entity->type + 1, entity, g_entityRecordHandler[entity->type * 4]);
     entity->vt->playAnimation(entity);
     entity->vt->startTick(entity);
     entity->handlerTicks = 0;
@@ -1104,7 +1104,7 @@ void Entity_StartHandler(Entity *entity) {
 }
 
 void Entity_StopHandler(Entity *entity) {
-    func_8002CC84(entity->soundBank, &entity->handlerNode);
+    HandlerNode_Stop(entity->soundBank, &entity->handlerNode);
     entity->vt->stopAnimation(entity);
     entity->vt->stopTick(entity);
     entity->handlerActive = 0;
@@ -1238,8 +1238,8 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
 void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
     s8 radius;
 
-    if (D_80089EAB[entity->type * 16] < 0) {
-        radius = D_80089EAC[entity->type * 16];
+    if (g_entityRecordLink[entity->type * 16] < 0) {
+        radius = g_entityRecordVideo[entity->type * 16];
         if ((radius != 0) && (Entity_IsDreamerNear(entity, radius << 9) != 0)) {
             entity->vt->postEvent(entity, 0xA);
         }
@@ -1315,7 +1315,7 @@ void Behavior_Astronaut(BehaviorEntity *entity, HandlerNode *node) {
         if (entity->handlerTicks < 0x64) {
             entity->vt->moveZ(entity, 0x32, 0);
         } else if (entity->handlerTicks < 0xFA) {
-            entity->vt->move(entity, D_80089DA8);
+            entity->vt->move(entity, g_moveY64ZNeg64);
         }
     } else {
         if (entity->handlerTicks == 0xFA) {
@@ -1325,16 +1325,16 @@ void Behavior_Astronaut(BehaviorEntity *entity, HandlerNode *node) {
         }
         if (entity->handlerTicks >= 0x105 && entity->handlerTicks < 0x238) {
             entity->vt->moveZ(entity, -0x32, 0);
-            entity->vt->rotate(entity, 1, D_80089CE8);
+            entity->vt->rotate(entity, 1, g_rotYNeg120);
             return;
         }
         if (entity->handlerTicks >= 0x239) {
-            entity->vt->rotate(entity, 1, D_80089CF4);
+            entity->vt->rotate(entity, 1, g_astronautBarPose);
         }
     }
 }
 
-void func_8005E3C4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type1(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = 0;
     if (node->tick == 0) {
         node->voices[0].sound = 0x14;
@@ -1349,14 +1349,14 @@ void func_8005E3C4(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005E480(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type5(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == 0) {
         node->voices[0].sound = 0x17;
     }
 }
 
-void func_8005E4D0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type7(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (entity->animFrame == entity->animLength / 2) {
         node->voices[0].sound = 7;
@@ -1369,12 +1369,12 @@ void func_8005E4D0(BehaviorEntity *entity, HandlerNode *node) {
         node->voices[2].octave = -1;
     }
     if (entity->handlerTicks >= 0x79) {
-        entity->vt->rotate(entity, 0, D_80089CA0);
+        entity->vt->rotate(entity, 0, g_rotY2);
         entity->vt->moveZ(entity, -0x140, 0);
         return;
     }
     if (entity->handlerTicks >= 0x38 || Entity_IsInRange(entity, entity->pos.bytes + 0x18, 1, 1) != 0) {
-        entity->vt->move(entity, D_80089D78);
+        entity->vt->move(entity, g_moveYNeg64);
         return;
     }
     if (entity->handlerTicks >= 0xA) {
@@ -1386,11 +1386,11 @@ void func_8005E4D0(BehaviorEntity *entity, HandlerNode *node) {
 }
 
 void Behavior_PurpleBeast(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, D_80089DF0);
-    entity->vt->move(entity, D_80089D78);
+    entity->vt->scale(entity, 1, g_scaleDouble);
+    entity->vt->move(entity, g_moveYNeg64);
 }
 
-void func_8005E6F0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type9(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick % (entity->animLength / 2) == 0) {
         node->voices[0].sound = 0xA;
@@ -1398,7 +1398,7 @@ void func_8005E6F0(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x1E, 0);
 }
 
-void func_8005E7A8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type10(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = 0;
     if (node->tick == 0) {
         node->voices[0].sound = 0xB;
@@ -1421,13 +1421,13 @@ void Behavior_WalkingGeisha(BehaviorEntity *entity, HandlerNode *node) {
     }
     if (entity->state == 11) {
         if (entity->handlerTicks == 0xA8C) {
-            turn = &D_80089C94;
+            turn = &g_rotYNeg90;
         }
         if (entity->handlerTicks == 0xC6C) {
-            turn = &D_80089C88;
+            turn = &g_rotY90;
         }
         if (entity->handlerTicks == 0xE10) {
-            turn = &D_80089C94;
+            turn = &g_rotYNeg90;
         }
         if (entity->handlerTicks >= 0xD5D && entity->handlerTicks < 0xDD5) {
             dreamSys = entity->dreamSys;
@@ -1438,22 +1438,22 @@ void Behavior_WalkingGeisha(BehaviorEntity *entity, HandlerNode *node) {
         }
     } else if (entity->state == 12) {
         if (entity->handlerTicks == 0x7BC) {
-            turn = &D_80089C94;
+            turn = &g_rotYNeg90;
         }
     } else if (entity->state == 13) {
         entity->speed = -0x78;
         Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
-        entity->vt->scale(entity, 1, &D_80089DD8);
+        entity->vt->scale(entity, 1, &g_scaleHalf);
         if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x400) {
             entity->vt->postEvent(entity, 0xB);
         }
     }
     if (entity->handlerTicks == 0x618) {
         if (rand() & 1) {
-            turn = &D_80089C88;
+            turn = &g_rotY90;
             entity->state = 0xB;
         } else {
-            turn = &D_80089C94;
+            turn = &g_rotYNeg90;
             entity->state = 0xC;
         }
     }
@@ -1466,7 +1466,7 @@ void Behavior_WalkingGeisha(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005EA94(BehaviorEntity *entity) {
+void Behavior_Type12(BehaviorEntity *entity) {
 
     if (entity->handlerTicks == 0 && !(rand() & 1)) {
         entity->state = 0xB;
@@ -1487,7 +1487,7 @@ void func_8005EA94(BehaviorEntity *entity) {
     }
 }
 
-void func_8005EBB4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type13(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == 0) {
         node->voices[0].sound = 0xC;
@@ -1502,7 +1502,7 @@ void func_8005EBB4(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005EC98(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type14(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (entity->animFrame == 0xA) {
         node->voices[0].sound = 0xD;
@@ -1510,14 +1510,14 @@ void func_8005EC98(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0xA, 0);
 }
 
-void func_8005ED10(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type15(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == 0) {
         node->fade = 0;
         node->voices[0].sound = 0xF;
     }
 }
 
-void func_8005ED30(BehaviorEntity *entity) {
+void Behavior_Type16(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0 && (rand() & 1)) {
         entity->state = 0xB;
     }
@@ -1527,8 +1527,8 @@ void func_8005ED30(BehaviorEntity *entity) {
             return;
         }
         if (entity->handlerTicks == 0x40) {
-            entity->vt->rotate(entity, 0, (rand() & 1) ? &D_80089C88 : &D_80089C94);
-            entity->vt->move(entity, D_80089D3C);
+            entity->vt->rotate(entity, 0, (rand() & 1) ? &g_rotY90 : &g_rotYNeg90);
+            entity->vt->move(entity, g_moveY256);
             return;
         }
         entity->vt->moveZOnGround(entity, -0x176, rand() % 2);
@@ -1536,18 +1536,18 @@ void func_8005ED30(BehaviorEntity *entity) {
     }
     if (entity->state == 0xB) {
         if (entity->handlerTicks % 5 == 0) {
-            entity->vt->rotate(entity, 0, &D_80089C88);
+            entity->vt->rotate(entity, 0, &g_rotY90);
         }
         entity->vt->moveZ(entity, -0x800, 0);
         entity->vt->unk60(entity, (rand() % 7) == 0);
     }
 }
 
-void func_8005EF20(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089DD8);
+void Behavior_Type17(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleHalf);
 }
 
-void func_8005EF54(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type19(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == (node->tick / 10) * 10) {
         node->voices[0].sound = 0x11;
@@ -1555,10 +1555,10 @@ void func_8005EF54(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x100, 0);
 }
 
-void func_8005EFF4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type20(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == 0) {
         if (rand() % 7 == 0) {
-            entity->vt->scale(entity, 1, &D_80089E50);
+            entity->vt->scale(entity, 1, &g_scaleTallTwo);
         }
     }
     if (!(node->tick & 3)) {
@@ -1581,11 +1581,11 @@ void Behavior_MinotaurRickshaw(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x1E, 1);
 }
 
-void func_8005F1A8(BehaviorEntity *entity) {
+void Behavior_Type22(BehaviorEntity *entity) {
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
 }
 
-void func_8005F1D4(BehaviorEntity *entity) {
+void Behavior_Type23(BehaviorEntity *entity) {
     BehaviorEntityVtbl *vt;
     s32 ticks;
     s32 speed;
@@ -1596,20 +1596,20 @@ void func_8005F1D4(BehaviorEntity *entity) {
             entity->handlerTicks = 0;
         }
         if (entity->handlerTicks >= 7) {
-            entity->vt->move(entity, D_80089D78);
+            entity->vt->move(entity, g_moveYNeg64);
             entity->vt->moveZ(entity, 0xA, 0);
         } else {
-            entity->vt->move(entity, D_80089D9C);
+            entity->vt->move(entity, g_moveXNeg64);
         }
         return;
     }
     ticks = entity->handlerTicks;
     if (ticks == 0) {
-        entity->vt->move(entity, D_80089D48);
+        entity->vt->move(entity, g_moveYNeg4096);
     } else if (ticks < 0x41) {
-        entity->vt->move(entity, D_80089D60);
+        entity->vt->move(entity, g_moveY64);
     } else if (ticks < 0x47) {
-        entity->vt->move(entity, D_80089D78);
+        entity->vt->move(entity, g_moveYNeg64);
         entity->vt->moveZ(entity, -0x1E, 0);
     } else {
         vt = entity->vt;
@@ -1622,18 +1622,18 @@ void func_8005F1D4(BehaviorEntity *entity) {
     }
 }
 
-void func_8005F368(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type24(BehaviorEntity *entity, HandlerNode *node) {
     if (node->tick % 15 == 0) {
         node->fade = entity->vt->getSoundFade(entity);
         node->voices[0].sound = 7;
         node->voices[0].octave = -2;
     }
-    entity->vt->scale(entity, 1, D_80089DF0);
-    entity->vt->rotate(entity, 0, D_80089CA0);
+    entity->vt->scale(entity, 1, g_scaleDouble);
+    entity->vt->rotate(entity, 0, g_rotY2);
     entity->vt->moveZ(entity, -0x200, 0);
 }
 
-void func_8005F454(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type25(BehaviorEntity *entity, HandlerNode *node) {
     s32 ticks;
 
     node->fade = 0;
@@ -1653,12 +1653,12 @@ void func_8005F454(BehaviorEntity *entity, HandlerNode *node) {
         node->voices[2].octave = -1;
         entity->vt->moveY(entity, -0x100, 0);
     } else {
-        entity->vt->rotate(entity, 0, D_80089C58);
+        entity->vt->rotate(entity, 0, g_rotXEighth);
         entity->vt->moveY(entity, -0x200, 0);
     }
 }
 
-void func_8005F544(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type26(BehaviorEntity *entity, HandlerNode *node) {
     if (node->tick % entity->animLength == 0) {
         node->fade = entity->vt->getSoundFade(entity);
         node->voices[0].sound = 0x1A;
@@ -1666,7 +1666,7 @@ void func_8005F544(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZOnGround(entity, (entity->handlerTicks == 0x6E) ? -0x2D00 : -0x180, 0);
 }
 
-void func_8005F608(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type27(BehaviorEntity *entity, HandlerNode *node) {
     if (node->tick % 70 == 0) {
         node->fade = 0;
         node->voices[0].sound = 0x1B;
@@ -1679,27 +1679,27 @@ void func_8005F608(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005F6D4(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089E38);
+void Behavior_Type119(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleSix);
 }
 
-void func_8005F708(BehaviorEntity *entity) {
+void Behavior_Type29(BehaviorEntity *entity) {
     BehaviorDreamSys *dreamSys;
 
     if (entity->handlerTicks == 0) {
         dreamSys = entity->dreamSys;
         if (dreamSys->vt->getDreamColor(dreamSys) == 7) {
-            entity->vt->scale(entity, 1, &D_80089E74);
+            entity->vt->scale(entity, 1, &g_scaleTriple);
             entity->vt->moveY(entity, -0x7800, 0);
         }
         entity->state = rand() % 5;
     }
     if (entity->state == 0) {
-        entity->vt->rotate(entity, 0, &D_80089D18);
+        entity->vt->rotate(entity, 0, &g_rotY1);
     }
 }
 
-void func_8005F800(BehaviorEntity *entity) {
+void Behavior_Type30(BehaviorEntity *entity) {
     BehaviorDreamSys *dreamSys;
     s32 state;
 
@@ -1714,7 +1714,7 @@ void func_8005F800(BehaviorEntity *entity) {
         entity->state = state;
     }
     if (entity->state == 0xC) {
-        entity->vt->scale(entity, 1, D_80089DF0);
+        entity->vt->scale(entity, 1, g_scaleDouble);
         entity->vt->moveY(entity, -0x1E, 0);
         return;
     }
@@ -1732,11 +1732,11 @@ void func_8005F800(BehaviorEntity *entity) {
     }
     if (entity->state == 0xD) {
         entity->vt->setPosition(entity, entity->dreamSys->pos.bytes + 0x18);
-        entity->vt->move(entity, D_80089DB4);
+        entity->vt->move(entity, g_moveYNeg1500Z1024);
     }
 }
 
-void func_8005F970(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type31(BehaviorEntity *entity, HandlerNode *node) {
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
     entity->dreamSys->vt->unk130(entity->dreamSys, 1);
     if ((node->tick % 10) < 3) {
@@ -1751,13 +1751,13 @@ void func_8005F970(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005FA64(BehaviorEntity *entity) {
+void Behavior_Type32(BehaviorEntity *entity) {
     entity->vt->moveZ(entity, -0x1E, 0);
 }
 
-void func_8005FA94(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type33(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->touched != 0) {
-        entity->vt->scale(entity, 1, &D_80089DCC);
+        entity->vt->scale(entity, 1, &g_scaleQuarter);
     } else if (node->tick % 30 == 0) {
         node->fade = 0;
         node->voices[0].sound = 3;
@@ -1768,21 +1768,21 @@ void func_8005FA94(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_8005FB6C(BehaviorEntity *entity) {
+void Behavior_Type34(BehaviorEntity *entity) {
     s32 ticks;
 
     ticks = entity->handlerTicks;
     if (ticks >= 0x190 && ticks < 0x19A) {
-        entity->vt->rotate(entity, 0, D_80089C64);
+        entity->vt->rotate(entity, 0, g_rotY9);
     } else if ((ticks >= 0x2BC && ticks < 0x2C6) || (ticks >= 0x33E && ticks < 0x342)) {
-        entity->vt->rotate(entity, 0, D_80089C70);
+        entity->vt->rotate(entity, 0, g_rotYNeg9);
     } else if (ticks >= 0x353) {
         entity->vt->sleep(entity);
     }
     entity->vt->moveZ(entity, (entity->handlerTicks < 0x320) ? -0x3C : -0x200, 1);
 }
 
-void func_8005FC58(BehaviorEntity *entity) {
+void Behavior_Type35(BehaviorEntity *entity) {
     s32 phase;
 
     phase = entity->handlerTicks % 500;
@@ -1790,15 +1790,15 @@ void func_8005FC58(BehaviorEntity *entity) {
     entity->vt->moveX(entity, (entity->handlerTicks % 12 < 6) ? -0x40 : 0x40, 0);
     entity->vt->moveZ(entity, (entity->handlerTicks % 64 < 0x20) ? -0x80 : 0x80, 0);
     if (phase < 0x20) {
-        entity->vt->move(entity, D_80089D78);
+        entity->vt->move(entity, g_moveYNeg64);
     } else if (phase < 0x40) {
-        entity->vt->move(entity, D_80089D60);
+        entity->vt->move(entity, g_moveY64);
     }
 }
 
-void func_8005FDFC(BehaviorEntity *entity) {
+void Behavior_Type36(BehaviorEntity *entity) {
     if (entity->state == 0) {
-        entity->vt->scale(entity, 1, (rand() & 1) ? D_80089DF0 : &D_80089E38);
+        entity->vt->scale(entity, 1, (rand() & 1) ? g_scaleDouble : &g_scaleSix);
         entity->state = 0xB;
     }
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
@@ -1807,18 +1807,18 @@ void func_8005FDFC(BehaviorEntity *entity) {
     }
 }
 
-void func_8005FEC8(BehaviorEntity *entity) {
+void Behavior_Type37(BehaviorEntity *entity) {
     entity->vt->moveY(entity, -0x5A, 0);
 }
 
-void func_8005FEF8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_OperaSinger(BehaviorEntity *entity, HandlerNode *node) {
     if (node->tick % 120 == 0) {
         node->fade = entity->vt->getSoundFade(entity);
         node->voices[0].sound = 1;
     }
 }
 
-void func_8005FF7C(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Mushroom(BehaviorEntity *entity, HandlerNode *node) {
     s32 dayRest;
     void (*fn)(void *);
 
@@ -1826,10 +1826,10 @@ void func_8005FF7C(BehaviorEntity *entity, HandlerNode *node) {
         dayRest = entity->dreamSys->vt->getDayNumber(entity->dreamSys, 0) % 3;
         if (dayRest == 0) {
             if (rand() % 3 == 0) {
-                entity->vt->scale(entity, 1, D_80089E5C);
+                entity->vt->scale(entity, 1, g_scaleTallFour);
             }
         } else if (dayRest == 2) {
-            entity->vt->scale(entity, 1, D_80089E5C);
+            entity->vt->scale(entity, 1, g_scaleTallFour);
         }
     }
     if (node->tick == (node->tick / 22) * 22) {
@@ -1846,7 +1846,7 @@ void func_8005FF7C(BehaviorEntity *entity, HandlerNode *node) {
     fn(entity);
 }
 
-void func_80060148(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type40(BehaviorEntity *entity, HandlerNode *node) {
     void *s2 = 0;
 
     if (node->tick % 7 == 0) {
@@ -1857,13 +1857,13 @@ void func_80060148(BehaviorEntity *entity, HandlerNode *node) {
     }
 
     if (entity->handlerTicks == 0xC8) {
-        s2 = &D_80089C94;
+        s2 = &g_rotYNeg90;
     } else if (entity->handlerTicks == 0x190) {
-        s2 = D_80089C7C;
+        s2 = g_rotY180;
     } else if (entity->handlerTicks == 0x258) {
-        s2 = &D_80089C88;
+        s2 = &g_rotY90;
     } else if (entity->handlerTicks == 0x320) {
-        s2 = D_80089C7C;
+        s2 = g_rotY180;
         entity->handlerTicks = -1;
     }
 
@@ -1876,7 +1876,7 @@ void func_80060148(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_800602AC(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type41(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == 0) {
         entity->state = rand() % 5 + 0xA;
     }
@@ -1885,12 +1885,12 @@ void func_800602AC(BehaviorEntity *entity, HandlerNode *node) {
         return;
     }
     if (entity->state == 0xE && !(entity->handlerTicks & 3)) {
-        D_80089EA2[0] = rand() % 32 + 1;
-        entity->vt->scale(entity, 1, &D_80089EA2[-5]);
+        g_type41ScaleDepthDen[0] = rand() % 32 + 1;
+        entity->vt->scale(entity, 1, &g_type41ScaleDepthDen[-5]);
     }
 }
 
-void func_800603C4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type42(BehaviorEntity *entity, HandlerNode *node) {
     s32 sound;
 
     if (entity->handlerTicks < 0x14) {
@@ -1912,11 +1912,11 @@ void func_800603C4(BehaviorEntity *entity, HandlerNode *node) {
     node->voices[0].sound = sound;
 }
 
-void func_800604DC(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type43(BehaviorEntity *entity, HandlerNode *node) {
     s16 *angles;
     s32 amount;
 
-    func_80060710(entity);
+    Behavior_RollWideOrSlide(entity);
     node->fade = entity->vt->getSoundFade(entity);
     if (entity->animFrame == 0 || entity->animFrame == 0xF) {
         node->voices[0].sound = 0x12;
@@ -1930,19 +1930,19 @@ void func_800604DC(BehaviorEntity *entity, HandlerNode *node) {
         }
         entity->vt->moveX(entity, amount, 0);
         if (rand() & 3) {
-            angles = D_80089C70;
+            angles = g_rotYNeg9;
         } else {
-            angles = D_80089C64;
+            angles = g_rotY9;
         }
         entity->vt->rotate(entity, 0, angles);
     }
 }
 
-void func_800605D0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type44(BehaviorEntity *entity, HandlerNode *node) {
     s16 *angles;
     s32 amount;
 
-    func_80060710(entity);
+    Behavior_RollWideOrSlide(entity);
     node->fade = entity->vt->getSoundFade(entity);
     if (entity->animFrame == 7 || entity->animFrame == 0x16) {
         node->voices[0].sound = 3;
@@ -1950,7 +1950,7 @@ void func_800605D0(BehaviorEntity *entity, HandlerNode *node) {
     if ((u32)(entity->handlerTicks - 0x12C) < 0x14) {
         entity->vt->moveZ(entity, -0x3C, 0);
     } else if ((u32)(entity->handlerTicks - 0x141) < 0x13) {
-        entity->vt->rotate(entity, 0, D_80089C70);
+        entity->vt->rotate(entity, 0, g_rotYNeg9);
     } else if (entity->handlerTicks >= 0x141) {
         if (rand() & 1) {
             amount = 0x80;
@@ -1959,34 +1959,34 @@ void func_800605D0(BehaviorEntity *entity, HandlerNode *node) {
         }
         entity->vt->moveX(entity, amount, 1);
         if (rand() & 3) {
-            angles = D_80089C70;
+            angles = g_rotYNeg9;
         } else {
-            angles = D_80089C64;
+            angles = g_rotY9;
         }
         entity->vt->rotate(entity, 0, angles);
     }
 }
 
-void func_80060710(BehaviorEntity *entity) {
+void Behavior_RollWideOrSlide(BehaviorEntity *entity) {
     s32 roll;
 
     if (entity->handlerTicks == 0) {
         roll = rand() % 10;
         if (roll >= 8) {
-            entity->vt->scale(entity, 1, D_80089E8C);
+            entity->vt->scale(entity, 1, g_scaleWideThree);
         } else if (roll >= 5) {
             entity->state = 0xA;
         }
     }
     if (entity->state == 0xA && entity->handlerTicks >= 0xC9) {
-        entity->vt->move(entity, D_80089DC0);
+        entity->vt->move(entity, g_moveZNeg256);
     }
 }
 
-void func_800607F8(void) {
+void Behavior_Type45(void) {
 }
 
-void func_80060800(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Flower(BehaviorEntity *entity, HandlerNode *node) {
     s32 dayRest;
     s32 roll;
 
@@ -1995,10 +1995,10 @@ void func_80060800(BehaviorEntity *entity, HandlerNode *node) {
         if (dayRest == 0) {
             roll = rand();
             if (roll % 3 == 0) {
-                entity->vt->scale(entity, 1, &D_80089E38);
+                entity->vt->scale(entity, 1, &g_scaleSix);
             }
         } else if (dayRest == 1) {
-            entity->vt->scale(entity, 1, &D_80089E38);
+            entity->vt->scale(entity, 1, &g_scaleSix);
         }
     }
     if (node->tick == 0) {
@@ -2008,7 +2008,7 @@ void func_80060800(BehaviorEntity *entity, HandlerNode *node) {
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
 }
 
-void func_8006090C(BehaviorEntity *entity) {
+void Behavior_Type47(BehaviorEntity *entity) {
     if (entity->touched != 0) {
         if (entity->state == 0) {
             entity->state = 0xC;
@@ -2037,7 +2037,7 @@ void func_8006090C(BehaviorEntity *entity) {
     }
 }
 
-void func_80060A4C(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_FloatingLips(BehaviorEntity *entity, HandlerNode *node) {
     s32 amount;
     BehaviorEntityVtbl *vt;
 
@@ -2055,7 +2055,7 @@ void func_80060A4C(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x1E, 1);
 }
 
-void func_80060B34(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type49(BehaviorEntity *entity, HandlerNode *node) {
     BehaviorDreamSysVtbl *dreamSysVtbl;
     s32 state;
     s32 standPos;
@@ -2082,7 +2082,7 @@ void func_80060B34(BehaviorEntity *entity, HandlerNode *node) {
                     standPos = 0;
                 }
                 dreamSysVtbl->setPosition(entity->dreamSys, standPos);
-                entity->dreamSys->vt->rotate(entity->dreamSys, 1, &D_80089C94);
+                entity->dreamSys->vt->rotate(entity->dreamSys, 1, &g_rotYNeg90);
                 entity->dreamSys->vt->unk130(entity->dreamSys, 0);
                 entity->handlerTicks = 0;
                 entity->state = 0xB;
@@ -2098,7 +2098,7 @@ void func_80060B34(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x100, 0);
 }
 
-void func_80060CF0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type50(BehaviorEntity *entity, HandlerNode *node) {
     s32 frame;
 
     if (entity->handlerTicks < (entity->animLength * 5)) {
@@ -2115,14 +2115,14 @@ void func_80060CF0(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void Behavior_Gunman(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type51(BehaviorEntity *entity, HandlerNode *node) {
     void *turn;
     s32 roll;
 
     if (entity->handlerTicks == 0) {
         roll = rand();
         if ((roll == ((roll / 5) * 5)) && (entity->state == 0)) {
-            entity->vt->scale(entity, 1, &D_80089E38);
+            entity->vt->scale(entity, 1, &g_scaleSix);
             entity->vt->moveY(entity, 0x320, 0);
             entity->state = 0xB;
         }
@@ -2133,12 +2133,12 @@ void Behavior_Gunman(BehaviorEntity *entity, HandlerNode *node) {
         node->voices[0].sound = 8;
     }
     if (entity->handlerTicks == 0x5A) {
-        turn = &D_80089C94;
+        turn = &g_rotYNeg90;
     } else if (entity->handlerTicks == 0xA0) {
-        turn = &D_80089C88;
+        turn = &g_rotY90;
     } else if (entity->handlerTicks == 0xDC) {
         if (rand() & 1) {
-            turn = D_80089C7C;
+            turn = g_rotY180;
         }
     }
     if (turn != NULL) {
@@ -2147,20 +2147,20 @@ void Behavior_Gunman(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x50, 1);
 }
 
-void func_80060F38(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type52(BehaviorEntity *entity, HandlerNode *node) {
     s32 ticks;
 
     node->fade = entity->vt->getSoundFade(entity);
     ticks = entity->handlerTicks;
     if (ticks < 0xBC) {
         if (ticks == 0x54) {
-            entity->vt->rotate(entity, 0, D_80089C7C);
+            entity->vt->rotate(entity, 0, g_rotY180);
         }
         if (node->tick % 20 == 0) {
             node->voices[0].sound = 9;
         }
     } else if (ticks < 0xC8) {
-        entity->vt->rotate(entity, 0, D_80089C64);
+        entity->vt->rotate(entity, 0, g_rotY9);
     } else {
         entity->vt->sleep(entity);
         node->voices[1].sound = 0x1E;
@@ -2169,13 +2169,13 @@ void func_80060F38(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZOnGround(entity, -0x200, 0);
 }
 
-void func_80061070(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type55(BehaviorEntity *entity, HandlerNode *node) {
     s32 frame;
 
     frame = entity->animFrame;
     if (entity->handlerTicks == 0) {
         if (rand() % 3 == 0) {
-            entity->vt->scale(entity, 1, &D_80089E50);
+            entity->vt->scale(entity, 1, &g_scaleTallTwo);
         }
     }
     node->fade = entity->vt->getSoundFade(entity);
@@ -2190,13 +2190,13 @@ void func_80061070(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061158(BehaviorEntity *entity) {
+void Behavior_Type56(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         entity->vt->moveY(entity, -0xC8, 0);
     }
 }
 
-void func_80061198(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type57(BehaviorEntity *entity, HandlerNode *node) {
     Fade *effect;
     s32 frame;
 
@@ -2254,7 +2254,7 @@ void func_80061198(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061400(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type58(BehaviorEntity *entity, HandlerNode *node) {
     s32 ticksD;
     s32 ticksE;
     BehaviorDreamSys *dreamSys;
@@ -2307,7 +2307,7 @@ void func_80061400(BehaviorEntity *entity, HandlerNode *node) {
             node->voices[0].sound = 0x12;
             node->fade = 0;
             node->voices[1].sound = 3;
-            entity->vt->rotate(entity, 1, D_80089D24);
+            entity->vt->rotate(entity, 1, g_rotZNeg90);
             entity->vt->moveX(entity, 0x960, 0);
             entity->vt->moveY(entity, 0x5DC, 0);
             entity->parts[1]->vt->unk60(entity->parts[1], 0);
@@ -2316,7 +2316,7 @@ void func_80061400(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061778(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type115(BehaviorEntity *entity, HandlerNode *node) {
     BehaviorDreamSys *dreamSys;
     s32 ticks;
 
@@ -2373,7 +2373,7 @@ void func_80061778(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061A90(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type59(BehaviorEntity *entity, HandlerNode *node) {
     s32 roll;
     BehaviorMap *map;
 
@@ -2400,7 +2400,7 @@ void func_80061A90(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061C04(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type61(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->animFrame == 0x1E) {
         node->voices[0].sound = 0x12;
         node->fade = 0;
@@ -2408,7 +2408,7 @@ void func_80061C04(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061C2C(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type62(BehaviorEntity *entity, HandlerNode *node) {
     BehaviorDreamSys *dreamSys;
     BehaviorMap *map;
     s32 state;
@@ -2450,7 +2450,7 @@ void func_80061C2C(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80061E60(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type64(BehaviorEntity *entity, HandlerNode *node) {
     s32 phase;
 
     phase = node->tick % 300;
@@ -2464,34 +2464,34 @@ void func_80061E60(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0xA, 0);
 }
 
-void func_80061F30(BehaviorEntity *entity) {
+void Behavior_Type65(BehaviorEntity *entity) {
     s32 roll;
 
     if (entity->handlerTicks == 0) {
         roll = rand();
         if (roll % 3 == 0) {
-            entity->vt->scale(entity, 1, &D_80089DD8);
+            entity->vt->scale(entity, 1, &g_scaleHalf);
             entity->vt->moveY(entity, -0x12C, 0);
-            entity->vt->rotate(entity, 1, &D_80089C88);
+            entity->vt->rotate(entity, 1, &g_rotY90);
             entity->state = 0xB;
         }
     }
     if (entity->state == 0xB) {
         if (entity->handlerTicks == 0x7D0) {
-            entity->vt->rotate(entity, 0, &D_80089C94);
+            entity->vt->rotate(entity, 0, &g_rotYNeg90);
         }
         entity->vt->moveZ(entity, -0x14, 0);
     }
 }
 
-void func_8006204C(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type66(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == ((node->tick / 30) * 30)) {
         node->voices[0].sound = 0xD;
     }
 }
 
-void func_800620C4(BehaviorEntity *entity) {
+void Behavior_Type67(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         if (rand() % 3 == 0) {
             entity->state = 0xB;
@@ -2508,7 +2508,7 @@ void func_800620C4(BehaviorEntity *entity) {
     }
 }
 
-void func_800621A8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type68(BehaviorEntity *entity, HandlerNode *node) {
     s16 speed;
     s32 bit;
 
@@ -2542,8 +2542,8 @@ void func_800621A8(BehaviorEntity *entity, HandlerNode *node) {
         return;
     } else if (entity->state == 10) {
         if (entity->handlerTicks < 8) {
-            entity->vt->rotate(entity, 0, D_80089CC4);
-            entity->vt->move(entity, D_80089D6C);
+            entity->vt->rotate(entity, 0, g_rotZ9);
+            entity->vt->move(entity, g_moveY8);
             return;
         }
         node->voices[0].sound = 0x12;
@@ -2555,7 +2555,7 @@ void func_800621A8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_800623E8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type69(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (entity->animFrame == entity->animLength - 1) {
         node->voices[0].sound = 0x19;
@@ -2571,14 +2571,14 @@ void func_800623E8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_800624BC(BehaviorEntity *entity) {
+void Behavior_Type70(BehaviorEntity *entity) {
     s32 speed;
 
     if (entity->handlerTicks == 0 && (rand() & 1)) {
         entity->state = 0xB;
     }
     if (entity->handlerTicks == 0x12C) {
-        entity->vt->rotate(entity, 0, D_80089C7C);
+        entity->vt->rotate(entity, 0, g_rotY180);
     }
     if (entity->handlerTicks < 0x258) {
         BehaviorEntityVtbl *vt = entity->vt;
@@ -2591,7 +2591,7 @@ void func_800624BC(BehaviorEntity *entity) {
     }
 }
 
-void func_80062570(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type71(BehaviorEntity *entity, HandlerNode *node) {
     s32 roll;
 
     node->fade = entity->vt->getSoundFade(entity);
@@ -2606,13 +2606,13 @@ void func_80062570(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0x1E, 0);
 }
 
-void func_80062660(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type73(BehaviorEntity *entity, HandlerNode *node) {
     s32 tick;
 
     tick = node->tick;
     node->fade = 0;
     if (tick == 0) {
-        entity->dreamSys->vt->rotate(entity->dreamSys, 1, &D_80089C88);
+        entity->dreamSys->vt->rotate(entity->dreamSys, 1, &g_rotY90);
         entity->dreamSys->vt->unk130(entity->dreamSys, 1);
         node->voices[0].sound = 0x19;
         node->voices[1].sound = 0x19;
@@ -2625,7 +2625,7 @@ void func_80062660(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80062730(BehaviorEntity *entity) {
+void Behavior_Type74(BehaviorEntity *entity) {
     s32 ticks;
 
     if (entity->handlerTicks == 0) {
@@ -2653,7 +2653,7 @@ void func_80062730(BehaviorEntity *entity) {
     }
 }
 
-void func_800628D4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type75(BehaviorEntity *entity, HandlerNode *node) {
     if (node->tick == 0) {
         node->fade = 0;
         node->voices[0].sound = 0x19;
@@ -2667,20 +2667,20 @@ void func_800628D4(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80062970(BehaviorEntity *entity) {
+void Behavior_Type76(BehaviorEntity *entity) {
     if (entity->touched != 0) {
         entity->vt->playAnimation(entity);
         if (entity->animFrame == entity->animLength - 1) {
             entity->vt->stopAnimation(entity);
-            entity->vt->scale(entity, 0, D_80089DFC);
+            entity->vt->scale(entity, 0, g_scaleShrinkStep);
         }
     } else {
         entity->vt->stopAnimation(entity);
-        entity->vt->rotate(entity, 0, D_80089C64);
+        entity->vt->rotate(entity, 0, g_rotY9);
     }
 }
 
-void func_80062A40(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type77(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick % 5 == 0) {
         node->voices[0].sound = 0x11;
@@ -2696,15 +2696,15 @@ void func_80062A40(BehaviorEntity *entity, HandlerNode *node) {
     } else {
         if (entity->state == 0) {
             if (entity->handlerTicks == 0x3C || entity->handlerTicks == 0xD4 || entity->handlerTicks == 0x122 || entity->handlerTicks == 0x140) {
-                entity->vt->rotate(entity, 0, &D_80089C88);
+                entity->vt->rotate(entity, 0, &g_rotY90);
             }
             if (entity->handlerTicks == 0x18E) {
-                entity->vt->rotate(entity, 0, &D_80089C94);
+                entity->vt->rotate(entity, 0, &g_rotYNeg90);
             }
             entity->vt->moveZOnGround(entity, -0x32, 0);
         } else {
             if (entity->handlerTicks == 0x3C || entity->handlerTicks == 0x8C) {
-                entity->vt->rotate(entity, 0, &D_80089C88);
+                entity->vt->rotate(entity, 0, &g_rotY90);
             }
             if (entity->handlerTicks < 0xAE) {
                 entity->vt->moveZOnGround(entity, -0x32, 0);
@@ -2717,14 +2717,14 @@ void func_80062A40(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80062C58(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type78(BehaviorEntity *entity, HandlerNode *node) {
     s32 roll;
     s32 ticks;
     s32 length;
     void *factors;
 
     if (node->tick == 0) {
-        D_8008ACCC = 0;
+        g_type78Stopped = 0;
         roll = rand() % 3;
         if (roll == 1) {
             entity->state = 0xB;
@@ -2754,21 +2754,21 @@ void func_80062C58(BehaviorEntity *entity, HandlerNode *node) {
     }
     if (entity->state == 0xB && node->tick == 0x1FE) {
         entity->vt->moveY(entity, -0x17C, 0);
-        entity->vt->rotate(entity, 0, &D_80089D0C);
+        entity->vt->rotate(entity, 0, &g_rotX90);
         entity->vt->stopHandler(entity);
         entity->state = 1;
-        D_8008ACCC = 1;
+        g_type78Stopped = 1;
     } else if (entity->state >= 0xC) {
         if (node->tick >= 0x14A && node->tick % 60 == 30) {
             roll = 0;
             if (rand() & 1) {
-                factors = &D_80089E50;
+                factors = &g_scaleTallTwo;
                 if (entity->state == 0xC) {
                     roll = 0x190;
                 }
                 entity->state = 0xD;
             } else {
-                factors = &D_80089E14;
+                factors = &g_scaleOne;
                 if (entity->state == 0xD) {
                     roll = -0x190;
                 }
@@ -2778,26 +2778,26 @@ void func_80062C58(BehaviorEntity *entity, HandlerNode *node) {
             entity->vt->moveY(entity, roll, 0);
         }
     }
-    if (node->tick == 0x208 && D_8008ACCC != 0) {
+    if (node->tick == 0x208 && g_type78Stopped != 0) {
         entity->vt->stopHandler(entity);
         entity->state = 1;
     }
 }
 
-void func_80062FAC(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type79(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick % 10 == 0) {
         node->voices[0].sound = 0x19;
         node->voices[0].octave = 2;
     }
-    entity->vt->rotate(entity, 0, D_80089CA0);
+    entity->vt->rotate(entity, 0, g_rotY2);
     if ((entity->state == 0) && (entity->touched != 0)) {
         entity->vt->postEvent(entity, 0xB);
         entity->state = 0xB;
     }
 }
 
-void func_80063094(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type80(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks < entity->animLength) {
         switch (entity->animFrame) {
         case 0:
@@ -2809,12 +2809,12 @@ void func_80063094(BehaviorEntity *entity, HandlerNode *node) {
         }
     } else {
         entity->vt->stopAnimation(entity);
-        entity->vt->move(entity, D_80089D54);
+        entity->vt->move(entity, g_moveYNeg512);
     }
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
 }
 
-void func_80063144(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type81(BehaviorEntity *entity, HandlerNode *node) {
     s32 turn;
     s32 mode;
 
@@ -2841,7 +2841,7 @@ void func_80063144(BehaviorEntity *entity, HandlerNode *node) {
         Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
         mode = entity->state;
         if (mode == 1) {
-            entity->vt->scale(entity, 0, D_80089E08);
+            entity->vt->scale(entity, 0, g_scaleGrowStep);
             turn = -0x176;
             if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x200) {
                 entity->vt->sleep(entity);
@@ -2879,7 +2879,7 @@ void func_80063144(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_800634A8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type82(BehaviorEntity *entity, HandlerNode *node) {
     s32 state;
     BehaviorDreamSys *dreamSys;
 
@@ -2920,7 +2920,7 @@ void func_800634A8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_800636E4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type83(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->animFrame == ((entity->animFrame / 15) * 15)) {
         node->voices[0].sound = 12;
         node->fade = 0;
@@ -2933,7 +2933,7 @@ void func_800636E4(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063784(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type84(BehaviorEntity *entity, HandlerNode *node) {
     s32 frame;
 
     node->fade = entity->vt->getSoundFade(entity);
@@ -2957,10 +2957,10 @@ void func_80063784(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type85(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->state == 0) {
         if (entity->animFrame == 5) {
-            func_80063C84(node);
+            Behavior_QueueLowSound7(node);
         }
         if (entity->handlerTicks == entity->animLength) {
             entity->vt->stopAnimation(entity);
@@ -2969,9 +2969,9 @@ void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
         }
     } else if (entity->state == 0xA) {
         if (entity->handlerTicks < 0xA) {
-            entity->vt->rotate(entity, 0, D_80089C64);
+            entity->vt->rotate(entity, 0, g_rotY9);
             if (entity->dreamSys->vt->unk100(entity->dreamSys) != 0) {
-                func_80063C84(node);
+                Behavior_QueueLowSound7(node);
                 entity->state = 0xC;
                 entity->handlerTicks = -1;
             }
@@ -2985,7 +2985,7 @@ void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
         if (entity->handlerTicks < 0x1E) {
             entity->vt->moveZ(entity, -10, 0);
         } else {
-            func_80063C84(node);
+            Behavior_QueueLowSound7(node);
             if (Entity_StartEffect((Entity *)entity, 0, 0, 0x1E, 0) != 0) {
                 entity->effect->vtbl->startIn(entity->effect, entity->unk50, 7, 0);
             }
@@ -2999,32 +2999,32 @@ void func_80063874(BehaviorEntity *entity, HandlerNode *node) {
                     entity->effect->vtbl->startOut(entity->effect, entity->unk50, 0, 0);
                 }
             }
-            entity->dreamSys->vt->rotate(entity->dreamSys, 0, D_80089CD0);
+            entity->dreamSys->vt->rotate(entity->dreamSys, 0, g_rotZ1);
         } else {
-            func_80063CAC(node);
-            entity->dreamSys->vt->rotate(entity->dreamSys, 1, D_80089C7C);
+            Behavior_QueueSound18And3(node);
+            entity->dreamSys->vt->rotate(entity->dreamSys, 1, g_rotY180);
             entity->vt->postEvent(entity, rand() % 5 ? 0xA : 0xC);
             entity->state = 0xE;
         }
     } else if (entity->state == 0xC) {
         if (entity->handlerTicks < 0xA) {
-            entity->vt->rotate(entity, 0, D_80089CDC);
+            entity->vt->rotate(entity, 0, g_rotZNeg9);
         } else {
-            func_80063CAC(node);
+            Behavior_QueueSound18And3(node);
             entity->vt->stopHandler(entity);
             entity->state = 1;
         }
     }
 }
 
-void func_80063BC0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type86(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks < 0xA) {
         entity->vt->stopAnimation(entity);
     } else if (entity->handlerTicks == 0xA) {
         entity->vt->playAnimation(entity);
     }
     if (entity->animFrame == 0xA) {
-        func_80063CAC(node);
+        Behavior_QueueSound18And3(node);
     }
     if (entity->handlerTicks == entity->animLength + 0xA) {
         entity->vt->stopHandler(entity);
@@ -3032,7 +3032,7 @@ void func_80063BC0(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063C84(HandlerNode *node) {
+void Behavior_QueueLowSound7(HandlerNode *node) {
     node->fade = 0;
     node->voices[0].sound = 7;
     node->voices[0].octave = -2;
@@ -3042,14 +3042,14 @@ void func_80063C84(HandlerNode *node) {
     node->voices[2].octave = -2;
 }
 
-void func_80063CAC(HandlerNode *node) {
+void Behavior_QueueSound18And3(HandlerNode *node) {
     node->voices[0].sound = 0x12;
     node->fade = 0;
     node->voices[1].sound = 3;
     node->voices[2].sound = 3;
 }
 
-void func_80063CC8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type87(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == 0) {
         node->voices[0].sound = 0x12;
@@ -3059,7 +3059,7 @@ void func_80063CC8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063D40(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type88(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick == entity->animLength / 2) {
         node->voices[0].sound = 0x12;
@@ -3069,7 +3069,7 @@ void func_80063D40(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063DC8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type89(BehaviorEntity *entity, HandlerNode *node) {
     s32 ticks;
 
     ticks = entity->handlerTicks;
@@ -3088,7 +3088,7 @@ void func_80063DC8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063E68(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type90(BehaviorEntity *entity, HandlerNode *node) {
     s32 sound;
 
     node->fade = entity->vt->getSoundFade(entity);
@@ -3103,11 +3103,11 @@ void func_80063E68(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80063ED4(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type91(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == 0) {
         if (Entity_StartEffect(entity, 0, 0, 5, 0)) {
             if (rand() & 1) {
-                entity->vt->move(entity, D_80089D90);
+                entity->vt->move(entity, g_moveYNeg256);
             }
             entity->effect->vtbl->startIn(entity->effect, entity->unk50, 0, 0);
         }
@@ -3127,10 +3127,10 @@ void func_80063ED4(BehaviorEntity *entity, HandlerNode *node) {
         node->fade = 0;
         node->voices[0].sound = 0x15;
     }
-    entity->vt->scale(entity, 1, D_80089DE4);
+    entity->vt->scale(entity, 1, g_scaleSquash);
 }
 
-void func_80064078(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type92(BehaviorEntity *entity, HandlerNode *node) {
     s32 frame;
 
     if (entity->animation == 0) {
@@ -3155,10 +3155,10 @@ void func_80064078(BehaviorEntity *entity, HandlerNode *node) {
             entity->vt->postEvent(entity, 0xA);
         }
     }
-    entity->vt->scale(entity, 1, D_80089DE4);
+    entity->vt->scale(entity, 1, g_scaleSquash);
 }
 
-void func_800641C0(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type93(BehaviorEntity *entity, HandlerNode *node) {
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick % 10 == 0) {
         node->voices[0].sound = 3;
@@ -3171,7 +3171,7 @@ void func_800641C0(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80064294(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type94(BehaviorEntity *entity, HandlerNode *node) {
     s32 roll;
     BehaviorDreamSys *dreamSys;
 
@@ -3188,12 +3188,12 @@ void func_80064294(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == entity->animLength) {
         entity->vt->setAnimation(entity, 1);
         if (entity->state != 0 && !(rand() & 1)) {
-            entity->vt->scale(entity, 1, &D_80089E38);
+            entity->vt->scale(entity, 1, &g_scaleSix);
             entity->vt->moveY(entity, 0x800, 0);
         }
         roll = rand();
         if (roll == (roll / 3) * 3) {
-            entity->vt->rotate(entity, 0, &D_80089C7C);
+            entity->vt->rotate(entity, 0, &g_rotY180);
         }
     }
     if (entity->animation != 0) {
@@ -3201,7 +3201,7 @@ void func_80064294(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80064450(BehaviorEntity *entity) {
+void Behavior_Type95(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         entity->vt->setAnimation(entity, 3);
     } else if (entity->handlerTicks == entity->animLength) {
@@ -3212,7 +3212,7 @@ void func_80064450(BehaviorEntity *entity) {
     }
 }
 
-void func_800644E8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type96(BehaviorEntity *entity, HandlerNode *node) {
     if (entity->handlerTicks == 0) {
         entity->vt->setAnimation(entity, rand() % 4);
         return;
@@ -3236,7 +3236,7 @@ void Behavior_EraseFlashbacks(BehaviorEntity *entity) {
     entity->vt->moveZ(entity, -0x1E, 1);
 }
 
-void func_800646D8(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_Type102(BehaviorEntity *entity, HandlerNode *node) {
     BehaviorDreamSys *dreamSys;
     void *factors;
     s32 length;
@@ -3254,21 +3254,21 @@ void func_800646D8(BehaviorEntity *entity, HandlerNode *node) {
         node->voices[1].octave = -2;
     }
     if (entity->handlerTicks >= 0x33) {
-        entity->vt->rotate(entity, 0, &D_80089CAC);
+        entity->vt->rotate(entity, 0, &g_rotYNegThird);
     }
     if (entity->handlerTicks >= 0x30D) {
         Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
         ticks = entity->handlerTicks;
         if (ticks >= 0x790) {
-            factors = &D_80089E14;
+            factors = &g_scaleOne;
         } else if (ticks >= 0x78B) {
-            factors = D_80089DE4;
+            factors = g_scaleSquash;
         } else if (ticks >= 0x786) {
-            factors = &D_80089DD8;
+            factors = &g_scaleHalf;
         } else {
-            factors = &D_80089E20;
+            factors = &g_scaleEighth;
             if (ticks >= 0x781) {
-                factors = &D_80089DCC;
+                factors = &g_scaleQuarter;
             }
         }
         entity->vt->scale(entity, 1, factors);
@@ -3292,7 +3292,7 @@ void func_800646D8(BehaviorEntity *entity, HandlerNode *node) {
     }
 }
 
-void func_80064928(BehaviorEntity *entity) {
+void Behavior_Type103(BehaviorEntity *entity) {
     s32 roll;
     BehaviorMap *map;
 
@@ -3304,7 +3304,7 @@ void func_80064928(BehaviorEntity *entity) {
     }
     if (entity->state == 0xB) {
         if (entity->handlerTicks < 0x3FC) {
-            entity->vt->rotate(entity, 0, D_80089CB8);
+            entity->vt->rotate(entity, 0, g_rotYNegHalf);
             entity->vt->moveY(entity, 0x1E, 0);
         }
         if (entity->handlerTicks == 0x3A2) {
@@ -3319,18 +3319,18 @@ void func_80064928(BehaviorEntity *entity) {
     entity->vt->moveZ(entity, -0x1E, 0);
 }
 
-void func_80064AA4(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089DCC);
+void Behavior_Type104(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleQuarter);
     if (entity->handlerTicks >= 201 && entity->handlerTicks < 300) {
         entity->vt->moveY(entity, -0x20, 0);
     }
 }
 
-void func_80064B14(BehaviorEntity *entity) {
+void Behavior_Type105(BehaviorEntity *entity) {
     entity->vt->unk60(entity, (rand() % 20) == 0);
 }
 
-void func_80064B80(BehaviorEntity *entity) {
+void Behavior_Type106(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         if ((rand() & 1) == 0) {
             entity->state = 0xB;
@@ -3340,7 +3340,7 @@ void func_80064B80(BehaviorEntity *entity) {
         if (entity->handlerTicks == 0) {
             entity->vt->stopAnimation(entity);
         }
-        entity->vt->scale(entity, 1, D_80089E2C);
+        entity->vt->scale(entity, 1, g_scaleThinTall);
     } else {
         if (entity->handlerTicks == 0) {
             entity->vt->setAnimation(entity, 1);
@@ -3349,18 +3349,18 @@ void func_80064B80(BehaviorEntity *entity) {
     }
 }
 
-void func_80064CA4(BehaviorEntity *entity, HandlerNode *node) {
-    func_80062570(entity, node);
-    entity->vt->scale(entity, 1, &D_80089E38);
+void Behavior_Type108(BehaviorEntity *entity, HandlerNode *node) {
+    Behavior_Type71(entity, node);
+    entity->vt->scale(entity, 1, &g_scaleSix);
 }
 
 void Behavior_YellowDayBeast(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089DD8);
+    entity->vt->scale(entity, 1, &g_scaleHalf);
     entity->vt->moveZ(entity, -10, 0);
 }
 
 void Behavior_BridgeGeisha(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, D_80089E44);
+    entity->vt->scale(entity, 1, g_scaleTwoFifths);
     entity->vt->stopAnimation(entity);
     if (entity->state == 0 && entity->vt->distanceTo(entity, entity->dreamSys) < 0x800) {
         entity->state = 0xA;
@@ -3368,7 +3368,7 @@ void Behavior_BridgeGeisha(BehaviorEntity *entity) {
     }
     if (entity->state == 0xA) {
         if (entity->handlerTicks < 0x2D) {
-            entity->vt->rotate(entity, 0, D_80089D00);
+            entity->vt->rotate(entity, 0, g_rotY4);
         }
         if (entity->handlerTicks >= 0x1F5) {
             entity->state = 0;
@@ -3426,7 +3426,7 @@ void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, 
     if ((entity->handlerTicks >= turnTick && entity->handlerTicks <= turnTick + 0x5B) ||
         (entity->handlerTicks >= turnTick + 0x155 && entity->handlerTicks <= turnTick + 0x1B1) ||
         (entity->handlerTicks >= turnTick + 0x2BA && entity->handlerTicks <= turnTick + 0x317)) {
-        entity->vt->rotate(entity, 0, &D_80089D18);
+        entity->vt->rotate(entity, 0, &g_rotY1);
     }
     entity->vt->moveZ(entity, speed, 0);
     if (entity->handlerTicks == leaveTick) {
@@ -3435,8 +3435,8 @@ void Behavior_TrainRun(BehaviorEntity *entity, HandlerNode *node, s32 turnTick, 
     }
 }
 
-void func_800650D4(BehaviorEntity *entity, HandlerNode *node) {
-    Behavior_Gunman(entity, node);
+void Behavior_Type113(BehaviorEntity *entity, HandlerNode *node) {
+    Behavior_Type51(entity, node);
 }
 
 void Behavior_RedDayGunman(BehaviorEntity *entity) {
@@ -3446,26 +3446,26 @@ void Behavior_RedDayGunman(BehaviorEntity *entity) {
         return;
     }
     if (rand() % 3 != 0) {
-        angles = D_80089C64;
+        angles = g_rotY9;
     } else {
-        angles = D_80089C70;
+        angles = g_rotYNeg9;
     }
     entity->vt->rotate(entity, 0, angles);
 }
 
-void func_8006519C(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089E38);
+void Behavior_Type117(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleSix);
 }
 
-void func_800651D0(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089E38);
+void Behavior_Type118(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleSix);
 }
 
-void func_80065204(BehaviorEntity *entity) {
-    entity->vt->scale(entity, 1, &D_80089DCC);
+void Behavior_Type121(BehaviorEntity *entity) {
+    entity->vt->scale(entity, 1, &g_scaleQuarter);
 }
 
-void func_80065238(BehaviorEntity *entity) {
+void Behavior_Type123(BehaviorEntity *entity) {
 
     if (entity->handlerTicks == 0) {
         if (rand() % 5 == 0) {
@@ -3484,12 +3484,12 @@ void func_80065238(BehaviorEntity *entity) {
     }
 }
 
-void func_8006536C(BehaviorEntity *entity, HandlerNode *node) {
+void Behavior_OddDayGeisha(BehaviorEntity *entity, HandlerNode *node) {
     if (((entity->handlerTicks == 0) && !(rand() & 3)) || (entity->handlerTicks == 0xE10)) {
         entity->vt->sleep(entity);
         entity->state = 1;
     }
-    entity->vt->scale(entity, 1, D_80089E44);
+    entity->vt->scale(entity, 1, g_scaleTwoFifths);
     node->fade = entity->vt->getSoundFade(entity);
     if (node->tick % (entity->animLength / 2) == 0) {
         node->voices[0].sound = 0xA;
@@ -3498,13 +3498,13 @@ void func_8006536C(BehaviorEntity *entity, HandlerNode *node) {
     entity->vt->moveZ(entity, -0xA, 0);
 }
 
-void func_800654A0(BehaviorEntity *entity) {
+void Behavior_TinyLips(BehaviorEntity *entity) {
     Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
-    entity->vt->scale(entity, 1, &D_80089E80);
+    entity->vt->scale(entity, 1, &g_scaleTiny);
     entity->vt->moveZ(entity, -0x1E, 1);
 }
 
-void func_80065514(BehaviorEntity *entity) {
+void Behavior_Type129(BehaviorEntity *entity) {
     if (entity->handlerTicks == 0) {
         entity->state = (rand() % 2) + 0xA;
     }
@@ -3532,7 +3532,7 @@ void *Model_New(s32 source, s32 soundBank) {
 }
 
 void *Model_Construct(Model *model, s32 source, SoundBank *soundBank) {
-    if (func_80057C84()->construct(model) != 0) {
+    if (Actor_GetVtbl()->construct(model) != 0) {
         model->vt = (ModelVtbl *)Model_GetVtbl();
         model->soundBank = soundBank;
         model->file = 0;
@@ -3544,7 +3544,7 @@ void *Model_Construct(Model *model, s32 source, SoundBank *soundBank) {
             model->vt->init(model);
             return model;
         }
-        func_80057C84()->destroy(model);
+        Actor_GetVtbl()->destroy(model);
         return 0;
     }
     return 0;
@@ -3552,12 +3552,12 @@ void *Model_Construct(Model *model, s32 source, SoundBank *soundBank) {
 
 void Model_Destruct(Model *model) {
     model->vt->unload(model);
-    func_80057C84()->destroy(model);
+    Actor_GetVtbl()->destroy(model);
 }
 
 /* Slot 0x38: when the file it borrows (class id 0x5F03) is destroyed (message 1), the model deletes itself. */
 void Model_OnNotify(Model *model, u16 **sender, s32 message) {
-    func_80057C84()->onNotify(model, sender, message);
+    Actor_GetVtbl()->onNotify(model, sender, message);
     if ((**sender == 0x5F03) && (message == 1) && (model->ownsFile == 0)) {
         model->vt->delete_(model);
     }
@@ -3566,7 +3566,7 @@ void Model_OnNotify(Model *model, u16 **sender, s32 message) {
 void Model_Init(Model *model) {
     ModelPart *part;
 
-    func_80057C84()->unk60(model, 0);
+    Actor_GetVtbl()->unk60(model, 0);
     model->vt->setUnk64(model, 1);
     model->vt->unkE4(model, 0x12C);
     model->vt->stopTick(model);
@@ -3581,7 +3581,7 @@ void Model_Init(Model *model) {
 
 void Model_Attach(Model *model, void *target, void *watched, s32 arg3, s32 arg4) {
     if (model->attached == 0) {
-        func_80057C84()->attach(model, arg3, arg4);
+        Actor_GetVtbl()->attach(model, arg3, arg4);
         if ((watched != 0) && (model->unk50 == 0)) {
             model->vt->watch(model, watched);
         }
@@ -3598,11 +3598,11 @@ void Model_Detach(Model *model) {
         if (watched != 0) {
             model->vt->unwatch(model, watched);
         }
-        func_80057C84()->detach(model);
+        Actor_GetVtbl()->detach(model);
     }
 }
 
-void func_80065A5C(Model *model, s32 arg1) {
+void Model_SetVisible(Model *model, s32 arg1) {
     ModelPart **p;
     s32 i;
 
@@ -3612,7 +3612,7 @@ void func_80065A5C(Model *model, s32 arg1) {
     }
 }
 
-void func_80065AE0(Model *model, s32 arg1) {
+void Model_SetLightFlags(Model *model, s32 arg1) {
     ModelPart **p;
     s32 i;
 
@@ -3620,7 +3620,7 @@ void func_80065AE0(Model *model, s32 arg1) {
     for (i = 0; i < model->partCount; i++, p++) {
         (*p)->vt->unk70(*p, arg1);
     }
-    func_80057C84()->unk70(model, arg1);
+    Actor_GetVtbl()->unk70(model, arg1);
 }
 
 /* Slot 0x98, the update: phase 2 runs the animation tick, phase 4 deletes the model. */
@@ -3726,7 +3726,7 @@ s32 Model_BuildParts(Model *model) {
             p = model->parts;
             model->partCount = 0;
             for (i = 0; i < n; i++) {
-                part = func_80056FE4();
+                part = Actor_New();
                 *p++ = part;
                 if (part == 0) {
                     goto fail;
@@ -3809,10 +3809,10 @@ void Model_TickForward(Model *model) {
     }
 }
 
-void func_800661C4(void) {
+void Model_TickB(void) {
 }
 
-void func_800661CC(void) {
+void Model_TickC(void) {
 }
 
 /* Slot 0x124: plays a sound of the model's bank at volume 0x6E. */

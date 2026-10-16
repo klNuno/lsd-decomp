@@ -5,11 +5,11 @@
 
 /*
  * Sound banks and handler voices (src/game/8002C12C.c).
- * A sound bank (class vtable D_8006DA34, Sound_GetBankClass, 0x64 bytes) loads one VAB into sound
+ * A sound bank (class vtable g_soundBankVtbl, Sound_GetBankClass, 0x64 bytes) loads one VAB into sound
  * RAM, builds its tone tables and starts and stops voices with SsUtKeyOn. Menus and screens own one
  * (scene.h MenuScreen +0x48, menu.h Menu +0x48 and Card +0x6C), tasks may own one (stage.h Task +0x34),
  * and every model has one at +0x58 (Model in src/game/8005C508.c, DreamSys +0x58, Entity +0x58):
- * the voices a behaviour handler asks for play on it (HandlerNode, func_8002CD08).
+ * the voices a behaviour handler asks for play on it (HandlerNode, HandlerNode_Run).
  */
 
 /* One tone of the VAB, 0x20 bytes. */
@@ -20,7 +20,7 @@ typedef struct SoundTone {
     u8 pad_06[0x1A];
 } SoundTone;
 
-/* Vtable D_8006DA34 (Sound_GetBankClass); slots 0x80, 0x84, 0x9C are the sound calls. */
+/* Vtable g_soundBankVtbl (Sound_GetBankClass); slots 0x80, 0x84, 0x9C are the sound calls. */
 typedef struct SoundBankVtbl {
     u8 pad_00[0x4];
     void *(*delete_)();                                                      /* 0x04 Object_Delete */
@@ -60,7 +60,7 @@ typedef struct SoundBank {
     /* 0x60 */ s32 noteShift;     /* octave * 12 - 24, set by Sound_SetOctave */
 } SoundBank;
 
-/* One of the three voices of a HandlerNode (0x14 bytes); func_8002CD08 resets sound, octave and volumes before each run. */
+/* One of the three voices of a HandlerNode (0x14 bytes); HandlerNode_Run resets sound, octave and volumes before each run. */
 typedef struct HandlerVoice {
     s32 voice;     /* 0x00 SPU voice playing (sound bank slot 0x80), -1 none */
     s32 sound;     /* 0x04 bank program to start this tick, -1 none, -2 stops the voice */
@@ -69,11 +69,11 @@ typedef struct HandlerVoice {
     s32 endVolume; /* 0x10 volume SsUtAutoVol slides to, 0x40 by default */
 } HandlerVoice;
 
-/* The handler node (0x54 bytes) at Entity +0x9C, the handler's second argument: func_8002CC34 registers it,
-   func_8002CC84 removes it, func_8002CD08 runs handler(owner, node) once per tick. */
+/* The handler node (0x54 bytes) at Entity +0x9C, the handler's second argument: HandlerNode_Start registers it,
+   HandlerNode_Stop removes it, HandlerNode_Run runs handler(owner, node) once per tick. */
 typedef struct HandlerNode {
     s32 id;                  /* 0x00 entity type + 1 while registered, 0 once stopped */
-    s32 tick;                /* 0x04 runs so far, counted by func_8002CD08 */
+    s32 tick;                /* 0x04 runs so far, counted by HandlerNode_Run */
     s32 owner;               /* 0x08 the entity, passed back as the handler's first argument */
     s32 handler;             /* 0x0C the record's handler */
     s32 fade;                /* 0x10 each step lowers both volumes by volume / fadeSteps; < 0 plays nothing (slot 0x148 by distance) */

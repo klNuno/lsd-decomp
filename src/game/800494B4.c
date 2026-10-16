@@ -5,28 +5,28 @@
 /*
  * Stage tables, the dream runner, the Task base class and the stage map (types in game/stage.h).
  * Vtables: DreamRunner g_dreamRunnerVtbl, Task g_taskVtbl, StageMap g_stageMapVtbl, the 0xDC render object
- * D_800869D8, MapTile g_mapTileVtbl.
+ * g_dreamViewVtbl, MapTile g_mapTileVtbl.
  */
 
 extern StageGrid g_stageGrids[];  /* g_stageGrids, 14 entries (Stage_GetGrids) */
-extern StageGrid D_800861D6[];  /* g_stageGrids + 2 */
+extern StageGrid g_stageGridRows[];  /* g_stageGrids + 2 */
 extern s16 *g_stageChunkMoods[];       /* per stage: the s16 mood of each chunk, row-major */
 extern u8 g_dreamRunnerVtbl[];
-extern s32 D_80086650[];        /* {0, -1200, 0} and {0, -1200, 10000}: the points DreamRunner_Start gives the view */
-extern s32 D_8008665C[];
+extern s32 g_runnerViewpoint[];        /* {0, -1200, 0} and {0, -1200, 10000}: the points DreamRunner_Start gives the view */
+extern s32 g_runnerRefPoint[];
 extern u8 g_taskVtbl[];
 extern u8 g_stageMapVtbl[];
-extern Vec3 D_8008682C;         /* default map origin (0, 0, 0) */
+extern Vec3 g_mapDefaultOrigin;         /* default map origin (0, 0, 0) */
 extern Vec3 g_chunkNeighborOffsets[];       /* per neighbour: offset of its chunk corner from the centre chunk's centre */
-extern s32 D_8008688C[];        /* per neighbour: 1 << neighbour */
+extern s32 g_neighborBits[];        /* per neighbour: 1 << neighbour */
 extern HexNeighbor g_chunkNeighborSteps[];
-extern s8 D_800868FC[];         /* per chunk id: which D_80086974 list to load around it */
-extern NeighborUse D_80086904[];
-extern NeighborUse *D_80086974[];
-extern MapView D_80086990;      /* {slot -1, 0, 0, 20, 20}: a whole chunk */
-extern MapTileStep D_8008699C, D_800869A8, D_800869B4, D_800869C0;
-extern s32 D_800869CC;
-extern u8 D_800869D8[];
+extern s8 g_neighborLayoutById[];         /* per chunk id: which g_neighborLoadLists list to load around it */
+extern NeighborUse g_allNeighbors[];
+extern NeighborUse *g_neighborLoadLists[];
+extern MapView g_wholeChunkView;      /* {slot -1, 0, 0, 20, 20}: a whole chunk */
+extern MapTileStep g_tileStretchSlowUp, g_tileStretchFastUp, g_tileStretchSlowDown, g_tileStretchFastDown;
+extern s32 g_tileScaleOne;
+extern u8 g_dreamViewVtbl[];
 extern char g_mapTileVtbl[];
 
 extern Matrix D_8008E98C;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
@@ -55,7 +55,7 @@ typedef struct MapModelRecord {
     u8 pad_38[0x40 - 0x38];
 } MapModelRecord;
 
-/* The box +0x1DC points to (func_8004CD38): tiles x0..x1, y0..y1. */
+/* The box +0x1DC points to (StageMap_IsOutsideBounds): tiles x0..x1, y0..y1. */
 typedef struct MapBox {
     s16 x0;
     s16 y0;
@@ -63,7 +63,7 @@ typedef struct MapBox {
     s32 y1;
 } MapBox;
 
-/* The 0xDC object of class 0x800869D8 (func_8004D254); slot 0xA0 is Scene_DrawNode, which draws scene nodes. */
+/* The 0xDC object of class 0x800869D8 (DreamView_New); slot 0xA0 is Scene_DrawNode, which draws scene nodes. */
 typedef struct RenderObjVtbl {
     u8 pad_00[0x08];
     void (*init)();             /* 0x08 */
@@ -119,10 +119,10 @@ typedef struct RunnerPeer {
     RunnerPeerVtbl *vtbl;
 } RunnerPeer;
 
-s32 D_8008A980; /* view distance StageMap_Reset sets */
+s32 g_mapDefaultViewDistance; /* view distance StageMap_Reset sets */
 
-s32 D_8008A978; /* func_8004A070 call count */
-s32 D_8008A97C;
+s32 g_pathTablePartCount; /* File_ResolvePathTablePart call count */
+s32 g_pathTableFirstHalf;
 
 s32 Heap_Alloc(s32 size);
 void Heap_Free(void *);
@@ -133,7 +133,7 @@ StageMapVtbl *StageMap_GetVtbl(void);
 SceneNodeVtbl *SceneNode_GetVtbl(void);
 SceneNodeVtbl *RootNode_GetVtbl(void);
 RenderObjVtbl *View_GetVtbl(void);
-RenderObjVtbl *func_8004D37C(void);
+RenderObjVtbl *DreamView_GetVtbl(void);
 MapTileVtbl *MapTile_GetVtbl(void);
 extern MenuNewVtbl *Menu_GetVtbl(void);
 extern void *Place_New(void *sound, void *music, void *etcTim, void *dreamerModel, s32 stage);
@@ -151,20 +151,20 @@ void File_EnableWait(s32, s32, s32);
 void *Clock_Create(void);
 extern void *Display_GetCurrent(void);
 extern void *MapChunk_New(void);
-extern void *func_8002C12C(s32);
+extern void *MapModels_New(s32);
 void GsLinkObject4(s32 objp, void *packet, s32 id);
 void RotMatrix(void *, void *);
 void ApplyMatrixLV(s32 *, void *, void *);
 
-void func_8004A070(s32);
+void File_ResolvePathTablePart(s32);
 s32 StageMap_New(s32 origin, s32);
-s32 func_8004D254(void);
+s32 DreamView_New(void);
 void DreamRunner_CreateStage(DreamRunner *runner, s32 stage);
 s32 Stage_PlaceToWorld(Vec3 *pos, Vec3 *chunkCenter, StageGrid *grid, Vec3 *origin, StagePlace *place);
 s32 StageMap_CountLoading(StageMap *map);
 void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message);
-void func_8004AFE0();
-void func_8004B030();
+void StageMap_SetNearView();
+void StageMap_SetNearViewStacked();
 void StageMap_TellViewTiles(StageMap *map, MapActor *sender, s32 message);
 s32 StageMap_GetNeighborMask(StageMap *map, s32 chunkIndex, s32 oddRow);
 s32 StageMap_RequestNeighbor(StageMap *map, ChunkRequest *request, s32 cols, s32 oddRow, s32 chunkIndex, s32 mask, s32 neighbor);
@@ -173,11 +173,11 @@ void StageMap_ComputeFlatView(StageMap *map, s32 width, s32 depth);
 void StageMap_SplitView();
 s32 StageMap_SplitViewRows(StageMap *map, MapView *view, s32 index, s32 neighbor, s32 x, s32 y, s32 cols, s32 rows);
 void StageMap_ComputeStackedView(StageMap *map);
-s32 func_8004CD38(void *box, void *tile);
+s32 StageMap_IsOutsideBounds(void *box, void *tile);
 s32 StageMap_AddChunkView(StageMap *map, s32 unused, s32 index, s32 chunkIndex);
 void StageMap_ShowView(StageMap *map, s32 show);
-void func_8004D0D0();
-void func_8004D108(s32 map, MapTile *tile);
+void StageMap_AddTileStretchStep();
+void StageMap_ResetOneTileScale(s32 map, MapTile *tile);
 void StageMap_ForEachTile(StageMap *map, void (*perTile)(), void (*perSlot)(void *, void *));
 void StageMap_ForEachSlotTile(StageMap *map, void (*perTile)(), MapSlot *slot);
 s32 MapTile_New(void);
@@ -209,7 +209,7 @@ u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood) {
 
     for (stage = 0; stage < 0xE; stage++) {
         chunkMood = g_stageChunkMoods[stage];
-        rows = D_800861D6[stage].cols; /* D_800861D6 is g_stageGrids + 2: this reads the rows */
+        rows = g_stageGridRows[stage].cols; /* g_stageGridRows is g_stageGrids + 2: this reads the rows */
         cols = g_stageGrids[stage].cols;
         for (row = 0; row < rows; row++) {
             for (col = 0; col < cols; col++) {
@@ -261,10 +261,10 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     modelFile.path = (s32)"ETC\\DREAMER.TMD";
     runner->dreamerModel = (RunnerRes *)Tmd_Create((s32)&modelFile);
     runner->music = Bgm_New(Music_PickBank(0), 0, 1);
-    func_8004A070(1);
+    File_ResolvePathTablePart(1);
     File_EnableWait(arg3 == 0, 1, 1);
     runner->context = context;
-    context->unk10 = (Object *)func_8004D254();
+    context->unk10 = (Object *)DreamView_New();
     context->unk8 = Clock_Create();
     context->map = (StageMap *)StageMap_New(0, 1);
     runner->dreamSys = dreamSys;
@@ -317,7 +317,7 @@ void DreamRunner_Run(DreamRunner *runner) {
     Task_GetVtbl()->run(runner, runner->context, 0);
 }
 
-void func_80049AC0(DreamRunner *runner) {
+void DreamRunner_Finish(DreamRunner *runner) {
     DreamSys *dreamSys;
 
     dreamSys = runner->dreamSys;
@@ -338,12 +338,12 @@ void DreamRunner_Start(DreamRunner *runner) {
     sub = view->vtbl->unkAC(view);
     sub->vtbl->unk60(sub, 1);
     view->vtbl->unk4C(view, 0x4B0);
-    view->vtbl->unk70(view, runner->dreamSys, D_80086650, D_8008665C, 0);
+    view->vtbl->unk70(view, runner->dreamSys, g_runnerViewpoint, g_runnerRefPoint, 0);
     view->vtbl->unk8C(view);
     runner->phase = RUNNER_STARTING;
 }
 
-void func_80049C50(DreamRunner *runner) {
+void DreamRunner_End(DreamRunner *runner) {
     RunnerView *view;
 
     view = runner->view;
@@ -395,10 +395,10 @@ void DreamRunner_CreateStage(DreamRunner *runner, s32 stage) {
     runner->phase = RUNNER_IN_STAGE;
 }
 
-void func_80049EA4(void) {
+void DreamRunner_OnTimeout(void) {
 }
 
-void func_80049EAC(void) {
+void DreamRunner_OnDreamSysMessage(void) {
 }
 
 /*
@@ -465,21 +465,21 @@ DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
     return (DreamRunnerVtbl *)g_dreamRunnerVtbl;
 }
 
-void func_8004A070(s32 arg0) {
+void File_ResolvePathTablePart(s32 arg0) {
     s32 count;
     s32 files;
 
     files = (s32)File_GetPathTable(&count);
-    switch (++D_8008A978) {
+    switch (++g_pathTablePartCount) {
     case 1:
         if (arg0 != 0) {
-            D_8008A978++;
+            g_pathTablePartCount++;
         } else {
-            D_8008A97C = count /= 2;
+            g_pathTableFirstHalf = count /= 2;
         }
         break;
     case 2:
-        count -= D_8008A97C;
+        count -= g_pathTableFirstHalf;
         break;
     default:
         count = 0;
@@ -531,11 +531,11 @@ s32 Task_Run(Task *task, s32 context, s32 arg2) {
     return task->result;
 }
 
-void func_8004A324(s32 task) {
+void Task_Finish(s32 task) {
     Screen_GetVtbl()->unk48(task);
 }
 
-void func_8004A35C(void) {
+void Task_OnPad(void) {
 }
 
 void Task_OnTick(Task *task, s32 sender, s32 message) {
@@ -598,7 +598,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
     if (origin != NULL) {
         map->origin = *origin;
     } else {
-        map->origin = D_8008682C;
+        map->origin = g_mapDefaultOrigin;
     }
     map->swapping = 0;
     map->pendingSlots = 0;
@@ -618,7 +618,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 arg2) {
         slot->unk18 = 0;
         slot->index = i;
         slot->loading = 0;
-        slot->models = func_8002C12C(0);
+        slot->models = MapModels_New(0);
         tile = (MapTile *)MapTile_New();
         slot->root = tile;
         tile->vtbl->unk4C(tile, map, &map->origin);
@@ -695,7 +695,7 @@ void StageMap_Reset(StageMap *map) {
     map->grid = NULL;
     map->messageFilter = NULL;
     map->viewCount = 0;
-    map->vtbl->setViewDistance(map, D_8008A980);
+    map->vtbl->setViewDistance(map, g_mapDefaultViewDistance);
     map->unk1CC[0] = -1;
     map->unk1CC[1] = -1;
     map->unk1CC[2] = -1;
@@ -729,7 +729,7 @@ void StageMap_Tick(StageMap *map) {
 }
 
 /* Message 0x34 goes to slot 0xD0 with the same arguments still in a1 and a2. */
-void func_8004AB88(StageMap *map, u8 **message) {
+void StageMap_OnNode(StageMap *map, u8 **message) {
     if (**message == 0x34) {
         map->vtbl->filterMessage(map);
     }
@@ -757,7 +757,7 @@ void StageMap_ClearSlots(StageMap *map) {
     map->vtbl->unk140(map);
 }
 
-void func_8004ACF8(StageMap *map, s32 count, s32 arg2, s32 arg3) {
+void StageMap_SetLights(StageMap *map, s32 count, s32 arg2, s32 arg3) {
     s32 i;
     MapChild *child;
 
@@ -832,9 +832,9 @@ s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
         dst++;
     } while (src != &map->v.save[3]);
     if (map->grid->stacked == 0) {
-        func_8004AFE0(map, location, 3);
+        StageMap_SetNearView(map, location, 3);
     } else {
-        func_8004B030(map, location, 3);
+        StageMap_SetNearViewStacked(map, location, 3);
     }
     StageMap_TellViewTiles(map, sender, message);
     map->viewCount = savedCount;
@@ -848,7 +848,7 @@ s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
 }
 
 /* A size x size view starting one tile before the location's tile; StageMap_SplitView (map still in a0) splits it. */
-void func_8004AFE0(StageMap *map, MapLocation *location, s32 size) {
+void StageMap_SetNearView(StageMap *map, MapLocation *location, s32 size) {
     map->viewX = location->at.place.tileX - 1;
     map->viewY = location->at.place.tileY - 1;
     map->viewCols = size;
@@ -857,7 +857,7 @@ void func_8004AFE0(StageMap *map, MapLocation *location, s32 size) {
 }
 
 /* The same on a stacked stage: one rectangle, clipped at the chunk edges (tiles 0 and 19). */
-void func_8004B030(StageMap *map, MapLocation *location, s32 size) {
+void StageMap_SetNearViewStacked(StageMap *map, MapLocation *location, s32 size) {
     s32 firstX = location->at.place.tileX;
     s32 firstY = location->at.place.tileY;
     s32 rows = size;
@@ -930,7 +930,7 @@ void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message) {
 }
 
 /* &map->tellKey */
-s32 func_8004B31C(s32 map) {
+s32 StageMap_GetTellKey(s32 map) {
     return map + 0x1C0;
 }
 
@@ -954,7 +954,7 @@ void StageMap_SetTarget(StageMap *map, Vec3 *pos, MapActor *target, StagePlace *
 
     map->target = target;
     map->location.at.place = *place;
-    map->vtbl->loadAround(map, Stage_PlaceToWorld(pos, &chunkCenter, map->grid, &map->origin, place), &chunkCenter, D_80086904);
+    map->vtbl->loadAround(map, Stage_PlaceToWorld(pos, &chunkCenter, map->grid, &map->origin, place), &chunkCenter, g_allNeighbors);
 }
 
 void StageMap_PlaceToWorld(StageMap *map, Vec3 *pos, StagePlace *place) {
@@ -1028,9 +1028,9 @@ s32 StageMap_Follow(StageMap *map) {
     if (map->vtbl->getLocation(map, &location, 0) == 0) {
         return 0;
     }
-    layout = D_800868FC[location.slot->chunk->id];
+    layout = g_neighborLayoutById[location.slot->chunk->id];
     if (map->grid->stacked == 0) {
-        map->vtbl->loadAround(map, location.chunkIndex, &location.chunkCenter, D_80086974[layout]);
+        map->vtbl->loadAround(map, location.chunkIndex, &location.chunkCenter, g_neighborLoadLists[layout]);
     }
     map->vtbl->updateView(map);
     prevKey = map->location.at.chunkKey;
@@ -1129,7 +1129,7 @@ s32 StageMap_RequestNeighbor(StageMap *map, ChunkRequest *request, s32 cols, s32
     HexNeighbor *step;
     s32 delta;
 
-    if (mask & D_8008688C[neighbor]) {
+    if (mask & g_neighborBits[neighbor]) {
         if (map->grid->stacked != 0) {
             request->chunkIndex = chunkIndex + neighbor;
         } else {
@@ -1636,7 +1636,7 @@ void StageMap_ComputeStackedView(StageMap *map) {
     map->vtbl->getLocation(map, &location, 0);
     map->viewCount = 0;
     map->viewCount = StageMap_AddChunkView(map, unset, 0, location.chunkIndex);
-    if (func_8004CD38(map->bounds, &location.at.place.tileX) != 0) {
+    if (StageMap_IsOutsideBounds(map->bounds, &location.at.place.tileX) != 0) {
         if (location.chunkIndex + 1 < map->grid->rows) {
             map->viewCount = StageMap_AddChunkView(map, unset, map->viewCount, location.chunkIndex + 1);
         }
@@ -1647,7 +1647,7 @@ void StageMap_ComputeStackedView(StageMap *map) {
 }
 
 /* Returns 0 when the tile (tile[0], tile[1]) lies inside the box, 1 otherwise or without a box. */
-s32 func_8004CD38(void *box, void *tile) {
+s32 StageMap_IsOutsideBounds(void *box, void *tile) {
     MapBox *b = box;
     u8 *pt = tile;
 
@@ -1658,11 +1658,11 @@ s32 func_8004CD38(void *box, void *tile) {
     return 1;
 }
 
-/* Adds a whole-chunk rectangle (D_80086990: 20 x 20 tiles) for a chunk index; returns the next index. */
+/* Adds a whole-chunk rectangle (g_wholeChunkView: 20 x 20 tiles) for a chunk index; returns the next index. */
 s32 StageMap_AddChunkView(StageMap *map, s32 unused, s32 index, s32 chunkIndex) {
     MapView *view = &map->v.views[index];
 
-    *view = D_80086990;
+    *view = g_wholeChunkView;
     view->slot = map->vtbl->slotIndexByChunk(map, chunkIndex);
     return index + 1;
 }
@@ -1720,52 +1720,52 @@ s32 func_8004CFA8(s32 map) {
     return map + 0x1CC;
 }
 
-void func_8004CFB0(StageMap *map, void *bounds) {
+void StageMap_SetBounds(StageMap *map, void *bounds) {
     map->bounds = bounds;
 }
 
 /* Picks the tile step record by sign and arg2; +0x1E0 = its ticks x |count|. */
-void func_8004CFB8(StageMap *map, s32 count, s32 arg2) {
+void StageMap_StartTileStretch(StageMap *map, s32 count, s32 arg2) {
     MapTileStep *step;
     if (count > 0) {
-        step = &D_8008699C;
+        step = &g_tileStretchSlowUp;
         if (arg2 != 0) {
-            map->unk1E4 = &D_800869A8;
+            map->unk1E4 = &g_tileStretchFastUp;
         } else {
             map->unk1E4 = step;
         }
     } else {
-        step = &D_800869B4;
+        step = &g_tileStretchSlowDown;
         if (arg2 != 0) {
-            step = &D_800869C0;
+            step = &g_tileStretchFastDown;
         }
         map->unk1E4 = step;
     }
     map->unk1E0 = map->unk1E4->ticks * (count < 0 ? ~count + 1 : count);
 }
 
-void func_8004D028(StageMap *map) {
+void StageMap_StepTileStretch(StageMap *map) {
     if (map->unk1E0 > 0) {
-        StageMap_ForEachTile(map, func_8004D0D0, 0);
+        StageMap_ForEachTile(map, StageMap_AddTileStretchStep, 0);
         if (--map->unk1E0 == 0) {
             map->unk1E0 = -1;
         }
     }
 }
 
-void func_8004D088(StageMap *map) {
+void StageMap_ResetTileScale(StageMap *map) {
     if (map->unk1E0 != 0) {
-        StageMap_ForEachTile(map, func_8004D108, 0);
+        StageMap_ForEachTile(map, StageMap_ResetOneTileScale, 0);
         map->unk1E0 = 0;
     }
 }
 
-void func_8004D0D0(StageMap *map, MapTile *tile) {
+void StageMap_AddTileStretchStep(StageMap *map, MapTile *tile) {
     tile->vtbl->unk48(tile, 0, map->unk1E4);
 }
 
-void func_8004D108(s32 map, MapTile *tile) {
-    tile->vtbl->unk48(tile, 1, &D_800869CC);
+void StageMap_ResetOneTileScale(s32 map, MapTile *tile) {
+    tile->vtbl->unk48(tile, 1, &g_tileScaleOne);
 }
 
 /* Calls perTile(map, tile) on the tiles of the 7 slots, after perSlot(map, slot) when given. */
@@ -1796,30 +1796,30 @@ StageMapVtbl *StageMap_GetVtbl(void) {
     return (StageMapVtbl *)g_stageMapVtbl;
 }
 
-s32 func_8004D254(void) {
+s32 DreamView_New(void) {
     s32 obj;
 
     obj = Heap_Alloc(0xDC);
     if (obj != 0) {
-        func_8004D37C()->init(obj);
+        DreamView_GetVtbl()->init(obj);
         return obj;
     }
     return 0;
 }
 
-void func_8004D2A4(void **obj) {
+void DreamView_Init(void **obj) {
     RenderObjVtbl *vtbl;
 
     View_GetVtbl()->init(obj);
-    vtbl = func_8004D37C();
+    vtbl = DreamView_GetVtbl();
     *obj = vtbl;
     vtbl->unk40(obj);
 }
 
-void func_8004D2F8(void) {
+void DreamView_Reset(void) {
 }
 
-void func_8004D300(RenderObj *obj) {
+void DreamView_Render(RenderObj *obj) {
     if ((obj->unk10 != 0) && (obj->unk70 != 0)) {
         View_GetVtbl()->unk9C(obj);
     }
@@ -1837,8 +1837,8 @@ void func_8004D36C(void) {
 void func_8004D374(void) {
 }
 
-RenderObjVtbl *func_8004D37C(void) {
-    return (RenderObjVtbl *)D_800869D8;
+RenderObjVtbl *DreamView_GetVtbl(void) {
+    return (RenderObjVtbl *)g_dreamViewVtbl;
 }
 
 s32 MapTile_New(void) {
@@ -1860,16 +1860,16 @@ void MapTile_Init(MapTile *tile) {
     tile->next = 0;
 }
 
-void func_8004D42C(void) {
+void MapTile_Reset(void) {
 }
 
-void func_8004D434(MapTile *tile, u8 **message) {
+void MapTile_OnNode(MapTile *tile, u8 **message) {
     if (**message == 0x34) {
         tile->vtbl->unkB8(tile);
     }
 }
 
-void func_8004D47C(MapTile *tile, void *sender, s32 message) {
+void MapTile_OnActorMessage(MapTile *tile, void *sender, s32 message) {
     SceneNode_GetVtbl()->onNode(tile, sender, message);
     if (message < 9) {
         if (message >= 5) {
@@ -1878,7 +1878,7 @@ void func_8004D47C(MapTile *tile, void *sender, s32 message) {
     }
 }
 
-s32 func_8004D500(s32 arg0) {
+s32 MapTile_GetSelf(s32 arg0) {
     return arg0;
 }
 
@@ -1887,7 +1887,7 @@ MapTileVtbl *MapTile_GetVtbl(void) {
 }
 
 /* Allocates 0xC4 bytes and runs slot 0x8 of the class of src/game/8004D578.c. */
-s32 func_8004D518(s32 arg0) {
+s32 Menu_New(s32 arg0) {
     s32 obj;
 
     obj = Heap_Alloc(0xC4);

@@ -62,7 +62,7 @@ typedef struct TaskVtbl {
     u8 pad_3C[0x40 - 0x3C];
     void (*reset)();        /* 0x40 Task_ClearTimeout: no timeout */
     s32 (*run)();           /* 0x44 Task_Run: run the loop, return the result */
-    void (*unk48)();        /* 0x48 func_8004A324 */
+    void (*unk48)();        /* 0x48 Task_Finish */
     u8 pad_4C[0x54 - 0x4C];
     void (*update)();       /* 0x54 Screen_OnDisplay (base), message type 1 */
     u8 pad_58[0x5C - 0x58];
@@ -136,7 +136,7 @@ typedef struct RunnerContext {
     s32 unk4;               /* watched by DreamSys while the runner runs */
     Object *unk8;           /* Clock_Create() */
     struct StageMap *map;   /* 0x0C StageMap_New(0, 1) */
-    Object *unk10;          /* func_8004D254(), class 0x800869D8 */
+    Object *unk10;          /* DreamView_New(), class 0x800869D8 */
 } RunnerContext;
 
 /* What the vtable slots of the loaded TIM and model objects do here. */
@@ -178,14 +178,14 @@ typedef struct DreamRunnerVtbl {
     u8 pad_3C[0x40 - 0x3C];
     void (*clearPhase)();   /* 0x40 DreamRunner_ClearPhase */
     s32 (*run)();           /* 0x44 DreamRunner_Run */
-    void (*unk48)();        /* 0x48 func_80049AC0 */
+    void (*unk48)();        /* 0x48 DreamRunner_Finish */
     void (*start)();        /* 0x4C DreamRunner_Start */
-    void (*unk50)();        /* 0x50 func_80049C50 */
+    void (*unk50)();        /* 0x50 DreamRunner_End */
     void (*update)();       /* 0x54 DreamRunner_Update */
     u8 pad_58[0x60 - 0x58];
     void (*setState)();     /* 0x60 Task_SetState */
     u8 pad_64[0x80 - 0x64];
-    void (*onDreamSysMessage)(); /* 0x80 func_80049EAC, empty */
+    void (*onDreamSysMessage)(); /* 0x80 DreamRunner_OnDreamSysMessage, empty */
     void (*onStageMessage)();    /* 0x84 DreamRunner_OnStageMessage */
 } DreamRunnerVtbl;
 
@@ -226,14 +226,14 @@ typedef struct MapTileVtbl {
     u8 pad_0C[0x38 - 0x0C];
     void (*unk38)();        /* 0x38 run on the tiles of the view by MapTile_Tell */
     u8 pad_3C[0x48 - 0x3C];
-    void (*unk48)();        /* 0x48 (tile, 0 or 1, 12-byte record) from func_8004D0D0 and func_8004D108 */
+    void (*unk48)();        /* 0x48 (tile, 0 or 1, 12-byte record) from StageMap_AddTileStretchStep and StageMap_ResetOneTileScale */
     void (*unk4C)();        /* 0x4C (tile, parent, position) */
     u8 pad_50[0x70 - 0x50];
     void (*unk70)();
     u8 pad_74[0xA0 - 0x74];
     void (*unkA0)();        /* 0xA0 SceneNode_CheckContact */
     u8 pad_A4[0xB8 - 0xA4];
-    void (*unkB8)();        /* 0xB8 func_8004D47C */
+    void (*unkB8)();        /* 0xB8 MapTile_OnActorMessage */
 } MapTileVtbl;
 
 typedef struct MapTileModel {
@@ -317,7 +317,7 @@ typedef struct MapChunk {
     s32 loadEntities;        /* 0x38 read the entity part as soon as the chunk is in */
 } MapChunk;
 
-/* The model set of a slot (func_8002C12C(0)): slot 0x78 hands out the chunk's models one by one. */
+/* The model set of a slot (MapModels_New(0)): slot 0x78 hands out the chunk's models one by one. */
 typedef struct MapModelsVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();     /* 0x04 */
@@ -388,7 +388,7 @@ typedef struct HexNeighbor {
     s32 colStepEven;
 } HexNeighbor;
 
-/* Which neighbours StageMap_LoadAround loads, 7 pairs (D_80086904, D_80086974[]). */
+/* Which neighbours StageMap_LoadAround loads, 7 pairs (g_allNeighbors, g_neighborLoadLists[]). */
 typedef struct NeighborUse {
     u8 neighbor;            /* 0 to 6 */
     u8 enabled;
@@ -402,10 +402,10 @@ typedef struct MapActor {
     Coord2 *coord;          /* 0x14 */
 } MapActor;
 
-/* The 12-byte records +0x1E4 points to (D_8008699C to D_800869C0), handed to every tile's slot 0x48. */
+/* The 12-byte records +0x1E4 points to (g_tileStretchSlowUp to g_tileStretchFastDown), handed to every tile's slot 0x48. */
 typedef struct MapTileStep {
     s16 unk0[3];
-    s16 ticks;              /* 0x06 64 or 4: +0x1E0 = ticks x count (func_8004CFB8) */
+    s16 ticks;              /* 0x06 64 or 4: +0x1E0 = ticks x count (StageMap_StartTileStretch) */
 } MapTileStep;
 
 typedef struct StageMapVtbl {
@@ -425,7 +425,7 @@ typedef struct StageMapVtbl {
     void *(*unkB8)();       /* 0xB8 RootNode_GetLight */
     void (*setAmbient)();   /* 0xBC RootNode_SetAmbient */
     void (*clearSlots)();   /* 0xC0 StageMap_ClearSlots */
-    void (*unkC4)();        /* 0xC4 func_8004ACF8 */
+    void (*unkC4)();        /* 0xC4 StageMap_SetLights */
     void (*setChunkLoader)(); /* 0xC8 StageMap_SetChunkLoader */
     void (*setMessageFilter)(); /* 0xCC StageMap_SetMessageFilter */
     void (*filterMessage)(); /* 0xD0 StageMap_FilterMessage */
@@ -452,16 +452,16 @@ typedef struct StageMapVtbl {
     void (*updateView)();   /* 0x128 StageMap_UpdateView */
     s32 (*tellView)();      /* 0x12C StageMap_TellNearTiles */
     void (*unk130)();       /* 0x130 func_8004CFA8 */
-    void (*unk134)();       /* 0x134 func_8004CFB0 */
-    void (*unk138)();       /* 0x138 func_8004CFB8 */
-    void (*unk13C)();       /* 0x13C func_8004D028 */
-    void (*unk140)();       /* 0x140 func_8004D088 */
+    void (*unk134)();       /* 0x134 StageMap_SetBounds */
+    void (*unk138)();       /* 0x138 StageMap_StartTileStretch */
+    void (*unk13C)();       /* 0x13C StageMap_StepTileStretch */
+    void (*unk140)();       /* 0x140 StageMap_ResetTileScale */
 } StageMapVtbl;
 
 typedef struct StageMap {
     StageMapVtbl *vtbl;
     u8 pad_04[0x54 - 0x04];
-    Vec3 origin;            /* 0x54 world position of the grid, D_8008682C (0, 0, 0) when none is given */
+    Vec3 origin;            /* 0x54 world position of the grid, g_mapDefaultOrigin (0, 0, 0) when none is given */
     s32 (*loadChunk)();     /* 0x60 (loadContext, chunk index, 0, 0), set by slot 0xC8 */
     void *loadContext;      /* 0x64 */
     StageGrid *grid;        /* 0x68 */
@@ -492,7 +492,7 @@ typedef struct StageMap {
     u8 tellY;               /* 0x1C3 */
     u8 pad_1C4[0x1CC - 0x1C4];
     s32 unk1CC[4];          /* 0x1CC address returned by slot 0x130 */
-    void *bounds;           /* 0x1DC box of chunks tested by func_8004CD38 */
+    void *bounds;           /* 0x1DC box of chunks tested by StageMap_IsOutsideBounds */
     s32 unk1E0;             /* 0x1E0 */
     MapTileStep *unk1E4;    /* 0x1E4 */
 } StageMap;

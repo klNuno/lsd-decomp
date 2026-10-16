@@ -12,7 +12,7 @@ void *Heap_Alloc(s32 size);
 void Heap_Free(s32 block);
 void *File_GetBackendVtbl(void);
 
-/* The object that func_8002C238 marks: only 0x30 is used here. */
+/* The object that MapModels_OnLoaded marks: only 0x30 is used here. */
 typedef struct RootObject {
     u8 pad_00[0x30];
     s32 unk_30;
@@ -27,7 +27,7 @@ typedef struct ObjectRootVtbl {
     void (*unk_64)(void *object);   /* 0x64, not named in heap.h */
 } ObjectRootVtbl;
 
-/* Vtable of the 0x34-byte object class at D_8006D940 (func_8002C12C; stage.h calls it a model set). */
+/* Vtable of the 0x34-byte object class at g_mapModelsVtbl (MapModels_New; stage.h calls it a model set). */
 typedef struct ModelSetVtbl {
     u8 pad_00[0x8];
     void (*init)(void *modelSet, s32 param);   /* 0x08 */
@@ -42,8 +42,8 @@ typedef struct ModelSet {
     s32 unk_30;
 } ModelSet;
 
-extern ModelSetVtbl D_8006D940;
-ModelSetVtbl *func_8002C3A8(void);
+extern ModelSetVtbl g_mapModelsVtbl;
+ModelSetVtbl *MapModels_GetVtbl(void);
 
 /* One tone of a program: 0x20 bytes, the layout SsUtGetVagAtr fills (center and fine are read here). */
 /* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
@@ -72,21 +72,21 @@ typedef struct SoundBankTones {
     u16 noteShift;             /* 0x60 */
 } SoundBankTones;
 
-extern SoundBankVtbl D_8006DA34;
+extern SoundBankVtbl g_soundBankVtbl;
 SoundBankVtbl *Sound_GetBankClass(void);
 
 /* Globals of the bank code, in their original order. */
-s32 D_8008A8B0;
-s32 D_8008A8B4;
-s32 D_8008A8B8;
-s32 D_8008A8BC;
-s32 D_8008A8C0;
+s32 g_fileNullEnabled;
+s32 g_fileNullOption;
+s32 g_spuReady;
+s32 g_soundRateSet;
+s32 g_seqTimerStarted;
 s32 g_bankCount;
 s32 g_vabBuffer;
-s32 D_8008A8CC;
-extern s8 D_8008A8D0[];
-extern s8 D_8008A8D4[];
-extern u8 D_8006D9BC[];
+s32 g_soundTickRate;
+extern s8 g_vabHeaderExt[];
+extern s8 g_vabBodyExt[];
+extern u8 g_fileNullVtbl[];
 
 /* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through unk_08. */
 typedef struct GridRecord {
@@ -99,7 +99,7 @@ typedef struct GridRecord {
     s32 unk_08;   /* offset of the next record, 0 at the end of the chain */
 } GridRecord;
 
-/* The grid item that func_8002C278 fills for one cell (0x3C bytes). */
+/* The grid item that MapModels_NextModel fills for one cell (0x3C bytes). */
 typedef struct GridItem {
     u8 pad_00[0xC];
     s32 unk_0C;
@@ -159,20 +159,20 @@ void Seq_SetRate(s32 arg0);
 void Seq_StartTimer(void);
 s32 strlen(u8 *s);
 s8 *strcpy(s8 *dst, s8 *src);
-s32 func_8002C12C(s32 initParam) {
+s32 MapModels_New(s32 initParam) {
     s32 modelSet;
 
     modelSet = (s32)Heap_Alloc(0x34);
     if (modelSet != 0) {
-        func_8002C3A8()->init((void *)modelSet, initParam);
+        MapModels_GetVtbl()->init((void *)modelSet, initParam);
         return modelSet;
     }
     return 0;
 }
 
-void func_8002C18C(ModelSet *modelSet, s32 initParam) {
+void MapModels_Init(ModelSet *modelSet, s32 initParam) {
     ((ObjectRootVtbl *)File_GetBackendVtbl())->init(modelSet);
-    modelSet->vt = func_8002C3A8();
+    modelSet->vt = MapModels_GetVtbl();
     modelSet->unk_2C = 0;
     modelSet->unk_30 = 0;
     if (initParam != 0) {
@@ -180,16 +180,16 @@ void func_8002C18C(ModelSet *modelSet, s32 initParam) {
     }
 }
 
-void func_8002C200(s32 object) {
+void MapModels_Destroy(s32 object) {
     ((ObjectRootVtbl *)File_GetBackendVtbl())->destroy(object);
 }
 
-void func_8002C238(RootObject *object) {
+void MapModels_OnLoaded(RootObject *object) {
     object->unk_30 = 1;
     ((ObjectRootVtbl *)File_GetBackendVtbl())->unk_64(object);
 }
 
-s32 func_8002C278(GridContext *context, GridItem *item, s32 cellIndex) {
+s32 MapModels_NextModel(GridContext *context, GridItem *item, s32 cellIndex) {
     GridRecord *record;
     s32 nextOffset;
     u16 itemId;
@@ -224,74 +224,74 @@ s32 func_8002C278(GridContext *context, GridItem *item, s32 cellIndex) {
     return 0;
 }
 
-ModelSetVtbl *func_8002C3A8(void) {
-    return &D_8006D940;
+ModelSetVtbl *MapModels_GetVtbl(void) {
+    return &g_mapModelsVtbl;
 }
 
 s32 func_8002C3B8(void) {
     return 0;
 }
 
-void func_8002C3C0(void) {
+void File_NullInit(void) {
 }
 
-void func_8002C3C8(void) {
+void File_NullDestroy(void) {
 }
 
 void func_8002C3D0(void) {
     u8 buf[0x40];
 }
 
-void func_8002C3E0(void) {
+void File_NullOpen(void) {
     u8 buf[0x40];
 }
 
-void func_8002C3F0(void) {
+void File_NullClose(void) {
 }
 
-void func_8002C3F8(void) {
+void File_NullSeek(void) {
 }
 
 void func_8002C400(void) {
 }
 
-s32 func_8002C408(void) {
+s32 File_NullRead(void) {
     return 0;
 }
 
-void func_8002C410(void) {
+void File_NullLoad(void) {
 }
 
-void func_8002C418(void) {
+void File_NullRunQueue(void) {
 }
 
-void func_8002C420(void) {
+void File_NullLoadAsync(void) {
 }
 
-void func_8002C428(void) {
+void File_NullStop(void) {
 }
 
-void func_8002C430(void) {
+void File_NullCancel(void) {
 }
 
-void *func_8002C438(void) {
-    return D_8006D9BC;
+void *File_GetNullVtbl(void) {
+    return g_fileNullVtbl;
 }
 
-s32 func_8002C448(s32 *valueOut) {
+s32 File_NullGetEnabled(s32 *valueOut) {
     if (valueOut != NULL) {
-        *valueOut = D_8008A8B4;
+        *valueOut = g_fileNullOption;
     }
-    return D_8008A8B0;
+    return g_fileNullEnabled;
 }
 
-s32 func_8002C468(s32 firstValue, s32 secondValue) {
-    D_8008A8B0 = firstValue;
-    D_8008A8B4 = secondValue;
+s32 File_NullEnable(s32 firstValue, s32 secondValue) {
+    g_fileNullEnabled = firstValue;
+    g_fileNullOption = secondValue;
     return 1;
 }
 
-s32 func_8002C478(void) {
+s32 File_NullGetVSyncMode(void) {
     return 0;
 }
 
@@ -320,15 +320,15 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     bank->transferDone = 0;
     bank->transferring = 0;
     bank->path = 0;
-    if (D_8008A8B8 == 0) {
+    if (g_spuReady == 0) {
         Spu_ResetCold();
-        D_8008A8B8 = 1;
+        g_spuReady = 1;
         SsSetTableSize((s8 *)Bgm_GetSeqTable(), 2, 1);
     }
-    if (D_8008A8BC == 0) {
-        D_8008A8CC = 0x3C;
+    if (g_soundRateSet == 0) {
+        g_soundTickRate = 0x3C;
         Seq_SetRate(1);
-        D_8008A8BC = 1;
+        g_soundRateSet = 1;
     }
     g_bankCount += 1;
     if (path != 0) {
@@ -336,7 +336,7 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
         if (pathCopy != NULL) {
             bank->path = (s32)pathCopy;
             strcpy(pathCopy, path);
-            File_JoinPath(fullPath, pathCopy, (s8 *)0, D_8008A8D0);
+            File_JoinPath(fullPath, pathCopy, (s8 *)0, g_vabHeaderExt);
             bank->state = 1;
             bank->vtbl->unk_6C(bank, fullPath);
         }
@@ -349,9 +349,9 @@ void Sound_DestroyBank(SoundBank *bank) {
         g_bankCount = 0;
     }
     if (g_bankCount == 0 && Bgm_IsActive() == 0) {
-        D_8008A8B8 = 0;
-        D_8008A8C0 = 0;
-        D_8008A8BC = 0;
+        g_spuReady = 0;
+        g_seqTimerStarted = 0;
+        g_soundRateSet = 0;
         Seq_StopTimer();
         Spu_Quit();
     }
@@ -372,7 +372,7 @@ void Sound_UpdateBank(SoundBank *bank) {
         case 1:
             if (bank->unk_24 & 0x200) {
                 bank->vabId = SsVabOpenHead((void *)bank->vabBuffer, -1);
-                File_JoinPath((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, D_8008A8D4);
+                File_JoinPath((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, g_vabBodyExt);
                 bank->state = 6;
                 oldVabBuffer = bank->vabBuffer;
                 bank->vabBuffer = 0;
@@ -447,10 +447,10 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
             vagp += 0x20;
         }
     }
-    if (D_8008A8C0 == 0) {
+    if (g_seqTimerStarted == 0) {
         Seq_StartTimer();
         SsSetMVol(0x78, 0x78);
-        D_8008A8C0 = 1;
+        g_seqTimerStarted = 1;
     }
 }
 
@@ -510,7 +510,7 @@ void Sound_SetOctave(SoundBank *bank, s32 octave) {
 }
 
 SoundBankVtbl *Sound_GetBankClass(void) {
-    return &D_8006DA34;
+    return &g_soundBankVtbl;
 }
 
 s32 Sound_GetBankCount(void) {
@@ -518,10 +518,10 @@ s32 Sound_GetBankCount(void) {
 }
 
 s32 Sound_GetTickRate(void) {
-    return D_8008A8CC;
+    return g_soundTickRate;
 }
 
-s32 func_8002CC34(s32 arg0, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
+s32 HandlerNode_Start(s32 arg0, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
     HandlerVoice *voice;
     s32 noVoice;
     s32 i;
@@ -543,7 +543,7 @@ s32 func_8002CC34(s32 arg0, HandlerNode *node, s32 nodeId, s32 owner, s32 handle
     return 1;
 }
 
-void func_8002CC84(SoundBank *bank, HandlerNode *node) {
+void HandlerNode_Stop(SoundBank *bank, HandlerNode *node) {
     HandlerVoice *voice;
     s32 i;
 
@@ -556,7 +556,7 @@ void func_8002CC84(SoundBank *bank, HandlerNode *node) {
     node->id = 0;
 }
 
-void func_8002CD08(SoundBank *bank, HandlerNode *node) {
+void HandlerNode_Run(SoundBank *bank, HandlerNode *node) {
     HandlerVoice *voice;
     void (*callback)(s32, void *);
     s32 i;

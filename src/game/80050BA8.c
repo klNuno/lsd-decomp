@@ -7,7 +7,7 @@ typedef struct CommentVtbl CommentVtbl;
 /* Widget owned by the comment object (FONTICON glyphs and COMINPUT). */
 typedef struct CommentWidget CommentWidget;
 typedef struct CommentWidgetVtbl CommentWidgetVtbl;
-/* StringList object (0x54 bytes). Its vtable is D_80086F88. */
+/* StringList object (0x54 bytes). Its vtable is g_stringListVtbl. */
 typedef struct StringList StringList;
 typedef struct StringListVtbl StringListVtbl;
 
@@ -130,7 +130,7 @@ extern void *Heap_Alloc(s32 size);
 CommentVtbl *CommentObject_GetVtbl(void);
 s8 *Text_Decode(s8 *dst, u8 *src);
 s8 *strcpy(s8 *dst, u8 *src);
-StringListVtbl *func_80052B60(void);
+StringListVtbl *StringList_GetVtbl(void);
 s32 g_commentOriginX;
 s32 g_commentOriginY;
 u8 *g_alphabet;
@@ -258,7 +258,7 @@ void CommentObject_SetText(CommentObject *obj, u8 *text, s32 mode) {
     }
 }
 
-INCLUDE_RODATA("asm/nonmatchings/game/80050BA8", D_800115D0);
+INCLUDE_RODATA("asm/nonmatchings/game/80050BA8", g_alphabetText);
 
 void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
     s8 nameBuf[0x20];
@@ -549,7 +549,7 @@ s32 StringList_New(s32 strings, s32 mode) {
 
     list = Heap_Alloc(0x54);
     if (list != NULL) {
-        func_80052B60()->init(list, (s32 **)strings, mode);
+        StringList_GetVtbl()->init(list, (s32 **)strings, mode);
         return (s32)list;
     }
     return 0;
@@ -564,7 +564,7 @@ void StringList_Init(StringList *list, s32 **strings, s32 mode) {
     index = 0;
     cursor = strings;
     Object_GetBaseVtbl()->init(list);
-    list->vtbl = func_80052B60();
+    list->vtbl = StringList_GetVtbl();
 
     while (*cursor++ != NULL) {
         index++;

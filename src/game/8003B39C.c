@@ -97,7 +97,7 @@ TimVtbl *Tim_GetVtbl(void) {
  * Rotates the VRAM area rect one column to the right, count times, through the spare column
  * at (spare->x, spare->y): the last column goes to the spare, the rest moves right by one, the
  * spare comes back as the first column. The place cycles CLUT rows with it: 248 entries of
- * rows 0x1F0 to 0x1F7 in stage 2, of rows 0x1F8 to 0x1FF in stages 3 to 5 (func_80055A24).
+ * rows 0x1F0 to 0x1F7 in stage 2, of rows 0x1F8 to 0x1FF in stages 3 to 5 (Stage_CyclePalettes).
  */
 void Display_RotateRect(ScreenRect *rect, s32 count, ScreenRect *spare) {
     MovieRect move;

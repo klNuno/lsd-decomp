@@ -52,7 +52,7 @@ s32 ModelBox_OutCode(NodeBox *box, SVec3 *point);
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
 s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *end);
 void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside);
-void func_8001EA8C(Vec3 *out, SVec3 *from, SVec3 *to);
+void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to);
 void Render_TransformLongVectors(void *dstVecs, void *srcVecs, s32 count, s32 *matrix);
 void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix);
 s32 ModelObject_IsReady(ModelObject *model);
@@ -73,7 +73,7 @@ extern s32 g_nodeZeroRotation[];
 extern s32 g_nodeUnitScale[];
 s32 g_rayHeightCheck;
 
-/* The class head of func_8001E4A4's watchers: a tag byte and the watch slot. */
+/* The class head of SceneNode_AddActorWatchers's watchers: a tag byte and the watch slot. */
 typedef struct WatcherVtbl {
     u8 tag;
     u8 pad_01[0xF];
@@ -708,7 +708,7 @@ void func_8001E49C(void) {
  * Slot 0xB4: every watcher of object that is a scene node (sender type 4) and whose
  * class tag byte is 0x34 is made to watch arg0.
  */
-void func_8001E4A4(s32 arg0, Object *object) {
+void SceneNode_AddActorWatchers(s32 arg0, Object *object) {
     WatcherVtbl *vtbl;
     Object *watcher;
     s32 more;
@@ -836,18 +836,18 @@ s32 SceneNode_ProbeHeight(SceneNode *node, Vec3 *offset, Vec3 *point) {
     to.y = from.y - 0x400;
     to.z = from.z;
     if (ModelObject_RayTest(node->model, &dist, &hit, NULL, &from, &to) != 0) {
-        func_8001EA8C(offset, &from, &hit);
+        SceneNode_SubtractVec(offset, &from, &hit);
         return 1;
     }
     to.y = from.y + 0x400;
     if (ModelObject_RayTest(node->model, &dist, &hit, NULL, &from, &to) == 0) {
         return 0;
     }
-    func_8001EA8C(offset, &from, &hit);
+    SceneNode_SubtractVec(offset, &from, &hit);
     return 1;
 }
 
-void func_8001EA8C(Vec3 *out, SVec3 *from, SVec3 *to) {
+void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to) {
     out->x = to->x - from->x;
     out->y = to->y - from->y;
     out->z = to->z - from->z;

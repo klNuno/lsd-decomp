@@ -150,7 +150,7 @@ s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette 
 s32 g_mdecReady;                /* 1 once DecDCTReset ran */
 s16 g_clutFadeShift;                /* 3: a palette fade has 1 << this rows */
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
-extern u8 D_8008A944[];
+extern u8 g_movieClearColor[];
 
 /* ---- TIX texture set ---- */
 
@@ -1375,7 +1375,7 @@ s32 Movie_Open(Movie *movie, void *source, s32 unk5C, s32 repeat, s32 loops) {
             movie->repeat = repeat;
             movie->loops = loops;
             gfx = Display_GetCurrent();
-            gfx->vtbl->clearImage(gfx, D_8008A944, &movie->frame);
+            gfx->vtbl->clearImage(gfx, g_movieClearColor, &movie->frame);
             return 0;
         }
         return 1;

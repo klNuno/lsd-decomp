@@ -22,7 +22,7 @@
 
 /* The back end ids: the tag word of the back end's vtable. */
 #define FILE_BACKEND_CD 0x13   /* g_fileVtable, src/game/800271D8.c */
-#define FILE_BACKEND_NULL 0x23 /* D_8006D9BC: every I/O slot is empty */
+#define FILE_BACKEND_NULL 0x23 /* g_fileNullVtbl: every I/O slot is empty */
 
 /* The scene settings main hands to Scene_New (g_sceneSettings: 0x13, 0, 1, 1, 1, 1). */
 /*
@@ -45,7 +45,7 @@ typedef struct ReelStack {
  * A file object as the base class reads it: Object, then the fields of the CD back end
  * (src/game/800271D8.c) and of the classes of include/game/loader.h.
  */
-void func_8004A070(s32);
+void File_ResolvePathTablePart(s32);
 s32 g_fileBackend;
 void File_Lock(void);
 void File_Unlock(void);
@@ -54,10 +54,10 @@ s32 File_IsDone(void);
 s32 File_GetOpKind(void);
 s32 File_GetState(void);
 FileVtbl *File_GetVtable(void);
-FileVtbl *func_8002C438(void);
-s32 func_8002C448(s32 *optionOut);
+FileVtbl *File_GetNullVtbl(void);
+s32 File_NullGetEnabled(s32 *optionOut);
 s32 File_GetEnabled(s32 *optionOut);
-s32 func_8002C478(void);
+s32 File_NullGetVSyncMode(void);
 s32 File_GetVSyncMode(void);
 void Rand_SeedAndNext(s32, s32);
 ObjectVtbl *Object_GetBaseVtbl(void);
@@ -67,7 +67,7 @@ void Heap_Free(void *);
 s8 *strcat(s8 *, s8 *);
 s32 Heap_Alloc(s32);
 SceneVtbl *Scene_GetVtbl(void);
-s32 func_8002C468(s32, s32, s32);
+s32 File_NullEnable(s32, s32, s32);
 s32 File_Enable(s32, s32, s32);
 s32 g_fileDirTableSet;
 void File_SetDirTable(s32);
@@ -95,7 +95,7 @@ s32 Cine_GetSpecialDayRun(s32 *frames, s32 category, s32 count);
 s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env);
 void Scene_PlayReel(Scene *scene);
 extern Screen *Graph_New(DreamSys *dreamSys);
-extern Screen *func_8004D518(DreamSys *dreamSys);
+extern Screen *Menu_New(DreamSys *dreamSys);
 s32 Cine_GetPath(s32 *videoId, s32 cinematic);
 extern SceneVtbl g_sceneVtbl[];
 extern FileVtbl g_fileBaseVtbl[];
@@ -170,9 +170,9 @@ void Scene_ShowLogo(Scene *scene, void *path) {
     screen->vtbl->delete_(screen);
 }
 
-/* Each logo's close resolves part of the disc's file table (func_8004A070: half, then the rest). */
+/* Each logo's close resolves part of the disc's file table (File_ResolvePathTablePart: half, then the rest). */
 void Scene_OnLogoClosed(void) {
-    func_8004A070(0);
+    File_ResolvePathTablePart(0);
 }
 
 /* Slot 0x54: one of the 7 opening videos, picked by rand (Cine_PickOpeningPath). */
@@ -205,7 +205,7 @@ s32 Scene_RunTitle(Scene *scene) {
             Scene_PlayReel(scene);
         }
         for (;;) {
-            menuResult = Scene_RunScreen(func_8004D518, scene->dreamSys, scene->env);
+            menuResult = Scene_RunScreen(Menu_New, scene->dreamSys, scene->env);
             if (menuResult != 2) {
                 break;
             }
@@ -410,7 +410,7 @@ FileVtbl *File_GetBaseVtbl(void) {
 /* The vtable of the back end in use. */
 FileVtbl *File_GetBackendVtbl(void) {
     if (g_fileBackend == FILE_BACKEND_NULL) {
-        return func_8002C438();
+        return File_GetNullVtbl();
     }
     return File_GetVtable();
 }
@@ -433,7 +433,7 @@ void File_SetBackend(s32 backend) {
     if (backend == FILE_BACKEND_CD) {
         io = File_GetVtable();
     } else {
-        io = func_8002C438();
+        io = File_GetNullVtbl();
     }
     vtbl = File_GetBaseVtbl();
     File_CopyIoSlots(vtbl, io);
@@ -503,7 +503,7 @@ s32 File_GetBackendState(void) {
 void File_EnableWait(s32 enabled, s32 option, s32 vsyncMode) {
     s32 (*enable)(s32, s32, s32);
 
-    enable = func_8002C468;
+    enable = File_NullEnable;
     if (g_fileBackend == FILE_BACKEND_CD) {
         enable = File_Enable;
     }
@@ -515,14 +515,14 @@ s32 File_GetBackendEnabled(s32 *optionOut) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetEnabled(optionOut);
     }
-    return func_8002C448(optionOut);
+    return File_NullGetEnabled(optionOut);
 }
 
 s32 File_GetBackendVSyncMode(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_GetVSyncMode();
     }
-    return func_8002C478();
+    return File_NullGetVSyncMode();
 }
 
 /* Appends count entries of 0x1C bytes to the CD directory and resolves the new ones. */

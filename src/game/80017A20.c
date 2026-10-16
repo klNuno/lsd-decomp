@@ -10,8 +10,8 @@ void *Heap_Alloc();
 void *Heap_Free();
 extern ObjectVtbl g_objectVtbl[]; /* the root class vtable */
 s32 g_heapBusy; /* heap busy flag, Heap_SetBusy */
-s32 D_8008A830; /* func_8001A54C: when set, D_8008A834 replaces the attribute's bits 9-11 */
-s32 D_8008A834;
+s32 g_clipDivisionForced; /* Render_ForceClipDivision: when set, g_clipForcedDivision replaces the attribute's bits 9-11 */
+s32 g_clipForcedDivision;
 extern s32 List_Push();
 void List_Remove();
 ObjectVtbl *Object_GetBaseVtbl(void);
@@ -30,7 +30,7 @@ extern s32 printf(const char *fmt, ...);
  * the Sony clipper RCpoly* instead, through the work areas g_clipTriWork (triangles) and
  * g_clipQuadWork (quads).
  */
-extern s32 D_8008E248; /* attribute bit 6: sets packet code bit 0 (no texture shading) */
+extern s32 g_renderUnlit; /* attribute bit 6: sets packet code bit 0 (no texture shading) */
 typedef struct Rgbc { u8 r, g, b, cd; } Rgbc;
 typedef struct Bytes8 { u8 b[8]; } Bytes8;
 typedef struct ScreenXY { s16 x; s16 y; } ScreenXY;
@@ -56,7 +56,7 @@ typedef struct ClipVertex {
 
 /* Header of a clipper work area (g_clipTriWork, g_clipQuadWork), filled by Render_FillClipHeader */
 typedef struct ClipHeader {
-    s32 unk_00;    /* D_8008A834 when func_8001A54C set it, else attribute bits 9-11 */
+    s32 unk_00;    /* g_clipForcedDivision when Render_ForceClipDivision set it, else attribute bits 9-11 */
     s32 width;     /* g_clipScreenWidth, 320 */
     s32 height;    /* g_clipScreenHeight, 240 */
     u16 clut;      /* textured faces only */
@@ -226,7 +226,7 @@ extern void *RCpolyG3(void *, void *);
 extern void *RCpolyG4(void *, void *);
 extern void *RCpolyGT3(void *, void *);
 extern void *RCpolyGT4(void *, void *);
-extern s32 D_80090C18;
+extern s32 g_renderDivision;
 s32 g_clipScreenWidth; /* 320 in .sdata, never written */
 s32 g_clipScreenHeight; /* 240 in .sdata, never written */
 void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage);
@@ -257,7 +257,7 @@ void Render_InitClipSlots(u8 **slots, u8 *area, s32 count);
 extern s32 D_8008E250; /* attribute bit 5 */
 extern s32 D_8008E24C; /* attribute bits 3-4 */
 extern s32 D_800902E0;
-extern u8 *D_8008E794; /* next free byte of the packet buffer, set by the psyq func_8003FBE4 */
+extern u8 *g_packetCursor; /* next free byte of the packet buffer, set by the psyq func_8003FBE4 */
 extern TmdRgb g_texturedRgb; /* {0x80, 0x80, 0x80} in .sdata */
 
 Heap *Heap_Create(u32 size) {
@@ -698,8 +698,8 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
         gte_MulMatrix0(&object->coord->super->workm, &object->coord->workm, &object->coord->workm);
         gte_SetRotMatrix(&ctx->savedRot);
     }
-    D_80090C18 = (object->attribute >> 9) & 7;
-    D_8008E248 = (object->attribute >> 6) & 1;
+    g_renderDivision = (object->attribute >> 9) & 7;
+    g_renderUnlit = (object->attribute >> 6) & 1;
     D_8008E250 = (object->attribute >> 5) & 1;
     D_8008E24C = (object->attribute >> 3) & 3;
     ctx->unk_08 = 10;
@@ -710,7 +710,7 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
         ctx->depthShift = 16;
     }
     while (remaining != 0) {
-        prim = D_8008E794;
+        prim = g_packetCursor;
         ctx->type = *(u16 *)(packet + 2) & 0xFD07;
         count = *(u16 *)packet;
         ctx->semiTrans = (*(u32 *)packet >> 25) & 1;
@@ -971,7 +971,7 @@ void Render_SortModel(TmdObject *object, TmdOt *ot, s32 shift, TmdCtx *scratch) 
         default:
             return;
         }
-        D_8008E794 = prim;
+        g_packetCursor = prim;
     }
 }
 
@@ -982,7 +982,7 @@ void Render_SetPrimFlags(PrimHeader *prim, TmdCtx *ctx) {
     } else {
         prim->code &= ~2;
     }
-    if (D_8008E248 != 0) {
+    if (g_renderUnlit != 0) {
         prim->code |= 1;
     } else {
         prim->code &= ~1;
@@ -1299,10 +1299,10 @@ void Render_CheckScreenBox(TmdCtx *ctx, s32 count) {
 void Render_FillClipHeader(ClipHeader *header, TmdCtx *ctx, Rgbc *rgb, s32 textured, u16 clut, u16 tpage) {
     s32 value;
 
-    if (D_8008A830 != 0) {
-        value = D_8008A834;
+    if (g_clipDivisionForced != 0) {
+        value = g_clipForcedDivision;
     } else {
-        value = D_80090C18;
+        value = g_renderDivision;
     }
     header->unk_00 = value;
     header->width = g_clipScreenWidth;
@@ -1339,9 +1339,9 @@ void Render_CopyClipQuad(void *dstArg, void *srcArg, void *sxy0, void *sxy1, voi
 }
 
 /* Forces the clipper header's first word to `value` while `on` is set (see Render_FillClipHeader) */
-void func_8001A54C(s32 on, s32 value) {
-    D_8008A830 = on;
+void Render_ForceClipDivision(s32 on, s32 value) {
+    g_clipDivisionForced = on;
     if (on != 0) {
-        D_8008A834 = value;
+        g_clipForcedDivision = value;
     }
 }

@@ -423,7 +423,7 @@ void SpriteNode_SetBlendRate(SpriteNode *node, s32 blendRate) {
 }
 
 /* Slot 0x98, empty as in the base */
-void func_80042294(void) {
+void SpriteNode_OnClock(void) {
 }
 
 /* Slot 0xB8 */
@@ -624,7 +624,7 @@ void RootNode_Setup(RootNode *root) {
 }
 
 /* Slot 0x9C, empty */
-void func_80042820(void) {
+void RootNode_OnNode(void) {
 }
 
 /* Slot 0xB8 */

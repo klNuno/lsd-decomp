@@ -120,6 +120,11 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Seq | The root counter timer that drives the sequencer | code: src/game/80032588.c |
 | Fraction | A {numerator, denominator} pair used for scales | code: src/game/8001CA94.c |
 | Bits | Bit flag helpers of the scene nodes (GsDOBJ2 attribute bits) | code: src/game/8001CA94.c |
+| DreamView | The dream camera, a View subclass of 0xDC bytes (vtable 0x800869D8) | code: src/game/800494B4.c |
+| MapModels | The model list of one map chunk (vtable 0x8006D940) | code: src/game/8002C12C.c |
+| HandlerNode | The node that runs a behaviour handler every tick and plays its voices | code: `include/game/sound.h`, src/game/8005C508.c |
+| SoundSpot | A fixed ambient sound source of a place, played from the SND\SE bank; at most two play at once, quieter with distance | code: src/game/80051F24.c |
+| SceneryPart | A sprite part of the scenery (vtable 0x800879C4) | code: src/game/80051F24.c |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |
 
 Rows sourced to community knowledge are working terms, not verified facts; rows sourced to code cite their discoveries entry.

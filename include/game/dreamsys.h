@@ -138,9 +138,9 @@ typedef struct DreamSysVtbl {
     void (*unk4)();                                                  /* 0x004 Object_Delete */
     void (*init)(struct DreamSys *, void **, s32, s32);              /* 0x008 DreamSys_Init */
     void (*unkC)();                                                  /* 0x00C SceneNode_Destroy */
-    void (*watch)(struct DreamSys *, void *);                        /* 0x010 func_800570B4: Actor watch, keeps a watched map at +0x4C */
-    void (*unwatch)(struct DreamSys *, void *);                      /* 0x014 func_80057130: Actor unwatch */
-    void (*unwatchAll)();                                            /* 0x018 func_800571A8: Actor unwatch all */
+    void (*watch)(struct DreamSys *, void *);                        /* 0x010 Actor_Watch: Actor watch, keeps a watched map at +0x4C */
+    void (*unwatch)(struct DreamSys *, void *);                      /* 0x014 Actor_Unwatch: Actor unwatch */
+    void (*unwatchAll)();                                            /* 0x018 Actor_UnwatchAll: Actor unwatch all */
     void (*unk1C)();                                                 /* 0x01C Object_NextWatched */
     void (*unk20)();                                                 /* 0x020 Object_AddWatcher */
     void (*unk24)();                                                 /* 0x024 Object_RemoveWatcher */
@@ -150,11 +150,11 @@ typedef struct DreamSysVtbl {
     void (*unk34)();                                                 /* 0x034 func_80018350 */
     void (*unk38)();                                                 /* 0x038 SceneNode_OnNotify */
     void (*unk3C)();                                                 /* 0x03C 0x00000000 */
-    void (*unk40)(struct DreamSys *);                                /* 0x040 func_800588EC */
+    void (*unk40)(struct DreamSys *);                                /* 0x040 DreamSys_Reset */
     void (*unk44)(struct DreamSys *, s32, void *);                   /* 0x044 SceneNode_SetRotation */
     void (*unk48)();                                                 /* 0x048 SceneNode_SetScale */
-    void (*unk4C)();                                                 /* 0x04C func_80058968 */
-    void (*unk50)();                                                 /* 0x050 func_80058A94 */
+    void (*unk4C)();                                                 /* 0x04C DreamSys_EnterMap */
+    void (*unk50)();                                                 /* 0x050 DreamSys_LeaveMap */
     void (*unk54)();                                                 /* 0x054 SceneNode_DetachChildren */
     void (*unk58)();                                                 /* 0x058 SceneNode_NextChild */
     void (*unk5C)();                                                 /* 0x05C func_8001D33C */
@@ -168,74 +168,74 @@ typedef struct DreamSysVtbl {
     void (*unk7C)();                                                 /* 0x07C SceneNode_SetDivision */
     void (*unk80)();                                                 /* 0x080 SceneNode_SetBackfaceClip */
     void (*unk84)();                                                 /* 0x084 SceneNode_GetRotMatrix */
-    void (*unk88)();                                                 /* 0x088 func_80058B08 */
+    void (*unk88)();                                                 /* 0x088 DreamSys_OnGroundProbe */
     void (*unk8C)();                                                 /* 0x08C SceneNode_GetBoxList */
     void (*unk90)();                                                 /* 0x090 SceneNode_SendShape */
-    void (*unk94)();                                                 /* 0x094 func_80058C58 */
+    void (*unk94)();                                                 /* 0x094 DreamSys_OnPad */
     void (*tickTimer)(struct DreamSys *, s32, s32);                  /* 0x098 DreamSys_TickTimer */
-    void (*unk9C)();                                                 /* 0x09C func_80058E8C */
+    void (*unk9C)();                                                 /* 0x09C DreamSys_RouteMapMessage */
     void (*unkA0)();                                                 /* 0x0A0 SceneNode_CheckContact */
     void (*unkA4)();                                                 /* 0x0A4 SceneNode_WorldToLocal */
     void (*unkA8)();                                                 /* 0x0A8 SceneNode_BoxesOverlap */
     void (*unkAC)();                                                 /* 0x0AC SceneNode_RayTestBoxes */
     void (*unkB0)();                                                 /* 0x0B0 0x00000000 */
-    void (*unkB4)();                                                 /* 0x0B4 func_8001E4A4 */
+    void (*unkB4)();                                                 /* 0x0B4 SceneNode_AddActorWatchers */
     void (*setPosition)(struct DreamSys *, void *);                  /* 0x0B8 Actor_SetPos */
     void (*move)(struct DreamSys *, s32 *);                          /* 0x0BC Actor_MovePos */
-    void (*unkC0)();                                                 /* 0x0C0 func_80057444 */
-    void (*unkC4)();                                                 /* 0x0C4 func_8005748C */
-    void (*unkC8)();                                                 /* 0x0C8 func_800574C4 */
-    void (*unkCC)();                                                 /* 0x0CC func_800574FC */
-    void (*unkD0)();                                                 /* 0x0D0 func_800575B0 */
-    void (*unkD4)(struct DreamSys *, void *, s32);                   /* 0x0D4 func_800575E0 */
-    void (*unkD8)();                                                 /* 0x0D8 func_80057610 */
-    void (*unkDC)();                                                 /* 0x0DC func_80058F18 */
+    void (*unkC0)();                                                 /* 0x0C0 Actor_MoveLocal */
+    void (*unkC4)();                                                 /* 0x0C4 Actor_MoveZ */
+    void (*unkC8)();                                                 /* 0x0C8 Actor_MoveX */
+    void (*unkCC)();                                                 /* 0x0CC Actor_MoveY */
+    void (*unkD0)();                                                 /* 0x0D0 Actor_MoveZOnGround */
+    void (*unkD4)(struct DreamSys *, void *, s32);                   /* 0x0D4 Actor_MoveXOnGround */
+    void (*unkD8)();                                                 /* 0x0D8 Actor_StubD8 */
+    void (*unkDC)();                                                 /* 0x0DC DreamSys_RouteEntityMessage */
     void (*onWallTouch)(struct DreamSys *, void *, s32);             /* 0x0E0 DreamSys_OnWallTouch */
-    void (*unkE4)();                                                 /* 0x0E4 func_80057C6C */
+    void (*unkE4)();                                                 /* 0x0E4 Actor_SetSpeed */
     void (*unkE8)(struct DreamSys *);                                /* 0x0E8 func_800590E0 */
-    void (*unkEC)();                                                 /* 0x0EC func_80057C7C */
+    void (*unkEC)();                                                 /* 0x0EC Actor_SetBoxMargin */
     s32 (*setFlashbackMode)(struct DreamSys *, s32 *, s32);          /* 0x0F0 DreamSys_SetFlashbackMode */
-    void (*unkF4)();                                                 /* 0x0F4 func_80059148 */
-    void (*unkF8)();                                                 /* 0x0F8 func_800591B4 */
-    void (*unkFC)();                                                 /* 0x0FC func_80059310 */
-    s32 (*unk100)();                                                 /* 0x100 func_8005931C, returns DreamSys +0x74 */
+    void (*unkF4)();                                                 /* 0x0F4 DreamSys_SetAutoWalk */
+    void (*unkF8)();                                                 /* 0x0F8 DreamSys_StartPlace */
+    void (*unkFC)();                                                 /* 0x0FC DreamSys_LockControls */
+    s32 (*unk100)();                                                 /* 0x100 DreamSys_WasCirclePressed, returns DreamSys +0x74 */
     s32 (*swapTimeLimit)(struct DreamSys *, s32);                    /* 0x104 DreamSys_SwapTimeLimit */
     s32 (*getElapsedSeconds)(struct DreamSys *);                     /* 0x108 DreamSys_GetElapsedSeconds */
-    void (*unk10C)();                                                /* 0x10C func_8005937C */
-    void (*unk110)();                                                /* 0x110 func_80059384 */
-    void (*unk114)();                                                /* 0x114 func_8005938C */
-    void (*unk118)(struct DreamSys *);                               /* 0x118 func_80059394 */
-    void (*unk11C)(struct DreamSys *);                               /* 0x11C func_800593D8 */
-    void (*unk120)();                                                /* 0x120 func_8005942C */
+    void (*unk10C)();                                                /* 0x10C DreamSys_SetSoundBank */
+    void (*unk110)();                                                /* 0x110 DreamSys_SetCamera */
+    void (*unk114)();                                                /* 0x114 DreamSys_SetEtcTim */
+    void (*unk118)(struct DreamSys *);                               /* 0x118 DreamSys_TickBegin */
+    void (*unk11C)(struct DreamSys *);                               /* 0x11C DreamSys_TickHandlers */
+    void (*unk120)();                                                /* 0x120 DreamSys_TestPointAhead */
     void (*unk124)();                                                /* 0x124 func_80059590 */
     void (*unk128)();                                                /* 0x128 func_80059598 */
     void (*unk12C)(struct DreamSys *);                               /* 0x12C func_800595A0 */
-    void (*unk130)();                                                /* 0x130 func_800595A8 */
-    void (*unk134)();                                                /* 0x134 func_80059610 */
-    void (*unk138)(struct DreamSys *, s32);                          /* 0x138 func_8005966C */
-    void (*unk13C)();                                                /* 0x13C func_800596E8 */
-    void (*unk140)(struct DreamSys *);                               /* 0x140 func_800597C0 */
-    void (*unk144)(struct DreamSys *);                               /* 0x144 func_80059814 */
-    void (*unk148)(struct DreamSys *);                               /* 0x148 func_800598E8 */
+    void (*unk130)();                                                /* 0x130 DreamSys_StopControls */
+    void (*unk134)();                                                /* 0x134 DreamSys_SetControls */
+    void (*unk138)(struct DreamSys *, s32);                          /* 0x138 DreamSys_SetLookMode */
+    void (*unk13C)();                                                /* 0x13C DreamSys_SetMoveMode */
+    void (*unk140)(struct DreamSys *);                               /* 0x140 DreamSys_TickLook */
+    void (*unk144)(struct DreamSys *);                               /* 0x144 DreamSys_TickPitch */
+    void (*unk148)(struct DreamSys *);                               /* 0x148 DreamSys_TickLookBack */
     void (*unk14C)(void);                                            /* 0x14C func_80059A48 */
     void (*unk150)(void);                                            /* 0x150 func_80059A50 */
-    void (*unk154)(struct DreamSys *);                               /* 0x154 func_80059A58 */
-    void (*unk158)(struct DreamSys *);                               /* 0x158 func_80059AEC */
-    void (*unk15C)(struct DreamSys *);                               /* 0x15C func_80059B50 */
-    void (*unk160)(struct DreamSys *);                               /* 0x160 func_80059BD4 */
-    s32 (*unk164)(struct DreamSys *, s32);                           /* 0x164 func_80059BE0 */
-    void (*unk168)(struct DreamSys *);                               /* 0x168 func_80059D1C */
-    void (*unk16C)(struct DreamSys *, void *);                       /* 0x16C func_80059E3C */
-    void (*unk170)(struct DreamSys *, s32);                          /* 0x170 func_80059E98 */
-    void (*unk174)(struct DreamSys *);                               /* 0x174 func_8005A050 */
-    void (*unk178)(struct DreamSys *);                               /* 0x178 func_8005A0B0 */
-    void (*unk17C)(struct DreamSys *, s32);                          /* 0x17C func_8005A134 */
-    void (*unk180)(struct DreamSys *, s32);                          /* 0x180 func_8005A168 */
-    void (*unk184)(struct DreamSys *, s32);                          /* 0x184 func_8005A184 */
-    void (*unk188)();                                                /* 0x188 func_8005A1A4 */
-    void (*unk18C)(struct DreamSys *, s32, s32, s32, s32);           /* 0x18C func_8005A1B0 */
-    void (*unk190)(struct DreamSys *, s32);                          /* 0x190 func_8005A1EC */
-    void (*unk194)(s32, void *);                                     /* 0x194 func_8005A1F4 */
+    void (*unk154)(struct DreamSys *);                               /* 0x154 DreamSys_TickMove */
+    void (*unk158)(struct DreamSys *);                               /* 0x158 DreamSys_TickWalk */
+    void (*unk15C)(struct DreamSys *);                               /* 0x15C DreamSys_TickAutoWalk */
+    void (*unk160)(struct DreamSys *);                               /* 0x160 DreamSys_SetForward */
+    s32 (*unk164)(struct DreamSys *, s32);                           /* 0x164 DreamSys_TickStep */
+    void (*unk168)(struct DreamSys *);                               /* 0x168 DreamSys_PlayStepSound */
+    void (*unk16C)(struct DreamSys *, void *);                       /* 0x16C DreamSys_StopStepSound */
+    void (*unk170)(struct DreamSys *, s32);                          /* 0x170 DreamSys_Walk */
+    void (*unk174)(struct DreamSys *);                               /* 0x174 DreamSys_TickTurn */
+    void (*unk178)(struct DreamSys *);                               /* 0x178 DreamSys_TickFall */
+    void (*unk17C)(struct DreamSys *, s32);                          /* 0x17C DreamSys_EndFall */
+    void (*unk180)(struct DreamSys *, s32);                          /* 0x180 DreamSys_SwapSpeed */
+    void (*unk184)(struct DreamSys *, s32);                          /* 0x184 DreamSys_PushSpeed */
+    void (*unk188)();                                                /* 0x188 DreamSys_PopSpeed */
+    void (*unk18C)(struct DreamSys *, s32, s32, s32, s32);           /* 0x18C DreamSys_SetLinkFlags */
+    void (*unk190)(struct DreamSys *, s32);                          /* 0x190 DreamSys_SetLinkPeriod */
+    void (*unk194)(s32, void *);                                     /* 0x194 DreamSys_FallSoundHandler */
     void (*initNewGame)(struct DreamSys *);                          /* 0x198 DreamSys_InitNewGame */
     void (*swapShake)(struct DreamSys *, s32 *);                     /* 0x19C DreamSys_SwapShake */
     s32 (*getDayNumber)(struct DreamSys *, s32 *);                   /* 0x1A0 DreamSys_GetDayNumber */
@@ -250,12 +250,12 @@ typedef struct DreamSysVtbl {
     void (*linkDynamic)(struct DreamSys *);                          /* 0x1C4 DreamSys_LinkDynamic */
     s32 (*linkStatic)(struct DreamSys *, void *);                    /* 0x1C8 DreamSys_LinkStatic */
     s32 (*loadNextFlashback)(struct DreamSys *, s32);                /* 0x1CC DreamSys_LoadNextFlashback */
-    s32 (*unk1D0)(struct DreamSys *, s32);                           /* 0x1D0 func_8005A700 */
-    s32 (*unk1D4)(struct DreamSys *, s32);                           /* 0x1D4 func_8005A7A0 */
-    s32 (*unk1D8)(struct DreamSys *, s32);                           /* 0x1D8 func_8005A82C */
-    s32 (*unk1DC)(struct DreamSys *, s32);                           /* 0x1DC func_8005A9CC */
+    s32 (*unk1D0)(struct DreamSys *, s32);                           /* 0x1D0 DreamSys_LinkFacing */
+    s32 (*unk1D4)(struct DreamSys *, s32);                           /* 0x1D4 DreamSys_LinkFall */
+    s32 (*unk1D8)(struct DreamSys *, s32);                           /* 0x1D8 DreamSys_LinkExtra */
+    s32 (*unk1DC)(struct DreamSys *, s32);                           /* 0x1DC DreamSys_StartLinkStep */
     s32 (*getStage)(struct DreamSys *);                              /* 0x1E0 DreamSys_GetStage */
-    void (*unk1E4)(struct DreamSys *, s32 **, s32);                  /* 0x1E4 func_8005AFDC */
+    void (*unk1E4)(struct DreamSys *, s32 **, s32);                  /* 0x1E4 DreamSys_OnMapMessage */
     void (*onEntityEvent)(struct DreamSys *, s32 **, s32);           /* 0x1E8 DreamSys_OnEntityEvent */
     void (*getPreviousPoint)(struct DreamSys *, void *, s32);        /* 0x1EC DreamSys_GetPreviousPoint */
     void (*resetMoodAccumulators)(struct DreamSys *, s32);           /* 0x1F0 DreamSys_ResetMoodAccumulators */
@@ -270,8 +270,8 @@ typedef struct DreamSysVtbl {
     void (*addFlashback)(struct DreamSys *, s32, void *, void *, s32, s32, s32); /* 0x214 DreamSys_AddFlashback */
     void (*maybeSaveFlashback)(struct DreamSys *, s32, s32);         /* 0x218 DreamSys_MaybeSaveFlashback */
     void (*clearFlashbacks)(struct DreamSys *);                      /* 0x21C DreamSys_ClearFlashbacks */
-    void (*unk220)(struct DreamSys *);                               /* 0x220 func_8005B904 */
-    void (*unk224)(struct DreamSys *);                               /* 0x224 func_8005B990 */
+    void (*unk220)(struct DreamSys *);                               /* 0x220 DreamSys_SavePosition */
+    void (*unk224)(struct DreamSys *);                               /* 0x224 DreamSys_RestorePosition */
     void (*unk228)();                                                /* 0x228 func_8005BA20 */
 } DreamSysVtbl;
 
@@ -356,7 +356,7 @@ typedef struct DreamSys {
     u8 *unk884;
     u8 *unk888;
     s32 savedDay;           /* day at the start of the dream (DreamSys_StartDay) */
-    Coord2 coordCopy;       /* func_8005B904 saves pos and its param, func_8005B990 restores them */
+    Coord2 coordCopy;       /* DreamSys_SavePosition saves pos and its param, DreamSys_RestorePosition restores them */
     Coord2Param paramCopy;
     s32 unk908;
     s32 unk90C;
