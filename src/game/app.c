@@ -1,19 +1,20 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/app.h"
+#include "game/heap.h"
 #include "game/display.h"
+#include "game/pad.h"
 #include "game/file_base.h"
 #include "game/spu.h"
+#include "game/screen.h"
+#include "psyq/libgs.h"
+#include "psyq/libcd.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
  */
 
-s32 CdInit(void);
 s32 g_cdInitDone;
 extern char g_appScreenSize[];
-void GsInit3D(void);
 extern u8 g_appVtbl[];
 
 /* fileDevice picks the file back end: 0x13 is the CD (File_SetBackend, src/game/file_base.c). */

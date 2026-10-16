@@ -1,6 +1,7 @@
 #include "common.h"
-#include "game/stage.h"
 #include "game/path_table.h"
+#include "game/stage.h"
+#include "psyq/libc.h"
 
 /*
  * The path table g_pathTable: 0x1C-byte path entries, 560 counted by File_GetPathTable (sound banks, then per stage
@@ -17,8 +18,6 @@ s32 g_musicBankOverride;              /* forced music bank + 1, 0 = random (Musi
 s32 g_musicTrackOverride;              /* forced track + 1, 0 = random (Music_SetOverride) */
 static u8 *Stage_GetPathBase(s32 stage);
 static s32 *Music_GetEffectsBankPtr(void);
-extern void srand(u32 seed);
-extern s32 rand(void);
 extern s16 g_stageFirstPath[];     /* first path of each stage in the path table */
 static u8 *Stage_GetChunkPaths(s32 stage);
 static u8 *Cine_GetEventPaths(s32 *videoId);

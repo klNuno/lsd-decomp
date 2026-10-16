@@ -1,25 +1,20 @@
 #include "common.h"
 #include "game/seq_timer.h"
+#include "psyq/libapi.h"
+#include "psyq/libetc.h"
+#include "psyq/libspu.h"
+#include "psyq/libsnd.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
  */
 
 extern s32 g_seqToggle;
-extern void SsSeqCalledTbyT(void);
 static void Seq_ArmTimer(s32 immediate);
-extern void SpuQuit(void);
 extern s32 g_seqExternal;
-extern s32 EnterCriticalSection();
-extern s32 ExitCriticalSection();
-void VSyncCallback(void (*func)(void));
-void *InterruptCallback(s32 irq, void (*func)(void));
 extern s32 g_seqRate;
 static void Seq_OnTick(void);
 static void Seq_OnTickHalf(void);
-void ResetRCnt(s32 spec);
-void SetRCnt(s32 spec, u16 target, s32 mode);
-void StartRCnt(s32 spec);
 
 /*
  * Sets the rate in g_seqRate from the low 12 bits of rate; bit 0x1000 sets g_seqExternal. Rates 0, 1, 4

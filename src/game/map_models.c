@@ -24,7 +24,7 @@ typedef struct ObjectRootVtbl {
     void (*unk_64)(void *object);   /* 0x64, not named in heap.h */
 } ObjectRootVtbl;
 
-/* Vtable of the 0x34-byte object class at g_mapModelsVtbl (MapModels_New; stage.h calls it a model set). */
+/* Vtable of the 0x34-byte object class at g_mapModelsVtbl (MapModels_New; map_models.h calls it a model set). */
 typedef struct ModelSetVtbl {
     u8 pad_00[0x8];
     void (*init)(void *modelSet, s32 param);   /* 0x08 */

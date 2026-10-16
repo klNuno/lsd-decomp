@@ -1,9 +1,9 @@
 #ifndef GAME_ENTITY_H
 #define GAME_ENTITY_H
 
-#include "types.h"
-#include "game/sound.h"
+#include "common.h"
 #include "game/gs.h"
+#include "game/handler_node.h"
 
 /*
  * Characters ("entities"): the per-type record table, the spawn tables that place them,
@@ -102,7 +102,6 @@ typedef struct EntityVtbl {
     void (*checkHandlerStop)(void *self);                     /* 0x180 Entity_CheckHandlerStop */
 } EntityVtbl;
 
-
 typedef struct Entity {
     EntityVtbl *vt;
     u8 pad_04[0xC - 0x4];
@@ -119,7 +118,7 @@ typedef struct Entity {
     s32 state;               /* 0x44 handler state; 1 stops Entity_CheckWake for good */
     s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
-    s32 map;                 /* 0x4C StageMap * (stage.h): third argument of attach, cleared by detach; slot 0x110 ground query */
+    s32 map;                 /* 0x4C StageMap * (stage_map.h): third argument of attach, cleared by detach; slot 0x110 ground query */
     void *clock;             /* 0x50 */
     u8 pad_54[0x58 - 0x54];
     s32 soundBank;           /* 0x58 SoundBank *: the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
@@ -135,12 +134,12 @@ typedef struct Entity {
     s32 animPlaying;         /* 0x90 playAnimation sets it, stopAnimation clears it */
     struct Entity *dreamSys; /* 0x94 the object passed to attach (g_symDreamSys, the DreamSys); range tests measure from it */
     s32 type;                /* 0x98 entity type, index of EntityRecord */
-    HandlerNode handlerNode; /* 0x9C the record's handler (sound.h); its fadeSteps divides slot 0x148's range */
+    HandlerNode handlerNode; /* 0x9C the record's handler (handler_node.h); its fadeSteps divides slot 0x148's range */
     s32 awake;               /* 0xF0 set by wake, cleared by sleep */
     s32 touched;             /* 0xF4 set by setTouched */
     s32 handlerActive;       /* 0xF8 set by startHandler, cleared by stopHandler */
     s32 handlerTicks;        /* 0xFC cleared by startHandler, counted by slot 0x11C */
-    struct Fade *effect;     /* 0x100 a Fade (scene.h) made by Fade_Create: the Grey Man white flash */
+    struct Fade *effect;     /* 0x100 a Fade (fade.h) made by Fade_Create: the Grey Man white flash */
     struct Fade *unk104;
 } Entity;
 

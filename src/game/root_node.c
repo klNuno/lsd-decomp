@@ -1,13 +1,14 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/loader.h"
 #include "game/root_node.h"
+#include "game/gs.h"
+#include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/flat_light.h"
+#include "psyq/libgs.h"
 
 /*
  * RootNode: vtable g_rootNodeVtbl 0x8006EFAC (tag 0x14), 0x54 bytes, RootNode_Create: a scene node
- * holding 3 lights (FlatLight_New) and the ambient color; the default root of a screen (scene.h
+ * holding 3 lights (FlatLight_New) and the ambient color; the default root of a screen (screen.h
  * ScreenEnv) and the base class of StageMap.
  *
  * File boundaries: likely (docs/layout.md)
@@ -38,12 +39,9 @@ typedef struct RootNode {
 
 /* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ObjectVtbl *SceneNode_GetVtbl(void);
-void GsSetAmbient(s32 r, s32 g, s32 b);
 /* not in game/root_node.h: each file that calls it reads the vtable through its own view of the slots */
 RootNodeVtbl *RootNode_GetVtbl(void);
 extern RootNodeVtbl g_rootNodeVtbl;
-
-/* RootNode */
 
 void *RootNode_Create(void) {
     void *root;

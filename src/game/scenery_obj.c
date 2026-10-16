@@ -1,11 +1,14 @@
 #include "common.h"
-#include "game/place.h"
 #include "game/scenery_obj.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/model_object.h"
+#include "game/view.h"
+#include "game/place.h"
 #include "game/actor.h"
 #include "game/scenery_part.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -130,7 +133,6 @@ void *g_sceneryFont;
 View *g_sceneryView;
 SceneryVtbl *Scenery_GetVtbl(void);
 static void Scenery_Build(void *self, s32 map, s32 origin);
-extern s32 rand(void);
 extern u8 g_sceneryKind3Scales[];
 static void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b);
 s32 g_sceneryViewY;

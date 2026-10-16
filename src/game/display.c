@@ -1,7 +1,9 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/display.h"
+#include "game/heap.h"
+#include "psyq/libetc.h"
+#include "psyq/libgpu.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -12,7 +14,7 @@
  * the PSY-Q graphics setup, the frame loop and VRAM transfers. main makes one and the
  * application's start makes it the current display (Display_SetCurrent, read back by Display_GetCurrent).
  * The frame loop (slot 0x68) runs while +0x10 is set: VSync(vsyncMode), the frame callback,
- * then message 2 to every watcher. include/game/scene.h has the slots screens call.
+ * then message 2 to every watcher. include/game/display.h has the slots screens call.
  */
 /* A rect as callers pass it ({u16 x, u16 y, s32 w, s32 h}), read through halfwords */
 typedef struct DisplayRect {
@@ -39,18 +41,8 @@ typedef struct DisplaySizeHalves {
     u16 unk6;
 } DisplaySizeHalves;
 
-void GsSwapDispBuff(void);
-extern int GsGetActiveBuff(void);
 static DisplayVtbl *Display_GetVtbl(void);
 static void Display_ConvertRect(Rect *rect, DisplayRect *src);
-void MoveImage(Rect *rect, s32 x, s32 y);
-s32 LoadImage(Rect *rect, u32 *p);
-s32 DrawSync(s32 mode);
-void StoreImage(Rect *rect, u32 *pixels);
-void GsInitGraph(u16 x, u16 y, u16 intmode, u16 dith, u16 vrammode);
-void GsDefDispBuff(u16 x0, u16 y0, u16 x1, u16 y1);
-s32 VSync(s32 mode);
-void ClearImage(Rect *rect, u8 r, u8 g, u8 b);
 extern DisplayVtbl g_displayVtbl;
 Display *g_currentDisplay;
 

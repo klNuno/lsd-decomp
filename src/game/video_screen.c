@@ -1,13 +1,15 @@
 #include "common.h"
-#include "game/scene.h"
-#include "game/sound.h"
 #include "game/video_screen.h"
 #include "game/heap.h"
+#include "game/display.h"
+#include "game/sound_bank.h"
 #include "game/menu_screen.h"
+#include "game/screen.h"
+#include "game/clock.h"
 #include "game/movie.h"
 
 /*
- * VideoScreen (include/game/scene.h): the MenuScreen that plays one STR video (vtable 0x8006E5F8).
+ * VideoScreen (include/game/video_screen.h): the MenuScreen that plays one STR video (vtable 0x8006E5F8).
  *
  * File boundaries: likely (docs/layout.md)
  */
@@ -32,8 +34,6 @@ typedef struct ScreenMovie {
 static ScreenVtbl *VideoScreen_GetVtbl(void);
 
 extern ScreenVtbl g_videoScreenVtbl[]; /* VideoScreen */
-
-/* VideoScreen */
 
 VideoScreen *VideoScreen_New(MenuDef *menu, char *soundPath, SoundBank *sound, ScreenRect *area) {
     VideoScreen *video;

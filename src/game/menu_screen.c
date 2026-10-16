@@ -1,33 +1,37 @@
 #include "common.h"
-#include "game/scene.h"
-#include "game/loader.h"
-#include "game/sound.h"
 #include "game/menu_screen.h"
+#include "game/gs.h"
 #include "game/heap.h"
+#include "game/scene_node.h"
+#include "game/display.h"
+#include "game/pad.h"
 #include "game/sound_bank.h"
 #include "game/tim.h"
 #include "game/screen.h"
+#include "game/view.h"
 #include "game/box.h"
 #include "game/label.h"
+#include "game/clock.h"
 #include "game/bg.h"
 #include "game/bg_map.h"
 #include "game/bg_cells.h"
+#include "psyq/libc.h"
 
 /*
- * MenuScreen (include/game/scene.h): a Screen with sound bank, picture, fades, timeout and an item
+ * MenuScreen (include/game/menu_screen.h): a Screen with sound bank, picture, fades, timeout and an item
  * menu (vtable 0x8006E730): logos, special-day pictures, the main menu.
  *
  * File boundaries: likely (docs/layout.md)
  */
 
-/* Pad codes: 0x12 + button index when a button is pressed (docs/discoveries.md, pad codes). */
-#define PAD_PRESSED_UP 0x12
-#define PAD_PRESSED_DOWN 0x13
-#define PAD_PRESSED_CROSS 0x17
-#define PAD_PRESSED_CIRCLE 0x19
-#define PAD_PRESSED_START 0x21
+/* Pad codes: PAD_PRESSED (pad.h) + button index when a button is pressed (docs/discoveries.md, pad codes). */
+#define PAD_PRESSED_UP (PAD_PRESSED + 0)
+#define PAD_PRESSED_DOWN (PAD_PRESSED + 1)
+#define PAD_PRESSED_CROSS (PAD_PRESSED + 5)
+#define PAD_PRESSED_CIRCLE (PAD_PRESSED + 7)
+#define PAD_PRESSED_START (PAD_PRESSED + 15)
 
-/* Bg, BgMap and BgCells (src/game/bg.c, src/game/bg_map.c, src/game/bg_cells.c, include/game/loader.h): the slots this unit calls. */
+/* Bg, BgMap and BgCells (src/game/bg.c, src/game/bg_map.c, src/game/bg_cells.c, include/game/bg.h, bg_map.h and bg_cells.h): the slots this unit calls. */
 typedef struct ScreenBgVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();
@@ -41,7 +45,6 @@ typedef struct ScreenBgVtbl {
 typedef struct ScreenBg {
     ScreenBgVtbl *vtbl;
 } ScreenBg;
-extern s32 strlen(u8 *);
 /* not from game/screen.h: other files read this vtable through their own views of the slots */
 ScreenVtbl *Screen_GetVtbl(void);
 extern ScreenVtbl g_menuScreenVtbl[]; /* MenuScreen */
@@ -50,8 +53,6 @@ extern u8 g_menuScreenColors[];         /* MenuScreen_Reset colors: (0, 0, 0), (
 extern s32 g_screenZeroVec[];        /* ScreenVec (0, 0, 0) */
 extern s32 g_optionBoxSize[];        /* option box: (320, 240) */
 extern u8 g_optionBoxColor[];         /* option box: "  @" */
-
-/* MenuScreen */
 
 MenuScreen *MenuScreen_New(MenuDef *menu, char *soundPath, SoundBank *sound) {
     MenuScreen *screen;

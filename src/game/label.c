@@ -1,7 +1,7 @@
 #include "common.h"
-#include "game/scene.h"
 #include "game/label.h"
 #include "game/heap.h"
+#include "game/display.h"
 #include "game/glyph.h"
 
 /*

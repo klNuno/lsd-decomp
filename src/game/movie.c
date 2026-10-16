@@ -1,13 +1,13 @@
 #include "common.h"
-#include "game/loader.h"
-#include "game/scene.h"
 #include "game/movie.h"
 #include "game/heap.h"
 #include "game/display.h"
 #include "game/stream.h"
+#include "psyq/libgpu.h"
+#include "psyq/libpress.h"
 
 /*
- * The MDEC movie player (vtable g_movieVtbl, include/game/loader.h). It owns a CD stream of
+ * The MDEC movie player (vtable g_movieVtbl, include/game/movie.h). It owns a CD stream of
  * src/game/stream.c (Movie +0x60).
  *
  * File boundaries: likely (docs/layout.md)
@@ -32,12 +32,6 @@ typedef struct MovieSliceView {
     s32 streamEnded;           /* 0x48 */
     s32 frameDone;             /* 0x4C */
 } MovieSliceView;
-extern s32 DrawSync(s32 mode);
-extern void DecDCTReset(s32 mode);
-extern void DecDCToutCallback(void (*func)(void));
-extern void DecDCTout(s32 p, s32 size);
-extern void DecDCTin(s32 p, s32 mode);
-extern void DecDCTvlc(s32 p, s32 q);
 static MovieVtbl *Movie_GetVtbl(void);
 static s32 Movie_AllocBuffers();
 static void Movie_FreeBuffers(Movie *movie);
@@ -51,8 +45,6 @@ Movie *g_activeMovie;             /* the movie playing */
 s32 g_movieRestartCounter;                /* calls of Movie_OnStopped since the last restart (starts at 1) */
 s32 g_mdecReady;                /* 1 once DecDCTReset ran */
 extern u8 g_movieClearColor[];
-
-/* ---- Movie: the MDEC player ---- */
 
 s32 Movie_Create(s32 rect, s32 streamArg, s32 skipAlloc) {
     s32 movie;

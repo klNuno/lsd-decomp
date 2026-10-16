@@ -1,11 +1,14 @@
 #include "common.h"
-#include "game/place.h"
 #include "game/scenery.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/handler_node.h"
 #include "game/tim.h"
+#include "game/view.h"
 #include "game/box.h"
+#include "game/place.h"
 #include "game/scenery_obj.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -234,7 +237,6 @@ extern s32 g_ambienceTintPos[];
 extern s32 g_ambienceTintSize[];
 static SpotRecord *SoundSpot_FindInRange(void *pos, void *distance, s32 origin);
 extern s32 g_soundSpotHandlers[];
-extern s32 rand(void);
 extern s8 g_sceneryKind0Counts[];
 static s32 *Scenery_CreateKind0(s32 *out, s32 count, void *origin);
 static s32 *Scenery_CreateKind1(s32 *out, s32 count, void *origin);

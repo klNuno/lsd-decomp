@@ -1,5 +1,4 @@
 #include "common.h"
-#include "game/stage.h"
 #include "game/dream_runner.h"
 #include "game/heap.h"
 #include "game/file_base.h"
@@ -12,10 +11,11 @@
 #include "game/stage_map.h"
 #include "game/dream_view.h"
 #include "game/place.h"
+#include "game/dream_sys.h"
 #include "game/sym.h"
 
 /*
- * DreamRunner (vtable g_dreamRunnerVtbl 0x800865C8, types in game/stage.h): the object built for
+ * DreamRunner (vtable g_dreamRunnerVtbl 0x800865C8, types in game/dream_runner.h): the object built for
  * each dream. It loads the dreamer model and the music bank, creates the place, rebuilds it after a
  * link.
  *

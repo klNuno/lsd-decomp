@@ -1,12 +1,13 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/tix.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/tim_pack.h"
+#include "psyq/libgpu.h"
 
 /*
- * Tix: a TEXx.TIX texture set file and its palette fades (include/game/loader.h).
+ * Tix: a TEXx.TIX texture set file and its palette fades (include/game/tix.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
@@ -31,17 +32,12 @@ typedef struct ClutRows {
     u16 source[0x100];
     u16 pad420[4];
 } ClutRows;
-extern s32 DrawSync(s32 mode);
-void StoreImage(ClutRect *rect, u32 *p);
-s32 LoadImage(ClutRect *rect, u32 *p);
 
 static u32 Tix_GetMaxPartSize(Tix *tix);
 static void Tix_BuildFade(TixFade *fade, s32 palette);
 
 extern TixVtbl g_tixVtbl;
 s16 g_clutFadeShift;                /* 3: a palette fade has 1 << this rows */
-
-/* ---- TIX texture set ---- */
 
 s32 Tix_Create(s32 path) {
     s32 tix;

@@ -1,12 +1,13 @@
 #include "common.h"
 #include "gte.h"
 #include "game/heap.h"
+#include "psyq/libapi.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: guess (docs/layout.md)
  */
 
-extern void free(void *);
 Heap *g_currentHeap; /* the heap Heap_Init, Heap_Alloc and Heap_Free use; their heap argument only when NULL */
 static void Heap_Init(Heap *fallbackHeap);
 extern ObjectVtbl g_objectVtbl[]; /* the root class vtable */
@@ -15,8 +16,6 @@ static s32 List_Push();
 static void List_Remove();
 static void List_FreeAll(ListNode **head);
 static void Heap_SetBusy(s32 busy);
-extern void *malloc(u32);
-extern s32 printf(const char *fmt, ...);
 
 Heap *Heap_Create(u32 size) {
     Heap *heap;

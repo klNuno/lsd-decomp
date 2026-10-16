@@ -1,12 +1,12 @@
 #include "common.h"
-#include "game/entity.h"
-#include "game/sound.h"
-#include "game/scene.h"
 #include "game/model.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
+#include "game/sound_bank.h"
 #include "game/mom.h"
 #include "game/actor.h"
+#include "game/entity.h"
 
 /*
  * Model: the model base class every entity derives from (vtable g_modelVtbl 0x8008A6C4, 0x98
@@ -40,7 +40,7 @@ typedef struct ModelAnimSet {
 /* The object at +0x2C of a model file: frame command 2 asks its slot 0x80 for a texture. */
 typedef struct ModelTexturesVtbl {
     u8 pad_00[0x80];
-    s32 (*getModel)(void *self, s32 index); /* 0x80 Tmd_GetModel (loader.h TmdVtbl) */
+    s32 (*getModel)(void *self, s32 index); /* 0x80 Tmd_GetModel (tmd.h TmdVtbl) */
 } ModelTexturesVtbl;
 
 typedef struct ModelTextures {
@@ -52,7 +52,7 @@ typedef struct ModelFileVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(void *self);            /* 0x04 */
     u8 pad_08[0x64 - 0x08];
-    void (*onLoaded)(void *self, void *arg);  /* 0x64 Mom_OnLoaded (loader.h FileVtbl); Behavior_Type74 passes a 4-byte word */
+    void (*onLoaded)(void *self, void *arg);  /* 0x64 Mom_OnLoaded (file_base.h FileVtbl); Behavior_Type74 passes a 4-byte word */
     u8 pad_68[0x80 - 0x68];
     s32 (*getPartIds)();                     /* 0x80 (self, ids, &current): fills the part ids, returns their count */
     s32 *(*readCommand)();                   /* 0x84 (self, command, &part, &type, &flags, &size): a frame command's data */

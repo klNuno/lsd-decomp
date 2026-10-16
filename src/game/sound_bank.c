@@ -1,11 +1,12 @@
 #include "common.h"
-#include "game/sound.h"
 #include "game/sound_bank.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/spu.h"
 #include "game/seq_timer.h"
 #include "game/bgm.h"
+#include "psyq/libsnd.h"
+#include "psyq/libc.h"
 
 /*
  * Sound: the PSY-Q sound bank (VAB) that a model holds at +0x58 and its tone table (vtable
@@ -24,7 +25,6 @@ typedef struct ObjectRootVtbl {
     void (*unk_64)(void *object);   /* 0x64, not named in heap.h */
 } ObjectRootVtbl;
 
-/* One tone of a program: 0x20 bytes, the layout SsUtGetVagAtr fills (center and fine are read here). */
 /* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
 typedef struct SoundBankVab {
     SoundBankVtbl *vt;
@@ -61,24 +61,6 @@ s32 g_soundTickRate;
 extern s8 g_vabHeaderExt[];
 extern s8 g_vabBodyExt[];
 
-/* Sound services of PSY-Q and the SPU helpers. */
-void SsUtKeyOffV(s16 voice);
-void SsUtAllKeyOff(s32 arg0);
-void SsSetMute(s16 mute);
-s16 SsVabTransCompleted(s16 immediateFlag);
-void SsVabClose(s16 vabId);
-s16 SsVabOpenHead(void *vabBuffer, s16 vabId);
-s16 SsVabTransBody(void *vabBuffer, s16 vabId);
-s16 SsUtGetVabHdr(s16 vabId, void *vabhdr);
-s16 SsUtGetProgAtr(s16 vabId, s16 progNum, u8 *progatr);
-s16 SsUtGetVagAtr(s16 vabId, s16 progNum, s16 toneNum, u8 *vagatr);
-void SsSetMVol(s16 voll, s16 volr);
-s16 SsUtKeyOn(s16 vabId, s16 prog, s16 tone, s16 note, s16 fine, s16 voll, s16 volr);
-s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
-void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
-
-s32 strlen(u8 *s);
-s8 *strcpy(s8 *dst, s8 *src);
 
 void *Sound_CreateBank(s32 initParam) {
     void *bank;

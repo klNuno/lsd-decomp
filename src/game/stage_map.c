@@ -1,7 +1,6 @@
 #include "common.h"
-#include "game/stage.h"
-#include "game/scene.h"
 #include "game/stage_map.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/display.h"
@@ -9,10 +8,13 @@
 #include "game/root_node.h"
 #include "game/tmd.h"
 #include "game/map_chunk.h"
+#include "game/stage.h"
 #include "game/map_tile.h"
+#include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
- * StageMap (vtable g_stageMapVtbl 0x800866E8, types in game/stage.h): the map that keeps the 7
+ * StageMap (vtable g_stageMapVtbl 0x800866E8, types in game/stage_map.h): the map that keeps the 7
  * chunks around the dreamer loaded and shows the tiles in view.
  *
  * File boundaries: likely (docs/layout.md)
@@ -71,9 +73,6 @@ static StageMapVtbl *StageMap_GetVtbl(void);
 SceneNodeVtbl *SceneNode_GetVtbl(void);
 /* the vtable of root_node.c through this file's view of its slots, so not from game/root_node.h */
 SceneNodeVtbl *RootNode_GetVtbl(void);
-void GsLinkObject4(s32 objp, void *packet, s32 id);
-void RotMatrix(void *, void *);
-void ApplyMatrixLV(s32 *, void *, void *);
 static s32 Stage_PlaceToWorld(Vec3 *pos, Vec3 *chunkCenter, StageGrid *grid, Vec3 *origin, StagePlace *place);
 static s32 StageMap_CountLoading(StageMap *map);
 static void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message);

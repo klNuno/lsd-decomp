@@ -1,7 +1,8 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/screen_sprite.h"
+#include "game/gs.h"
+#include "game/heap.h"
+#include "game/display.h"
 #include "game/sprite_node.h"
 
 /*
@@ -77,8 +78,6 @@ typedef struct ScreenSprite {
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
-
-/* ScreenSprite */
 
 void *ScreenSprite_Create(s32 image, SpriteRect *rect, s32 arg2) {
     void *sprite;

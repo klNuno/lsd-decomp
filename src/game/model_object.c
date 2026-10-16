@@ -1,7 +1,8 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/model_object.h"
+#include "game/heap.h"
+#include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -13,7 +14,6 @@ typedef struct ModelObjectMapView {
     u32 *tmdObjectBase;
 } ModelObjectMapView;
 
-extern void GsMapModelingData(u32 *p);
 extern u8 g_modelBox[];
 static void ModelObject_ComputeBox(void *modelObject, u8 *out);
 /* A CLUT offset in VRAM pixels, added to a primitive's CLUT by ModelObject_OffsetClut */
@@ -102,7 +102,7 @@ typedef struct ModelVertex {
     s16 pad;
 } ModelVertex;
 
-/* One TMD object table entry, 0x1C bytes (the same layout as TmdObjectEntry in loader.h) */
+/* One TMD object table entry, 0x1C bytes (the same layout as TmdObjectEntry in tmd.h) */
 typedef struct ModelEntry {
     ModelVertex *vertices;  /* +0x00 */
     s32 vertexCount;        /* +0x04, read by ModelObject_ComputeBox */
@@ -145,9 +145,6 @@ static void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim,
 typedef struct HitLongVec { s32 x; s32 y; s32 z; s32 pad; } HitLongVec;
 typedef struct HitShortVec { s16 x; s16 y; s16 z; s16 pad; } HitShortVec;
 typedef struct HitFraction { s32 num; s32 den; } HitFraction;
-void OuterProduct0(HitLongVec *a, HitLongVec *b, HitLongVec *out);
-void Square0(HitLongVec *in, HitLongVec *out);
-s32 SquareRoot0(s32 a);
 #define ABS(x) ((x) < 0 ? ~(x) + 1 : (x))
 #define FIX_DIV(n, d) ((((n) / (d)) != 0 ? ((n) / (d)) << 16 : ((n) * (d)) & 0x80000000) | (ABS((n) % (d)) << 16) / ABS(d))
 

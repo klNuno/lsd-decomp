@@ -7,6 +7,7 @@
 #include "game/text.h"
 #include "game/glyph.h"
 #include "game/screen_sprite.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -21,7 +22,7 @@ typedef struct CommentWidgetVtbl CommentWidgetVtbl;
 
 struct CommentWidgetVtbl {
     s32 unk_00;
-    void *(*delete_)(CommentWidget *);       /* 0x04 same slot as scene.h WidgetVtbl delete_ */
+    void *(*delete_)(CommentWidget *);       /* 0x04 same slot as screen.h WidgetVtbl delete_ */
     u8 pad_08[0x4C - 0x08];
     void (*attach)(CommentWidget *, s32, void *); /* 0x4C SceneNode_Attach and its overrides (ScreenSprite_Attach, Label_Show): parent, position */
     u8 pad_50[0x78 - 0x50];
@@ -29,8 +30,8 @@ struct CommentWidgetVtbl {
     u8 pad_7C[0x80 - 0x7C];
     void (*unk_80)(CommentWidget *, s32, s32, s32);  /* 0x80 called on the box object at CommentObject 0x3C */
     u8 pad_84[0xB8 - 0x84];
-    void (*setColor)(CommentWidget *, void *);   /* 0xB8 same slot as scene.h setColor, called with g_glyphColor */
-    void (*setPosition)(CommentWidget *, void *);  /* 0xBC same slot as scene.h setPosition */
+    void (*setColor)(CommentWidget *, void *);   /* 0xB8 same slot as screen.h setColor, called with g_glyphColor */
+    void (*setPosition)(CommentWidget *, void *);  /* 0xBC same slot as screen.h setPosition */
     u8 pad_C0[0xC4 - 0xC0];
     void (*setChar)(CommentWidget *, s32, s32);  /* 0xC4 Label_SetChar: one glyph of g_alphabet at the caret */
 };
@@ -96,12 +97,10 @@ struct CommentObject {
 };
 
 static CommentVtbl *CommentObject_GetVtbl(void);
-s8 *strcpy(s8 *dst, u8 *src);
 s32 g_commentOriginX;
 s32 g_commentOriginY;
 u8 *g_alphabet;
 static void CommentObject_ClearSenders(CommentObject *obj);
-extern s32 strlen(u8 *);
 extern u8 g_commentVtbl[];
 extern s8 g_widgetPrefix[];
 extern s8 g_widgetSuffix[];

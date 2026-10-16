@@ -1,5 +1,4 @@
 #include "common.h"
-#include "game/scene.h"
 #include "game/menu.h"
 #include "game/heap.h"
 #include "game/tim.h"
@@ -7,10 +6,13 @@
 #include "game/label.h"
 #include "game/text.h"
 #include "game/card.h"
+#include "game/dream_sys.h"
+#include "psyq/libapi.h"
+#include "psyq/libc.h"
 
 /*
  * The main menu (class Menu, vtable g_menuVtbl 0x80086B60). It drives the memory card object of
- * src/game/card.c. Types and states: include/game/menu.h.
+ * src/game/card.c. Types and states: include/game/menu.h and include/game/card.h.
  *
  * File boundaries: likely (docs/layout.md)
  */
@@ -32,11 +34,7 @@ s32 g_cardFileName;
 s32 g_cardTitle;
 extern MenuFillRect g_menuFillRects[];
 extern s32 D_8008A9B4;
-s32 open(char *name, s32 flags);
-s32 close(s32 fd);
-s32 strcpy(s32 dst, s32 src);
 s32 g_cardBlankComment;
-extern s32 strlen(u8 *);
 extern u8 g_cardFileSuffixes[];
 void *g_cardFilePrefix;
 static MenuVtbl *Menu_GetVtbl(void);
@@ -132,7 +130,7 @@ void Menu_End(Menu *menu) {
 }
 
 /*
- * Menu slot 0x60 (setState, states SCREEN_* of scene.h): on 5 (active) reloads the save title
+ * Menu slot 0x60 (setState, states SCREEN_* of screen.h): on 5 (active) reloads the save title
  * and SHAKE; on 10 (START pressed) closes the option list, selects START and confirms it.
  */
 void Menu_SetState(Menu *menu, s32 state) {

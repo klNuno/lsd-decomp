@@ -1,15 +1,21 @@
 #include "common.h"
-#include "game/menu.h"
 #include "game/card.h"
 #include "game/heap.h"
+#include "game/file_base.h"
+#include "game/sound_bank.h"
 #include "game/tim.h"
+#include "game/text.h"
 #include "game/screen_sprite.h"
+#include "game/menu.h"
 #include "game/comment_object.h"
 #include "game/string_list.h"
+#include "psyq/libapi.h"
+#include "psyq/libcard.h"
+#include "psyq/libc.h"
 
 /*
  * The memory card object the main menu drives (class Card, vtable g_cardVtbl 0x80086DC4). Types and
- * states: include/game/menu.h.
+ * states: include/game/card.h.
  *
  * File boundaries: likely (docs/layout.md)
  */
@@ -22,62 +28,37 @@ typedef struct CardIconFrame {
     u8 b[0x80];
 } CardIconFrame;
 
-extern s32 EnableEvent();
 static s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical);
 static s32 Card_WaitAnyEvent(s32 *events, s32 count);
-extern s32 DisableEvent();
-extern s32 TestEvent();
-extern s32 CloseEvent();
 static void Card_DisableEvents(Card *card);
 static s32 Card_GetInfo();
 static s32 Card_ReadDirectory();
 static CardVtbl *Card_GetVtbl(void);
-extern s32 format(char *);
 extern char g_cardDevice1[];
 extern char g_cardDevice0[];
 static s32 Card_HasSpaceOnce();
 extern char g_cardTempName[];
 static char *Card_MakePath(char *buf, s32 port, char *name);
-s32 open(char *name, s32 flags);
-s32 close(s32 fd);
-s32 delete(char *name);
 static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size);
 static s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name);
-extern s32 EnterCriticalSection();
-extern s32 ExitCriticalSection();
-extern s32 OpenEvent(u32, s32, s32, s32);
 extern s32 g_cardEventSpecs[];
-s32 read(s32 fd, s32 buf, s32 n);
-s32 strcpy(s32 dst, s32 src);
-s8 *strcat(s8 *dst, s8 *src);
 static s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted);
 static s32 Card_CheckReady();
 static void Card_FreeFileList(Card *card);
 static void Card_AllocFileList(Card *card);
 static void Card_TrimFileList(Card *card);
-s32 lseek(s32 fd, s32 offset, s32 whence);
 static void Card_ClearLinks(Card *card);
 static void Card_EnableEvents(Card *card);
-void InitCARD(s32);
-void StartCARD(void);
-void _bu_init(void);
 s32 g_cardCount;
-s32 _card_info(s32);
-void _card_clear(s32);
 static void Card_ClearEvents(Card *card);
 static s32 Card_WaitEvent(Card *card);
-extern s32 _card_load(s32);
 extern s8 *g_cardMessageNames[];
 extern s32 D_80086EC4[];
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
 extern u8 g_cardVtbl[];
-void *memcpy(void *dst, const void *src, u32 n);
 SjisChar *g_titleLetters;
-s32 atoi(u8 *s);
-s32 write(s32 fd, void *buf, s32 n);
-s32 printf(char *fmt, ...);
 static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
 
 /* Allocates a Card (0x84 bytes) and runs Card_Init. */

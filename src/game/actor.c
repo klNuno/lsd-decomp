@@ -1,10 +1,11 @@
 #include "common.h"
-#include "game/dreamsys.h"
-#include "game/place.h"
 #include "game/actor.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/model_object.h"
+#include "game/stage.h"
+#include "game/stage_map.h"
 
 /*
  * File boundaries: likely (docs/layout.md)

@@ -1,19 +1,16 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/tod_pack.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/tod.h"
 
 /*
- * TodPack: a list of TOD files, the motions of a MOM (include/game/loader.h).
+ * TodPack: a list of TOD files, the motions of a MOM (include/game/tod_pack.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
 extern TodVtbl g_todPackVtbl;
-
-/* ---- TodPack: a list of TOD files ---- */
 
 s32 TodPack_Create(s32 source) {
     s32 todPack;

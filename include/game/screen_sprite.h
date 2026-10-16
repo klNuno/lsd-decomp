@@ -2,7 +2,7 @@
 #define GAME_SCREEN_SPRITE_H
 
 #include "common.h"
-#include "game/scene.h"
+#include "game/display.h"
 
 /* Functions of src/game/screen_sprite.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/screen_sprite.c */

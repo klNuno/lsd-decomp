@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/heap.h"
 #include "game/flat_light.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -29,8 +30,6 @@ typedef struct FlatLightVtbl {
     void (*setVector)();  /* 0x48 optionally stores the direction, then sends the light */
 } FlatLightVtbl;
 
-/* The third argument is the RGB bytes (slot 0x44) or the xyz words (slot 0x48), whichever the caller passes. */
-void GsSetFlatLight(s32 lightId, void *vector, void *data);
 static FlatLightVtbl *FlatLight_GetVtbl(void);
 extern FlatLightVtbl g_flatLightVtbl;
 

@@ -2,7 +2,7 @@
 #define GAME_SYM_H
 
 #include "common.h"
-#include "game/dreamsys.h"
+#include "game/dream_sys.h"
 
 /* Functions of src/game/sym.c that other files call or reference (docs/naming.md, Prototypes) */
 void Sym_LoadModels(void);

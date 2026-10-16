@@ -1,11 +1,11 @@
 #include "common.h"
-#include "game/dreamsys.h"
-#include "game/scene.h"
-#include "game/sound.h"
 #include "game/graph.h"
 #include "game/heap.h"
+#include "game/display.h"
 #include "game/menu_screen.h"
+#include "game/screen.h"
 #include "game/box.h"
+#include "game/dream_sys.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -13,7 +13,7 @@
 
 /*
  * The graph screen (vtable g_graphVtbl, class word 0x2F130, 0x244 bytes, made by Graph_New): a
- * MenuScreen (scene.h) whose menu slots draw the mood chart instead of items, one 10 x 10 box per
+ * MenuScreen (menu_screen.h) whose menu slots draw the mood chart instead of items, one 10 x 10 box per
  * day for the last 100 days of the save block, and that spots the secret reel (docs/discoveries.md,
  * the secret video reel).
  */
@@ -75,7 +75,7 @@ typedef struct ReelPoint {
     s16 v;
 } ReelPoint;
 
-/* The save block as Graph_CheckReel reads it: SaveBlock (dreamsys.h) with the points as s16 and a signed reelSeen. */
+/* The save block as Graph_CheckReel reads it: SaveBlock (dream_sys.h) with the points as s16 and a signed reelSeen. */
 typedef struct ReelSave {
     u8 pad_00[4];
     s32 year;               /* 0x004 */

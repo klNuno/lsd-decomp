@@ -1,9 +1,11 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/entity.h"
-#include "game/scene.h"
 #include "game/scene_node.h"
+#include "game/gs.h"
+#include "game/heap.h"
 #include "game/model_object.h"
+#include "game/entity.h"
+#include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
  * Scene nodes: the class of vtable g_sceneNodeVtbl (SceneNode_GetVtbl, tag 4, 0x44 bytes, made by
@@ -19,7 +21,6 @@
  * File boundaries: proven (docs/layout.md)
  */
 
-/* A PSY-Q SVECTOR: three shorts and a pad. */
 /* Three shorts: a box corner, a point of a ray. */
 typedef struct SVec3 {
     s16 x;
@@ -52,13 +53,6 @@ static s32 ModelBox_ClipSegment(SVec3 *out, NodeBox *box, SVec3 *start, SVec3 *e
 static void ModelBox_FindExit(SVec3 *out, NodeBox *box, SVec3 *inside, SVec3 *outside);
 static void SceneNode_SubtractVec(Vec3 *out, SVec3 *from, SVec3 *to);
 static void Render_TransformVectors(SVec3 *dst, SVec3 *src, s32 count, void *matrix);
-void GsInitCoordinate2(Coord2 *super, Coord2 *coord);
-extern void GsLinkObject4(u32 *src, void *dst, s32 id);
-void RotMatrix(SVector *r, void *m);
-void MulMatrix2(s32 *m0, s32 *m1);
-void ApplyMatrixSV(void *, SVec3 *, SVec3 *);
-void ApplyMatrixLV(s32 *, void *, void *);
-s32 ratan2(s32, s32);
 
 extern s32 g_sceneNodeVtbl[];
 extern s32 g_nodeZeroRotation[];

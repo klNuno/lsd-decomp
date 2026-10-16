@@ -2,6 +2,7 @@
 #include "gte.h"
 #include "game/gs.h"
 #include "game/render.h"
+#include "psyq/libgte.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -207,14 +208,6 @@ typedef struct ClipRefs { ClipVertex *v[4]; } ClipRefs;
 
 extern u8 g_clipTriWork[];
 extern u8 g_clipQuadWork[];
-extern void *RCpolyF3(void *, void *);
-extern void *RCpolyF4(void *, void *);
-extern void *RCpolyFT3(void *, void *);
-extern void *RCpolyFT4(void *, void *);
-extern void *RCpolyG3(void *, void *);
-extern void *RCpolyG4(void *, void *);
-extern void *RCpolyGT3(void *, void *);
-extern void *RCpolyGT4(void *, void *);
 extern s32 g_renderDivision;
 s32 g_clipScreenWidth; /* 320 in .sdata, never written */
 s32 g_clipScreenHeight; /* 240 in .sdata, never written */

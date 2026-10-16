@@ -1,25 +1,21 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/loader.h"
 #include "game/stream.h"
+#include "game/heap.h"
 #include "game/file_base.h"
+#include "psyq/libcd.h"
+#include "psyq/libspu.h"
+#include "psyq/libc.h"
 
 /*
  * The CD stream class (vtable g_streamVtbl, 0x5C bytes, created by Stream_New): plays one STR
  * file through the PSY-Q streaming library (StSetRing, StSetStream, CdRead2, StGetNext). The
- * movie player of src/game/movie.c owns one (Movie +0x60); Stream and StreamVtbl are in include/game/loader.h. Only one
+ * movie player of src/game/movie.c owns one (Movie +0x60); Stream and StreamVtbl are in include/game/stream.h. Only one
  * stream holds the drive at a time, g_activeStream, set by slot 0x44 and cleared by slot 0x48;
  * every other slot does nothing for another stream.
  *
  * File boundaries: proven (docs/layout.md)
  */
 
-void StFreeRing(void *ring);
-void StUnSetRing(void);
-extern void StClearRing(void);
-extern s32 CdSync(s32, u8 *);
-extern void StSetRing(s32, u32);
-void SpuSetCommonAttr(void *attr);
 
 /* The first 0x24 bytes of a PSY-Q SpuCommonAttr: master and CD audio volumes */
 typedef struct StreamSpuAttr {
@@ -43,20 +39,11 @@ typedef struct StreamSectorHeader {
 } StreamSectorHeader;
 
 Stream *g_activeStream;         /* the stream that holds the drive */
-extern void CdSyncCallback(void *cb);
-s32 CdControl(s32 com, u8 *param, s32 result);
 static StreamVtbl *Stream_GetVtbl(void);
-s32 CdControlF(s32 com, u8 *param);
 static void Stream_OnCdSync(u8 status);
-s32 CdRead2(s32 mode);
-void StSetStream(s32 a, s32 b, s32 c, s32 d, s32 e);
-s8 *strcpy(s8 *dst, s8 *src);
-s8 *strcat(s8 *dst, s8 *src);
-s32 CdSearchFile(void *, s8 *);
 static s32 Stream_EnableCdAudio();
 s32 g_streamCdAudioOn;             /* 1 once Stream_EnableCdAudio turned the CD audio on */
 extern s8 g_streamVersionSuffix[];     /* ";1" */
-s32 StGetNext(void **frame, StreamSectorHeader **header);
 static void Stream_NotifyFrame();
 static void Stream_NotifyEnd();
 extern StreamVtbl g_streamVtbl;

@@ -1,8 +1,9 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/sprite_node.h"
+#include "game/gs.h"
+#include "game/heap.h"
 #include "game/scene_node.h"
+#include "psyq/libgpu.h"
 
 /*
  * SpriteNode: vtable g_spriteNodeVtbl 0x8006EE1C (tag 0x44), 0xA0 bytes, SpriteNode_Create. A scene
@@ -81,7 +82,7 @@ typedef struct SpriteNodeVtbl {
     void (*attach)(void *, s32, void *);               /* 0x4C SceneNode_Attach (node, parent, Vec3 position) */
 } SpriteNodeVtbl;
 
-/* The first 0x18 bytes are the scene node's (scene.h SceneNode). */
+/* The first 0x18 bytes are the scene node's (scene_node.h SceneNode). */
 typedef struct SpriteNode {
     SpriteNodeVtbl *vtbl;
     ListNode *watched;
@@ -98,13 +99,10 @@ typedef struct SpriteNode {
 
 /* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
 ObjectVtbl *SceneNode_GetVtbl(void);
-u16 GetTPage(s32 tp, s32 abr, s16 x, s16 y);
 static void SpriteNode_FillSprite();
 /* not in game/sprite_node.h: each file that calls it reads the vtable through its own view of the slots */
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
-
-/* SpriteNode */
 
 static void *SpriteNode_Create(s32 image, s32 blendRate, s32 rect, s32 arg3, s32 arg4) {
     void *node;

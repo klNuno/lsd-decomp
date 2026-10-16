@@ -1,18 +1,15 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/tod.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 
 /*
- * Tod: a TOD animation file (include/game/loader.h).
+ * Tod: a TOD animation file (include/game/tod.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
 extern TodVtbl g_todVtbl;
-
-/* ---- TOD animation ---- */
 
 s32 Tod_Create(s32 source) {
     s32 tod;

@@ -1,7 +1,7 @@
 #include "common.h"
-#include "game/scene.h"
 #include "game/fade.h"
 #include "game/heap.h"
+#include "game/display.h"
 #include "game/box.h"
 
 /*
@@ -29,8 +29,6 @@ typedef struct BoxVtbl {
     u8 pad_C0[0xCC - 0xC0];
     void (*setMask)(void *box, s32 bits);     /* 0xCC */
 } BoxVtbl;
-
-/* Fade, Label: include/game/scene.h */
 
 extern u8 g_fadePalette[][3];
 extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */

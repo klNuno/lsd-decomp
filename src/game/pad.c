@@ -1,29 +1,20 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/pad.h"
+#include "game/heap.h"
+#include "psyq/libetc.h"
 
 /*
  * The pad (vtable g_padVtbl, 0x20 bytes, made by Pad_New; main makes one for the scene):
  * it reads PadRead once per frame and sends one event code per button through Object_Notify
- * (sender type 2 of include/game/scene.h). Code = state + button index, the button order is the
+ * (sender type 2 of include/game/screen.h). Code = state + button index, the button order is the
  * mask table g_padButtonMasks (docs/discoveries.md, the erase combo: 0 UP ... 15 START).
  *
  * File boundaries: proven (docs/layout.md)
  */
 
-/* The states of an event code. */
-#define PAD_HELD 2
-#define PAD_PRESSED 0x12  /* down this frame */
-#define PAD_RELEASED 0x22 /* up this frame */
-
-/* Every slot of g_padVtbl past Object's (0x00 to 0x3C). */
-extern s32 PadRead(u16);
-void PadStop(void);
 s32 g_padCount;
 static PadVtbl *Pad_GetVtbl(void);
 extern s32 g_padButtonMasks[16];
-void PadInit(s32);
 extern PadVtbl g_padVtbl;
 
 s32 Pad_New(s32 padInitMode, s32 padId) {

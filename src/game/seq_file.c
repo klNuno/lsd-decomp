@@ -1,18 +1,18 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/loader.h"
 #include "game/seq_file.h"
+#include "game/heap.h"
 #include "game/file_base.h"
+#include "psyq/libc.h"
 
 /*
  * SeqFile: vtable g_seqFileVtbl 0x8006EED8 (tag 0xB03), 0x30 bytes, SeqFile_Create: a file class
- * (loader.h) loaded with loadAsync; the music player (src/game/bgm.c) hands its data to SsSeqOpen
+ * (file_base.h) loaded with loadAsync; the music player (src/game/bgm.c) hands its data to SsSeqOpen
  * once +0x2C is set.
  *
  * File boundaries: likely (docs/layout.md)
  */
 
-/* A file object (loader.h) whose data is a SEQ file. */
+/* A file object (file_base.h) whose data is a SEQ file. */
 typedef struct SeqFile {
     FileVtbl *vtbl;
     ListNode *watched;
@@ -24,10 +24,7 @@ typedef struct SeqFile {
     s32 loaded;             /* 0x2C set by SeqFile_OnLoaded */
 } SeqFile;
 
-s8 *strcpy(s8 *dst, s8 *src);
 extern FileVtbl g_seqFileVtbl;
-
-/* SeqFile */
 
 s32 SeqFile_Create(s32 path) {
     void *file;

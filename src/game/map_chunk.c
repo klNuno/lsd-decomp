@@ -1,6 +1,4 @@
 #include "common.h"
-#include "game/loader.h"
-#include "game/stage.h"
 #include "game/map_chunk.h"
 #include "game/heap.h"
 #include "game/file_base.h"
@@ -9,7 +7,7 @@
  * The map chunk file class (vtable g_mapChunkVtbl, 0x3C bytes, created by MapChunk_New for each
  * StageMap slot): a file object of src/game/file_base.c with a 0xB358-byte buffer that receives a
  * stage's STGxx\Mxxx.LBD chunk file (slot 0x78), then, when the header says so, a second read of
- * the chunk's entity part into its own heap block (slot 0x80). include/game/stage.h holds the
+ * the chunk's entity part into its own heap block (slot 0x80). include/game/map_chunk.h holds the
  * part of it StageMap reads (MapChunk); MapChunk below is the whole object.
  *
  * File boundaries: likely (docs/layout.md)

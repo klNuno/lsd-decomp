@@ -2,7 +2,7 @@
 #define GAME_BOX_H
 
 #include "common.h"
-#include "game/scene.h"
+#include "game/display.h"
 
 /* Functions of src/game/box.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/box.c */

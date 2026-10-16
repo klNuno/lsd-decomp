@@ -1,11 +1,11 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/bg.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 
 /*
- * Bg: a PSY-Q GsBG background object (include/game/loader.h).
+ * Bg: a PSY-Q GsBG background object (include/game/bg.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
@@ -30,8 +30,6 @@ ObjectVtbl *SceneNode_GetVtbl(void);
 static BgVtbl *Bg_GetVtbl(void);
 extern BgVtbl g_bgVtbl;
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
-
-/* ---- Bg: GsBG background ---- */
 
 s32 Bg_Create(s32 map, s32 mode) {
     void *bg = (void *)Heap_Alloc(0x68);

@@ -196,12 +196,17 @@ Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
    `make split` twice: splat writes the `.s` only once the C file names it.
 5. GCC 2.6.3 carries reload choices from one function to the next (`Render_ProjectTri` then
    `Render_ProjectQuad` in `render.c`): keep functions in address order inside a file.
-6. **A file's header, `include/game/<file>.h`, declares what other files call or reference**: its
-   functions in the form of their definition, parameter names included, and the non-gp globals other
-   files read, with `extern`. heap.c, entity.c, menu.c, place.c, scene.c and stage.c add theirs at
-   the end of the type header of the same name. A file includes the header of every file it calls
-   and keeps no local copy; only Sony functions, gp globals (rule 1), forward declarations of its own
-   helpers and the exceptions listed in [naming.md](naming.md#prototypes) stay in the file. The
+6. **A file's header, `include/game/<file>.h`, holds its class and declares what other files call or
+   reference**: the structs, vtable and constants of the class the file defines, then its functions
+   in the form of their definition, parameter names included, and the non-gp globals other files
+   read, with `extern`. A class header includes its base class's header (heap.h for Object, then
+   scene_node.h, screen.h, task.h or file_base.h, then the subclasses). A small type several classes
+   share sits with the class that uses it most (ScreenPoint, ScreenRect and ScreenSize in display.h,
+   SjisChar in text.h, StagePlace in stage.h); gs.h is the one shared header, PSY-Q-like types. Sony
+   functions are declared in `include/psyq/<lib>.h`. A file includes its own header first, then the
+   header of every file it uses, and keeps no local copy; only gp globals (rule 1), forward
+   declarations of its own helpers and the exceptions listed in [naming.md](naming.md#prototypes)
+   stay in the file. The
    Makefile does not track headers: after editing one, `rm -rf build/src && make check` (not
    `make clean`, which also deletes the unit_check references in `build/ref`), then
    `tools/unit_check.sh` on every file that includes it.

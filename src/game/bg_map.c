@@ -1,18 +1,16 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/bg_map.h"
 #include "game/heap.h"
 #include "game/file_base.h"
+#include "game/bg_cells.h"
 
 /*
- * BgMap: the GsMAP of a Bg (include/game/loader.h).
+ * BgMap: the GsMAP of a Bg (include/game/bg_map.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
 extern BgMapVtbl g_bgMapVtbl;
-
-/* ---- BgMap: GsMAP over a BgCells ---- */
 
 s32 BgMap_Create(s32 skipBuild, s32 cells) {
     s32 bgMap;

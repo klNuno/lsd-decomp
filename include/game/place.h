@@ -2,9 +2,11 @@
 #define GAME_PLACE_H
 
 #include "common.h"
-#include "game/dreamsys.h"
-#include "game/stage.h"
-#include "game/scene.h"
+#include "game/view.h"
+#include "game/task.h"
+#include "game/stage_map.h"
+#include "game/scenery.h"
+#include "game/dream_sys.h"
 
 /*
  * Place: the object that runs one stage while the dreamer is in it (the "dream stage class"
@@ -15,30 +17,6 @@
  * The base class is the one Task_GetVtbl returns (src/game/task.c).
  * Slots are left unprototyped: callers pass different argument types.
  */
-
-/*
- * The ambience record a place gets from Scenery_Begin (g_ambience, or a fixed one given to
- * load): Ambience_Fill fills +0xC to +0x1C from a 4-byte family record {unk0, unk1, unk2, unk3}
- * (work/hunt6/C-notes-note.md). +0x0 to +0x8 are static data handed to the map.
- */
-/* A 4-byte ambience record: per stage (g_stageAmbience) or from a family table (g_ambienceFamilies, Ambience_PickFamily). */
-typedef struct AmbienceRecord {
-    s8 mode;      /* 0x0 Ambience.mode */
-    s8 depth;     /* 0x1 index of g_ambienceDepths; 4 and up also make the extra object of Ambience_CreateTint */
-    s8 colorB;    /* 0x2 RGB triple index (0x12 picks the second band palette) */
-    s8 colorA;    /* 0x3 RGB triple index */
-} AmbienceRecord;
-
-typedef struct Ambience {
-    s32 lightVectors;     /* 0x00 map slot 0xC4, second argument */
-    s32 lightColors;     /* 0x04 map slot 0xC4, third argument */
-    s32 ambient;     /* 0x08 map slot 0xBC */
-    u8 *colorA;   /* 0x0C RGB triple of g_ambienceColors, record byte 3 */
-    s32 unk10;
-    s32 mode;     /* 0x14 record byte 0; picks colorA or colorB for the view (1 and 2 tested) */
-    u8 *colorB;   /* 0x18 RGB triple of g_ambienceColors, record byte 2 */
-    s32 depth;    /* 0x1C g_ambienceDepths[record byte 1]: 0x6800, 0x5000, 0x3800, 0x2000, 0x1000 or 0x800 */
-} Ambience;
 
 /* Objects the pause window suspends (slots 0x4C/0x50, 0x88/0x8C) and the "Pause" text. */
 typedef struct PlaceObjVtbl {
@@ -132,8 +110,8 @@ typedef struct Place {
     u8 pad_04[0x0C - 0x04];
     PlaceObj **env;      /* 0x0C */
     PlaceObj *clock;      /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
-    StageMap *map;        /* 0x14 the stage map (stage.h), also g_symMap (Sym_InitStage) and g_sceneryMap */
-    View *view;           /* 0x18 the screen's view (scene.h Screen.view): its overlay is the place fader */
+    StageMap *map;        /* 0x14 the stage map (stage_map.h), also g_symMap (Sym_InitStage) and g_sceneryMap */
+    View *view;           /* 0x18 the screen's view (screen.h Screen.view): its overlay is the place fader */
     s32 ticks;            /* 0x1C counted by the tick while started */
     s32 state;            /* 0x20 0 normal, 5 after load, 4 to 10 while a transition runs */
     u8 pad_24[0x34 - 0x24];

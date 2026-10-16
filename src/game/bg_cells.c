@@ -1,19 +1,17 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/bg_cells.h"
 #include "game/heap.h"
 #include "game/file_base.h"
+#include "game/bg.h"
+#include "psyq/libgpu.h"
 
 /*
- * BgCells: the GsCELL table of a BgMap (include/game/loader.h).
+ * BgCells: the GsCELL table of a BgMap (include/game/bg_cells.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
-extern s32 GetTPage(s32 tp, s32 abr, s32 x, s32 y);
 extern BgCellsVtbl g_bgCellsVtbl;
-
-/* ---- BgCells: the GsCELL table ---- */
 
 s32 BgCells_Create(s32 skipBuild) {
     s32 bgCells;

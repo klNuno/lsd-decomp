@@ -1,17 +1,15 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/tim_pack.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/tim.h"
 
 /*
- * TimPack: one part of a TIX, a list of TIM images (include/game/loader.h).
+ * TimPack: one part of a TIX, a list of TIM images (include/game/tim_pack.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The TIM image class (Tim_New, vtable 0x8006E558, 0x50 bytes) as this unit uses it */
 /* Psy-Q GsIMAGE, as slot 0x9C of a TIM fills it (0x1C bytes, 4 more reserved) */
 typedef struct GsImage {
     u32 pmode;
@@ -29,8 +27,6 @@ typedef struct GsImage {
 } GsImage;
 extern TimPackVtbl g_timPackVtbl;
 s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette index */
-
-/* ---- TimPack: one part of a TIX ---- */
 
 s32 TimPack_Create(s32 path) {
     s32 timPack;

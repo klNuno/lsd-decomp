@@ -1,12 +1,12 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/loader.h"
 #include "game/file_base.h"
+#include "game/heap.h"
 #include "game/file_cd.h"
 #include "game/file_null.h"
+#include "psyq/libc.h"
 
 /*
- * The file base class (vtable g_fileBaseVtbl, returned by File_GetBaseVtbl, include/game/loader.h):
+ * The file base class (vtable g_fileBaseVtbl, returned by File_GetBaseVtbl, include/game/file_base.h):
  * delete, init, destroy, load the whole file, free its data. File_SetBackend picks the back end
  * (0x13 the CD, 0x23 an empty one) and copies its I/O slots into every file class; the helpers
  * at the end forward to the CD functions of src/game/file_cd.c only when the CD back end is on.
@@ -18,7 +18,6 @@
 #define FILE_BACKEND_CD 0x13   /* g_fileVtable, src/game/file_cd.c */
 #define FILE_BACKEND_NULL 0x23 /* g_fileNullVtbl: every I/O slot is empty */
 s32 g_fileBackend;
-s8 *strcat(s8 *, s8 *);
 s32 g_fileDirTableSet;
 static void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src);
 extern FileVtbl *(*g_fileClassGetters[])();

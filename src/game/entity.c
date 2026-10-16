@@ -1,12 +1,12 @@
 #include "common.h"
 #include "game/entity.h"
-#include "game/sound.h"
-#include "game/scene.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/handler_node.h"
 #include "game/fade.h"
 #include "game/model.h"
+#include "psyq/libc.h"
 
 /*
  * Entities and their behaviour handlers (record +0xC). A handler runs once per tick as
@@ -42,7 +42,7 @@ typedef struct ModelAnimSet {
 /* The object at +0x2C of a model file: frame command 2 asks its slot 0x80 for a texture. */
 typedef struct ModelTexturesVtbl {
     u8 pad_00[0x80];
-    s32 (*getModel)(void *self, s32 index); /* 0x80 Tmd_GetModel (loader.h TmdVtbl) */
+    s32 (*getModel)(void *self, s32 index); /* 0x80 Tmd_GetModel (tmd.h TmdVtbl) */
 } ModelTexturesVtbl;
 
 typedef struct ModelTextures {
@@ -54,7 +54,7 @@ typedef struct ModelFileVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(void *self);            /* 0x04 */
     u8 pad_08[0x64 - 0x08];
-    void (*onLoaded)(void *self, void *arg);  /* 0x64 Mom_OnLoaded (loader.h FileVtbl); Behavior_Type74 passes a 4-byte word */
+    void (*onLoaded)(void *self, void *arg);  /* 0x64 Mom_OnLoaded (file_base.h FileVtbl); Behavior_Type74 passes a 4-byte word */
     u8 pad_68[0x80 - 0x68];
     s32 (*getPartIds)();                     /* 0x80 (self, ids, &current): fills the part ids, returns their count */
     s32 *(*readCommand)();                   /* 0x84 (self, command, &part, &type, &flags, &size): a frame command's data */
@@ -151,7 +151,7 @@ typedef struct BehaviorEntityVtbl {
 /* The object at Entity +0x4C (the map the entity stands on: Actor_SnapToGround asks its slot 0x110 for the ground). */
 typedef struct BehaviorMapVtbl {
     u8 pad_00[0x138];
-    void (*startTileStretch)(void *self, s32 count, s32 fast); /* 0x138 StageMap_StartTileStretch (stage.h) */
+    void (*startTileStretch)(void *self, s32 count, s32 fast); /* 0x138 StageMap_StartTileStretch (stage_map.h) */
 } BehaviorMapVtbl;
 
 typedef struct BehaviorMap {
@@ -287,7 +287,6 @@ typedef struct Unk_80066818_Vtbl {
     void (*onActorTouch)(void *, void *, s32);          /* 0xDC Entity_OnActorTouch */
     void (*onWallTouch)(void *, void *, s32);           /* 0xE0 Entity_OnWallTouch */
 } Unk_80066818_Vtbl;
-extern s32 rand(void);
 extern s32 g_scaleTiny;
 static s32 Entity_IsDreamerNear();
 static EntityVtbl *Entity_GetVtbl(void);

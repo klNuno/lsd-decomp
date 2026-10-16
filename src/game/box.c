@@ -1,16 +1,15 @@
 #include "common.h"
-#include "game/scene.h"
 #include "game/box.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
+#include "game/display.h"
 
 /*
  * Box: a filled rectangle, a 2D widget drawn by the scene tree (src/game/scene_draw.c).
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-/* An (x, y) pair of s32 */
 
 /* The base scene node class (SceneNode_GetVtbl, src/game/scene_node.c), as Box calls it */
 typedef struct BaseNodeVtbl {

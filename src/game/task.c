@@ -1,12 +1,11 @@
 #include "common.h"
-#include "game/stage.h"
 #include "game/task.h"
 #include "game/heap.h"
 #include "game/sound_bank.h"
 #include "game/screen.h"
 
 /*
- * Task (vtable g_taskVtbl 0x80086668, types in game/stage.h): a class with a tick count, a timeout
+ * Task (vtable g_taskVtbl 0x80086668, types in game/task.h): a class with a tick count, a timeout
  * and a result that DreamRunner and Place derive from.
  *
  * File boundaries: likely (docs/layout.md)

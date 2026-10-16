@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/dream_link.h"
 #include "game/stage.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: guess (docs/layout.md)
@@ -35,10 +36,9 @@ typedef struct RotationYaw {
     u8 pad_00[4];
     u16 yaw;
 } RotationYaw;
-extern s32 rand(void);
 extern s16 g_specialDays[42];
 extern s32 g_specialDayPoint;
-/* DreamSys +0x168 as Day_FindSpecial writes it: {category, variant} (dreamsys.h cinematic.id). */
+/* DreamSys +0x168 as Day_FindSpecial writes it: {category, variant} (dream_sys.h cinematic.id). */
 typedef struct SpecialCine {
     s16 category;
     s16 variant;

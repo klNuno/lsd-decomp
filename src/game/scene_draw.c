@@ -1,10 +1,12 @@
 #include "common.h"
-#include "game/gs.h"
-#include "game/scene.h"
 #include "game/scene_draw.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/render.h"
 #include "game/scene_node.h"
+#include "game/view.h"
+#include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -34,7 +36,7 @@ typedef struct Sprite {
     u8 pad_1C[0x8];
 } Sprite;
 
-/* Any scene node as Scene_DrawNode reads it (scene.h SceneNode, then the fields of the kind it draws:
+/* Any scene node as Scene_DrawNode reads it (scene_node.h SceneNode, then the fields of the kind it draws:
    Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
 typedef struct DrawNode {
     u32 *vtbl;              /* 0x00 vtable; its first word is the tag: low 4 bits the sender type, low byte the kind */
@@ -59,14 +61,6 @@ typedef struct DrawNode {
     s32 scaleY;             /* 0xA4 sprite y scale, used with half the screen height */
 } DrawNode;
 
-void RotMatrix(s16 *r, Matrix *m);
-void GsGetLs(Coord2 *coord, Matrix *ls);
-void GsGetLws(Coord2 *coord, Matrix *lw, Matrix *ls);
-void GsSetLightMatrix(Matrix *m);
-void GsSetLsMatrix(Matrix *m);
-void GsSortBg(void *bg, void *ot, u16 pri);
-void GsSortBoxFill(BoxFill *box, void *ot, u16 pri);
-void GsSortSprite(Sprite *sp, void *ot, u16 pri);
 
 void Scene_DrawNode(View *view, DrawNode *node) {
     Matrix lsbuf;

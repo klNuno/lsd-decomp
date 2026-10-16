@@ -1,10 +1,11 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/sound.h"
 #include "game/bgm.h"
+#include "game/heap.h"
 #include "game/display.h"
 #include "game/sound_bank.h"
 #include "game/seq_file.h"
+#include "psyq/libsnd.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -32,7 +33,7 @@ typedef struct BgmVtbl {
     void (*setBank)();         /* 0x60 Bgm_SetBank (bgm, path) */
 } BgmVtbl;
 
-/* The SEQ file as this unit reads it; the bank is a SoundBank (sound.h) */
+/* The SEQ file as this unit reads it; the bank is a SoundBank (sound_bank.h) */
 typedef struct BgmFileVtbl {
     u8 pad_00[0x4];
     void (*delete_)(void *);
@@ -66,18 +67,9 @@ typedef struct Bgm {
     s32 autoPlay;              /* 0x20 play as soon as the SEQ opens */
 } Bgm;
 
-extern void SsSeqSetVol(s16, s16, s16);
-extern void SsSeqReplay(s16);
-extern void SsSeqPause(s16);
-extern void SsSeqStop(s16);
-extern void SsSeqClose(s16);
-extern void SsSeqPlay(s16, s16, s16);
-extern void SsSeqSetCrescendo(s16, s16, s32);
 static s32 Bgm_Open();
 static BgmVtbl *Bgm_GetVtbl(void);
 s32 g_bgmActive;
-extern s16 SsSeqOpen(s32, s16);
-extern s32 printf(const char *fmt, ...);
 extern BgmVtbl g_bgmVtbl;
 extern u8 g_seqTable[];
 

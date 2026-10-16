@@ -1,7 +1,7 @@
 #ifndef GAME_GS_H
 #define GAME_GS_H
 
-#include "types.h"
+#include "common.h"
 
 /*
  * PSY-Q libgs and libgte structures as the game reads them. Every scene node, model, entity, map tile

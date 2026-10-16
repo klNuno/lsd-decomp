@@ -1,12 +1,10 @@
 #include "common.h"
-#include "game/stage.h"
-#include "game/scene.h"
 #include "game/map_tile.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
 
 /*
- * MapTile (vtable g_mapTileVtbl 0x80086AA0, types in game/stage.h): one tile model of a chunk, a
+ * MapTile (vtable g_mapTileVtbl 0x80086AA0, types in game/map_tile.h): one tile model of a chunk, a
  * GsDOBJ2 at +0x10.
  *
  * File boundaries: likely (docs/layout.md)

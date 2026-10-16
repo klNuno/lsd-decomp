@@ -1,13 +1,13 @@
 #include "common.h"
-#include "game/dreamsys.h"
-#include "game/loader.h"
 #include "game/scene.h"
-#include "game/stage.h"
 #include "game/heap.h"
+#include "game/display.h"
+#include "game/pad.h"
 #include "game/file_base.h"
 #include "game/app.h"
 #include "game/video_screen.h"
 #include "game/menu_screen.h"
+#include "game/screen.h"
 #include "game/tmd.h"
 #include "game/path_table.h"
 #include "game/dream_runner.h"
@@ -25,10 +25,9 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The scene settings main hands to Scene_New (g_sceneSettings: 0x13, 0, 1, 1, 1, 1). */
 /*
  * DreamSys slot 0x1BC as the code calls it: the 4-byte {category, variant} is written through a
- * hidden first argument, which dreamsys.h's CineRef return cannot express.
+ * hidden first argument, which dream_sys.h's CineRef return cannot express.
  */
 typedef struct SceneCineVtbl {
     u8 pad_000[0x1BC];

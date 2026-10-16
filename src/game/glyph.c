@@ -1,7 +1,8 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/glyph.h"
+#include "game/gs.h"
+#include "game/heap.h"
+#include "game/display.h"
 #include "game/screen_sprite.h"
 
 /*
@@ -88,8 +89,6 @@ static void Glyph_GetRect(SpriteRect *rect, u32 code);
 
 extern GlyphVtbl g_glyphVtbl;
 extern SpriteRect g_glyphCellRect;      /* {0, 0, 8, 8}: the cell of character 0 */
-
-/* Glyph */
 
 void *Glyph_Create(s32 font, u8 code) {
     void *glyph;

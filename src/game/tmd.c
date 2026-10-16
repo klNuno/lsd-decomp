@@ -1,20 +1,17 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/tmd.h"
 #include "game/heap.h"
 #include "game/model_object.h"
 #include "game/file_base.h"
+#include "psyq/libgs.h"
 
 /*
- * Tmd: a TMD model file and its model objects (include/game/loader.h).
+ * Tmd: a TMD model file and its model objects (include/game/tmd.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
-extern void GsMapModelingData(u32 *p);
 extern TmdVtbl g_tmdVtbl;
-
-/* ---- TMD model ---- */
 
 s32 Tmd_Create(s32 source) {
     s32 tmd;

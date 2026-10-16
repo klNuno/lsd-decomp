@@ -1,10 +1,11 @@
 #include "common.h"
-#include "game/loader.h"
-#include "game/scene.h"
 #include "game/file_cd.h"
 #include "game/heap.h"
 #include "game/display.h"
 #include "game/file_base.h"
+#include "psyq/libetc.h"
+#include "psyq/libcd.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -52,8 +53,6 @@ typedef struct FileVtSlot8 {
     void (*init)(s32);       /* 0x08 File_InitObject */
 } FileVtSlot8;
 s32 g_fileCdReady;
-void CdSetDebug(s32 level);
-s32 CdControlB(s32 com, u8 *param, s32 result);
 typedef struct FileInitRecord {
     void *vtbl;              /* File.vtbl */
     u8 pad_04[0x8];
@@ -72,12 +71,8 @@ struct FileStepObject {
 s32 g_fileVSyncHooked;
 s32 g_fileVSyncMode;
 static s32 File_OnVSync(void);
-void VSyncCallback(void (*func)(void));
-s8 *strcpy(s8 *dst, s8 *src);
-s8 *strcat(s8 *dst, s8 *src);
 extern s8 g_fileVersionSuffix[]; /* ";1" in .sdata */
 s32 g_fileDirCount;
-char *strstr(char *haystack, char *needle);
 static void File_HookVSync(void);
 static struct FileRequest *File_NewRequest(void);
 typedef struct FileHandle FileHandle;
@@ -152,10 +147,6 @@ typedef struct FileSeekView {
     u8 pad10[0x8];
     u8 cdPos[0x8];       /* File.cdPos, the CdlLOC given to CdControl command 2 */
 } FileSeekView;
-s32 CdControl(s32 com, u8 *param, s32 result);
-s32 CdRead(s32 sectors, void *buf, s32 mode);
-s32 CdReadSync(s32 mode, u8 *result);
-s32 CdSync(s32 mode, u8 *result);
 typedef struct FileRequestLink FileRequestLink;
 struct FileRequestLink {
     void *running;       /* FileRequest.running */
@@ -166,8 +157,6 @@ struct FileRequestLink {
 };
 s32 g_fileCurEntry;
 s32 g_filePrevEntry;
-void CdFlush(void);
-s32 CdControlF(s32 com, u8 *param);
 static void File_SetState(s32 state);
 s32 g_fileReadSector;
 s32 g_fileReadBuf;
@@ -184,10 +173,6 @@ typedef struct FileEntryView {
 } FileEntryView;
 extern u8 g_fileScratchPos[];
 static s32 File_GetSize(FileSizeView *obj);
-s32 CdPosToInt(u8 *pos);
-void CdIntToPos(s32 i, u8 *pos);
-extern s32 printf(const char *fmt, ...);
-s32 CdSearchFile(void *, s8 *);
 s8 *File_BuildPath();
 typedef struct CdlLoc {
     u8 m, s, f, t;

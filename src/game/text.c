@@ -1,5 +1,6 @@
 #include "common.h"
 #include "game/text.h"
+#include "psyq/libc.h"
 
 /*
  * The Shift-JIS text helpers: decode, encode and format a number.
@@ -7,10 +8,6 @@
  * File boundaries: guess (docs/layout.md)
  */
 
-s8 *itoa(s32 value);
-s8 *strcpy(s8 *dst, s8 *src);
-s32 strlen(u8 *s);
-void *memset(void *dst, s32 c, s32 n);
 
 s8 *Text_Decode(s8 *dst, u8 *src) {
     s8 *end = dst;

@@ -1,15 +1,16 @@
 #include "common.h"
-#include "game/entity.h"
-#include "game/loader.h"
-#include "game/dreamsys.h"
-#include "game/stage.h"
 #include "game/sym.h"
+#include "game/heap.h"
 #include "game/scene_node.h"
 #include "game/file_base.h"
 #include "game/mom.h"
 #include "game/mml.h"
+#include "game/stage_map.h"
 #include "game/scenery.h"
+#include "game/dream_sys.h"
 #include "game/dream_link.h"
+#include "game/entity.h"
+#include "psyq/libc.h"
 
 /*
  * Sym: entities loaded from ETC\SYM*.MOM; only SYMSPY.MOM is loaded.
@@ -32,7 +33,6 @@ typedef struct Unk_8005C76C_Entry {
     u8 pad[0x14 - 4];
 } Unk_8005C76C_Entry;
 extern Unk_8005C76C_Entry g_spyEntity[];
-extern s32 rand(void);
 s32 g_currentStage;
 typedef struct Unk_80065CEC_Obj {
     ObjectVtbl *vt;

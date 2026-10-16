@@ -1,16 +1,15 @@
 #include "common.h"
-#include "game/loader.h"
-#include "game/scene.h"
 #include "game/tim.h"
 #include "game/heap.h"
 #include "game/display.h"
 #include "game/file_base.h"
+#include "game/movie.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
  */
 
-extern void GsGetTimInfo(u32 *im, void *tim);
 extern u8 g_timVtbl[];
 
 Tim *Tim_New(char *path) {

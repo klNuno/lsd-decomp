@@ -26,7 +26,7 @@ Matching is half the job; the other half is C a person can read. Every change be
 
 ## Prototypes
 
-A function's prototype lives in the header of the file that defines it, `include/game/<file>.h`, written like the definition with its parameter names; callers include that header ([layout.md](layout.md), rule 6). Its non-gp globals that other files read are declared there with `extern`; gp globals never are (rule 1). Sony functions are declared in the files that call them until the PSY-Q headers exist. The exceptions keep the bytes, each with a comment saying why:
+A function's prototype lives in the header of the file that defines it, `include/game/<file>.h`, written like the definition with its parameter names; callers include that header ([layout.md](layout.md), rule 6). Its non-gp globals that other files read are declared there with `extern`; gp globals never are (rule 1). Sony functions are declared in `include/psyq/<lib>.h` (libapi, libetc, libgpu, libgte, libgs, libcd, libspu, libsnd, libpress, libcard, libc), one header per PSY-Q library, holding only what the game calls in the form its calls need; a struct argument the callers read through different views of their own is `void *`. The exceptions keep the bytes, each with a comment saying why:
 
 - Unprototyped in the header (`s32 Cine_PickOpeningPath();`) when a caller passes another number of arguments than the definition takes, because the call in the executable passes them: `Heap_Create`, `SceneNode_ProbeHeight`, `SceneNode_LocalToWorld`, `ModelObject_GetBox`, `File_LoadWhole`, `Music_GetEffectsBank`, `Music_PickTrack`, `Stage_GetChunkPath`, `Cine_PickOpeningPath`, `Cine_GetEndingPath`, and `Cine_GetPath` (scene.c passes the `{category, variant}` pair as one s32). `Heap_Alloc`, `Heap_Free` and `Rand_SeedAndNext` are K&R definitions on purpose, so their header form has no parameters either.
 - `X_GetVtbl` of Actor, RootNode, Screen, SceneNode, SpriteNode, Task and View stays out of the headers: a subclass calls its base class's methods through its own view of the vtable struct (other slot names or types), so each file that calls it declares it with its own return type, one comment line above. Merging those views into one vtable struct per class removes the exception.
@@ -71,35 +71,35 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Object | The root class (vtable 0x8006B58C) every game object derives from: init, destroy, and lists of the objects it watches and of its watchers, told with message 1 when it goes away | code: `include/game/heap.h` (`Object`, `ObjectVtbl`) |
 | Render | Model drawing: TMD polygons sorted into the ordering table, projected, clipped and turned into GPU packets | code: src/game/render.c |
 | Entity | A character or object of the dream (0x108 bytes, vtable 0x80089AD4), created from a spawn group with its 16-byte record at 0x80089EA4 | code: `include/game/entity.h`, discoveries "The character record" |
-| Screen | The base screen class (vtable 0x8006E878): a state machine run by the display loop, with clock, pad and view | code: src/game/screen.c, `include/game/scene.h` |
-| MenuScreen | A Screen with sound bank, picture, fades, timeout and an item menu (vtable 0x8006E730): logos, special-day pictures, the main menu | code: `include/game/scene.h` |
-| VideoScreen | The MenuScreen that plays one STR video (vtable 0x8006E5F8) | code: `include/game/scene.h` |
-| View | The 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables, fog and light mode | code: `include/game/scene.h` |
-| Task | A class with a tick count, a timeout and a result (vtable 0x80086668) that DreamRunner and Place derive from | code: `include/game/stage.h` |
-| DreamRunner | The object built for each dream (vtable 0x800865C8): loads the dreamer model and the music bank, creates the place, rebuilds it after a link | code: `include/game/stage.h` |
-| StageMap | The map that keeps the 7 chunks around the dreamer loaded and shows the tiles in view (vtable 0x800866E8) | code: `include/game/stage.h` |
-| MapTile | One tile model of a chunk (vtable 0x80086AA0), a GsDOBJ2 at +0x10 | code: `include/game/stage.h` |
+| Screen | The base screen class (vtable 0x8006E878): a state machine run by the display loop, with clock, pad and view | code: src/game/screen.c, `include/game/screen.h` |
+| MenuScreen | A Screen with sound bank, picture, fades, timeout and an item menu (vtable 0x8006E730): logos, special-day pictures, the main menu | code: `include/game/menu_screen.h` |
+| VideoScreen | The MenuScreen that plays one STR video (vtable 0x8006E5F8) | code: `include/game/video_screen.h` |
+| View | The 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables, fog and light mode | code: `include/game/view.h` |
+| Task | A class with a tick count, a timeout and a result (vtable 0x80086668) that DreamRunner and Place derive from | code: `include/game/task.h` |
+| DreamRunner | The object built for each dream (vtable 0x800865C8): loads the dreamer model and the music bank, creates the place, rebuilds it after a link | code: `include/game/dream_runner.h` |
+| StageMap | The map that keeps the 7 chunks around the dreamer loaded and shows the tiles in view (vtable 0x800866E8) | code: `include/game/stage_map.h` |
+| MapTile | One tile model of a chunk (vtable 0x80086AA0), a GsDOBJ2 at +0x10 | code: `include/game/map_tile.h` |
 | Place | The object that runs one stage while the dreamer is in it (vtable 0x80087034): load, pad handler, pause, fades | code: `include/game/place.h` |
-| Actor | The base class of scenery objects and their parts (vtable 0x800878D4, 0x58 bytes) | code: `include/game/place.h` |
-| Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/place.h`, work/hunt6/F-findings.md |
+| Actor | The base class of scenery objects and their parts (vtable 0x800878D4, 0x58 bytes) | code: src/game/actor.c |
+| Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/scenery.h`, work/hunt6/F-findings.md |
 | Ambience | The fog and sky record of a place, picked per stage or from the day's family | code: src/game/scenery.c |
 | Model | The model base class every entity derives from (vtable 0x8008A6C4, 0x98 bytes): model file, parts, animation, per-tick function, sound bank | code: src/game/model.c |
 | ModelObject | One model instance of a TMD object, an Object subclass of 0x24 bytes, with its box and ray test | code: src/game/model_object.c |
 | ModelBox | The min and max corners of a model object, and the 8-corner box list of the ray tests | code: src/game/model_object.c |
 | SceneNode | An object of the node classes of src/game/scene_node.c: parent at +0xC, GsCOORDINATE2 at +0x14 | code: src/game/scene_node.c |
 | File | The CD file object: locate, load, seek and the read queue (0x2C bytes) | code: src/game/file_cd.c |
-| Tix | A TEXx.TIX texture set file and its palette fades | code: `include/game/loader.h` |
-| TimPack | One part of a TIX, a list of TIM images | code: `include/game/loader.h` |
-| Tmd | A TMD model file and its model objects | code: `include/game/loader.h` |
-| Tod | A TOD animation file | code: `include/game/loader.h` |
-| TodPack | A list of TOD files, the motions of a MOM | code: `include/game/loader.h` |
-| Mom | A MOM model file: a TMD and a TodPack | code: `include/game/loader.h` |
-| Mml | The list of MOM models of a map square | code: `include/game/loader.h` |
-| Bg | A PSY-Q GsBG background object | code: `include/game/loader.h` |
-| BgMap | The GsMAP of a Bg | code: `include/game/loader.h` |
-| BgCells | The GsCELL table of a BgMap | code: `include/game/loader.h` |
-| Movie | The MDEC movie player | code: `include/game/loader.h` |
-| Card | The memory card object (vtable 0x80086DC4, 0x84 bytes): card events, bu00 and bu10 file access, the save format, the save and load dialogs | code: `include/game/menu.h` |
+| Tix | A TEXx.TIX texture set file and its palette fades | code: `include/game/tix.h` |
+| TimPack | One part of a TIX, a list of TIM images | code: `include/game/tim_pack.h` |
+| Tmd | A TMD model file and its model objects | code: `include/game/tmd.h` |
+| Tod | A TOD animation file | code: `include/game/tod.h` |
+| TodPack | A list of TOD files, the motions of a MOM | code: `include/game/tod_pack.h` |
+| Mom | A MOM model file: a TMD and a TodPack | code: `include/game/mom.h` |
+| Mml | The list of MOM models of a map square | code: `include/game/mml.h` |
+| Bg | A PSY-Q GsBG background object | code: `include/game/bg.h` |
+| BgMap | The GsMAP of a Bg | code: `include/game/bg_map.h` |
+| BgCells | The GsCELL table of a BgMap | code: `include/game/bg_cells.h` |
+| Movie | The MDEC movie player | code: `include/game/movie.h` |
+| Card | The memory card object (vtable 0x80086DC4, 0x84 bytes): card events, bu00 and bu10 file access, the save format, the save and load dialogs | code: `include/game/card.h` |
 | Sound | A model's sound bank (0x64 bytes): loads a VAB, builds its tone tables, starts and stops voices | code: src/game/sound_bank.c |
 | Fade | A Box that fades its color (vtable 0x8006E99C): the 320x240 layer of the view, the place fader, the Grey Man white flash; RgbFade fades one RGB triple | code: src/game/fade.c |
 | RgbFade | See Fade | code: src/game/fade.c |
@@ -130,7 +130,7 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Bits | Bit flag helpers of the scene nodes (GsDOBJ2 attribute bits) | code: src/game/scene_node.c |
 | DreamView | The dream camera, a View subclass of 0xDC bytes (vtable 0x800869D8) | code: src/game/dream_view.c |
 | MapModels | The model list of one map chunk (vtable 0x8006D940) | code: src/game/map_models.c |
-| HandlerNode | The node that runs a behaviour handler every tick and plays its voices | code: `include/game/sound.h`, src/game/handler_node.c |
+| HandlerNode | The node that runs a behaviour handler every tick and plays its voices | code: `include/game/handler_node.h`, src/game/handler_node.c |
 | SoundSpot | A fixed ambient sound source of a place, played from the SND\SE bank; at most two play at once, quieter with distance | code: src/game/scenery.c |
 | SceneryPart | A sprite part of the scenery (vtable 0x800879C4) | code: src/game/scenery_part.c |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |

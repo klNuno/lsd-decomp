@@ -1,19 +1,16 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/clock.h"
+#include "game/heap.h"
 
 /*
  * Clock: vtable g_clockVtbl 0x8006EF50 (tag 5), 0x1C bytes, Clock_Create: each step adds a tick and
- * tells every watcher 2, or 3 when paused, 4 when stopped (scene.h).
+ * tells every watcher 2, or 3 when paused, 4 when stopped (clock.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
 static ClockVtbl *Clock_GetVtbl(void);
 extern ClockVtbl g_clockVtbl;
-
-/* Clock */
 
 void *Clock_Create(void) {
     void *clock;

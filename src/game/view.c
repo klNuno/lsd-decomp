@@ -1,12 +1,17 @@
 #include "common.h"
-#include "game/heap.h"
-#include "game/scene.h"
 #include "game/view.h"
+#include "game/gs.h"
+#include "game/heap.h"
 #include "game/scene_node.h"
+#include "game/display.h"
 #include "game/fade.h"
+#include "game/clock.h"
+#include "psyq/libgpu.h"
+#include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
- * View (include/game/scene.h): the 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables,
+ * View (include/game/view.h): the 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables,
  * fog and light mode.
  *
  * File boundaries: likely (docs/layout.md)
@@ -18,16 +23,6 @@ typedef struct ViewRatio {
     s16 den;
 } ViewRatio;
 
-extern s32 DrawSync(s32);
-extern void SetGeomScreen(s32);
-void GsSetRefView2(void *);
-void ResetGraph(s32 mode);
-void GsSortClear(u8 r, u8 g, u8 b, GsOT *ot);
-void GsDrawOt(GsOT *ot);
-void GsClearOt(s32, s32, GsOT *);
-void GsSetLightMode(s32);
-void SetFarColor(u8, u8, u8);
-void SetFogNear(s32, s32);
 void func_8003FB0C(s32);
 void func_8003FBE4(void *packets);
 /* not in game/view.h: each file that calls it reads the vtable through its own view of the slots */
@@ -41,8 +36,6 @@ extern Color3 g_viewDefaultColor;       /* black */
 extern ScreenPoint g_viewDefaultScreenSize;
 extern s32 g_overlayPos;          /* ScreenPoint (-100, -100): where the overlay hangs */
 extern s32 g_overlaySize;          /* the overlay: 320, 240, 10, 10 */
-
-/* View */
 
 View *View_New(void) {
     View *view;

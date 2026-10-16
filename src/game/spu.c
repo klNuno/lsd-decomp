@@ -1,17 +1,15 @@
 #include "common.h"
 #include "game/spu.h"
 #include "game/seq_timer.h"
+#include "psyq/libetc.h"
+#include "psyq/libspu.h"
+#include "psyq/libsnd.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
  */
 
 static void Spu_Reset(s32 hot);
-extern void ResetCallback(void);
-extern void SpuInit(void);
-extern void SpuInitHot(void);
-extern void SpuVmInit(s32);
-extern s32 GetVideoMode(void);
 extern u16 g_spuVoiceInit[];
 extern u16 g_spuControlInit[];
 extern s32 D_8008E934;

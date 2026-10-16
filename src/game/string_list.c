@@ -6,6 +6,7 @@
 #include "game/label.h"
 #include "game/text.h"
 #include "game/screen_sprite.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -67,9 +68,7 @@ struct StringList {
     s32 unk_50;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
 };
 
-s8 *strcpy(s8 *dst, u8 *src);
 static StringListVtbl *StringList_GetVtbl(void);
-extern s32 strlen(u8 *);
 static void StringList_ClearSenders(StringList *list);
 
 s32 StringList_New(s32 strings, s32 mode) {
@@ -253,7 +252,6 @@ typedef struct CardList {
     CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
 } CardList;
 extern u8 g_stringListCursorColor[];
-extern void *memcpy(void *dst, void *src, s32 n);
 extern u8 g_stringListRowColor[];
 s32 g_stringListRowX;
 s32 g_stringListRowY;

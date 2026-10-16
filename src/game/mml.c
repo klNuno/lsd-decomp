@@ -1,19 +1,16 @@
 #include "common.h"
-#include "game/loader.h"
 #include "game/mml.h"
 #include "game/heap.h"
 #include "game/file_base.h"
 #include "game/mom.h"
 
 /*
- * Mml: the list of MOM models of a map square (include/game/loader.h).
+ * Mml: the list of MOM models of a map square (include/game/mml.h).
  *
  * File boundaries: likely (docs/layout.md)
  */
 
 extern MomVtbl g_mmlVtbl;
-
-/* ---- MML: the MOM list of a map square ---- */
 
 s32 Mml_Create(s32 source) {
     s32 mml;

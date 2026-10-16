@@ -1,13 +1,15 @@
 #include "common.h"
-#include "game/dreamsys.h"
-#include "game/scene.h"
 #include "game/dream_sys.h"
+#include "game/gs.h"
 #include "game/heap.h"
 #include "game/scene_node.h"
+#include "game/sound_bank.h"
 #include "game/handler_node.h"
+#include "game/view.h"
 #include "game/stage.h"
 #include "game/actor.h"
 #include "game/dream_link.h"
+#include "psyq/libc.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -16,7 +18,7 @@
 static s32 Mood_GetColor(s16 *point);
 static s32 DreamSys_ExecuteLink();
 extern u8 g_turnRotations[];
-/* The StageMap (stage.h) as DreamSys_OnMapMessage calls it: slot 0x10C StageMap_GetLocation. */
+/* The StageMap (stage_map.h) as DreamSys_OnMapMessage calls it: slot 0x10C StageMap_GetLocation. */
 typedef struct MapLocateVtbl {
     u8 pad_00[0x10C];
     s32 (*getLocation)(void *, s32, s32);
@@ -24,7 +26,7 @@ typedef struct MapLocateVtbl {
 typedef struct MapLocateView {
     MapLocateVtbl *vt;
 } MapLocateView;
-/* g_actorVtbl (0x800878D4), the Actor base class (place.h), as the DreamSys methods call it. */
+/* g_actorVtbl (0x800878D4), the Actor base class (src/game/actor.c), as the DreamSys methods call it. */
 typedef struct ActorVtblView {
     u8 pad_00[0x8];
     void (*init)(void *);                       /* 0x08 Actor_Construct */
@@ -44,13 +46,11 @@ typedef struct RotationYaw {
     u16 yaw;
 } RotationYaw;
 s32 g_saveMagic;
-extern void *memset(void *dst, s32 value, s32 size);
 static DreamSysVtbl *DreamSys_GetVtable(void);
 extern s32 g_dreamerStartRotation[];
 static s32 Mood_CalcAxis(s32, s32, s32);
 extern s32 g_fallStep[];
 extern s8 g_moodColors[][3];
-extern s32 rand(void);
 extern s16 g_linkStep2Start[];
 extern u8 g_yawPlus45[];
 static void DreamSys_MoveToTileOffset(DreamSys *, s16 *, s16 *);
@@ -59,7 +59,7 @@ static s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos);
 extern s16 g_linkStep0Start[];
 extern s32 g_pitchSteps[];
 extern s32 g_pitchLimits[];
-/* The Tmd (loader.h) slot 0x80 Tmd_GetModel (tmd, index). */
+/* The Tmd (tmd.h) slot 0x80 Tmd_GetModel (tmd, index). */
 typedef struct TmdModelVtbl {
     u8 pad_00[0x80];
     s32 (*getModel)(void *, s32);
