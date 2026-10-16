@@ -133,7 +133,7 @@ typedef struct Unk_80039E7C {
     u16 unk1E;
     s32 unk20;
 } Unk_80039E7C;
-void *func_8002C480(s32 arg0);
+void *Sound_CreateBank(s32 arg0);
 typedef struct Unk_80039F64Vt {
     u8 pad_00[0x44];
     void (*unk44)(void *);
@@ -335,7 +335,7 @@ void func_80039F64(Unk_80039F64 *arg0, s32 arg1) {
         arg0->unkC = NULL;
     }
     if (arg1 != 0) {
-        arg0->unkC = func_8002C480(arg1);
+        arg0->unkC = Sound_CreateBank(arg1);
         if (func_80039C04(arg0) != 0) {
             if (arg0->unk20 != 0) {
                 arg0->unk0->unk44(arg0);

@@ -1,786 +1,579 @@
 #include "common.h"
+#include "game/heap.h"
+#include "game/dreamsys.h"
+#include "game/entity.h"
+#include "game/place.h"
 
-typedef struct Unk_80054850_Pair {
+/*
+ * The memory card file list window (vtable D_80086F88, returned by func_80052B60; its first
+ * methods are in src/game/80050BA8.c): background CARD\SELECT.TIM, up to 4 visible rows of
+ * 26 characters built by func_800408CC, the selected row in D_8008AB10 (0x80, 0x80, 0), the
+ * others in D_8008AB0C (0x50, 0x50, 0x50). Slots 0x7C to 0x88 scroll it, 0x8C to 0x98 draw it.
+ */
+typedef struct CardListVtbl {
+    u8 pad_00[0x10];
+    void (*watch)();      /* 0x10 Object_Watch */
+    void (*unwatch)();    /* 0x14 Object_Unwatch */
+    u8 pad_18[0x30 - 0x18];
+    void (*notify)();     /* 0x30 Object_Notify */
+    u8 pad_34[0x48 - 0x34];
+    void (*close)();      /* 0x48 func_800520A0 */
+    u8 pad_4C[0x54 - 0x4C];
+    void (*setMode)();    /* 0x54 func_800521D4 */
+    u8 pad_58[0x60 - 0x58];
+    void (*unk60)();      /* 0x60 func_800523F0 */
+    u8 pad_64[0x7C - 0x64];
+    void (*scrollRight)(); /* 0x7C func_80052430 */
+    void (*scrollLeft)(); /* 0x80 func_80052498 */
+    void (*moveUp)();     /* 0x84 func_800524F8 */
+    void (*moveDown)();   /* 0x88 func_80052598 */
+    void (*createRows)(); /* 0x8C func_80052644 */
+    void (*deleteRows)(); /* 0x90 func_8005278C */
+    void (*drawRows)();   /* 0x94 func_8005281C */
+    void (*moveCursor)(); /* 0x98 func_80052A58 */
+} CardListVtbl;
+
+/* A row text, the background, a loaded file: the slots called on them here. */
+typedef struct CardTextVtbl {
+    u8 pad_00[0x04];
+    void *(*delete_)();   /* 0x04 Object_Delete */
+    u8 pad_08[0x4C - 0x08];
+    void (*unk4C)();      /* 0x4C (obj, parent, position) */
+    u8 pad_50[0x78 - 0x50];
+    void (*unk78)();      /* 0x78 called on a file right after func_8003B39C */
+    u8 pad_7C[0xB8 - 0x7C];
+    void (*setColor)();   /* 0xB8 D_8008AB10 or D_8008AB0C */
+    u8 pad_BC[0xCC - 0xBC];
+    void (*setText)();    /* 0xCC */
+} CardTextVtbl;
+
+typedef struct CardText {
+    CardTextVtbl *vt;
+} CardText;
+
+typedef struct CardListOwnerVtbl {
+    u8 pad_00[0x80];
+    void (*unk80)();
+} CardListOwnerVtbl;
+
+typedef struct CardListOwner {
+    CardListOwnerVtbl *vt;
+} CardListOwner;
+
+typedef struct CardList {
+    CardListVtbl *vt;
+    u8 pad_04[0x10 - 0x04];
+    s32 count;            /* 0x10 rows in the list */
+    s32 width;            /* 0x14 characters of the longest row */
+    s32 *offsets;         /* 0x18 row i starts at text + offsets[i] */
+    u8 pad_1C[0x20 - 0x1C];
+    s32 top;              /* 0x20 first visible row */
+    s32 column;           /* 0x24 first visible character (text base for func_8005292C) */
+    s32 cursor;           /* 0x28 selected row */
+    s32 mode;             /* 0x2C 2 or 3 (setMode) */
+    s32 modeTicks;        /* 0x30 */
+    s32 unk34;            /* 0x34 unwatched by setMode and the destructor */
+    s32 unk38;
+    s32 unk3C;
+    CardText *rows[4];    /* 0x40 visible rows */
+    CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
+} CardList;
+
+/* The texture-set loader of Tix_Create (class g_tixVtbl, 0x84 bytes), as Place sees it. */
+typedef struct PlaceTexLoaderVtbl {
+    u8 pad_00[0x04];
+    void (*delete_)();    /* 0x04 Object_Delete */
+    u8 pad_08[0x7C - 0x08];
+    void (*apply)();      /* 0x7C called with the ambience colour once done */
+} PlaceTexLoaderVtbl;
+
+typedef struct PlaceTexLoader {
+    PlaceTexLoaderVtbl *vt;
+    u8 pad_04[0x3C - 0x04];
+    s32 done;             /* 0x3C */
+    u8 pad_40[0x80 - 0x40];
+    s32 failed;           /* 0x80 set by Tix_OnReadDone when Heap_Alloc returned 0 */
+} PlaceTexLoader;
+
+/*
+ * The base class of the scenery objects and their kind 0 parts: vtable D_800878D4 (func_80057C84),
+ * constructor func_80057044, 0x58 bytes. The scenery vtable and DreamSys's reuse its slots
+ * 0x10 to 0x18 and 0xB8 to 0xE8; its methods end this unit.
+ */
+typedef struct ActorVtbl {
+    u8 pad_00[0x08];
+    s32 (*construct)();   /* 0x08 func_80057044 */
+    void (*destruct)();   /* 0x0C func_8001CBA4 */
+    u8 pad_10[0x40 - 0x10];
+    void (*init)();       /* 0x40 func_800571E8 */
+    u8 pad_44[0x88 - 0x44];
+    void (*unk88)();      /* 0x88 func_800571F8 */
+    void (*unk8C)();
+    void (*unk90)();
+    u8 pad_94[0xA0 - 0x94];
+    void (*unkA0)();
+    u8 pad_A4[0xBC - 0xA4];
+    void (*movePos)();    /* 0xBC Actor_MovePos */
+    void (*unkC0)();
+    void (*unkC4)();
+    void (*unkC8)();
+    u8 pad_CC[0xDC - 0xCC];
+    void (*onTouch34)();  /* 0xDC func_80057B90: func_80057320 on message byte 0x34 */
+    void (*onTouch24)();  /* 0xE0 func_80057C14: on message byte 0x24 */
+    u8 pad_E4[0xE8 - 0xE4];
+    void (*unkE8)();
+} ActorVtbl;
+
+/* The block at +0x14 (as for entities, entity.h EntityPos): a word cleared after each move, the position at +0x18. */
+typedef struct ActorPos {
+    s32 unk0;
+    u8 pad_04[0x18 - 0x04];
+    Vec3 pos;
+} ActorPos;
+
+/* The vtable of the class func_8001E57C returns (src/game/8001CA94.c), base of Actor. */
+typedef struct ActorBaseVtbl {
+    u8 pad_00[0x08];
+    s32 (*construct)();   /* 0x08 */
+    u8 pad_0C[0x10 - 0x0C];
+    void (*watch)();      /* 0x10 */
+    void (*unwatch)();    /* 0x14 */
+    void (*unwatchAll)(); /* 0x18 */
+    u8 pad_1C[0x88 - 0x1C];
+    void (*unk88)();
+    u8 pad_8C[0x9C - 0x8C];
+    void (*unk9C)();
+} ActorBaseVtbl;
+
+typedef struct Actor {
+    ActorVtbl *vt;
+    u8 pad_04[0x14 - 0x04];
+    ActorPos *posBlock;   /* 0x14 */
+    u8 pad_18[0x20 - 0x18];
+    s32 unk20;            /* 0x20 tested by ModelObject_IsReady */
+    u8 pad_24[0x28 - 0x24];
+    s32 contact;          /* 0x28 the object found by func_80057668, 0 when none */
+    u8 pad_2C[0x44 - 0x2C];
+    s32 unk44;            /* 0x44 cleared by the constructor */
+    s16 unk48;            /* 0x48 0x12C at init */
+    u8 pad_4A[0x4C - 0x4A];
+    s32 map;              /* 0x4C the watched object whose class id ends in 0x114 (the map) */
+    s32 unk50;            /* 0x50 the watched object whose class id ends in 5 */
+    s32 unk54;            /* 0x54 slot 0xEC */
+} Actor;
+
+/* A cell of the map grid as func_80057A18 reads it: 20 x 20 entry words at +0x10 (0x50 per row). */
+typedef struct GridCell {
+    u8 pad_00[0x10];
+    s32 entries;
+} GridCell;
+
+/* An object in a grid entry, chained by +0x38. */
+typedef struct GridEntry {
+    u8 pad_00[0x38];
+    s32 next;
+} GridEntry;
+
+/* The scenery part class D_800879C4 (0xA8 bytes, func_80057C94), built on the class of func_800422BC. */
+typedef struct TextPartVtbl {
+    u8 pad_00[0x08];
+    void (*construct)();  /* 0x08 func_80057D10 */
+    u8 pad_0C[0x40 - 0x0C];
+    void (*init)();       /* 0x40 func_80057DBC */
+} TextPartVtbl;
+
+typedef struct TextPart {
+    TextPartVtbl *vt;
+    u8 pad_04[0x58 - 0x04];
+    void *unk58;          /* 0x58 slot 0x48 scales +0x5C and +0x60 while set, else stores the ratios at +0x80 */
+    s32 unk5C;
+    s32 unk60;
+    u8 pad_64[0x74 - 0x64];
+    u16 unk74;            /* 0x74 D_80087AA4[index * 2] */
+    u16 unk76;            /* 0x76 D_80087AA6[index * 2] */
+    u8 pad_78[0x80 - 0x78];
+    s16 unk80;
+    s16 unk82;
+    u8 pad_84[0xA0 - 0x84];
+    s32 index;            /* 0xA0 */
+    s32 unkA4;
+} TextPart;
+
+/* The vtable of Graph_GetVtable, slot 0x08 only. */
+typedef struct GraphCtorVtbl {
+    u8 pad[8];
+    void (*construct)(void *, s32);
+} GraphCtorVtbl;
+
+/* The dream runner's object at +0xC (src/game/800494B4.c): slot 0xC8 registers a callback with an argument. */
+typedef struct PlaceOwnerObjVtbl {
+    u8 pad_00[0xC8];
+    void (*setCallback)(void *, void (*)(Place *, s32, s32, s32), void *);
+} PlaceOwnerObjVtbl;
+typedef struct PlaceOwnerObj {
+    PlaceOwnerObjVtbl *vt;
+} PlaceOwnerObj;
+typedef struct PlaceOwner {
+    u8 pad_00[0xC];
+    PlaceOwnerObj *unkC;
+} PlaceOwner;
+
+/* The class func_800422BC returns, base of TextPart. */
+typedef struct TextPartBaseVtbl { u8 pad_00[0x8]; void (*construct)(void *, s32, s32, void *, s32, s32); } TextPartBaseVtbl;
+
+/*
+ * The contact search of func_80057668 over the map's grid: 20 x 20 entry words per cell
+ * (GridCell), each a chain of objects; the query gives the cell and the actor's x, y in it.
+ */
+typedef struct GridRange {
+    u8 pad_00[2];
+    s16 count;            /* 0x2 slots of the cell */
+    s32 mode;             /* 0x4 1: the slots above and below are searched too */
+} GridRange;
+
+typedef struct GridSlotInfo {
+    u8 pad_00[0x2C];
+    s16 unk2C;            /* 0x2C a slot is searched only when it is not 0 */
+    u8 pad_2E[0x32 - 0x2E];
+    s16 index;            /* 0x32 */
+} GridSlotInfo;
+
+typedef struct GridSlot {
+    u8 pad_00[4];
+    GridSlotInfo *info;
+} GridSlot;
+
+typedef struct GridQuery {
+    u8 pad_00[2];
+    s8 x;                 /* 0x2 0 to 0x13 */
+    s8 y;                 /* 0x3 0 to 0x13 */
+    u8 pad_04[0x24 - 0x04];
+    GridSlot *slot;       /* 0x24 */
+} GridQuery;
+
+typedef struct GridRect {
+    s16 left;
+    s16 top;
+    s32 width;
+    s32 height;
+} GridRect;
+
+typedef struct GridMap GridMap;
+typedef struct GridActor GridActor;
+
+typedef struct GridActorVtbl {
+    u8 pad_00[0x88];
+    void (*unk88)(GridActor *, s32);  /* -1 contact found, -2 none */
+    u8 pad_8C[0xBC - 0x8C];
+    void (*movePos)(GridActor *, void *);
+} GridActorVtbl;
+
+/* An Actor as func_80057668 reads it. */
+struct GridActor {
+    GridActorVtbl *vt;
+    u8 pad_04[0x14 - 0x04];
+    u8 *posBlock;
+    u8 pad_18[0x28 - 0x18];
+    s32 contact;
+    u8 pad_2C[0x4C - 0x2C];
+    GridMap *map;
+};
+
+typedef struct GridMapVtbl {
+    u8 pad_00[0x110];
+    s32 (*query)(GridMap *, void *, u8 *);    /* 0x110 0 when the position is on the grid */
+    u8 pad_114[0x118 - 0x114];
+    GridSlot *(*slotAt)(GridMap *, s32);      /* 0x118 */
+} GridMapVtbl;
+
+struct GridMap {
+    GridMapVtbl *vt;
+    u8 pad_04[0x68 - 0x04];
+    GridRange *range;
+};
+
+/* One word of g_sceneryParams, as func_8005511C writes unk1C and unk20. */
+typedef struct ParamWord {
+    s32 v;
+} ParamWord;
+
+/* A screen position, {x, y} (the band layout D_8008AB68, D_8008AB70). */
+typedef struct Point {
     s32 x;
     s32 y;
-} Unk_80054850_Pair;
-/* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: pairs read whole by func_800549A8, func_80054850 */
-extern Unk_80054850_Pair D_8008AB68;
-extern Unk_80054850_Pair D_8008AB70;
-s32 D_8008AC80;
-extern void Object_DeleteArray(void *, s32);
-typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x70 - 0x28]; s32 u70; s32 u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
-void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
-void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
-typedef struct { u8 pad[0x58]; void *u58; } Unk_800531A0;
-void func_800531CC(void *arg0, void *arg1);
-typedef struct Unk_800541D4 {
-    u8 p0[0x20];
-    s32 u20;
-    u8 p1[0x80 - 0x24];
-    s32 u80;
-    s32 u84;
-} Unk_800541D4;
-extern void func_80056640();
-typedef struct { s8 pad[6]; s8 u6; } K;
-typedef struct { K *u0; s32 u4; s32 u8; s32 uC; s32 u10; } A;
-typedef struct { s32 u0; s32 u4; s32 u8; } B;
-extern s32 D_80087474[];
-s32 D_8008AB50;
-s32 D_8008AC88;
-extern u8 D_8008E0C8[];
-void func_8002CC84(void *, void *);
-extern s32 func_8001E7BC(void);
-typedef struct Unk_80052CD8 {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32);
-    void (*unkC)(s32);
-    u8 pad_10[0x44 - 0x10];
-    void (*unk44)(void *, void *, s32);
-    void (*unk48)(void *);
-} Unk_80052CD8;
-Unk_80052CD8 *func_8004A4B8();
-typedef struct Unk_800540E8 {
-    u8 pad_00[0xB8];
-    void (*unkB8)(void);
-} Unk_800540E8;
-extern s16 D_8008ABA8[];
-void func_80057534(void *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4);
-extern s16 D_8008ABA4[];
-typedef struct Unk_80057DBC {
-    u8 pad_00[0x74];
-    u16 unk74;
-    u16 unk76;
-    u8 pad_78[0xA0 - 0x78];
-    s32 unkA0;
-} Unk_80057DBC;
-extern u16 D_80087AA4[];
-extern u16 D_80087AA6[];
-typedef struct Unk_800523F0_Obj Unk_800523F0_Obj;
-typedef struct { u8 pad[0x80]; void (*f80)(Unk_800523F0_Obj *, s32, s32, s32); } Unk_800523F0_Vt;
-struct Unk_800523F0_Obj { Unk_800523F0_Vt *vt; };
-typedef struct Unk_800523F0 { u8 pad[0x3C]; Unk_800523F0_Obj *u3C; } Unk_800523F0;
-typedef struct Unk_80052E7C { u8 pad_00[0x38]; s32 u38; } Unk_80052E7C;
-void func_80049060(s32);
-void func_80049098(s32, s32, s32);
-typedef struct Unk_80056464_Vtbl {
-    u8 pad_00[0x8];
-    s32 (*unk8)(void *);
-    void (*unkC)(s32);
+} Point;
+
+/* The ambience band objects (func_800404D0): 18 in g_ambienceBands for family 0, one at D_8008AC94. */
+typedef struct AmbienceBandVtbl {
+    u8 pad_00[0x04];
+    void *(*delete_)();   /* 0x04 Object_Delete */
+    u8 pad_08[0x4C - 0x08];
+    void (*attach)();     /* 0x4C (band, parent, position) */
+    u8 pad_50[0x64 - 0x50];
+    void (*unk64)();
+    void (*unk68)();
+    u8 pad_6C[0xB8 - 0x6C];
+    void (*setColor)();   /* 0xB8 (band, 1, RGB) */
+    void (*setPos)();     /* 0xBC */
+} AmbienceBandVtbl;
+
+typedef struct AmbienceBand {
+    AmbienceBandVtbl *vt;
+} AmbienceBand;
+
+/* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, func_800564A4). */
+typedef struct SceneryParams {
+    s32 x;        /* 0x00 offset from the origin: random +-22 tiles (<< 11) in func_80055258 */
+    s32 y;        /* 0x04 */
+    s32 z;        /* 0x08 */
+    u8 *unkC;     /* 0x0C 12-byte entry of D_80087174 */
+    u8 *unk10;    /* 0x10 12-byte entry of D_800871C8, or D_80087204 */
+    s32 unk14;    /* 0x14 rand() % 5 */
+    s32 unk18;    /* 0x18 */
+    u8 *unk1C;    /* 0x1C 3-byte entry of D_8008721C or D_80087228 */
+    s32 unk20;    /* 0x20 kind 2: day number % 20, or D_80087430 */
+} SceneryParams;
+
+/* A part of a scenery object (classes D_800878D4 for kind 0, D_800879C4 for kinds 2 and 3). */
+typedef struct SceneryPartVtbl {
+    u8 pad_00[0x44];
+    void (*unk44)();
+    void (*unk48)();
+    void (*unk4C)();
+    u8 pad_50[0x60 - 0x50];
+    void (*unk60)();
+    void (*unk64)();
+    void (*unk68)();
+    u8 pad_6C[0xB8 - 0x6C];
+    void (*unkB8)();
+    void (*unkBC)();
+} SceneryPartVtbl;
+
+typedef struct SceneryPart {
+    SceneryPartVtbl *vt;
+    u8 pad_04[0x84 - 0x04];
+    s32 unk84;    /* 0x84 random angle (rand() % 360) << 12 for kind 3 */
+} SceneryPart;
+
+/*
+ * A scenery object (class D_800876FC returned by Scenery_GetVtbl, 0x98 bytes, made by Scenery_New):
+ * one of 4 kinds made around the dreamer at a place's first tick (Scenery_CreateAll, work/hunt6/F-findings.md).
+ * Its base class is D_800878D4 (constructor func_80057044, 0x58 bytes).
+ */
+typedef struct SceneryVtbl {
+    u8 pad_00[0x08];
+    s32 (*construct)();   /* 0x08 func_800563C0 */
+    void (*destruct)();   /* 0x0C func_80056464 */
     u8 pad_10[0x40 - 0x10];
-    void (*unk40)(void *);
-} Unk_80056464_Vtbl;
-void func_80056718();
-Unk_80056464_Vtbl *func_80057C84(void);
-typedef struct Unk_80056794 { s32 u0; s32 u4; s32 u8; } Unk_80056794;
-typedef struct Unk_800571A8_vt { u8 pad_00[0x8]; s32 (*unk8)(void *); u8 pad_0C[0x18 - 0xC]; void (*unk18)(void *); } Unk_800571A8_vt;
-typedef struct Unk_800571A8 { u8 pad_00[0x4C]; s32 unk4C; s32 unk50; } Unk_800571A8;
-Unk_800571A8_vt *func_8001E57C(void);
-typedef struct Unk_80054714Vt { u8 pad_00[4]; void (*unk4)(void *); } Unk_80054714Vt;
-typedef struct Unk_80054714 { Unk_80054714Vt *vt; } Unk_80054714;
-s32 D_8008AB54;
-Unk_80054714 *D_8008AC94;
-typedef struct Unk_80056238 {
-    u8 p0[0x4];
-    s32 u4;
-    u8 p1[0x10 - 0x8];
-    s32 u10;
-    u8 p2[0x1C - 0x14];
-    s32 u1C;
-    s32 u20;
-    s32 u24;
-    s32 u28;
-    u8 p3[0x30 - 0x2C];
-    s32 u30;
-    s32 u34;
-    s32 u38;
-    s32 u3C;
-    u8 p4[0x44 - 0x40];
-    s32 u44;
-    s32 u48;
-    s32 u4C;
-    s32 u50;
-} Unk_80056238;
-typedef struct Unk_8005627C_Sub {
-    s8 pad_00[6];
-    s8 u6;
-} Unk_8005627C_Sub;
-typedef struct Unk_8005627C {
-    Unk_8005627C_Sub *u0;
-    s32 u4;
-    s32 u8;
-    s32 uC;
-    s32 u10;
-    u8 p0[0x28 - 0x14];
-    s32 u28;
-} Unk_8005627C;
-s32 func_8005627C(Unk_8005627C *arg0);
-s32 func_800558F0(s32 arg0, s32 arg1, s32 arg2);
-typedef struct Unk_8005393C_Vtbl {
-    u8 pad_00[0x10C];
-    s32 (*unk10C)(void *, s32, s32);
-} Unk_8005393C_Vtbl;
-typedef struct Unk_8005393C_Obj {
-    Unk_8005393C_Vtbl *unk0;
-} Unk_8005393C_Obj;
-typedef struct Unk_8005393C {
-    u8 pad_00[0x14];
-    Unk_8005393C_Obj *unk14;
-} Unk_8005393C;
-void func_8002CD08(s32, s32);
-s32 *D_8008AC7C;
-typedef struct Unk_80057444 {
-    u8 pad_00[0xBC];
-    void (*unkBC)(void *, void *);
-} Unk_80057444;
-extern void func_8001E58C(void *, void *, void *);
-typedef struct { u8 pad[6]; u8 u6; } Unk_800557DC_Sub;
-typedef struct { Unk_800557DC_Sub *u0; s32 u4; s32 u8; s32 uC; s32 u10; s32 u14; } Unk_800557DC;
-typedef struct Unk_800564A4 { s32 u[9]; } Unk_800564A4;
-typedef struct Unk_80057618 { u8 pad_00[0x28]; s32 u28; } Unk_80057618;
-s32 func_80057668();
-typedef struct Unk_8005217C_Vt {
-    u8 pad_00[0x14];
-    void (*unk14)(void *, s32);
-} Unk_8005217C_Vt;
-typedef struct Unk_8005217C {
-    Unk_8005217C_Vt *vt;
-    u8 pad_04[0x34 - 0x4];
-    s32 u34;
-    s32 u38;
-    s32 u3C;
-} Unk_8005217C;
-typedef struct Unk_80057C14_Vt { u8 pad_00[0x9C]; void (*unk9C)(void *, void *, s32); } Unk_80057C14_Vt;
-extern u8 D_8008AB10[];
-typedef struct Unk_800529FC_Vt { u8 pad_00[0xB8]; void (*fB8)(void *, void *, s32, s32); } Unk_800529FC_Vt;
-typedef struct Unk_800529FC_Obj { Unk_800529FC_Vt *vt; } Unk_800529FC_Obj;
-typedef struct Unk_800529FC { u8 pad_00[0x20]; s32 u20; s32 u24; s32 u28; u8 pad_2C[0x40 - 0x2C]; Unk_800529FC_Obj *u40[1]; } Unk_800529FC;
-typedef struct Unk_80057F68 {
-    u8 pad[8];
-    void (*unk8)(void *, s32);
-} Unk_80057F68;
-void *Heap_Alloc(s32 size);
-Unk_80057F68 *Graph_GetVtable(void);
-void func_80053EB4(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
-typedef struct Unk_80053D9C_Obj Unk_80053D9C_Obj;
-typedef struct Unk_80053D9C_Vtbl {
-    u8 pad_00[0xF4];
-    void (*unkF4)(Unk_80053D9C_Obj *, s32);
-    u8 pad_F8[0x13C - 0xF8];
-    void (*unk13C)(Unk_80053D9C_Obj *, s32);
-} Unk_80053D9C_Vtbl;
-struct Unk_80053D9C_Obj {
-    Unk_80053D9C_Vtbl *unk0;
-};
-typedef struct Unk_80053D9C {
-    u8 pad_00[0x20];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053D9C_Obj *unk3C;
-} Unk_80053D9C;
-typedef struct Unk_80054208 Unk_80054208;
-typedef struct Unk_80054208_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(Unk_80054208 *, s32);
-    u8 pad_34[0xD4 - 0x34];
-    void (*unkD4)(Unk_80054208 *);
-} Unk_80054208_Vtbl;
-struct Unk_80054208 {
-    Unk_80054208_Vtbl *unk0;
-    u8 pad_04[0x84 - 0x04];
-    s32 unk84;
-};
-typedef struct Unk_8005426C Unk_8005426C;
-typedef struct Unk_8005426C_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(Unk_8005426C *, s32);
-    u8 pad_34[0xD4 - 0x34];
-    void (*unkD4)(Unk_8005426C *);
-} Unk_8005426C_Vtbl;
-struct Unk_8005426C {
-    Unk_8005426C_Vtbl *unk0;
-    u8 pad_04[0x84 - 0x04];
-    s32 unk84;
-};
-extern u8 D_800872C4[];
-extern s32 D_8008730C[];
-typedef struct Unk_800545FC_Src {
-    s8 unk0;
-    s8 unk1;
-    s8 unk2;
-    s8 unk3;
-} Unk_800545FC_Src;
-typedef struct Unk_800545FC {
-    u8 pad_00[0xC];
-    u8 *unkC;
-    u8 pad_10[4];
-    s32 unk14;
-    u8 *unk18;
-    s32 unk1C;
-} Unk_800545FC;
-extern void func_8003B624(s32 *arg0, s32 arg1, s32 *arg2);
-extern s32 D_80087444[];
-extern s32 D_80087450[];
-extern s32 D_8008745C[];
-extern s32 D_80087468[];
-s32 D_8008AC6C;
-typedef struct Unk_80057320 { u8 pad_00[0xDC]; void (*unkDC)(void); void (*unkE0)(void); } Unk_80057320;
-typedef struct Unk_8005227C_Vt { u8 pad_00[0x54]; void (*f54)(void *, s32); } Unk_8005227C_Vt;
-typedef struct Unk_8005227C {
-    Unk_8005227C_Vt *vt;
-    u8 pad_04[0x2C - 0x4];
-    s32 u2C;
-    s32 u30;
-} Unk_8005227C;
-typedef struct Unk_80052498_Vt {
-    u8 pad_00[0x94];
-    void (*f94)(void *, s32, s32, s32, s32);
-    void (*f98)(void *, s32, s32);
-} Unk_80052498_Vt;
-typedef struct Unk_80052498 {
-    Unk_80052498_Vt *vt;
-    u8 pad_04[0x20 - 0x4];
-    s32 u20;
-    s32 u24;
-    s32 u28;
-    u8 pad_2C[0x50 - 0x2C];
-    s32 u50;
-} Unk_80052498;
-typedef struct Unk_800533F0 Unk_800533F0;
-typedef struct Unk_800533F0_Vt {
-    u8 pad_00[0x8C];
-    void (*f8C)(Unk_800533F0 *);
-    u8 pad_90[0xD0 - 0x90];
-    void (*fD0)(Unk_800533F0 *);
-} Unk_800533F0_Vt;
-struct Unk_800533F0 {
-    Unk_800533F0_Vt *vt;
-    u8 pad_04[0x1C - 0x4];
-    s32 u1C;
-    u8 pad_20[0x68 - 0x20];
-    s32 u68;
-    u8 pad_6C[0x80 - 0x6C];
-    s32 u80;
-};
-typedef struct Unk_80052110_Vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-} Unk_80052110_Vt;
-typedef struct Unk_80052110 {
-    Unk_80052110_Vt *unk0;
-    u8 pad_04[0x2C - 0x04];
-    s32 unk2C;
-    u8 pad_30[0x3C - 0x30];
-    s32 unk3C;
-} Unk_80052110;
-extern void func_8005C76C(void);
-extern void func_80054D30(void);
-typedef struct Unk_80053134_Vt {
-    u8 pad_00[0x48];
-    void (*unk48)(void *);
-    u8 pad_4C[0x84 - 0x4C];
-    void (*unk84)(void);
-} Unk_80053134_Vt;
-typedef struct Unk_80053134_Obj {
-    Unk_80053134_Vt *unk0;
-} Unk_80053134_Obj;
-typedef struct Unk_80053134 {
-    Unk_80053134_Vt *unk0;
-    u8 pad_04[0x54 - 0x04];
-    Unk_80053134_Obj *unk54;
-} Unk_80053134;
-typedef struct Unk_800520A0_Vt {
+    void (*init)();       /* 0x40 func_800564A4 */
+    void (*unk44)();
+    void (*unk48)();
+    void (*unk4C)();
+    u8 pad_50[0xB8 - 0x50];
+    void (*setPos)();     /* 0xB8 Actor_SetPos */
+    void (*movePos)();    /* 0xBC Actor_MovePos */
+    u8 pad_C0[0xEC - 0xC0];
+    void (*update)();     /* 0xEC func_800564F4 */
+} SceneryVtbl;
+
+typedef struct Scenery {
+    SceneryVtbl *vt;
+    u8 pad_04[0x14 - 0x04];
+    s32 *posBlock;        /* 0x14 its first word is cleared once moved */
+    u8 pad_18[0x20 - 0x18];
+    void *model;          /* 0x20 */
+    u32 ticks;            /* 0x24 counted by update (func_800564F4) */
+    u8 pad_28[0x44 - 0x28];
+    s32 unk44;            /* 0x44 cleared by the constructor */
+    u8 pad_48[0x54 - 0x48];
+    s32 kind;             /* 0x54 0 to 3 */
+    Vec3 offset;          /* 0x58 params x, y, z: offset from the origin */
+    s32 unk64;            /* 0x64 params unkC */
+    s16 *unk68;           /* 0x68 params unk10 */
+    s32 unk6C;            /* 0x6C params unk14, kind 0: direction 1 to 4 of its two parts */
+    s32 unk70;            /* 0x70 params unk18 */
+    s32 unk74;            /* 0x74 params unk1C */
+    s32 unk78;
+    union {
+        SceneryPart *pair[2];                                 /* 0x7C kind 0 */
+        struct { u8 pad_7C[0x84 - 0x7C]; SceneryPart *parts[5]; } many; /* 0x84 kinds 2 and 3 */
+    } u;
+} Scenery;
+
+/*
+ * A spot: an 8-byte record of D_800876B4[stage] (count D_800876EC[stage]) with a map tile
+ * record, a handler index idx and a range class. While the dreamer is within D_80087474[range]
+ * (ground distance |dx| + |dz|), one of the two slots D_8008AC9C holds it and its handler
+ * D_800874B0[range] runs (func_8005556C); the range is negated while it is held.
+ */
+typedef struct SpotTile {
+    u8 b0, b1, b2, b3;    /* handed to map slot 0xE8 with the D_800874EC entry */
+} SpotTile;
+
+typedef struct SpotTileExtra {
+    SpotTile tile;
+    s16 v;
+} SpotTileExtra;
+
+typedef struct SpotRecord {
+    SpotTile tile;        /* 0x0 */
+    u8 idx;               /* 0x4 index of D_800874EC */
+    u8 unk5;
+    s8 range;             /* 0x6 > 0 free, < 0 held by a slot */
+    u8 unk7;
+} SpotRecord;
+
+typedef struct SpotQuery {
+    SpotTile a;
+    SpotTileExtra b;
+} SpotQuery;
+
+/* The two slots (D_8008AC9C points into D_8008E154, 0x68 bytes each). */
+typedef struct SpotSlot {
+    SpotRecord *record;   /* 0x00 */
+    s32 pos[3];           /* 0x04 the spot's position (map slot 0xE8) */
+    s32 distance;         /* 0x10 ground distance to the dreamer */
+    s32 node;             /* 0x14 handler node, registered with func_8002CC34 */
+    u8 pad_18[0x28 - 0x18];
+    s32 unk28;            /* 0x28 func_8005627C divides the range by it */
+    u8 pad_2C[0x68 - 0x2C];
+} SpotSlot;
+
+/* The same slot as func_800557DC reads it (the range byte unsigned). */
+typedef struct SpotRecordU {
+    u8 pad_00[6];
+    u8 range;
+} SpotRecordU;
+
+typedef struct SpotSlotU {
+    SpotRecordU *record;
+    s32 pos[3];
+    s32 distance;
+    s32 node;
+} SpotSlotU;
+
+/* The handler state the spot handlers func_80055A88 to func_80056238 get: a tick count and three {value, step} channels. */
+typedef struct SpotState {
     u8 pad_00[0x4];
-    void *(*unk4)(void *);
-    u8 pad_08[0x90 - 0x08];
-    void (*unk90)(void *);
-} Unk_800520A0_Vt;
-typedef struct Unk_800520A0 {
-    Unk_800520A0_Vt *vt;
-    u8 pad_04[0x50 - 0x04];
-    void *unk50;
-} Unk_800520A0;
-s32 D_8008AB4C;
-s32 D_8008AC70;
-s32 D_8008AC74;
-s32 D_8008AC78;
-extern s32 D_8008ACA0;
-s32 func_80054558(void);
-typedef struct Unk_80055F74 {
-    u8 pad_00[0x4];
-    s32 unk4;
+    s32 tick;             /* 0x04 the handler sets -1 to stop */
     u8 pad_08[0x10 - 0x8];
-    s32 unk10;
+    s32 level;            /* 0x10 func_8005627C: distance / (range / slot +0x28) */
     u8 pad_14[0x1C - 0x14];
     s32 unk1C;
     s32 unk20;
     s32 unk24;
     s32 unk28;
-} Unk_80055F74;
-typedef struct Unk_80052430 Unk_80052430;
-typedef struct Unk_80052430_Vt { u8 pad_00[0x94]; void (*f94)(Unk_80052430 *, s32, s32, s32, s32); } Unk_80052430_Vt;
-struct Unk_80052430 {
-    Unk_80052430_Vt *vt;
-    u8 pad_04[0x14 - 0x4];
-    s32 u14;
-    u8 pad_18[0x20 - 0x18];
-    s32 u20;
-    s32 u24;
-    s32 u28;
-    u8 pad_2C[0x50 - 0x2C];
-    s32 u50;
-};
-typedef struct Unk_800573CC_Vec3 {
-    s32 x;
-    s32 y;
-    s32 z;
-} Unk_800573CC_Vec3;
-typedef struct Unk_800573CC_Node {
-    s32 u0;
-    u8 pad_04[0x18 - 0x4];
-    Unk_800573CC_Vec3 u18;
-} Unk_800573CC_Node;
-typedef struct Unk_800573CC_Arg0 {
-    u8 pad_00[0x14];
-    Unk_800573CC_Node *u14;
-} Unk_800573CC_Arg0;
-typedef struct Unk_80052EBC_Vt {
-    u8 pad_00[0x14];
-    void (*unk14)(void *, void *);
-} Unk_80052EBC_Vt;
-typedef struct Unk_80052EBC {
-    Unk_80052EBC_Vt *unk0;
-    u8 pad_04[0x3C - 0x4];
-    void *unk3C;
-} Unk_80052EBC;
-extern Unk_800557DC *D_8008AC9C[];
-void Heap_Free(void *);
-typedef struct Unk_80057044 {
-    Unk_80056464_Vtbl *unk0;
-    u8 pad_04[0x40];
+    u8 pad_2C[0x30 - 0x2C];
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3C;
+    u8 pad_40[0x44 - 0x40];
     s32 unk44;
-    s32 pad_48;
+    s32 unk48;
     s32 unk4C;
     s32 unk50;
-} Unk_80057044;
-typedef struct Unk_80057C94_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32);
-    u8 pad_0C[0x40 - 0xC];
-    void (*unk40)(void *, s32);
-} Unk_80057C94_vt;
-Unk_80057C94_vt *func_80057F58(void);
-typedef struct Unk_80053C94_Obj Unk_80053C94_Obj;
-typedef struct Unk_80053C94_Vtbl {
-    u8 pad_00[0xFC];
-    void (*unkFC)(Unk_80053C94_Obj *);
-    u8 pad_100[0x200 - 0x100];
-    s32 (*unk200)(Unk_80053C94_Obj *);
-} Unk_80053C94_Vtbl;
-struct Unk_80053C94_Obj {
-    Unk_80053C94_Vtbl *unk0;
-};
-typedef struct Unk_80053C94 {
-    u8 pad_00[0x20];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053C94_Obj *unk3C;
-} Unk_80053C94;
-typedef struct Unk_80053D18_Obj Unk_80053D18_Obj;
-typedef struct Unk_80053D18_Vtbl {
-    u8 pad_00[0xF0];
-    s32 (*unkF0)(Unk_80053D18_Obj *, s32 *, s32);
-    u8 pad_F4[0xFC - 0xF4];
-    void (*unkFC)(Unk_80053D18_Obj *);
-} Unk_80053D18_Vtbl;
-struct Unk_80053D18_Obj {
-    Unk_80053D18_Vtbl *unk0;
-};
-typedef struct Unk_80053D18 {
-    u8 pad_00[0x20];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053D18_Obj *unk3C;
-} Unk_80053D18;
-typedef struct Unk_80057B90_Vt { u8 pad_00[0xA0]; void (*unkA0)(void *, void *, s32); } Unk_80057B90_Vt;
-typedef struct Unk_80057B90_Obj { Unk_80057B90_Vt *vt; } Unk_80057B90_Obj;
-typedef struct Unk_80054C74_Vt {
-    u8 pad_00[0xEC];
-    void (*unkEC)(void *, s32);
-} Unk_80054C74_Vt;
-typedef struct Unk_80054C74_Obj {
-    Unk_80054C74_Vt *vt;
-} Unk_80054C74_Obj;
-typedef struct Unk_80056F5C_Vt {
-    u8 pad_00[0x80];
-    void *(*unk80)(void *, s32);
-} Unk_80056F5C_Vt;
-typedef struct Unk_80056F5C_Obj {
-    Unk_80056F5C_Vt *vt;
-} Unk_80056F5C_Obj;
+} SpotState;
+
+
+/* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: pairs read whole by func_800549A8, func_80054850 */
+extern Point D_8008AB68;
+extern Point D_8008AB70;
+s32 g_ambienceFamily;
+extern void Object_DeleteArray(void *, s32);
+void func_800573CC(void *self, s32 set, s32 *vec);
+void func_80056D18(Scenery *scenery, s32 arg1, s32 arg2, s32 color);
+void Place_CheckTextureLoad(void *arg0, void *arg1);
+extern void func_80056640();
+extern s32 D_80087474[];
+s32 D_8008AB50;
+s32 g_sceneryCount;
+extern u8 g_scenery[];
+void func_8002CC84(void *, void *);
+extern s32 func_8001E7BC(void);
+PlaceBaseVtbl *Task_GetVtbl();
+extern s16 D_8008ABA8[];
+void func_80057534(void *self, s16 *field, s32 value, s32 notify, s32 message);
+extern s16 D_8008ABA4[];
+extern u16 D_80087AA4[];
+extern u16 D_80087AA6[];
+void func_80049060(s32);
+void func_80049098(s32, s32, s32);
+void func_80056718();
+ActorVtbl *func_80057C84(void);
+ActorBaseVtbl *func_8001E57C(void);
+s32 D_8008AB54;
+AmbienceBand *D_8008AC94;
+s32 func_8005627C(SpotSlot *slot);
+s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found);
+void func_8002CD08(s32, s32);
+PlaceRefs *g_placeRefs;
+extern void func_8001E58C(void *, void *, void *);
+s32 func_80057668();
+extern u8 D_8008AB10[];
+void *Heap_Alloc(s32 size);
+GraphCtorVtbl *Graph_GetVtable(void);
+void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch);
+extern u8 D_800872C4[];
+extern s32 D_8008730C[];
+extern void func_8003B624(s32 *arg0, s32 arg1, s32 *arg2);
+extern s32 D_80087444[];
+extern s32 D_80087450[];
+extern s32 D_8008745C[];
+extern s32 D_80087468[];
+s32 g_placeStage;
+extern void func_8005C76C(void);
+extern void Scenery_Teardown(void);
+s32 D_8008AB4C;
+s32 g_placeTicks;
+s32 g_placeDayNumber;
+s32 D_8008AC78;
+extern s32 D_8008ACA0;
+Ambience *Ambience_Get(void);
+extern SpotSlot *D_8008AC9C[];
+void Heap_Free(void *);
+TextPartVtbl *func_80057F58(void);
 extern s32 D_8008AB98[];
 extern s16 D_8008AB94[];
-void *D_8008ACA4;
+PlaceObj *D_8008ACA4;
 void *D_8008ACA8;
-void *D_8008ACAC;
+PlaceView *D_8008ACAC;
 void func_80020510(void *, void *);
-typedef struct Unk_8005278C {
-    u8 pad_00[0x10];
-    s32 u10;
-    u8 pad_14[0x40 - 0x14];
-    Unk_80054714 *u40[4];
-    s32 u50;
-} Unk_8005278C;
-void func_80052E7C(Unk_80052E7C *, s32, s32, s32);
-typedef struct Unk_80052DE8_Vt {
-    u8 pad_00[0xC8];
-    void (*unkC8)(void *, void (*)(Unk_80052E7C *, s32, s32, s32), void *);
-} Unk_80052DE8_Vt;
-typedef struct Unk_80052DE8_Obj {
-    Unk_80052DE8_Vt *unk0;
-} Unk_80052DE8_Obj;
-typedef struct Unk_80052DE8 {
-    u8 pad_00[0xC];
-    Unk_80052DE8_Obj *unkC;
-} Unk_80052DE8;
-typedef struct Unk_80053358 Unk_80053358;
-typedef void (*Unk_80053358_Fn)(Unk_80053358 *);
-typedef struct Unk_80053358_Obj {
-    u8 pad_00[0x74];
-    Unk_80053358_Fn unk74;
-    u8 pad_78[0xC0 - 0x78];
-    Unk_80053358_Fn unkC0;
-    Unk_80053358_Fn unkC4;
-    Unk_80053358_Fn unkC8;
-} Unk_80053358_Obj;
-struct Unk_80053358 {
-    Unk_80053358_Obj *unk0;
-    u8 pad_04[0x68 - 0x04];
-    s32 unk68;
-};
-typedef struct Unk_80056238_80056054 {
-    u8 p0[0x4];
-    s32 u4;
-    u8 p1[0x10 - 0x8];
-    s32 u10;
-    u8 p2[0x1C - 0x14];
-    s32 u1C;
-    s32 u20;
-    u8 p3[0x30 - 0x24];
-    s32 u30;
-    s32 u34;
-} Unk_80056238_80056054;
-typedef struct Unk_800571A8_vt_800570B4 { u8 pad_00[0x10]; void (*unk10)(void *, void *); u8 pad_14[0x18 - 0x14]; void (*unk18)(void *); } Unk_800571A8_vt_800570B4;
-typedef struct Unk_80056718 {
-    u8 pad_00[0x54];
-    s32 unk54;
-} Unk_80056718;
-typedef struct Unk_80057130_Vt { u8 pad_00[0x14]; void (*unk14)(void *, s32 **); } Unk_80057130_Vt;
-typedef struct Unk_80052B70_Vtbl {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32, s32, s32);
-    u8 pad_0C[0x40 - 0x0C];
-    void (*unk40)(void *);
-} Unk_80052B70_Vtbl;
-Unk_80052B70_Vtbl *func_800544D4(void);
-typedef struct Unk_80056320_Vt {
-    u8 pad_00[0x8];
-    s32 (*unk8)(void *, s32, s32, s32, s32);
-} Unk_80056320_Vt;
-Unk_80056320_Vt *func_80056F4C(void);
-extern Unk_800545FC_Src *D_800873EC[];
-extern Unk_800545FC D_80087424;
-void *func_80054758(void);
-extern void func_800545FC(Unk_800545FC *arg0, Unk_800545FC_Src *arg1);
-typedef struct Unk_800563C0_Vtbl {
-    u8 pad_00[0x40];
-    void (*unk40)(void *, s32);
-} Unk_800563C0_Vtbl;
-typedef struct Unk_800563C0 {
-    Unk_800563C0_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x54 - 0x48];
-    s32 unk54;
-} Unk_800563C0;
-void func_80056520(void *arg0, s32 arg1, s32 arg2);
-typedef struct Unk_800521D4 Unk_800521D4;
-typedef struct Unk_800521D4_Vt {
-    u8 pad_00[0x14];
-    void (*f14)(Unk_800521D4 *, s32);
-    u8 pad_18[0x30 - 0x18];
-    void (*f30)(Unk_800521D4 *, s32);
-    u8 pad_34[0x48 - 0x34];
-    void (*f48)(Unk_800521D4 *);
-} Unk_800521D4_Vt;
-struct Unk_800521D4 {
-    Unk_800521D4_Vt *vt;
-    u8 pad_04[0x2C - 0x4];
-    s32 u2C;
-    s32 u30;
-    s32 u34;
-};
-void func_80055258(void *arg0, s32 arg1);
+void func_80052E7C(Place *place, s32 result, s32 arg2, s32 arg3);
+PlaceVtbl *Place_GetVtbl(void);
+SceneryVtbl *Scenery_GetVtbl(void);
+extern AmbienceRecord *D_800873EC[];
+extern Ambience D_80087424;
+AmbienceRecord *Ambience_PickFamily(void);
+extern void Ambience_Fill(Ambience *ambience, AmbienceRecord *record);
+void func_80056520(void *self, s32 map, s32 origin);
+void func_80055258(void *origin, s32 height);
 extern s32 D_80087330;
 extern u8 D_80087204[];
-typedef struct Unk_8008E0A4 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    void *unkC;
-    void *unk10;
-    s32 unk14;
-    s32 unk18;
-    u8 *unk1C;
-} Unk_8008E0A4;
-extern Unk_8008E0A4 D_8008E0A4;
-typedef struct Unk_80052598 Unk_80052598;
-typedef struct Unk_80052598_Vt {
-    u8 pad_00[0x94];
-    void (*f94)(Unk_80052598 *, s32, s32, s32, s32);
-    void (*f98)(Unk_80052598 *, s32, s32);
-} Unk_80052598_Vt;
-struct Unk_80052598 {
-    Unk_80052598_Vt *vt;
-    u8 pad_04[0x10 - 0x4];
-    s32 u10;
-    u8 pad_14[0x20 - 0x14];
-    s32 u20;
-    s32 u24;
-    s32 u28;
-    u8 pad_2C[0x50 - 0x2C];
-    s32 u50;
-};
-typedef struct Unk_80053BE8_Obj Unk_80053BE8_Obj;
-typedef struct Unk_80053BE8_Vtbl {
-    u8 pad_00[0xFC];
-    void (*unkFC)(Unk_80053BE8_Obj *);
-    u8 pad_100[0x200 - 0x100];
-    s32 (*unk200)(Unk_80053BE8_Obj *);
-} Unk_80053BE8_Vtbl;
-struct Unk_80053BE8_Obj {
-    Unk_80053BE8_Vtbl *unk0;
-    u8 pad_04[0x164 - 0x04];
-    s32 unk164;
-};
-typedef struct Unk_80053BE8_ArgVtbl {
-    u8 pad_00[0x9C];
-    void (*unk9C)(void *);
-} Unk_80053BE8_ArgVtbl;
-typedef struct Unk_80053BE8 {
-    Unk_80053BE8_ArgVtbl *unk0;
-    u8 pad_04[0x20 - 0x04];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053BE8_Obj *unk3C;
-} Unk_80053BE8;
-typedef struct Unk_80054120_Obj Unk_80054120_Obj;
-typedef struct Unk_80054120_Res Unk_80054120_Res;
-typedef struct Unk_80054120_Vt Unk_80054120_Vt;
-typedef struct Unk_80054120 Unk_80054120;
-struct Unk_80054120_Vt {
-    u8 pad_00[0x84];
-    void (*unk84)(Unk_80054120_Obj *);
-    u8 pad_88[0x114 - 0x88];
-    Unk_80054120_Res *(*unk114)(Unk_80054120_Obj *, s32 *);
-    u8 pad_118[0x1A0 - 0x118];
-    s32 (*unk1A0)(Unk_80054120_Obj *, s32);
-};
-struct Unk_80054120_Obj {
-    Unk_80054120_Vt *vt;
-    u8 pad_04[0x34 - 0x04];
-    s32 u34;
-};
-struct Unk_80054120_Res {
-    u8 pad_00[0x04];
-    Unk_80054120_Obj *u4;
-    u8 pad_08[0x14 - 0x08];
-    s32 u14;
-};
-struct Unk_80054120 {
-    u8 pad_00[0x14];
-    Unk_80054120_Obj *u14;
-    u8 pad_18[0x3C - 0x18];
-    Unk_80054120_Obj *u3C;
-};
+extern SceneryParams g_sceneryParams;
 s32 Sym_SpawnOrSpy(s32, void *, s32);
 extern u8 D_80087A8C[];
-typedef struct Unk_80057D10_mgr_vt { u8 pad_00[0x8]; void (*unk8)(void *, s32, s32, void *, s32, s32); } Unk_80057D10_mgr_vt;
-Unk_80057D10_mgr_vt *func_800422BC(void);
-typedef struct Unk_80057D10 {
-    Unk_80057C94_vt *unk0;
-    u8 pad_04[0xA4 - 0x4];
-    s32 unkA4;
-} Unk_80057D10;
-void func_80056054(void *arg0, Unk_80056238_80056054 *arg1);
-typedef struct Unk_800536B0_Vt {
-    u8 pad_00[0x14];
-    void (*unk14)(void *, s32);
-    u8 pad_18[0x50 - 0x18];
-    void (*unk50)(void *);
-    u8 pad_54[0x74 - 0x54];
-    void (*unk74)(void *);
-    u8 pad_78[0xD4 - 0x78];
-    void (*unkD4)(void *);
-    u8 pad_D8[0xFC - 0xD8];
-    void (*unkFC)(void *);
-} Unk_800536B0_Vt;
-typedef struct Unk_800536B0_Obj {
-    Unk_800536B0_Vt *unk0;
-} Unk_800536B0_Obj;
-typedef struct Unk_800536B0 {
-    Unk_800536B0_Vt *unk0;
-    u8 pad_04[0x14 - 0x04];
-    s32 unk14;
-    Unk_800536B0_Obj *unk18;
-    u8 pad_1C[0x3C - 0x1C];
-    Unk_800536B0_Obj *unk3C;
-} Unk_800536B0;
-typedef struct Unk_80054660_Vt {
-    u8 pad_00[0x4C];
-    void (*f4C)(void *, s32, void *);
-    u8 pad_50[0x64 - 0x50];
-    void (*f64)(void *, s32);
-    void (*f68)(void *, s32);
-} Unk_80054660_Vt;
-typedef struct Unk_80054660_Obj {
-    Unk_80054660_Vt *vt;
-} Unk_80054660_Obj;
-extern Unk_80054660_Obj *D_8008E10C[];
-typedef struct Unk_80054660_SubVt {
-    u8 pad_00[0xAC];
-    s32 (*fAC)(void *);
-} Unk_80054660_SubVt;
-typedef struct Unk_80054660_Sub {
-    Unk_80054660_SubVt *vt;
-} Unk_80054660_Sub;
-typedef struct Unk_80054660_Ptr {
-    u8 pad_00[0xC];
-    Unk_80054660_Sub *unkC;
-} Unk_80054660_Ptr;
+TextPartBaseVtbl *func_800422BC(void);
+void func_80056054(void *slot, SpotState *state);
+extern AmbienceBand *g_ambienceBands[];
 extern void *func_800404D0(s32 arg0, s32 arg1, s32 arg2);
 extern s32 D_8008AB58[];
 extern s32 D_8008AB60[];
-typedef struct { s8 pad[6]; s8 u6; } Unk_8005556C_Sub;
-typedef struct { Unk_8005556C_Sub *u0; s32 u4; s32 u8; s32 uC; s32 u10; s32 u14; } Unk_8005556C;
-Unk_8005556C_Sub *func_80055620(void *arg0, void *arg1, s32 arg2);
+SpotRecord *func_80055620(void *pos, void *distance, s32 origin);
 extern s32 D_800874B0[];
 extern s32 func_8002CC34(s32, void *, s32, void *, s32);
-s32 func_80057A18(s32 arg0, s32 arg1, s32 arg2, s32 arg3, void *arg4);
-typedef struct Unk_80057954_Sub { u8 pad_00[0x2C]; s16 u2C; } Unk_80057954_Sub;
-typedef struct Unk_80057954_Obj { u8 pad_00[0x4]; Unk_80057954_Sub *u4; } Unk_80057954_Obj;
-typedef struct Unk_80052C10 {
-    Unk_80052B70_Vtbl *unk0;
-    u8 pad_04[0x38 - 0x04];
-    s32 unk38;
-    u8 pad_3C[0x54 - 0x3C];
-    s32 unk54;
-    u8 pad_58[0x60 - 0x58];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-    s32 unk70;
-    s32 unk74;
-    u8 pad_78[0x80 - 0x78];
-    s32 unk80;
-    s32 unk84;
-} Unk_80052C10;
+s32 func_80057A18(s32 actor, s32 delta, s32 pos, s32 rect, void *cell);
 extern s32 strlen(u8 *s);
 extern void *memcpy(void *dst, void *src, s32 n);
-typedef struct Unk_8005292C { u8 pad_00[0x18]; s32 *unk18; } Unk_8005292C;
-typedef struct Unk_80053EB4 Unk_80053EB4;
-typedef struct Unk_80053EB4_Obj Unk_80053EB4_Obj;
-typedef struct Unk_80053EB4_Sub Unk_80053EB4_Sub;
-typedef struct Unk_80053EB4_Vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, void *);
-} Unk_80053EB4_Vt;
-struct Unk_80053EB4 {
-    Unk_80053EB4_Vt *unk0;
-    u8 pad_04[0x10 - 0x04];
-    s32 unk10;
-    u8 pad_14[0x18 - 0x14];
-    Unk_80053EB4_Obj *unk18;
-};
-typedef struct Unk_80053EB4_ObjVt {
-    u8 pad_00[0xAC];
-    Unk_80053EB4_Sub *(*unkAC)(void *);
-} Unk_80053EB4_ObjVt;
-struct Unk_80053EB4_Obj {
-    Unk_80053EB4_ObjVt *unk0;
-};
-typedef struct Unk_80053EB4_SubVt {
-    u8 pad_00[0xD0];
-    void (*unkD0)(void *, s32);
-    u8 pad_D4[0xD8 - 0xD4];
-    void (*unkD8)(void *, s32, s32, s32);
-} Unk_80053EB4_SubVt;
-struct Unk_80053EB4_Sub {
-    Unk_80053EB4_SubVt *unk0;
-};
-typedef struct Unk_800543FC_Vt {
-    u8 pad_00[0x4];
-    void (*f4)(void *);
-    u8 pad_08[0x4C - 0x8];
-    void (*f4C)();
-    void (*f50)(void *);
-    u8 pad_54[0x88 - 0x54];
-    void (*f88)(void *);
-    void (*f8C)(void *);
-    u8 pad_90[0xB4 - 0x90];
-    void (*fB4)(void *, s32);
-    void (*fB8)(void *, s32 *);
-} Unk_800543FC_Vt;
-typedef struct Unk_800543FC_Obj {
-    Unk_800543FC_Vt *vt;
-} Unk_800543FC_Obj;
-typedef struct Unk_800543FC {
-    u8 pad_00[0x10];
-    Unk_800543FC_Obj *u10;
-    u8 pad_14[0x18 - 0x14];
-    Unk_800543FC_Obj *u18;
-    u8 pad_1C[0x34 - 0x1C];
-    Unk_800543FC_Obj *u34;
-    u8 pad_38[0x54 - 0x38];
-    Unk_800543FC_Obj *u54;
-    u8 pad_58[0x7C - 0x58];
-    Unk_800543FC_Obj *u7C;
-    s32 u80;
-} Unk_800543FC;
-typedef struct Unk_80056D18_Obj Unk_80056D18_Obj;
-typedef struct Unk_80056D18_Vt {
-    u8 pad_00[0x48];
-    void (*unk48)(Unk_80056D18_Obj *, s32, s32);
-    void (*unk4C)(Unk_80056D18_Obj *, u8 *, s32);
-    u8 pad_50[0xB8 - 0x50];
-    void (*unkB8)(Unk_80056D18_Obj *, s32);
-} Unk_80056D18_Vt;
-struct Unk_80056D18_Obj {
-    Unk_80056D18_Vt *vt;
-};
-extern void *func_80057C94(s32 arg0, s32 arg1, s32 arg2);
+extern void *func_80057C94(s32 index, s32 arg1, s32 font);
 extern s32 rand(void);
 extern u8 D_8008788C[];
-typedef struct Unk_80056E44_Vt {
-    u8 pad_00[0x48];
-    void (*f48)(void *, s32, void *);
-} Unk_80056E44_Vt;
-typedef struct Unk_80056E44 {
-    Unk_80056E44_Vt *vt;
-    u8 pad_04[0x84 - 0x04];
-    s32 u84;
-} Unk_80056E44;
-typedef struct Unk_80056E44_Parent {
-    u8 pad_00[0x88];
-    Unk_80056E44 *unk88[4];
-} Unk_80056E44_Parent;
 extern s8 D_80087324[];
-void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3);
-s32 *func_80054DA4(s32 *arg0, s32 arg1, void *arg2);
-s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2);
-s32 *func_80054FD8(s32 *arg0, s32 arg1);
-s32 *func_8005511C(s32 *arg0, s32 arg1);
+void func_80056F5C(s32 family, PlaceObj *models, void *font, PlaceView *view);
+s32 *func_80054DA4(s32 *out, s32 count, void *origin);
+s32 *func_80054F30(s32 *out, s32 count, void *origin);
+s32 *func_80054FD8(s32 *out, s32 origin);
+s32 *func_8005511C(s32 *out, s32 origin);
 s32 D_8008AC84;
 void *D_8008AC8C;
 u8 *D_8008AC90;
@@ -788,1944 +581,1390 @@ extern s8 D_800873DC[];
 extern s8 D_800873D8[];
 extern u8 D_80087234[];
 extern u8 D_8008726C[];
-extern Unk_800545FC_Src *D_800873C8[];
-typedef struct Unk_80052CD8_80052D10 {
-    u8 pad_00[0xC];
-    void (*unkC)(s32);
-    u8 pad_10[0x38 - 0x10];
-    void (*unk38)(void *, s32 **, s32);
-    u8 pad_3C[0x44 - 0x3C];
-    void (*unk44)(void *, void *, s32);
-    void (*unk48)(void *);
-} Unk_80052CD8_80052D10;
-typedef struct Unk_80052D10_Vtbl {
-    u8 pad_00[0x90];
-    void (*unk90)(void *, s32 **, s32);
-    u8 pad_94[0xB0 - 0x94];
-    void (*unkB0)(void *, s32 **, s32);
-    void (*unkB4)(void *, s32 **, s32);
-} Unk_80052D10_Vtbl;
-typedef struct Unk_80052D10 {
-    Unk_80052D10_Vtbl *unk0;
-} Unk_80052D10;
-extern void func_80056794(Unk_80056794 *arg0, Unk_80056794 *arg1, Unk_80056794 *arg2);
+extern AmbienceRecord *D_800873C8[];
+extern void func_80056794(Vec3 *out, Vec3 *a, Vec3 *b);
 s32 D_8008ACB0;
-typedef struct Unk_80056640_Vt { u8 pad_00[0xB8]; void (*unkB8)(void *, Unk_80056794 *); } Unk_80056640_Vt;
-typedef struct Unk_80056640 { Unk_80056640_Vt *unk0; u8 pad_04[0x54 - 0x04]; s32 unk54; Unk_80056794 unk58; } Unk_80056640;
-void func_800569A8(void *arg0, Unk_80056794 *arg1);
-extern void func_80056DF0(void *arg0, Unk_80056794 *arg1);
-extern void func_80056E44(Unk_80056E44_Parent *arg0, Unk_80056794 *arg1);
+void func_800569A8(void *self, Vec3 *origin);
+extern void func_80056DF0(void *scenery, Vec3 *origin);
+extern void func_80056E44(Scenery *scenery, Vec3 *origin);
 extern u8 D_8008AB0C[];
-typedef struct Unk_80052A58_Vt {
-    u8 pad_00[0x60];
-    void (*unk60)(void *, s32);
-    u8 pad_64[0xB8 - 0x64];
-    void (*unkB8)(void *, void *);
-} Unk_80052A58_Vt;
-typedef struct Unk_80052A58_Obj {
-    Unk_80052A58_Vt *unk0;
-} Unk_80052A58_Obj;
-typedef struct Unk_80052A58 {
-    Unk_80052A58_Vt *unk0;
-    u8 pad_04[0x20 - 0x04];
-    s32 unk20;
-    s32 unk24;
-    s32 unk28;
-    u8 pad_2C[0x40 - 0x2C];
-    Unk_80052A58_Obj *unk40[4];
-    s32 unk50;
-} Unk_80052A58;
-typedef struct Unk_800522DC_Obj Unk_800522DC_Obj;
-typedef struct Unk_800522DC_Vt {
-    u8 pad_00[0x54];
-    void (*f54)(Unk_800522DC_Obj *, s32);
-    u8 pad_58[0x60 - 0x58];
-    void (*f60)(Unk_800522DC_Obj *, s32, s32);
-    u8 pad_64[0x7C - 0x64];
-    void (*f7C)(Unk_800522DC_Obj *, s32, s32);
-    void (*f80)(Unk_800522DC_Obj *, s32, s32);
-    void (*f84)(Unk_800522DC_Obj *, s32, s32);
-    void (*f88)(Unk_800522DC_Obj *, s32, s32);
-} Unk_800522DC_Vt;
-struct Unk_800522DC_Obj {
-    Unk_800522DC_Vt *vt;
-};
-typedef struct Unk_80053ACC Unk_80053ACC;
-typedef struct Unk_80053ACC_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(Unk_80053ACC *, s32);
-} Unk_80053ACC_Vtbl;
-struct Unk_80053ACC {
-    Unk_80053ACC_Vtbl *unk0;
-    u8 pad_04[0x1C - 0x4];
-    s32 unk1C;
-    s32 unk20;
-    u8 pad_24[0x38 - 0x24];
-    s32 unk38;
-    Unk_80053D18_Obj *unk3C;
-};
-typedef struct Unk_80056520 {
-    void *unk0;
-    u8 pad_04[0x54 - 0x04];
-    s32 unk54;
-    Unk_80056794 unk58;
-    s32 unk64;
-    s32 unk68;
-} Unk_80056520;
-void func_800567D4(void *arg0, s32 arg1, Unk_80056794 *arg2, s32 arg3, s32 arg4);
+void func_800567D4(void *self, s32 parent, Vec3 *pos, s32 arg3, s32 arg4);
 void func_8001E770(void *arg0, void *arg1);
-void func_80056858(void *arg0, s32 arg1);
-void func_80056BBC(void *arg0, s32 arg1);
-void func_80056E1C(u8 *arg0, s32 arg1);
-typedef struct Unk_800542D0 {
-    u8 pad_00[0x10];
-    Unk_800543FC_Obj *u10;
-    s32 u14;
-    Unk_800543FC_Obj *u18;
-    u8 pad_1C[0x34 - 0x1C];
-    Unk_800543FC_Obj *u34;
-    u8 pad_38[0x54 - 0x38];
-    Unk_800543FC_Obj *u54;
-    u8 pad_58[0x74 - 0x58];
-    s32 u74;
-    u8 pad_78[0x7C - 0x78];
-    Unk_800543FC_Obj *u7C;
-    s32 u80;
-} Unk_800542D0;
+void func_80056858(void *self, s32 move);
+void func_80056BBC(void *self, s32 arg1);
+void func_80056E1C(Scenery *scenery, s32 arg1);
 extern s32 func_800408CC(s32, s32, s32);
 extern u8 D_8008AB44[];
 extern s32 D_8008AB38[];
 extern s32 D_8008AB40[];
-typedef struct Unk_80057DF4 {
-    u8 pad_00[0x58];
-    void *u58;
-    s32 u5C;
-    s32 u60;
-    u8 pad_64[0x80 - 0x64];
-    s16 u80;
-    s16 u82;
-} Unk_80057DF4;
 s32 D_8008AB00;
 s32 D_8008AB04;
-u8 *func_8005292C(Unk_8005292C *arg0, u8 *arg1, s32 arg2, s32 arg3, u8 *arg4);
-void func_800529FC(Unk_800529FC *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
-typedef struct Unk_80052644_Vtbl {
-    u8 pad_00[0x4C];
-    void (*unk4C)(void *, s32, s32 *);
-    u8 pad_50[0xB8 - 0x50];
-    void (*unkB8)(void *, u8 *);
-} Unk_80052644_Vtbl;
-typedef struct Unk_80052644_Obj { Unk_80052644_Vtbl *vt; } Unk_80052644_Obj;
-typedef struct Unk_80052644 {
-    u8 pad_00[0x10];
-    s32 u10;
-    u8 pad_14[0x40 - 0x14];
-    Unk_80052644_Obj *u40[4];
-    s32 u50;
-} Unk_80052644;
-typedef struct Unk_80053984_Vtbl {
-    u8 pad_00[0x94];
-    void (*unk94)(void *, s32, s32);
-    void (*unk98)(void *, s32, s32);
-    void (*unk9C)(void *, s32, s32);
-    void (*unkA0)(void *, s32, s32);
-    void (*unkA4)(void *, s32, s32);
-    void (*unkA8)(void *, s32, s32);
-    void (*unkAC)(void *, s32, s32);
-} Unk_80053984_Vtbl;
-typedef struct Unk_80053984_Obj {
-    Unk_80053984_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-} Unk_80053984_Obj;
-typedef struct Unk_80053984 {
-    Unk_80053984_Vtbl *unk0;
-    u8 pad_04[0x20 - 0x04];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053984_Obj *unk3C;
-} Unk_80053984;
-typedef struct Unk_80057784_Range { u8 pad_00[2]; s16 u2; s32 u4; } Unk_80057784_Range;
-typedef struct Unk_80057784_Sub Unk_80057784_Sub;
-typedef struct Unk_80057668 Unk_80057668;
-typedef struct Unk_80057668_Vt Unk_80057668_Vt;
-typedef struct Unk_80057668_Obj Unk_80057668_Obj;
-typedef struct Unk_80057668_ObjVt Unk_80057668_ObjVt;
-struct Unk_80057668_Vt {
-    u8 pad_00[0x88];
-    void (*unk88)(Unk_80057668 *, s32);
-    u8 pad_8C[0xBC - 0x8C];
-    void (*unkBC)(Unk_80057668 *, void *);
-};
-struct Unk_80057668 {
-    Unk_80057668_Vt *vt;
-    u8 pad_04[0x14 - 0x04];
-    u8 *u14;
-    u8 pad_18[0x28 - 0x18];
-    s32 u28;
-    u8 pad_2C[0x4C - 0x2C];
-    Unk_80057668_Obj *u4C;
-};
-struct Unk_80057668_ObjVt {
-    u8 pad_00[0x110];
-    s32 (*unk110)(Unk_80057668_Obj *, void *, u8 *);
-    u8 pad_114[0x118 - 0x114];
-    Unk_80057784_Sub *(*unk118)(Unk_80057668_Obj *, s32);
-};
-struct Unk_80057668_Obj {
-    Unk_80057668_ObjVt *vt;
-    u8 pad_04[0x68 - 0x04];
-    Unk_80057784_Range *u68;
-};
-s32 func_80057784(void *arg0, void *arg1, void *arg2, void *arg3, s32 arg4);
-typedef struct Unk_800571F8_Vt {
-    u8 pad_00[0x8C];
-    void (*unk8C)(void *, s32 **);
-    void (*unk90)(void *, s32 **, s32);
-} Unk_800571F8_Vt;
-typedef struct Unk_800571F8_SysVt {
-    u8 pad_00[0x88];
-    void (*unk88)(void *, s32);
-} Unk_800571F8_SysVt;
-typedef struct Unk_800571F8_ObjVt {
-    u8 unk0;
-    u8 pad_01[0xE8 - 0x01];
-    void (*unkE8)(void *, void *);
-} Unk_800571F8_ObjVt;
-typedef struct Unk_800571F8_Obj {
-    Unk_800571F8_ObjVt *vt;
-} Unk_800571F8_Obj;
-typedef struct Unk_800571F8 {
-    Unk_800571F8_Vt *unk0;
-    u8 pad_04[0x20 - 0x04];
-    s32 unk20;
-    u8 pad_24[0x28 - 0x24];
-    Unk_800571F8_Obj *unk28;
-    u8 pad_2C[0x48 - 0x2C];
-    s16 unk48;
-    u8 pad_4A[0x54 - 0x4A];
-    s32 unk54;
-} Unk_800571F8;
-s32 func_8001F3A4(s32);
-void func_8001F66C(s32 **arg0, s32 arg1, s32 arg2, s32 arg3);
-typedef struct Unk_8005281C_Vt {
-    u8 pad_00[0x60];
-    void (*f60)(void *, s32);
-    u8 pad_64[0xCC - 0x64];
-    void (*fCC)(void *, u8 *);
-} Unk_8005281C_Vt;
-typedef struct Unk_8005281C_Obj {
-    Unk_8005281C_Vt *vt;
-} Unk_8005281C_Obj;
-typedef struct Unk_8005281C {
-    Unk_8005281C_Vt *vt;
-    u8 pad_04[0x10 - 0x4];
-    s32 u10;
-    u8 pad_14[0x40 - 0x14];
-    Unk_8005281C_Obj *u40[4];
-    s32 u50;
-} Unk_8005281C;
-typedef struct Unk_80057A18 { s16 u0; s16 u2; s32 u4; s32 u8; } Unk_80057A18;
+u8 *func_8005292C(CardList *list, u8 *out, s32 i, s32 top, u8 *text);
+void func_800529FC(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight);
+s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size);
+s32 ModelObject_IsReady(s32);
+void ModelBox_ShiftList(s32 **arg0, s32 arg1, s32 arg2, s32 arg3);
 extern s32 func_80057B54();
 extern s32 D_8008732C;
 extern u8 D_80087174[];
-typedef struct Unk_80056BBC_Obj Unk_80056BBC_Obj;
-typedef struct Unk_80056BBC_Vt {
-    u8 pad_00[0x48];
-    void (*unk48)(Unk_80056BBC_Obj *, s32, s32);
-    u8 pad_4C[0x60 - 0x4C];
-    void (*unk60)(Unk_80056BBC_Obj *, s32);
-    void (*unk64)(Unk_80056BBC_Obj *, s32);
-    void (*unk68)(Unk_80056BBC_Obj *, s32);
-    u8 pad_6C[0xB8 - 0x6C];
-    void (*unkB8)(Unk_80056BBC_Obj *, s32);
-} Unk_80056BBC_Vt;
-struct Unk_80056BBC_Obj {
-    Unk_80056BBC_Vt *vt;
-};
-typedef struct Unk_80056BBC {
-    u8 pad_00[0x70];
-    s32 unk70;
-    s32 unk74;
-    s32 unk78;
-    u8 pad_7C[0x88 - 0x7C];
-    Unk_80056BBC_Obj *unk88;
-    Unk_80056BBC_Obj *unk8C;
-} Unk_80056BBC;
 extern s32 D_80087844[];
 extern s32 D_80087868[];
 extern s32 D_80087880[];
 extern u8 D_80087874[];
 extern u8 D_8008785C[];
-void func_800573A8(void *arg0, s32 *arg1);
-typedef struct Unk_80053F84_Obj Unk_80053F84_Obj;
-typedef struct Unk_80053F84_Vtbl {
-    u8 pad_00[0x14];
-    void (*unk14)(Unk_80053F84_Obj *, Unk_80053F84_Obj *);
-    u8 pad_18[0x30 - 0x18];
-    void (*unk30)(Unk_80053F84_Obj *, s32);
-    u8 pad_34[0x64 - 0x34];
-    void (*unk64)(Unk_80053F84_Obj *, void *);
-    u8 pad_68[0xE4 - 0x68];
-    void *(*unkE4)(Unk_80053F84_Obj *);
-    u8 pad_E8[0xF4 - 0xE8];
-    void (*unkF4)(Unk_80053F84_Obj *, s32);
-    u8 pad_F8[0x17C - 0xF8];
-    void (*unk17C)(Unk_80053F84_Obj *, s32);
-} Unk_80053F84_Vtbl;
-struct Unk_80053F84_Obj {
-    Unk_80053F84_Vtbl *vt;
-    u8 pad_04[0x18 - 0x04];
-    Unk_80053F84_Obj *unk18;
-    u8 pad_1C[0x20 - 0x1C];
-    s32 unk20;
-    u8 pad_24[0x3C - 0x24];
-    Unk_80053F84_Obj *unk3C;
-};
-typedef struct Vt_80051F24 Vt_80051F24;
-typedef struct Obj_80051F24 Obj_80051F24;
-typedef struct Unk_80051F24 Unk_80051F24;
-struct Vt_80051F24 {
-    s32 unk0;
-    void (*unk4)(void *);
-    s32 pad8[17];
-    void (*unk4C)(void *, s32, void *);
-    s32 pad50[10];
-    void (*unk78)(void *);
-    s32 pad7C[4];
-    void (*unk8C)(void *, s32, void *, s32, s32, s32);
-};
-struct Obj_80051F24 {
-    Vt_80051F24 *vt;
-};
-struct Unk_80051F24 {
-    Vt_80051F24 *vt;
-    s32 pad4[7];
-    s32 unk20;
-    s32 unk24;
-    s32 unk28;
-    s32 pad2C[9];
-    Obj_80051F24 *unk50;
-};
+void Actor_MovePos(void *actor, s32 *delta);
 extern s8 *func_800270C4(s8 *, s8 *, s8 *, s8 *);
-extern Obj_80051F24 *func_8003B39C(s32);
-extern Obj_80051F24 *func_80041C9C(Obj_80051F24 *, s32 *, s32);
+extern CardText *func_8003B39C(s32);
+extern CardText *func_80041C9C(CardText *, s32 *, s32);
 extern s8 D_8008AB14[];
 extern s8 D_8008AB1C[];
 extern s8 D_8008AB24[];
 extern s32 D_8008AAF8[];
 extern s32 D_80087028[];
-typedef struct Unk_800531CC_AVt {
-    u8 pad_00[0x80];
-    void (*f80)(void *);
-    u8 pad_84[0x4];
-    void (*f88)(void *);
-} Unk_800531CC_AVt;
-typedef struct Unk_800531CC_CVt {
-    u8 pad_00[0x104];
-    void (*f104)(void *, s32);
-    s32 (*f108)(void *);
-} Unk_800531CC_CVt;
-typedef struct Unk_800531CC_C {
-    Unk_800531CC_CVt *vt;
-} Unk_800531CC_C;
-typedef struct Unk_800531CC_Sub14 {
-    u8 pad_00[0x1B4];
-    u16 u1B4;
-} Unk_800531CC_Sub14;
-typedef struct Unk_800531CC_Sub50 {
-    u8 pad_00[0xC];
-    s32 uC;
-    s32 u10;
-    s32 u14;
-    s32 u18;
-    s32 u1C;
-} Unk_800531CC_Sub50;
-typedef struct Unk_800531CC_A {
-    Unk_800531CC_AVt *vt;
-    u8 pad_04[0x14 - 0x04];
-    Unk_800531CC_Sub14 *u14;
-    u8 pad_18[0x3C - 0x18];
-    Unk_800531CC_C *u3C;
-    u8 pad_40[0x50 - 0x40];
-    Unk_800531CC_Sub50 *u50;
-    u8 pad_54[0x60 - 0x54];
-    s32 u60;
-    s32 u64;
-    s32 u68;
-} Unk_800531CC_A;
-typedef struct Unk_800531CC_BVt {
-    u8 pad_00[0x4];
-    void (*f4)(void *);
-    u8 pad_08[0x7C - 0x08];
-    void (*f7C)(void *, s32);
-} Unk_800531CC_BVt;
-typedef struct Unk_800531CC_B {
-    Unk_800531CC_BVt *vt;
-    u8 pad_04[0x3C - 0x04];
-    s32 u3C;
-    u8 pad_40[0x80 - 0x40];
-    s32 u80;
-} Unk_800531CC_B;
 void func_80055410();
-void *func_80056320(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin);
 extern s32 D_80087328[];
 extern u8 D_800871C8[];
 s32 D_8008AC98;
-typedef struct { u8 pad[0x68]; } Unk_8008E154;
-extern Unk_8008E154 D_8008E154[];
+extern SpotSlot D_8008E154[];
 void func_80054850(void);
 void func_800549A8(void);
 void func_80055A24(void);
-typedef struct Unk_80051A5C Unk_80051A5C;
 extern u8 D_80086F88[];
 extern u8 D_80087034[];
 extern u8 D_800876FC[];
-typedef struct Unk_800571E8 {
-    u8 pad_00[0x48];
-    s16 u48;
-    u8 pad_4A[0x54 - 0x4A];
-    s32 u54;
-} Unk_800571E8;
-typedef struct Unk_80057C6C {
-    u8 pad_00[0x48];
-    s16 u48;
-} Unk_80057C6C;
-typedef struct Unk_80057C7C {
-    u8 pad_00[0x54];
-    s32 u54;
-} Unk_80057C7C;
 extern u8 D_800878D4[];
 extern u8 D_800879C4[];
-typedef struct Unk_80053764_VtA {
-    u8 pad_00[0xF0];
-    s32 (*fF0)(void *, s32 *, s32);
-    u8 pad_F4[0xF8 - 0xF4];
-    void (*fF8)(void *, s32, s32);
-} Unk_80053764_VtA;
-typedef struct Unk_80053764_ObjA {
-    Unk_80053764_VtA *vt;
-} Unk_80053764_ObjA;
-typedef struct Unk_80053764_VtB {
-    u8 pad_00[0xEC];
-    void (*fEC)(void *);
-} Unk_80053764_VtB;
-typedef struct Unk_80053764_ObjB {
-    Unk_80053764_VtB *vt;
-} Unk_80053764_ObjB;
-typedef struct Unk_80053764_ObjD Unk_80053764_ObjD;
-typedef struct Unk_80053764_VtC {
-    u8 pad_00[0x60];
-    void (*f60)(void *, s32);
-    void (*f64)(void *, s32);
-    void (*f68)(void *, s32);
-    void (*f6C)(void *, s32);
-    u8 pad_70[0xAC - 0x70];
-    Unk_80053764_ObjD *(*fAC)(void *);
-    void (*fB0)(void *, s32);
-    void (*fB4)(void *, s32);
-} Unk_80053764_VtC;
-typedef struct Unk_80053764_ObjC {
-    Unk_80053764_VtC *vt;
-} Unk_80053764_ObjC;
-typedef struct Unk_80053764_VtD {
-    u8 pad_00[0xD4];
-    void (*fD4)(void *, s32, s32, s32);
-    u8 pad_D8[0xF0 - 0xD8];
-    s32 (*fF0)(void *, s32, s32);
-} Unk_80053764_VtD;
-struct Unk_80053764_ObjD {
-    Unk_80053764_VtD *vt;
-};
-typedef struct Unk_80053764_Vt {
-    u8 pad_00[0x10];
-    void (*f10)(void *, void *);
-} Unk_80053764_Vt;
-typedef struct Unk_80053764 {
-    Unk_80053764_Vt *vt;
-    u8 pad_04[0x10 - 0x04];
-    s32 u10;
-    Unk_80053764_ObjB *u14;
-    Unk_80053764_ObjC *u18;
-    u8 pad_1C[0x3C - 0x1C];
-    Unk_80053764_ObjA *u3C;
-    s32 u40;
-    s32 u44;
-    u8 pad_48[0x50 - 0x48];
-    Unk_800531CC_Sub50 *u50;
-    u8 pad_54[0x68 - 0x54];
-    s32 u68;
-} Unk_80053764;
-typedef struct Unk_800569A8_Vt {
-    u8 pad_00[0x44];
-    void (*f44)(void *, s32, void *);
-    u8 pad_48[0xBC - 0x48];
-    void (*fBC)(void *, void *);
-} Unk_800569A8_Vt;
-typedef struct Unk_800569A8_Obj {
-    Unk_800569A8_Vt *vt;
-} Unk_800569A8_Obj;
-typedef struct Unk_800569A8 {
-    Unk_800569A8_Vt *vt;
-    u8 pad_04[0x14 - 0x04];
-    s32 *u14;
-    u8 pad_18[0x24 - 0x18];
-    u32 u24;
-    u8 pad_28[0x6C - 0x28];
-    void *u6C;
-    s32 u70;
-    u8 pad_74[0x7C - 0x74];
-    Unk_800569A8_Obj *u7C[2];
-} Unk_800569A8;
 extern s32 D_8008780C[];
-extern Unk_80056794 D_8008782C;
+extern Vec3 D_8008782C;
 extern s32 D_80087838[];
-typedef struct Unk_800534C8_Vt {
-    u8 pad_00[0x10];
-    void (*f10)(void *, void *);
-} Unk_800534C8_Vt;
-typedef struct Unk_800534C8_AVt {
-    u8 pad_00[0x54];
-    void (*f54)(void *, s32);
-    u8 pad_58[0x70 - 0x58];
-    void (*f70)(void *, void *, s32 *, s32 *, s32);
-    void (*f74)(void *);
-} Unk_800534C8_AVt;
-typedef struct Unk_800534C8_A {
-    Unk_800534C8_AVt *vt;
-} Unk_800534C8_A;
-typedef struct Unk_800534C8_SVt {
-    u8 pad_00[0xBC];
-    void (*fBC)(void *, s32, s32);
-    u8 pad_C0[0xC4 - 0xC0];
-    void (*fC4)(void *, s32, s32, s32);
-    u8 pad_C8[0xCC - 0xC8];
-    void (*fCC)(void *, s32 *);
-    u8 pad_D0[0xDC - 0xD0];
-    void (*fDC)(void *, s32);
-    void (*fE0)(void *, void *);
-} Unk_800534C8_SVt;
-typedef struct Unk_800534C8_S {
-    Unk_800534C8_SVt *vt;
-} Unk_800534C8_S;
-typedef struct Unk_800534C8_CVt {
-    u8 pad_00[0x4C];
-    void (*f4C)(void *, void *);
-} Unk_800534C8_CVt;
-typedef struct Unk_800534C8_C {
-    Unk_800534C8_CVt *vt;
-} Unk_800534C8_C;
-typedef struct Unk_800534C8_BVt {
-    u8 pad_00[0x7C];
-    s32 *(*f7C)(void *, s32);
-} Unk_800534C8_BVt;
-typedef struct Unk_800534C8_B {
-    Unk_800534C8_BVt *vt;
-} Unk_800534C8_B;
-typedef struct Unk_800534C8_Sub {
-    s32 u0;
-    s32 u4;
-    s32 u8;
-} Unk_800534C8_Sub;
-typedef struct Unk_800534C8 {
-    Unk_800534C8_Vt *vt;
-    u8 pad_04[0x0C - 0x04];
-    Unk_800534C8_B **unkC;
-    s32 unk10;
-    Unk_800534C8_S *unk14;
-    Unk_800534C8_A *unk18;
-    u8 pad_1C[0x34 - 0x1C];
-    s32 unk34;
-    s32 unk38;
-    Unk_800534C8_C *unk3C;
-    u8 pad_40[0x48 - 0x40];
-    s32 unk48;
-    u8 pad_4C[0x50 - 0x4C];
-    Unk_800534C8_Sub *unk50;
-} Unk_800534C8;
-extern void Sym_InitStage(s32, s32, struct Unk_8005CD58 *, s32, s32);
-extern struct Unk_800861D4 *func_800494D8(s32);
+extern void Sym_InitStage(s32 stage, PlaceMap *map, DreamSys *dreamSys, PlaceObj *arg3, PlaceObj *arg4);
+extern void *Stage_GetGrid(s32 stage);
 extern s32 D_8008715C[];
 extern s32 D_80087168[];
 extern s32 D_8008710C[];
 s32 D_8008AB34;
-typedef struct { u8 r, g, b, cd; } Unk_80055620_Col;
-typedef struct { Unk_80055620_Col c; s16 v; } Unk_80055620_Ent;
-typedef struct { Unk_80055620_Col c; u8 idx; u8 u5; s8 range; u8 u7; } Unk_80055620_Rec;
-typedef struct { Unk_80055620_Col a; Unk_80055620_Ent b; } Unk_80055620_Tmp;
-extern Unk_80055620_Ent D_800874EC[];
-extern Unk_80055620_Rec *D_800876B4[];
+extern SpotTileExtra D_800874EC[];
+extern SpotRecord *D_800876B4[];
 extern u8 D_800876EC[];
-typedef struct Unk_800567D4_Vt {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, s32);
-    void (*unk48)(void *, s32, s32);
-    void (*unk4C)(void *, s32);
-} Unk_800567D4_Vt;
-typedef struct Unk_800567D4_Obj {
-    Unk_800567D4_Vt *vt;
-} Unk_800567D4_Obj;
-typedef struct Unk_80053458_Vt {
-    u8 pad_00[0xC4];
-    void (*fC4)(void *);
-    u8 pad_C8[0xD0 - 0xC8];
-    void (*fD0)(void *);
-    void (*fD4)(void *);
-} Unk_80053458_Vt;
-typedef struct Unk_80053458 {
-    Unk_80053458_Vt *vt;
-    u8 pad_04[0x80 - 0x4];
-    s32 u80;
-} Unk_80053458;
 extern s32 D_80087118[];
 extern s32 D_80087150[];
-s32 func_800544E4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4);
+Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 arg4);
 s32 Stage_PickTexturePath(s32, s32, s32);
 s32 Music_PickTrack(s32, s32);
-s32 func_80043008(s32);
+void *Tix_Create(s32 path);
 s32 func_8001EF60(s32);
-typedef struct Unk_80052F10_Vt {
-    u8 pad_00[0x5C];
-    void (*f5C)(void *, s32);
-    u8 pad_60[0x70 - 0x60];
-    void (*f70)(void *, void *, void *, void *, s32);
-    void (*f74)(void *);
-    u8 pad_78[0xEC - 0x78];
-    void (*fEC)(void *, s32);
-    u8 pad_F0[0x134 - 0xF0];
-    void (*f134)(void *, void *);
-    u8 pad_138[0x1A0 - 0x138];
-    s32 (*f1A0)(void *, s32);
-} Unk_80052F10_Vt;
-typedef struct Unk_80052F10_Obj {
-    Unk_80052F10_Vt *vt;
-} Unk_80052F10_Obj;
-typedef struct Unk_80052F10 {
-    u8 pad_00[0x14];
-    Unk_80052F10_Obj *u14;
-    Unk_80052F10_Obj *u18;
-    u8 pad_1C[0x20 - 0x1C];
-    s32 u20;
-    u8 pad_24[0x38 - 0x24];
-    s32 u38;
-    Unk_80052F10_Obj *u3C;
-    s32 u40;
-    s32 u44;
-    s32 u48;
-    s32 u4C;
-    s32 u50;
-    Unk_80052F10_Obj *u54;
-    s32 u58;
-    u8 pad_5C[0x60 - 0x5C];
-    s32 u60;
-    u8 pad_64[0x6C - 0x64];
-    s32 u6C;
-    u8 pad_70[0x78 - 0x70];
-    Unk_80052F10_Obj *u78;
-} Unk_80052F10;
-typedef struct Unk_80053E84 Unk_80053E84;
-typedef struct Unk_80053E84_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(Unk_80053E84 *, s32);
-} Unk_80053E84_Vtbl;
-struct Unk_80053E84 {
-    Unk_80053E84_Vtbl *unk0;
-};
-void func_80057618(Unk_80057618 *arg0, void (*arg1)(void *, s32, s32), s32 arg2, s32 arg3);
-typedef struct Unk_800575B0_Vt {
-    u8 pad_00[0xC4];
-    void (*fC4)(void *, s32, s32);
-} Unk_800575B0_Vt;
-typedef struct Unk_800575B0_Obj {
-    Unk_800575B0_Vt *vt;
-} Unk_800575B0_Obj;
-typedef struct Unk_800575E0_Vt {
-    u8 pad_00[0xC8];
-    void (*unkC8)(void *, s32, s32);
-} Unk_800575E0_Vt;
-typedef struct Unk_800575E0 {
-    Unk_800575E0_Vt *unk0;
-} Unk_800575E0;
+void func_80057618(Actor *actor, void (*move)(void *, s32, s32), s32 arg2, s32 arg3);
 extern u8 D_8008721C[];
 void func_80055410(void);
-typedef struct Unk_80054850 {
-    Unk_80054850_Pair a;
-    Unk_80054850_Pair b;
-} Unk_80054850;
-void func_80054B1C(u8 *arg0, u8 *arg1, s32 arg2);
-typedef struct Unk_800549A8_Vt {
-    u8 pad_00[0x64];
-    void (*unk64)(void *, void *);
-    u8 pad_68[0xB8 - 0x68];
-    void (*unkB8)(void *, s32, void *);
-    void (*unkBC)(void *, void *);
-} Unk_800549A8_Vt;
-typedef struct Unk_800549A8 {
-    Unk_800549A8_Vt *vt;
-    u8 pad_04[0x14];
-    s32 unk18;
-    u8 pad_1C[0x8];
-    s32 unk24;
-} Unk_800549A8;
-typedef struct Unk_800549A8_Ptr {
-    u8 pad_00[0xC];
-    Unk_800549A8 *unkC;
-} Unk_800549A8_Ptr;
-typedef struct Unk_80057784_Elem { s16 a; s16 b; s32 c; s32 d; } Unk_80057784_Elem;
-typedef struct Unk_80057784_Info { u8 pad_00[0x32]; s16 u32; } Unk_80057784_Info;
-struct Unk_80057784_Sub { u8 pad_00[4]; Unk_80057784_Info *u4; };
-typedef struct Unk_80057784_Arg3 { u8 pad_00[2]; s8 u2; s8 u3; u8 pad_04[0x20]; Unk_80057784_Sub *u24; } Unk_80057784_Arg3;
-typedef struct Unk_80056858_Vt {
-    u8 pad_00[0xB8];
-    void (*unkB8)(void *, Unk_80056794 *);
-} Unk_80056858_Vt;
-typedef struct Unk_80056858_Obj {
-    Unk_80056858_Vt *vt;
-} Unk_80056858_Obj;
-typedef struct Unk_80056858 {
-    u8 pad_00[0x20];
-    void *unk20;
-    u8 pad_24[0x64 - 0x24];
-    s32 unk64;
-    s16 *unk68;
-    s32 unk6C;
-    u8 pad_70[0x7C - 0x70];
-    void *unk7C[2];
-} Unk_80056858;
-extern Unk_80056794 D_800877EC;
+void func_80054B1C(u8 *out, u8 *rgb, s32 shift);
+extern Vec3 D_800877EC;
 extern s32 D_800877F8[];
 void *func_80056FE4(void);
-typedef struct Unk_8005511C_Slot {
-    s32 v;
-} Unk_8005511C_Slot;
 extern s32 D_80087430;
 extern u8 D_80087228[];
-typedef struct Unk_80057534_Vt {
-    u8 pad_00[0x88];
-    void (*unk88)(void *, s32);
-    u8 pad_8C[0xC0 - 0x8C];
-    void (*unkC0)(void *, void *);
-} Unk_80057534_Vt;
-typedef struct Unk_80057534 {
-    Unk_80057534_Vt *unk0;
-    u8 pad_04[0x48 - 0x04];
-    s16 unk48;
-} Unk_80057534;
 
 INCLUDE_RODATA("asm/nonmatchings/game/80051F24", D_800116A4);
 
-void func_80051F24(Unk_80051F24 *arg0, s32 arg1) {
-    s8 sp18[0x20];
-    Obj_80051F24 *temp_v0;
-    Obj_80051F24 *temp_a0;
-    Obj_80051F24 *temp_v0_2;
+/* Slot 0x44: open the list with background CARD\SELECT.TIM and the rows in FONTICON. */
+void func_80051F24(CardList *list, s32 parent) {
+    s8 path[0x20];
+    CardText *file;
+    CardText *background;
+    CardText *iconFile;
 
-    if ((arg1 != 0) && (arg0->unk50 == NULL)) {
-        temp_v0 = func_8003B39C((s32)func_800270C4(sp18, D_8008AB14, D_8008AB1C, D_8008AB24));
-        temp_v0->vt->unk78(temp_v0);
-        arg0->unk50 = func_80041C9C(temp_v0, D_80087028, 0);
-        temp_v0->vt->unk4(temp_v0);
-        temp_a0 = arg0->unk50;
-        temp_a0->vt->unk4C(temp_a0, arg1, D_8008AAF8);
-        temp_v0_2 = func_8003B39C((s32)func_800270C4(sp18, (s8 *)"FONTICON\0\0\0\0\0\0\0", D_8008AB1C, D_8008AB24));
-        temp_v0_2->vt->unk78(temp_v0_2);
-        arg0->vt->unk8C(arg0, arg1, temp_v0_2, arg0->unk20, arg0->unk24, arg0->unk28);
-        temp_v0_2->vt->unk4(temp_v0_2);
+    if ((parent != 0) && (list->background == NULL)) {
+        file = func_8003B39C((s32)func_800270C4(path, D_8008AB14, D_8008AB1C, D_8008AB24));
+        file->vt->unk78(file);
+        list->background = func_80041C9C(file, D_80087028, 0);
+        file->vt->delete_(file);
+        background = list->background;
+        background->vt->unk4C(background, parent, D_8008AAF8);
+        iconFile = func_8003B39C((s32)func_800270C4(path, (s8 *)"FONTICON\0\0\0\0\0\0\0", D_8008AB1C, D_8008AB24));
+        iconFile->vt->unk78(iconFile);
+        list->vt->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
+        iconFile->vt->delete_(iconFile);
     }
 }
 
-void func_800520A0(Unk_800520A0 *arg0) {
-    Unk_800520A0 *temp;
+/* Slot 0x48: delete the rows and the background. */
+void func_800520A0(CardList *list) {
+    CardText *background;
 
-    if (arg0->unk50 != NULL) {
-        arg0->vt->unk90(arg0);
-        temp = arg0->unk50;
-        arg0->unk50 = temp->vt->unk4(temp);
+    if (list->background != NULL) {
+        list->vt->deleteRows(list);
+        background = list->background;
+        list->background = background->vt->delete_(background);
     }
 }
 
-void func_80052110(Unk_80052110 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    arg0->unk0->unk10(arg0, arg1);
-    arg0->unk0->unk10(arg0, arg2);
-    arg0->unk3C = arg3;
-    arg0->unk2C = 0;
+void func_80052110(CardList *list, s32 arg1, s32 arg2, s32 arg3) {
+    list->vt->watch(list, arg1);
+    list->vt->watch(list, arg2);
+    list->unk3C = arg3;
+    list->mode = 0;
 }
 
-void func_8005217C(Unk_8005217C *arg0) {
-    arg0->vt->unk14(arg0, arg0->u34);
-    arg0->vt->unk14(arg0, arg0->u38);
-    arg0->u3C = 0;
+void func_8005217C(CardList *list) {
+    list->vt->unwatch(list, list->unk34);
+    list->vt->unwatch(list, list->unk38);
+    list->unk3C = 0;
 }
 
-void func_800521D4(Unk_800521D4 *arg0, s32 arg1) {
-    arg0->u30 = 0;
-    switch (arg1) {
+void func_800521D4(CardList *list, s32 mode) {
+    list->modeTicks = 0;
+    switch (mode) {
     case 2:
     case 3:
-        arg0->vt->f14(arg0, arg0->u34);
-        arg0->vt->f48(arg0);
-        arg0->u2C = arg1;
+        list->vt->unwatch(list, list->unk34);
+        list->vt->close(list);
+        list->mode = mode;
         break;
     case 4:
-        arg0->vt->f30(arg0, arg0->u2C);
+        list->vt->notify(list, list->mode);
         break;
     }
 }
 
-void func_8005227C(Unk_8005227C *arg0) {
-    s32 temp_v1;
-    s32 temp_v1_2;
+void func_8005227C(CardList *list) {
+    s32 mode;
+    s32 ticks;
 
-    temp_v1 = arg0->u2C;
-    if (temp_v1 >= 4) {
+    mode = list->mode;
+    if (mode >= 4) {
         return;
     }
-    if (temp_v1 < 2) {
+    if (mode < 2) {
         return;
     }
-    temp_v1_2 = arg0->u30;
-    arg0->u30 = temp_v1_2 + 1;
-    if (temp_v1_2 != 0) {
-        arg0->vt->f54(arg0, 4);
+    ticks = list->modeTicks;
+    list->modeTicks = ticks + 1;
+    if (ticks != 0) {
+        list->vt->setMode(list, 4);
     }
 }
 
-void func_800522DC(Unk_800522DC_Obj *arg0, s32 arg1, s32 arg2) {
-    void (*fn)(Unk_800522DC_Obj *, s32, s32);
-    u32 idx = arg2 - 4;
+/* Pad codes minus 4: 25 and 23 close the list (modes 2, 3), 5, 4, 18, 19 move and scroll it. */
+void func_800522DC(CardList *list, s32 arg1, s32 code) {
+    void (*fn)(CardList *, s32, s32);
+    u32 idx = code - 4;
 
     switch (idx) {
     case 21:
-        arg0->vt->f60(arg0, 0x10, idx);
-        arg0->vt->f54(arg0, 2);
+        list->vt->unk60(list, 0x10, idx);
+        list->vt->setMode(list, 2);
         return;
     case 19:
-        arg0->vt->f60(arg0, 0x10, idx);
-        arg0->vt->f54(arg0, 3);
+        list->vt->unk60(list, 0x10, idx);
+        list->vt->setMode(list, 3);
         return;
     case 1:
-        fn = arg0->vt->f7C;
+        fn = list->vt->scrollRight;
         break;
     case 0:
-        fn = arg0->vt->f80;
+        fn = list->vt->scrollLeft;
         break;
     case 14:
-        fn = arg0->vt->f84;
+        fn = list->vt->moveUp;
         break;
     case 15:
-        fn = arg0->vt->f88;
+        fn = list->vt->moveDown;
         break;
     default:
         return;
     }
-    fn(arg0, arg1, idx);
+    fn(list, arg1, idx);
 }
 
-void func_800523F0(Unk_800523F0 *arg0, s32 arg1) {
-    Unk_800523F0_Obj *temp_a0 = arg0->u3C;
-    if (temp_a0 != NULL) {
-        temp_a0->vt->f80(temp_a0, arg1, 0x60, 0x60);
+void func_800523F0(CardList *list, s32 arg1) {
+    CardListOwner *owner = (CardListOwner *)list->unk3C;
+    if (owner != NULL) {
+        owner->vt->unk80(owner, arg1, 0x60, 0x60);
     }
 }
 
-void func_80052430(Unk_80052430 *arg0) {
-    if (arg0->u50 != 0 && (arg0->u24 + 0x1A) < arg0->u14) {
-        arg0->vt->f94(arg0, arg0->u20, ++arg0->u24, arg0->u28, 1);
+/* Slot 0x7C: show one more character on the right while the longest row goes past 26. */
+void func_80052430(CardList *list) {
+    if (list->background != 0 && (list->column + 0x1A) < list->width) {
+        list->vt->drawRows(list, list->top, ++list->column, list->cursor, 1);
     }
 }
 
-void func_80052498(Unk_80052498 *arg0) {
-    s32 temp;
+/* Slot 0x80: back one character. */
+void func_80052498(CardList *list) {
+    s32 column;
 
-    if (arg0->u50 != 0) {
-        temp = arg0->u24 - 1;
-        if (temp >= 0) {
-            arg0->u24 = temp;
-            arg0->vt->f94(arg0, arg0->u20, temp, arg0->u28, 1);
+    if (list->background != 0) {
+        column = list->column - 1;
+        if (column >= 0) {
+            list->column = column;
+            list->vt->drawRows(list, list->top, column, list->cursor, 1);
         }
     }
 }
 
-void func_800524F8(Unk_80052498 *arg0) {
-    s32 temp_a1;
-    s32 temp_a3;
+/* Slot 0x84: cursor up, scrolling when it is on the top row. */
+void func_800524F8(CardList *list) {
+    s32 top;
+    s32 cursor;
 
-    if (arg0->u50 != 0) {
-        if (arg0->u28 - 1 >= 0) {
-            if (arg0->u28 - arg0->u20 > 0) {
-                arg0->vt->f98(arg0, 0, 1);
+    if (list->background != 0) {
+        if (list->cursor - 1 >= 0) {
+            if (list->cursor - list->top > 0) {
+                list->vt->moveCursor(list, 0, 1);
                 return;
             }
-            temp_a1 = --arg0->u20;
-            temp_a3 = --arg0->u28;
-            arg0->vt->f94(arg0, temp_a1, arg0->u24, temp_a3, 1);
+            top = --list->top;
+            cursor = --list->cursor;
+            list->vt->drawRows(list, top, list->column, cursor, 1);
         }
     }
 }
 
-void func_80052598(Unk_80052598 *arg0) {
-    s32 temp_a1;
-    s32 temp_a2;
-    s32 temp_v0;
+/* Slot 0x88: cursor down, scrolling past the fourth row. */
+void func_80052598(CardList *list) {
+    s32 top;
+    s32 cursor;
+    s32 aboveTop;
 
-    if (arg0->u50 != 0) {
-        temp_a2 = arg0->u28;
-        if ((temp_a2 + 1) < arg0->u10) {
-            temp_a1 = arg0->u20;
-            temp_v0 = temp_a1 - 1;
-            if ((temp_a2 - temp_v0) < 4) {
-                arg0->vt->f98(arg0, 1, 1);
+    if (list->background != 0) {
+        cursor = list->cursor;
+        if ((cursor + 1) < list->count) {
+            top = list->top;
+            aboveTop = top - 1;
+            if ((cursor - aboveTop) < 4) {
+                list->vt->moveCursor(list, 1, 1);
                 return;
             }
-            arg0->u20 = temp_a1 + 1;
-            arg0->vt->f94(arg0, temp_a1 + 1, arg0->u24, ++arg0->u28, 1);
+            list->top = top + 1;
+            list->vt->drawRows(list, top + 1, list->column, ++list->cursor, 1);
         }
     }
 }
 
-void func_80052644(Unk_80052644 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    u8 sp18[0x1C];
-    s32 sp38[4];
-    s32 var_s0;
-    s32 var_s2;
-    Unk_80052644_Obj **var_s1;
-    Unk_80052644_Obj *temp_v0;
-    Unk_80052644_Obj *temp_a0;
+/* Slot 0x8C: build up to 4 row texts 10 pixels apart, then highlight the cursor row. */
+void func_80052644(CardList *list, s32 parent, s32 font, s32 top, s32 column, s32 cursor) {
+    u8 text[0x1C];
+    s32 pos[4];
+    s32 i;
+    s32 n;
+    CardText **row;
+    CardText *created;
+    CardText *obj;
 
-    if (arg0->u50 != 0) {
-        sp38[0] = D_8008AB00;
-        sp38[1] = D_8008AB04;
-        var_s2 = arg0->u10;
-        var_s1 = arg0->u40;
-        if (var_s2 >= 5) {
-            var_s2 = 4;
+    if (list->background != 0) {
+        pos[0] = D_8008AB00;
+        pos[1] = D_8008AB04;
+        n = list->count;
+        row = list->rows;
+        if (n >= 5) {
+            n = 4;
         }
-        var_s0 = 0;
-        if (var_s2 > 0) {
+        i = 0;
+        if (n > 0) {
             do {
-                func_8005292C((Unk_8005292C *)arg0, sp18, var_s0, arg3, (u8 *)arg4);
-                temp_v0 = (Unk_80052644_Obj *)func_800408CC(arg2, 0x1A, (s32)sp18);
-                *var_s1 = temp_v0;
-                temp_v0->vt->unk4C(temp_v0, arg1, sp38);
-                temp_a0 = *var_s1;
-                var_s0 += 1;
-                temp_a0->vt->unkB8(temp_a0, D_8008AB0C);
-                sp38[1] += 0xA;
-                var_s1 += 1;
-            } while (var_s0 < var_s2);
+                func_8005292C(list, text, i, top, (u8 *)column);
+                created = (CardText *)func_800408CC(font, 0x1A, (s32)text);
+                *row = created;
+                created->vt->unk4C(created, parent, pos);
+                obj = *row;
+                i += 1;
+                obj->vt->setColor(obj, D_8008AB0C);
+                pos[1] += 0xA;
+                row += 1;
+            } while (i < n);
         }
-        func_800529FC((Unk_800529FC *)arg0, arg3, arg4, arg5, 1);
+        func_800529FC(list, top, column, cursor, 1);
     }
 }
 
-void func_8005278C(Unk_8005278C *arg0) {
+/* Slot 0x90 */
+void func_8005278C(CardList *list) {
     s32 i;
     s32 n;
-    Unk_80054714 *obj;
+    CardText *obj;
 
-    if (arg0->u50 != 0) {
-        n = arg0->u10;
+    if (list->background != 0) {
+        n = list->count;
         if (n >= 5) {
             n = 4;
         }
         for (i = 0; i < n; i++) {
-            obj = arg0->u40[i];
-            obj->vt->unk4(obj);
-            arg0->u40[i] = NULL;
+            obj = list->rows[i];
+            obj->vt->delete_(obj);
+            list->rows[i] = NULL;
         }
     }
 }
 
-void func_8005281C(Unk_8005281C *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    u8 buf[0x20];
+/* Slot 0x94: refill the row texts from top and column. */
+void func_8005281C(CardList *list, s32 top, s32 column, s32 cursor, s32 notify) {
+    u8 text[0x20];
     s32 i;
     s32 n;
-    Unk_8005281C_Obj **p;
-    Unk_8005281C_Obj *obj;
+    CardText **row;
+    CardText *obj;
 
-    if (arg0->u50 != 0) {
-        p = arg0->u40;
-        n = arg0->u10;
+    if (list->background != 0) {
+        row = list->rows;
+        n = list->count;
         if (n >= 5) {
             n = 4;
         }
         for (i = 0; i < n; i++) {
-            func_8005292C(arg0, buf, i, arg1, arg2);
-            obj = *p;
-            obj->vt->fCC(obj, buf);
-            p++;
+            func_8005292C(list, text, i, top, column);
+            obj = *row;
+            obj->vt->setText(obj, text);
+            row++;
         }
-        func_800529FC(arg0, arg1, arg2, arg3, 0);
-        if (arg4 != 0) {
-            arg0->vt->f60(arg0, 0);
+        func_800529FC(list, top, column, cursor, 0);
+        if (notify != 0) {
+            list->vt->unk60(list, 0);
         }
     }
 }
 
-u8 *func_8005292C(Unk_8005292C *arg0, u8 *arg1, s32 arg2, s32 arg3, u8 *arg4) {
-    s32 idx = arg3 + arg2;
+/* Copy row (top + i) into out, padded with spaces to 26 characters. */
+u8 *func_8005292C(CardList *list, u8 *out, s32 i, s32 top, u8 *text) {
+    s32 idx = top + i;
     s32 len;
-    s32 i;
+    s32 j;
 
-    len = strlen(arg4 + arg0->unk18[idx]);
+    len = strlen(text + list->offsets[idx]);
     if (len >= 0x1B) {
         len = 0x1A;
     }
-    memcpy(arg1, arg4 + arg0->unk18[idx], len);
-    for (i = len; i < 0x1A; i++) {
-        arg1[i] = 0x20;
+    memcpy(out, text + list->offsets[idx], len);
+    for (j = len; j < 0x1A; j++) {
+        out[j] = 0x20;
     }
-    arg1[0x1A] = 0;
-    return arg1;
+    out[0x1A] = 0;
+    return out;
 }
 
-void func_800529FC(Unk_800529FC *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    s32 temp;
-    Unk_800529FC_Obj *obj;
+void func_800529FC(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight) {
+    s32 row;
+    CardText *obj;
 
-    arg0->u20 = arg1;
-    arg0->u24 = arg2;
-    arg0->u28 = arg3;
-    if (arg4 != 0) {
-        temp = arg3 - arg1;
-        obj = arg0->u40[temp];
-        obj->vt->fB8(obj, D_8008AB10, arg2, temp);
+    list->top = top;
+    list->column = column;
+    list->cursor = cursor;
+    if (highlight != 0) {
+        row = cursor - top;
+        obj = list->rows[row];
+        obj->vt->setColor(obj, D_8008AB10, column, row);
     }
 }
 
-void func_80052A58(Unk_80052A58 *arg0, s32 arg1, s32 arg2) {
-    Unk_80052A58_Obj **slot;
-    Unk_80052A58_Obj *obj;
+/* Slot 0x98: move the highlight one row down (down != 0) or up. */
+void func_80052A58(CardList *list, s32 down, s32 notify) {
+    CardText **row;
+    CardText *obj;
 
-    if (arg0->unk50 != 0) {
-        slot = &arg0->unk40[arg0->unk28 - arg0->unk20];
-        obj = *slot;
-        obj->unk0->unkB8(obj, D_8008AB0C);
-        if (arg1 != 0) {
-            slot++;
-            arg0->unk28++;
+    if (list->background != 0) {
+        row = &list->rows[list->cursor - list->top];
+        obj = *row;
+        obj->vt->setColor(obj, D_8008AB0C);
+        if (down != 0) {
+            row++;
+            list->cursor++;
         } else {
-            slot--;
-            arg0->unk28--;
+            row--;
+            list->cursor--;
         }
-        obj = *slot;
-        obj->unk0->unkB8(obj, D_8008AB10);
-        if (arg2 != 0) {
-            arg0->unk0->unk60(arg0, 0);
+        obj = *row;
+        obj->vt->setColor(obj, D_8008AB10);
+        if (notify != 0) {
+            list->vt->unk60(list, 0);
         }
     }
 }
 
-s32 func_80052B54(u8 *arg0) {
-    return *(s32 *)(arg0 + 0x28);
+s32 func_80052B54(CardList *list) {
+    return list->cursor;
 }
 
-Unk_80051A5C *func_80052B60(void) {
-    return (Unk_80051A5C *)D_80086F88;
+CardListVtbl *func_80052B60(void) {
+    return (CardListVtbl *)D_80086F88;
 }
 
-void *func_80052B70(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    void *temp;
+/* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreateStage. */
+void *Place_New(s32 handlerList, s32 music, s32 font, s32 arg3, s32 stage) {
+    void *place;
 
-    temp = Heap_Alloc(0x88);
-    if (temp != NULL) {
-        func_800544D4()->unk8(temp, arg0, arg1, arg2, arg3, arg4);
-        return temp;
+    place = Heap_Alloc(0x88);
+    if (place != NULL) {
+        Place_GetVtbl()->construct(place, handlerList, music, font, arg3, stage);
+        return place;
     }
     return NULL;
 }
 
-void func_80052C10(Unk_80052C10 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
-    func_8004A4B8()->unk8(arg0, 0, arg1);
-    arg0->unk0 = func_800544D4();
-    arg0->unk64 = 0;
-    arg0->unk68 = 0;
-    arg0->unk60 = 1;
-    arg0->unk54 = arg2;
-    arg0->unk38 = arg5;
-    arg0->unk6C = arg1;
-    arg0->unk74 = arg3;
-    arg0->unk70 = arg4;
-    arg0->unk80 = 0;
-    arg0->unk84 = 0;
-    arg0->unk0->unk40(arg0);
+/* Slot 0x08 */
+void Place_Construct(Place *place, s32 handlerList, PlaceObj *music, void *font, PlaceObj *models, s32 stage) {
+    Task_GetVtbl()->construct(place, 0, handlerList);
+    place->vt = Place_GetVtbl();
+    place->ready = 0;
+    place->started = 0;
+    place->texLoading = 1;
+    place->music = music;
+    place->stage = stage;
+    place->refs.handlerList = handlerList;
+    place->refs.font = font;
+    place->refs.models = models;
+    place->pauseOpen = 0;
+    place->exitArmed = 0;
+    place->vt->unk40(place);
 }
 
-void func_80052CD8(s32 arg0) {
-    func_8004A4B8(arg0)->unkC(arg0);
+/* Slot 0x0C */
+void func_80052CD8(s32 place) {
+    Task_GetVtbl(place)->destruct(place);
 }
 
-void func_80052D10(Unk_80052D10 *arg0, s32 **arg1, s32 arg2) {
-    s32 code;
+/*
+ * Slot 0x38: a watched object sent a message. The first word of the sender's vtable is its
+ * class id: DreamSys (0x1F34) goes to slot 0x90, ids ending in 0x164 (the fader) to 0xB0,
+ * ids ending in 0x114 (the map) to 0xB4.
+ */
+void func_80052D10(Place *place, s32 **sender, s32 message) {
+    s32 classId;
 
-    ((Unk_80052CD8_80052D10 *)func_8004A4B8())->unk38(arg0, arg1, arg2);
-    code = **arg1;
-    if ((code & 0xFFF) == 0x114) {
-        arg0->unk0->unkB4(arg0, arg1, arg2);
-    } else if ((code & 0xFFF) == 0x164) {
-        arg0->unk0->unkB0(arg0, arg1, arg2);
-    } else if ((code & 0xFFFF) == 0x1F34) {
-        arg0->unk0->unk90(arg0, arg1, arg2);
+    Task_GetVtbl()->onNotify(place, sender, message);
+    classId = **sender;
+    if ((classId & 0xFFF) == 0x114) {
+        place->vt->onMapNotify(place, sender, message);
+    } else if ((classId & 0xFFF) == 0x164) {
+        place->vt->onFaderNotify(place, sender, message);
+    } else if ((classId & 0xFFFF) == 0x1F34) {
+        place->vt->onDreamSysNotify(place, sender, message);
     }
 }
 
 void func_80052DE0(void) {
 }
 
-void func_80052DE8(Unk_80052110 *arg0, Unk_80052DE8 *arg1, s32 arg2) {
-    Unk_80052DE8_Obj *temp_a0;
+/* Slot 0x44: keep the DreamSys and register func_80052E7C with the runner's object. */
+void func_80052DE8(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
+    PlaceOwnerObj *obj;
 
-    temp_a0 = arg1->unkC;
-    temp_a0->unk0->unkC8(temp_a0, &func_80052E7C, arg0);
-    arg0->unk3C = arg2;
-    func_8004A4B8()->unk44(arg0, arg1, 1);
-    arg0->unk0->unk10(arg0, arg2);
+    obj = owner->unkC;
+    obj->vt->setCallback(obj, &func_80052E7C, place);
+    place->dreamSys = dreamSys;
+    Task_GetVtbl()->attach(place, owner, 1);
+    place->vt->watch(place, dreamSys);
 }
 
-void func_80052E7C(Unk_80052E7C *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    if (arg1 >= 0) {
-        func_80049060(arg0->u38);
+void func_80052E7C(Place *place, s32 result, s32 arg2, s32 arg3) {
+    if (result >= 0) {
+        func_80049060(place->stage);
     } else {
-        func_80049098(arg0->u38, arg2, arg3);
+        func_80049098(place->stage, arg2, arg3);
     }
 }
 
-void func_80052EBC(Unk_80052EBC *arg0) {
-    arg0->unk0->unk14(arg0, arg0->unk3C);
-    func_8004A4B8()->unk48(arg0);
+/* Slot 0x48 */
+void func_80052EBC(Place *place) {
+    place->vt->unwatch(place, place->dreamSys);
+    Task_GetVtbl()->detach(place);
 }
 
-void func_80052F10(Unk_80052F10 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    Unk_80052F10_Obj *temp_s0;
-    s32 var_s0;
+/*
+ * Slot 0x4C, when a stage loads: picks the music track (Music_PickTrack) and starts the
+ * texture-set loader (Stage_PickTexturePath, Tix_Create), starts the scenery
+ * (Scenery_Begin, which gives the ambience) and sets the state to 5.
+ */
+void Place_Load(Place *place, s32 arg1, Ambience *ambience, s32 arg3) {
+    PlaceView *view;
+    s32 mode;
 
-    temp_s0 = arg0->u18;
-    temp_s0->vt->f74(temp_s0);
-    arg0->u60 = 1;
-    arg0->u54->vt->f5C(arg0->u54, Music_PickTrack(arg0->u38, 0));
-    arg0->u58 = func_80043008(Stage_PickTexturePath(arg0->u38, 0, arg0->u3C->vt->f1A0(arg0->u3C, 0)));
-    temp_s0->vt->f70(temp_s0, arg0->u3C, D_8008715C, D_80087168, 0);
-    arg0->u78 = temp_s0;
-    arg0->u50 = func_800544E4((s32)arg0->u14, arg0->u38, &arg0->u6C, arg0->u3C->vt->f1A0(arg0->u3C, 0), 0);
-    if (arg2 != 0) {
-        arg0->u50 = arg2;
+    view = place->view;
+    view->vt->unk74(view);
+    place->texLoading = 1;
+    place->music->vt->unk5C(place->music, Music_PickTrack(place->stage, 0));
+    place->texLoader = Tix_Create(Stage_PickTexturePath(place->stage, 0, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0)));
+    view->vt->unk70(view, place->dreamSys, D_8008715C, D_80087168, 0);
+    place->refs.view = view;
+    place->ambience = Scenery_Begin((s32)place->map, place->stage, &place->refs, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0), 0);
+    if (ambience != 0) {
+        place->ambience = ambience;
     }
-    arg0->u4C = arg3;
-    if (arg0->u38 != 0) {
-        arg0->u40 = 0x10;
-        arg0->u44 = 3;
-        var_s0 = arg0->u38 == 5;
-        if (arg0->u38 == 6) {
-            var_s0 = 1;
+    place->unk4C = arg3;
+    if (place->stage != 0) {
+        place->unk40 = 0x10;
+        place->unk44 = 3;
+        mode = place->stage == 5;
+        if (place->stage == 6) {
+            mode = 1;
         }
-        if (arg0->u38 == 3) {
-            var_s0 = 1;
+        if (place->stage == 3) {
+            mode = 1;
         }
-        arg0->u14->vt->f134(arg0->u14, NULL);
+        place->map->vt->unk134(place->map, NULL);
     } else {
-        arg0->u40 = 0x10;
-        arg0->u44 = 2;
-        var_s0 = 1;
-        arg0->u14->vt->f134(arg0->u14, D_80087150);
+        place->unk40 = 0x10;
+        place->unk44 = 2;
+        mode = 1;
+        place->map->vt->unk134(place->map, D_80087150);
     }
-    arg0->u48 = arg1;
+    place->unk48 = arg1;
     if (arg1 == 0) {
-        arg0->u48 = 0xA000;
+        place->unk48 = 0xA000;
     }
-    func_8001EF60(var_s0);
-    arg0->u3C->vt->fEC(arg0->u3C, D_80087118[arg0->u38]);
-    arg0->u20 = 5;
+    func_8001EF60(mode);
+    place->dreamSys->vtbl->unkEC(place->dreamSys, D_80087118[place->stage]);
+    place->state = 5;
 }
 
-void func_80053134(Unk_80053134 *arg0) {
-    Unk_80053134_Obj *temp_a0;
+/* Slot 0x50: teardown (called without the place), free the scenery, stop the music object. */
+void func_80053134(Place *place) {
+    PlaceObj *music;
 
-    arg0->unk0->unk84();
+    place->vt->teardown();
     func_8005C76C();
-    func_80054D30();
-    temp_a0 = arg0->unk54;
-    temp_a0->unk0->unk48(temp_a0);
+    Scenery_Teardown();
+    music = place->music;
+    music->vt->unk48(music);
 }
 
-void func_800531A0(Unk_800531A0 *arg0, s32 arg1, s32 arg2) {
-    if (arg2 == 2) {
-        func_800531CC(arg0, arg0->u58);
+/* Slot 0x54 */
+void func_800531A0(Place *place, s32 arg1, s32 event) {
+    if (event == 2) {
+        Place_CheckTextureLoad(place, place->texLoader);
     }
 }
 
-void func_800531CC(void *arg0, void *arg1) {
-    Unk_800531CC_B *other = arg1;
-    Unk_800531CC_A *self = arg0;
-    Unk_800531CC_BVt *temp_a2;
-    Unk_800531CC_Sub50 *temp_a1;
-    s32 var_a1;
+/*
+ * Check the texture-set loader. When it failed (+0x80, a heap allocation returned 0) the set
+ * is dropped and the time limit becomes elapsed + 30 s (discoveries "the 30-second dreams");
+ * when it is done the ambience colour goes to it. Then, once the map is ready, start the place.
+ */
+void Place_CheckTextureLoad(void *arg0, void *arg1) {
+    PlaceTexLoader *loader = arg1;
+    Place *place = arg0;
+    PlaceTexLoaderVtbl *vt;
+    Ambience *ambience;
+    u8 *color;
 
-    if (self->u60 != 0) {
-        if (other->u80 != 0) {
-            other->vt->f4(other);
-            self->u60 = 0;
-            self->vt->f80(self);
-            self->u3C->vt->f104(self->u3C, self->u3C->vt->f108(self->u3C) + 0x1E);
-        } else if (other->u3C != 0) {
-            temp_a1 = self->u50;
-            temp_a2 = other->vt;
-            if (temp_a1->u14 != 2) {
-                var_a1 = temp_a1->u18;
+    if (place->texLoading != 0) {
+        if (loader->failed != 0) {
+            loader->vt->delete_(loader);
+            place->texLoading = 0;
+            place->vt->setup(place);
+            place->dreamSys->vtbl->swapTimeLimit(place->dreamSys, place->dreamSys->vtbl->getElapsedSeconds(place->dreamSys) + 0x1E);
+        } else if (loader->done != 0) {
+            ambience = place->ambience;
+            vt = loader->vt;
+            if (ambience->mode != 2) {
+                color = ambience->colorB;
             } else {
-                var_a1 = temp_a1->uC;
+                color = ambience->colorA;
             }
-            temp_a2->f7C(other, var_a1);
-            other->vt->f4(other);
-            self->u60 = 0;
-            self->vt->f80(self);
+            vt->apply(loader, color);
+            loader->vt->delete_(loader);
+            place->texLoading = 0;
+            place->vt->setup(place);
         }
-        if (self->u60 != 0) {
+        if (place->texLoading != 0) {
             return;
         }
     }
-    if (self->u14->u1B4 == 0 && self->u68 == 0) {
-        self->u64 = 1;
-        self->vt->f88(self);
+    if (place->map->unk1B4 == 0 && place->started == 0) {
+        place->ready = 1;
+        place->vt->start(place);
     }
 }
 
-void func_80053358(Unk_80053358 *arg0, s32 arg1, s32 arg2) {
-    Unk_80053358_Obj *temp;
-    Unk_80053358_Fn var_v0;
+/* Slot 0x58, the pad handler: 33 START, 12 SELECT held, 22 TRIANGLE, 44 SELECT released (discoveries "the hidden exit"). */
+void Place_OnPad(Place *place, s32 arg1, s32 code) {
+    PlaceVtbl *vt;
+    void (*fn)();
 
-    temp = arg0->unk0;
-    if (arg0->unk68 != 0) {
-        switch (arg2) {
+    vt = place->vt;
+    if (place->started != 0) {
+        switch (code) {
         case 33:
-            var_v0 = temp->unk74;
+            fn = vt->togglePause;
             break;
         case 12:
-            var_v0 = temp->unkC0;
+            fn = vt->armExit;
             break;
         case 22:
-            var_v0 = temp->unkC8;
+            fn = vt->confirmExit;
             break;
         case 44:
-            var_v0 = temp->unkC4;
+            fn = vt->disarmExit;
             break;
         default:
             return;
         }
-        var_v0(arg0);
+        fn(place);
     }
 }
 
-void func_800533F0(Unk_800533F0 *arg0) {
-    if (arg0->u68 != 0) {
-        arg0->u1C = arg0->u1C + 1;
-        if (arg0->u80 != 0) {
-            arg0->vt->fD0(arg0);
+/* Slot 0x5C, every tick once started: the pause window while it is open, else the update. */
+void Place_Tick(Place *place) {
+    if (place->started != 0) {
+        place->ticks = place->ticks + 1;
+        if (place->pauseOpen != 0) {
+            place->vt->updatePause(place);
         } else {
-            arg0->vt->f8C(arg0);
+            place->vt->update(place);
         }
     }
 }
 
-void func_80053458(Unk_80053458 *arg0) {
-    Unk_80053458_Vt *vt;
+/* Slot 0x74, START */
+void Place_TogglePause(Place *place) {
+    PlaceVtbl *vt;
 
-    vt = arg0->vt;
-    if (arg0->u80 != 0) {
-        vt->fC4(arg0);
-        vt->fD4(arg0);
+    vt = place->vt;
+    if (place->pauseOpen != 0) {
+        vt->disarmExit(place);
+        vt->closePause(place);
     } else {
-        vt->fD0(arg0);
+        vt->updatePause(place);
     }
 }
 
 void func_800534C0(void) {
 }
 
-void func_800534C8(Unk_800534C8 *arg0) {
-    Unk_800534C8_A *temp_s0;
-    Unk_800534C8_S *temp_s0_2;
-    Unk_800534C8_Sub *temp_s2;
-    Unk_800534C8_B *temp_a0;
-    Unk_800534C8_C *temp_a0_2;
+/* Slot 0x80, after the texture set: hands the stage to the spawn code (Sym_InitStage) and sets up the map. */
+void func_800534C8(Place *place) {
+    PlaceView *view;
+    PlaceMap *map;
+    Ambience *ambience;
+    PlaceObj *first;
+    DreamSys *dreamSys;
 
-    temp_s0 = arg0->unk18;
-    temp_s2 = arg0->unk50;
-    temp_s0->vt->f74(temp_s0);
-    temp_a0 = *arg0->unkC;
-    temp_s0->vt->f54(temp_s0, ((((s32) *temp_a0->vt->f7C(temp_a0, 0) / 2) * 5) / 3) + D_8008AB34);
-    temp_s0->vt->f70(temp_s0, arg0->unk3C, D_8008715C, D_80087168, 0);
-    Sym_InitStage(arg0->unk38, (s32) arg0->unk14, (struct Unk_8005CD58 *) arg0->unk3C, arg0->unk34, arg0->unk10);
-    temp_s0_2 = arg0->unk14;
-    arg0->vt->f10(arg0, temp_s0_2);
-    temp_s0_2->vt->fBC(temp_s0_2, temp_s2->u8, 0);
-    temp_s0_2->vt->fC4(temp_s0_2, 3, temp_s2->u0, temp_s2->u4);
-    temp_s0_2->vt->fE0(temp_s0_2, func_800494D8(arg0->unk38));
-    temp_a0_2 = arg0->unk3C;
-    temp_a0_2->vt->f4C(temp_a0_2, temp_s0_2);
-    temp_s0_2->vt->fDC(temp_s0_2, arg0->unk48);
-    temp_s0_2->vt->fCC(temp_s0_2, D_8008710C);
+    view = place->view;
+    ambience = place->ambience;
+    view->vt->unk74(view);
+    first = *place->unkC;
+    view->vt->unk54(view, ((((s32) *first->vt->unk7C(first, 0) / 2) * 5) / 3) + D_8008AB34);
+    view->vt->unk70(view, place->dreamSys, D_8008715C, D_80087168, 0);
+    Sym_InitStage(place->stage, place->map, place->dreamSys, place->unk34, place->unk10);
+    map = place->map;
+    place->vt->watch(place, map);
+    map->vt->unkBC(map, ambience->unk8, 0);
+    map->vt->unkC4(map, 3, ambience->unk0, ambience->unk4);
+    map->vt->unkE0(map, Stage_GetGrid(place->stage));
+    dreamSys = place->dreamSys;
+    dreamSys->vtbl->unk4C(dreamSys, map);
+    map->vt->unkDC(map, place->unk48);
+    map->vt->unkCC(map, D_8008710C);
 }
 
-void func_800536B0(Unk_800536B0 *arg0) {
-    arg0->unk0->unkD4(arg0);
-    arg0->unk3C->unk0->unkFC(arg0->unk3C);
-    arg0->unk3C->unk0->unk50(arg0->unk3C);
-    arg0->unk18->unk0->unk74(arg0->unk18);
-    arg0->unk0->unk14(arg0, arg0->unk14);
+/* Slot 0x84 */
+void func_800536B0(Place *place) {
+    place->vt->closePause(place);
+    place->dreamSys->vtbl->unkFC(place->dreamSys);
+    place->dreamSys->vtbl->unk50(place->dreamSys);
+    place->view->vt->unk74(place->view);
+    place->vt->unwatch(place, place->map);
 }
 
-void func_80053764(Unk_80053764 *arg0) {
-    s32 sp10;
-    Unk_80053764_ObjA *temp_a0;
-    Unk_80053764_ObjB *temp_a0_2;
-    Unk_80053764_ObjC *temp_s1;
-    Unk_800531CC_Sub50 *temp_s2;
-    Unk_80053764_ObjD *temp_v0;
-    s32 temp_v0_2;
+/* Slot 0x88: the place starts; the view takes the ambience colours and the fader the day's colour. */
+void Place_Start(Place *place) {
+    s32 color;
+    DreamSys *dreamSys;
+    PlaceMap *map;
+    PlaceView *view;
+    Ambience *ambience;
+    PlaceFader *fader;
+    s32 flashbackMode;
 
-    arg0->u68 = 1;
-    arg0->u3C->vt->fF8(arg0->u3C, arg0->u44, arg0->u40);
-    temp_a0_2 = arg0->u14;
-    temp_a0_2->vt->fEC(temp_a0_2);
-    temp_s1 = arg0->u18;
-    temp_s2 = arg0->u50;
-    temp_s1->vt->f60(temp_s1, 1);
-    temp_s1->vt->f64(temp_s1, temp_s2->uC);
-    temp_s1->vt->f6C(temp_s1, temp_s2->u1C);
-    temp_s1->vt->f68(temp_s1, temp_s2->u14 != 1 ? temp_s2->u18 : temp_s2->uC);
-    temp_s1->vt->fB0(temp_s1, 0);
-    temp_s1->vt->fB4(temp_s1, 1);
-    temp_v0 = temp_s1->vt->fAC(temp_s1);
-    arg0->vt->f10(arg0, temp_v0);
-    temp_a0 = arg0->u3C;
-    temp_v0_2 = temp_a0->vt->fF0(temp_a0, &sp10, -1);
-    temp_v0->vt->fF0(temp_v0, temp_v0_2, temp_v0_2 != 0 ? 3 : 0);
-    temp_v0->vt->fD4(temp_v0, arg0->u10, temp_v0_2 != 0 ? sp10 : -1, 0);
+    place->started = 1;
+    place->dreamSys->vtbl->unkF8(place->dreamSys, place->unk44, place->unk40);
+    map = place->map;
+    map->vt->unkEC(map);
+    view = place->view;
+    ambience = place->ambience;
+    view->vt->unk60(view, 1);
+    view->vt->unk64(view, ambience->colorA);
+    view->vt->unk6C(view, ambience->depth);
+    view->vt->unk68(view, ambience->mode != 1 ? ambience->colorB : ambience->colorA);
+    view->vt->unkB0(view, 0);
+    view->vt->unkB4(view, 1);
+    fader = view->vt->getFader(view);
+    place->vt->watch(place, fader);
+    dreamSys = place->dreamSys;
+    flashbackMode = dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
+    fader->vt->unkF0(fader, flashbackMode, flashbackMode != 0 ? 3 : 0);
+    fader->vt->unkD4(fader, place->unk10, flashbackMode != 0 ? color : -1, 0);
 }
 
-void func_8005393C(Unk_8005393C *arg0) {
-    Unk_8005393C_Obj *temp = arg0->unk14;
-    func_800558F0(temp->unk0->unk10C(temp, 0, 0), 0, 0);
+/* Slot 0x8C, every tick while not paused: the scenery tick at the map's position. */
+void func_8005393C(Place *place) {
+    PlaceMap *map = place->map;
+    Scenery_Tick(map->vt->unk10C(map, 0, 0), 0, 0);
 }
 
-void func_80053984(Unk_80053984 *arg0, s32 arg1, s32 arg2) {
-    s32 temp;
+/* Slot 0x90: DreamSys messages 10 to 17 go to slots 0x94 to 0xAC while the state is 0. */
+void func_80053984(Place *place, s32 sender, s32 message) {
+    s32 event;
 
-    if (arg0->unk20 == 0) {
-        temp = arg2 - 10;
-        switch (temp) {
+    if (place->state == 0) {
+        event = message - 10;
+        switch (event) {
             case 0:
-                arg0->unk0->unk94(arg0, arg1, temp);
+                place->vt->onEvent10(place, sender, event);
                 break;
             case 1:
                 break;
             case 2:
-                arg0->unk0->unk98(arg0, arg1, temp);
+                place->vt->onEvent12(place, sender, event);
                 break;
             case 3:
-                arg0->unk0->unk9C(arg0, arg1, temp);
+                place->vt->onEvent13(place, sender, event);
                 break;
             case 4:
-                arg0->unk0->unkA0(arg0, arg1, temp);
+                place->vt->onEvent14(place, sender, event);
                 break;
             case 5:
-                arg0->unk0->unkA4(arg0, arg1, temp);
+                place->vt->onEvent15(place, sender, event);
                 break;
             case 6:
-                arg0->unk0->unkA8(arg0, arg1, temp);
+                place->vt->onEvent16(place, sender, event);
                 break;
             case 7:
-                arg0->unk0->unkAC(arg0, arg1, temp);
+                place->vt->onEvent17(place, sender, event);
                 break;
         }
-    } else if (arg2 >= 9) {
-        arg0->unk3C->unk44 = 0;
+    } else if (message >= 9) {
+        place->dreamSys->transition = 0;
     }
 }
 
-void func_80053ACC(Unk_80053ACC *arg0) {
-    s32 sp18;
-    s32 t;
-    s32 idx;
-    s32 v0;
-    s32 a3;
-    Unk_80053D18_Obj *temp_a0;
+/* Slot 0x94: state 4; out of a flashback, (ticks + stage) & 3 picks no fade (notify 4) or colour 0, 4 or 7. */
+void func_80053ACC(Place *place) {
+    s32 color;
+    s32 phase;
+    s32 pick;
+    s32 flashbackMode;
+    s32 duration;
+    DreamSys *dreamSys;
 
-    temp_a0 = arg0->unk3C;
-    arg0->unk20 = 4;
-    v0 = temp_a0->unk0->unkF0(temp_a0, &sp18, -1);
-    if (v0 == 0) {
-        t = (arg0->unk1C + arg0->unk38) & 3;
-        idx = t;
-        if (t == 0) {
-            arg0->unk0->unk30(arg0, 4);
+    dreamSys = place->dreamSys;
+    place->state = 4;
+    flashbackMode = dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
+    if (flashbackMode == 0) {
+        phase = (place->ticks + place->stage) & 3;
+        pick = phase;
+        if (phase == 0) {
+            place->vt->notify(place, 4);
             return;
         }
-        a3 = 0xA;
-        switch (idx) {
+        duration = 0xA;
+        switch (pick) {
         case 1:
-            sp18 = 0;
+            color = 0;
             break;
         case 2:
-            sp18 = 4;
+            color = 4;
             break;
         case 3:
-            sp18 = 7;
-            a3 = 5;
+            color = 7;
+            duration = 5;
             break;
         }
-        func_80053EB4(arg0, sp18, 0, a3, 1);
+        Place_StartFade(place, color, 0, duration, 1);
     } else {
-        func_80053EB4(arg0, 0, 0, 5, 1);
+        Place_StartFade(place, 0, 0, 5, 1);
     }
 }
 
-void func_80053BE8(Unk_80053BE8 *arg0) {
-    Unk_80053BE8_Obj *temp_a0;
+/* Slot 0x98: state 5, fade to the dream colour (slot 0x200), or go to slot 0x9C when DreamSys +0x164 is negative. */
+void func_80053BE8(Place *place) {
+    DreamSys *dreamSys;
 
-    if (arg0->unk3C->unk164 < 0) {
-        arg0->unk0->unk9C(arg0);
+    if (place->dreamSys->stage < 0) {
+        place->vt->onEvent13(place);
     } else {
-        arg0->unk20 = 5;
-        temp_a0 = arg0->unk3C;
-        func_80053EB4(arg0, temp_a0->unk0->unk200(temp_a0), 0, 0xA, 1);
-        temp_a0 = arg0->unk3C;
-        temp_a0->unk0->unkFC(temp_a0);
+        place->state = 5;
+        dreamSys = place->dreamSys;
+        Place_StartFade(place, ((s32 (*)(DreamSys *))dreamSys->vtbl->getDreamColor)(dreamSys), 0, 0xA, 1);
+        dreamSys = place->dreamSys;
+        dreamSys->vtbl->unkFC(dreamSys);
     }
 }
 
-void func_80053C94(Unk_80053C94 *arg0) {
-    Unk_80053C94_Obj *temp_a0;
+/* Slot 0x9C: state 6, a 30-tick fade to the dream colour. */
+void func_80053C94(Place *place) {
+    DreamSys *dreamSys;
 
-    temp_a0 = arg0->unk3C;
-    arg0->unk20 = 6;
-    func_80053EB4(arg0, temp_a0->unk0->unk200(temp_a0), 0, 0x1E, 1);
-    temp_a0 = arg0->unk3C;
-    temp_a0->unk0->unkFC(temp_a0);
+    dreamSys = place->dreamSys;
+    place->state = 6;
+    Place_StartFade(place, ((s32 (*)(DreamSys *))dreamSys->vtbl->getDreamColor)(dreamSys), 0, 0x1E, 1);
+    dreamSys = place->dreamSys;
+    dreamSys->vtbl->unkFC(dreamSys);
 }
 
-void func_80053D18(Unk_80053D18 *arg0) {
-    s32 sp18;
-    Unk_80053D18_Obj *temp_a0;
+/* Slot 0xA0: state 7, fade to the day's colour. */
+void func_80053D18(Place *place) {
+    s32 color;
+    DreamSys *dreamSys;
 
-    temp_a0 = arg0->unk3C;
-    arg0->unk20 = 7;
-    temp_a0->unk0->unkF0(temp_a0, &sp18, -1);
-    func_80053EB4(arg0, sp18, 0, 5, 1);
-    temp_a0 = arg0->unk3C;
-    temp_a0->unk0->unkFC(temp_a0);
+    dreamSys = place->dreamSys;
+    place->state = 7;
+    dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
+    Place_StartFade(place, color, 0, 5, 1);
+    dreamSys = place->dreamSys;
+    dreamSys->vtbl->unkFC(dreamSys);
 }
 
-void func_80053D9C(Unk_80053D9C *arg0) {
-    arg0->unk20 = 8;
-    func_80053EB4(arg0, 0, 0, 6, 1);
-    arg0->unk3C->unk0->unkF4(arg0->unk3C, 1);
+/* Slot 0xA4 */
+void func_80053D9C(Place *place) {
+    place->state = 8;
+    Place_StartFade(place, 0, 0, 6, 1);
+    place->dreamSys->vtbl->unkF4(place->dreamSys, 1);
 }
 
-void func_80053E00(Unk_80053D9C *arg0) {
-    arg0->unk20 = 10;
-    func_80053EB4(arg0, 0, 0, 6, 1);
-    arg0->unk3C->unk0->unk13C(arg0->unk3C, 2);
-    arg0->unk3C->unk0->unkF4(arg0->unk3C, 2);
+/* Slot 0xA8 */
+void func_80053E00(Place *place) {
+    place->state = 10;
+    Place_StartFade(place, 0, 0, 6, 1);
+    place->dreamSys->vtbl->unk13C(place->dreamSys, 2);
+    place->dreamSys->vtbl->unkF4(place->dreamSys, 2);
 }
 
-void func_80053E84(Unk_80053E84 *arg0) {
-    arg0->unk0->unk30(arg0, 0xB);
+/* Slot 0xAC */
+void func_80053E84(Place *place) {
+    place->vt->notify(place, 0xB);
 }
 
-void func_80053EB4(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    Unk_80053EB4 *self = arg0;
-    Unk_80053EB4_Obj *temp_a0;
-    Unk_80053EB4_Sub *temp_s0;
+/* Start the view's fader towards a colour index (0 to 7), watched when asked. */
+void Place_StartFade(void *arg0, s32 color, s32 arg2, s32 duration, s32 watch) {
+    Place *place = arg0;
+    PlaceView *view;
+    PlaceFader *fader;
 
-    temp_a0 = self->unk18;
-    temp_s0 = temp_a0->unk0->unkAC(temp_a0);
-    if (arg3 != 0) {
-        temp_s0->unk0->unkD0(temp_s0, arg3);
+    view = place->view;
+    fader = view->vt->getFader(view);
+    if (duration != 0) {
+        fader->vt->unkD0(fader, duration);
     }
-    if (arg4 != 0) {
-        self->unk0->unk10(self, temp_s0);
+    if (watch != 0) {
+        place->vt->watch(place, fader);
     }
-    temp_s0->unk0->unkD8(temp_s0, self->unk10, arg1, arg2);
+    fader->vt->unkD8(fader, place->unk10, color, arg2);
 }
 
-void func_80053F84(Unk_80053F84_Obj *arg0, Unk_80053F84_Obj *arg1, s32 arg2) {
-    void *temp_v0;
+/* Slot 0xB0: the fader is done (5: back to state 0; 6: its colour goes to the view, state 10 becomes 4). */
+void func_80053F84(Place *place, PlaceFader *fader, s32 message) {
+    void *color;
 
-    switch (arg2) {
+    switch (message) {
     case 5:
-        arg0->vt->unk14(arg0, arg1);
-        arg0->unk3C->vt->unkF4(arg0->unk3C, 0);
-        arg0->unk20 = 0;
+        place->vt->unwatch(place, fader);
+        place->dreamSys->vtbl->unkF4(place->dreamSys, 0);
+        place->state = 0;
         break;
     case 6:
-        arg0->vt->unk14(arg0, arg1);
-        temp_v0 = arg1->vt->unkE4(arg1);
-        arg0->unk18->vt->unk64(arg0->unk18, temp_v0);
-        if (arg0->unk20 == 5 || arg0->unk20 == 8) {
-        } else if (arg0->unk20 == 10) {
-            arg0->unk3C->vt->unk17C(arg0->unk3C, 1);
-            arg0->unk3C->vt->unkF4(arg0->unk3C, 0);
-            arg0->unk20 = 4;
+        place->vt->unwatch(place, fader);
+        color = fader->vt->unkE4(fader);
+        place->view->vt->unk64(place->view, color);
+        if (place->state == 5 || place->state == 8) {
+        } else if (place->state == 10) {
+            place->dreamSys->vtbl->unk17C(place->dreamSys, 1);
+            place->dreamSys->vtbl->unkF4(place->dreamSys, 0);
+            place->state = 4;
         }
-        arg0->vt->unk30(arg0, arg0->unk20);
+        place->vt->notify(place, place->state);
         break;
     }
 }
 
-void func_800540E8(Unk_800540E8 **arg0, s32 arg1, s32 arg2) {
-    if (arg2 == 7) {
-        (*arg0)->unkB8();
+/* Slot 0xB4: map message 7 runs slot 0xB8 (called without arguments; a0 still holds the place). */
+void func_800540E8(Place *place, s32 sender, s32 message) {
+    if (message == 7) {
+        place->vt->spawnCell();
     }
 }
 
-s32 func_80054120(Unk_80054120 *arg0) {
-    s32 sp10;
-    Unk_80054120_Obj *temp_a0;
-    Unk_80054120_Obj *temp_a0_2;
-    Unk_80054120_Obj *temp_a0_3;
-    Unk_80054120_Res *temp_s0;
-    s32 temp_v1;
-    s32 temp_v0;
+/* Slot 0xB8: spawn the characters of the map cell under the dreamer (Sym_SpawnOrSpy, discoveries "Grey Man spawn"). */
+s32 Place_SpawnCell(Place *place) {
+    s32 chunkKey;
+    PlaceMap *map;
+    DreamSys *dreamSys;
+    MapCellOwner *owner;
+    MapCell *cell;
+    s32 dayNumber;
+    s32 spawned;
 
-    temp_a0 = arg0->u14;
-    temp_s0 = temp_a0->vt->unk114(temp_a0, &sp10);
-    temp_a0_2 = arg0->u3C;
-    temp_v1 = temp_a0_2->vt->unk1A0(temp_a0_2, 0);
-    temp_v0 = Sym_SpawnOrSpy(temp_s0->u4->u34, &sp10, temp_v1);
-    temp_s0->u14 = temp_v0;
-    if (temp_v0 != 0) {
+    map = place->map;
+    cell = map->vt->cellAt(map, &chunkKey);
+    dreamSys = place->dreamSys;
+    dayNumber = dreamSys->vtbl->getDayNumber(dreamSys, 0);
+    spawned = Sym_SpawnOrSpy(cell->owner->unk34, &chunkKey, dayNumber);
+    cell->spawned = spawned;
+    if (spawned != 0) {
         return 0;
     }
-    temp_a0_3 = temp_s0->u4;
-    temp_a0_3->vt->unk84(temp_a0_3);
+    owner = cell->owner;
+    owner->vt->unk84(owner);
     return 1;
 }
 
 void func_800541CC(void) {
 }
 
-void func_800541D4(Unk_800541D4 *arg0) {
-    if (arg0->u80 != 0 && arg0->u20 == 0) {
-        arg0->u84 = 1;
+/* Slot 0xC0, SELECT held: arms the exit while the pause is open and the state is 0. */
+void Place_ArmExit(Place *place) {
+    if (place->pauseOpen != 0 && place->state == 0) {
+        place->exitArmed = 1;
     }
 }
 
-void func_80054200(Unk_800541D4 *arg0) {
-    arg0->u84 = 0;
+/* Slot 0xC4, SELECT released */
+void Place_DisarmExit(Place *place) {
+    place->exitArmed = 0;
 }
 
-void func_80054208(Unk_80054208 *arg0) {
-    if (arg0->unk84 != 0) {
-        arg0->unk0->unkD4(arg0);
-        arg0->unk0->unk30(arg0, 0xD);
+/* Slot 0xC8, TRIANGLE: when armed, close the pause and send 0xD (DreamSys_EndDay(2), a new game). */
+void Place_ConfirmExit(Place *place) {
+    if (place->exitArmed != 0) {
+        place->vt->closePause(place);
+        place->vt->notify(place, 0xD);
     }
 }
 
-void func_8005426C(Unk_8005426C *arg0) {
-    if (arg0->unk84 != 0) {
-        arg0->unk0->unkD4(arg0);
-        arg0->unk0->unk30(arg0, 0xC);
+/* Slot 0xCC, never called: send 0xC (DreamSys_EndDay(1), the day is restored). */
+void Place_ExitNoRecord(Place *place) {
+    if (place->exitArmed != 0) {
+        place->vt->closePause(place);
+        place->vt->notify(place, 0xC);
     }
 }
 
-void func_800542D0(Unk_800542D0 *arg0) {
-    s32 count = arg0->u80;
+/* Slot 0xD0: open the pause window ("Pause"), and suspend the place's objects on its fourth tick. */
+void Place_UpdatePause(Place *place) {
+    s32 ticks = place->pauseOpen;
 
-    if (count == 0) {
-        arg0->u7C = (Unk_800543FC_Obj *)func_800408CC(arg0->u74, 5, (s32)D_8008AB44);
-        arg0->u7C->vt->f4C(arg0->u7C, arg0->u14, D_8008AB38);
-        arg0->u7C->vt->fB8(arg0->u7C, D_8008AB40);
-        arg0->u80 = 1;
+    if (ticks == 0) {
+        place->pauseText = (PlaceObj *)func_800408CC((s32)place->refs.font, 5, (s32)D_8008AB44);
+        place->pauseText->vt->unk4C(place->pauseText, place->map, D_8008AB38);
+        place->pauseText->vt->unkB8(place->pauseText, D_8008AB40);
+        place->pauseOpen = 1;
         return;
     }
-    arg0->u80 = count + 1;
-    if (count == 4) {
-        arg0->u18->vt->fB4(arg0->u18, 0);
-        arg0->u10->vt->f4C(arg0->u10);
-        arg0->u54->vt->f4C(arg0->u54);
-        arg0->u34->vt->f88(arg0->u34);
+    place->pauseOpen = ticks + 1;
+    if (ticks == 4) {
+        place->view->vt->unkB4(place->view, 0);
+        place->unk10->vt->unk4C(place->unk10);
+        place->music->vt->unk4C(place->music);
+        place->unk34->vt->unk88(place->unk34);
     }
 }
 
-void func_800543FC(Unk_800543FC *arg0) {
-    if (arg0->u80 != 0) {
-        arg0->u7C->vt->f4(arg0->u7C);
+/* Slot 0xD4: close the pause window and resume the objects. */
+void Place_ClosePause(Place *place) {
+    if (place->pauseOpen != 0) {
+        place->pauseText->vt->delete_(place->pauseText);
     }
-    arg0->u34->vt->f8C(arg0->u34);
-    arg0->u54->vt->f50(arg0->u54);
-    arg0->u10->vt->f50(arg0->u10);
-    arg0->u18->vt->fB4(arg0->u18, 1);
-    arg0->u80 = 0;
+    place->unk34->vt->unk8C(place->unk34);
+    place->music->vt->unk50(place->music);
+    place->unk10->vt->unk50(place->unk10);
+    place->view->vt->unkB4(place->view, 1);
+    place->pauseOpen = 0;
 }
 
-Unk_80052B70_Vtbl *func_800544D4(void) {
-    return (Unk_80052B70_Vtbl *)D_80087034;
+PlaceVtbl *Place_GetVtbl(void) {
+    return (PlaceVtbl *)D_80087034;
 }
 
-s32 func_800544E4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4) {
-    s32 *var_v1;
-    s32 var_t0;
+/*
+ * When a place loads (Place slot 0x4C): keep its map, stage, refs and day number, reset the
+ * tick counter g_placeTicks and the two spot slots (D_8008AC9C[0..1], D_8008ACA0 is [1]), and
+ * return the ambience. Runs only while no place is up (D_8008AB4C is 0 again after Scenery_Teardown).
+ */
+Ambience *Scenery_Begin(s32 map, s32 stage, PlaceRefs *refs, s32 dayNumber, s32 arg4) {
+    s32 *slot;
+    s32 n;
 
     if (D_8008AB4C == 0) {
-        var_t0 = 1;
-        var_v1 = &D_8008ACA0;
-        D_8008AB4C = arg0;
-        D_8008AC6C = arg1;
-        D_8008AC7C = arg2;
-        D_8008AC80 = -1;
-        D_8008AC74 = arg3;
+        n = 1;
+        slot = &D_8008ACA0;
+        D_8008AB4C = map;
+        g_placeStage = stage;
+        g_placeRefs = refs;
+        g_ambienceFamily = -1;
+        g_placeDayNumber = dayNumber;
         D_8008AC78 = arg4;
-        D_8008AC70 = 0;
+        g_placeTicks = 0;
         do {
-            *var_v1 = 0;
-            var_t0 -= 1;
-            var_v1 -= 1;
-        } while (var_t0 >= 0);
-        return func_80054558();
+            *slot = 0;
+            n -= 1;
+            slot -= 1;
+        } while (n >= 0);
+        return Ambience_Get();
     }
     return 0;
 }
 
-s32 func_80054558(void) {
-    Unk_800545FC_Src *var_s0;
+/* The stage's fixed ambience record, else one of the day's family (Ambience_PickFamily), into D_80087424. */
+Ambience *Ambience_Get(void) {
+    AmbienceRecord *record;
 
-    var_s0 = D_800873EC[D_8008AC6C];
-    if (var_s0 == NULL) {
-        var_s0 = func_80054758();
+    record = D_800873EC[g_placeStage];
+    if (record == NULL) {
+        record = Ambience_PickFamily();
     }
-    func_800545FC(&D_80087424, var_s0);
-    if (var_s0->unk1 >= 4) {
-        D_8008AB54 = (s32)(D_800872C4 + var_s0->unk2 * 3);
+    Ambience_Fill(&D_80087424, record);
+    if (record->depth >= 4) {
+        D_8008AB54 = (s32)(D_800872C4 + record->colorB * 3);
     }
-    return (s32)&D_80087424;
+    return &D_80087424;
 }
 
-void func_800545FC(Unk_800545FC *arg0, Unk_800545FC_Src *arg1) {
-    arg0->unkC = D_800872C4 + arg1->unk3 * 3;
-    arg0->unk18 = D_800872C4 + arg1->unk2 * 3;
-    arg0->unk1C = D_8008730C[arg1->unk1];
-    arg0->unk14 = arg1->unk0;
+void Ambience_Fill(Ambience *ambience, AmbienceRecord *record) {
+    ambience->colorA = D_800872C4 + record->colorA * 3;
+    ambience->colorB = D_800872C4 + record->colorB * 3;
+    ambience->depth = D_8008730C[record->depth];
+    ambience->mode = record->mode;
 }
 
+/* The extra ambience object, when the record's depth is 4 or more. */
 void func_80054660(void) {
-    Unk_80054660_Obj *temp;
-    Unk_80054660_Sub *sub;
+    AmbienceBand *band;
+    PlaceView *view;
 
     if (D_8008AB54 != 0) {
-        temp = func_800404D0((s32)D_8008AB60, D_8008AB54, 0);
-        D_8008AC94 = (Unk_80054714 *)temp;
-        temp->vt->f64(temp, 1);
-        ((Unk_80054660_Obj *)D_8008AC94)->vt->f68(D_8008AC94, 0);
-        sub = ((Unk_80054660_Ptr *)D_8008AC7C)->unkC;
-        ((Unk_80054660_Obj *)D_8008AC94)->vt->f4C(D_8008AC94, sub->vt->fAC(sub), D_8008AB58);
+        band = func_800404D0((s32)D_8008AB60, D_8008AB54, 0);
+        D_8008AC94 = band;
+        band->vt->unk64(band, 1);
+        D_8008AC94->vt->unk68(D_8008AC94, 0);
+        view = g_placeRefs->view;
+        D_8008AC94->vt->attach(D_8008AC94, view->vt->getFader(view), D_8008AB58);
     }
 }
 
 void func_80054714(void) {
     if (D_8008AB54 != 0) {
-        D_8008AC94->vt->unk4(D_8008AC94);
+        D_8008AC94->vt->delete_(D_8008AC94);
         D_8008AB54 = 0;
     }
 }
 
-void *func_80054758(void) {
+/*
+ * The ambience family of the dream: D_800873DC[(day number + stage) & 15], a 16-entry cycle over
+ * 4 families, then record (day number + stage) % count (work/hunt6/C-notes-note.md). Family 0
+ * also picks the band palette and, for records 0 to 5, the band layout (1 or 2).
+ */
+AmbienceRecord *Ambience_PickFamily(void) {
     s32 sum;
-    s32 val;
-    s32 rem;
-    Unk_800545FC_Src *rec;
-    void *ptr;
+    s32 family;
+    s32 index;
+    AmbienceRecord *record;
+    void *palette;
 
-    sum = D_8008AC74 + D_8008AC6C;
-    val = D_800873DC[sum & 0xF];
-    D_8008AC80 = val;
-    rem = sum % D_800873D8[val];
-    D_8008AC84 = rem;
-    rec = D_800873C8[val] + rem;
-    if (val == 0) {
-        D_8008AC90 = D_800872C4 + rec->unk3 * 3;
-        ptr = D_8008726C;
-        if (rec->unk2 != 0x12) {
-            ptr = D_80087234;
+    sum = g_placeDayNumber + g_placeStage;
+    family = D_800873DC[sum & 0xF];
+    g_ambienceFamily = family;
+    index = sum % D_800873D8[family];
+    D_8008AC84 = index;
+    record = D_800873C8[family] + index;
+    if (family == 0) {
+        D_8008AC90 = D_800872C4 + record->colorA * 3;
+        palette = D_8008726C;
+        if (record->colorB != 0x12) {
+            palette = D_80087234;
         }
-        D_8008AC8C = ptr;
-        if (rem < 4) {
+        D_8008AC8C = palette;
+        if (index < 4) {
             D_8008AB50 = 1;
-        } else if (rem < 6) {
+        } else if (index < 6) {
             D_8008AB50 = 2;
         }
     }
-    return rec;
+    return record;
 }
 
+/* Make the 18 bands (run again by every first tick: the old ones are not freed, work/hunt6/F-findings.md). */
 void func_80054850(void) {
-    Unk_80054850 loc;
-    Unk_80054660_Obj **tab;
-    Unk_80054660_Obj **p;
-    Unk_80054660_Obj *obj;
-    Unk_80054660_Sub *sub;
+    Point layout[2];
     s32 i;
+    AmbienceBand *band;
+    PlaceView *view;
 
     if (D_8008AB50 != 0) {
-        loc.a = D_8008AB68;
+        layout[0] = D_8008AB68;
         if (D_8008AB50 == 2) {
-            loc.a.y += 0x1E;
+            layout[0].y += 0x1E;
         }
-        loc.b = D_8008AB70;
-        D_8008E10C[0] = func_800404D0((s32)&loc.b, (s32)D_8008AC8C, 0x1FFF);
+        layout[1] = D_8008AB70;
+        g_ambienceBands[0] = func_800404D0((s32)&layout[1], (s32)D_8008AC8C, 0x1FFF);
         for (i = 1; i < 0x12; i++) {
-            obj = func_800404D0((s32)&loc.b, (s32)D_8008AC8C + i * 3, 0x1FFF);
-            D_8008E10C[i] = obj;
-            obj->vt->f4C(obj, (s32)D_8008E10C[0], &loc);
-            loc.a.y += 3;
-            loc.b.y -= 7;
+            band = func_800404D0((s32)&layout[1], (s32)D_8008AC8C + i * 3, 0x1FFF);
+            g_ambienceBands[i] = band;
+            band->vt->attach(band, (s32)g_ambienceBands[0], layout);
+            layout[0].y += 3;
+            layout[1].y -= 7;
         }
-        sub = ((Unk_80054660_Ptr *)D_8008AC7C)->unkC;
-        D_8008E10C[0]->vt->f4C(D_8008E10C[0], sub->vt->fAC(sub), &loc);
+        view = g_placeRefs->view;
+        g_ambienceBands[0]->vt->attach(g_ambienceBands[0], view->vt->getFader(view), layout);
     }
 }
 
+/* Every tick: shift the band colours and positions with the view's height. */
 void func_800549A8(void) {
-    u8 sp10[8];
-    Unk_80054850_Pair sp18;
-    Unk_800549A8 *obj;
-    Unk_800549A8 **p;
-    s32 k;
+    u8 rgb[8];
+    Point pos;
+    PlaceView *view;
+    AmbienceBand **band;
+    s32 shift;
     s32 off;
     s32 i;
 
     if (D_8008AB50 == 0) {
         return;
     }
-    obj = ((Unk_800549A8_Ptr *)D_8008AC7C)->unkC;
-    k = ((obj->unk18 - obj->unk24) / 600) * 3;
-    if (k > 0) {
-        sp18 = D_8008AB68;
+    view = g_placeRefs->view;
+    shift = ((view->unk18 - view->unk24) / 600) * 3;
+    if (shift > 0) {
+        pos = D_8008AB68;
         i = 0;
         if (D_8008AB50 == 2) {
-            sp18.y += 0x1E;
+            pos.y += 0x1E;
         }
-        p = (Unk_800549A8 **)D_8008E10C;
+        band = g_ambienceBands;
         off = 0;
-        sp18.y += k * 3;
+        pos.y += shift * 3;
         for (; i < 18; i++) {
-            func_80054B1C(sp10, D_8008AC8C + off, k);
-            (*p)->vt->unkB8(*p, 1, sp10);
-            (*p)->vt->unkBC(*p, &sp18);
+            func_80054B1C(rgb, D_8008AC8C + off, shift);
+            (*band)->vt->setColor(*band, 1, rgb);
+            (*band)->vt->setPos(*band, &pos);
             off += 3;
-            sp18.y += 3;
-            p++;
+            pos.y += 3;
+            band++;
         }
-        func_80054B1C(sp10, D_8008AC90, k);
-        obj->vt->unk64(obj, sp10);
+        func_80054B1C(rgb, D_8008AC90, shift);
+        view->vt->unk64(view, rgb);
     }
 }
 
-void func_80054B1C(u8 *arg0, u8 *arg1, s32 arg2) {
-    arg0[0] = arg1[0] - arg2;
-    arg0[1] = arg1[1] - arg2;
-    arg0[2] = arg1[2] + arg2;
+/* out = rgb with red and green lowered and blue raised by shift. */
+void func_80054B1C(u8 *out, u8 *rgb, s32 shift) {
+    out[0] = rgb[0] - shift;
+    out[1] = rgb[1] - shift;
+    out[2] = rgb[2] + shift;
 }
 
 void func_80054B50(void) {
     if (D_8008AB50 != 0) {
-        Object_DeleteArray(D_8008E10C, 0x12);
+        Object_DeleteArray(g_ambienceBands, 0x12);
         D_8008AB50 = 0;
     }
 }
 
-void func_80054B84(s32 arg0) {
-    s32 *temp_a0;
-    s32 var_s0;
-    s32 temp_a1;
+/*
+ * First tick: the scenery objects into g_scenery around origin, g_sceneryCount of them
+ * (work/hunt6/F-findings.md): count of kind 0 from D_80087324, kind 1 up to 16 for family 2,
+ * plus one of kind 3 for family 0 or of kind 2 for family 2.
+ */
+void Scenery_CreateAll(s32 origin) {
+    s32 *end;
+    s32 extra;
+    s32 count;
 
-    if (D_8008AC80 >= 0) {
-        func_80056F5C((void *)D_8008AC80, (Unk_80056F5C_Obj *)D_8008AC7C[1], (void *)D_8008AC7C[2], (void *)D_8008AC7C[3]);
-        temp_a1 = D_80087324[rand() & 3];
-        var_s0 = (D_8008AC80 == 2) ? (0x10 - temp_a1) : 0;
-        D_8008AC88 = temp_a1 + var_s0;
-        temp_a0 = func_80054F30(func_80054DA4(D_8008E0C8, temp_a1, arg0), var_s0, (void *)arg0);
-        if (D_8008AC80 == 0) {
-            func_80054FD8(temp_a0, arg0);
-            D_8008AC88 += 1;
-        } else if (D_8008AC80 == 2) {
-            func_8005511C(temp_a0, arg0);
-            D_8008AC88 += 1;
+    if (g_ambienceFamily >= 0) {
+        func_80056F5C(g_ambienceFamily, g_placeRefs->models, g_placeRefs->font, g_placeRefs->view);
+        count = D_80087324[rand() & 3];
+        extra = (g_ambienceFamily == 2) ? (0x10 - count) : 0;
+        g_sceneryCount = count + extra;
+        end = func_80054F30(func_80054DA4(g_scenery, count, origin), extra, (void *)origin);
+        if (g_ambienceFamily == 0) {
+            func_80054FD8(end, origin);
+            g_sceneryCount += 1;
+        } else if (g_ambienceFamily == 2) {
+            func_8005511C(end, origin);
+            g_sceneryCount += 1;
         }
     }
 }
 
-void func_80054C74(s32 arg0) {
-    s32 var_s0;
-    Unk_80054C74_Obj **var_s1;
+/* Every tick: slot 0xEC (func_800564F4) of every scenery object. */
+void Scenery_UpdateAll(s32 origin) {
+    s32 i;
+    Scenery **objs;
 
-    if (D_8008AC80 >= 0) {
-        var_s1 = (Unk_80054C74_Obj **)D_8008E0C8;
-        for (var_s0 = 0; var_s0 < D_8008AC88; var_s0++) {
-            Unk_80054C74_Obj *temp_a0 = var_s1[var_s0];
-            temp_a0->vt->unkEC(temp_a0, arg0);
+    if (g_ambienceFamily >= 0) {
+        objs = (Scenery **)g_scenery;
+        for (i = 0; i < g_sceneryCount; i++) {
+            Scenery *obj = objs[i];
+            obj->vt->update(obj, origin);
         }
     }
 }
 
-void func_80054CFC(void) {
-    if (D_8008AC80 >= 0) {
-        Object_DeleteArray(D_8008E0C8, D_8008AC88);
+void Scenery_DeleteAll(void) {
+    if (g_ambienceFamily >= 0) {
+        Object_DeleteArray(g_scenery, g_sceneryCount);
     }
 }
 
-void func_80054D30(void) {
+/* When the place goes (Place slot 0x50): free the extra object, the bands, the scenery and the spots. */
+void Scenery_Teardown(void) {
     s32 i;
 
     func_80054714();
     func_80054B50();
-    func_80054CFC();
+    Scenery_DeleteAll();
     for (i = 0; i < 2; i++) {
-        D_8008AC9C[i] = (Unk_800557DC *)func_800557DC(D_8008AC9C[i]);
+        D_8008AC9C[i] = (SpotSlot *)func_800557DC(D_8008AC9C[i]);
     }
     if (D_8008AB4C != 0) {
         D_8008AB4C = 0;
     }
 }
 
-s32 *func_80054DA4(s32 *arg0, s32 arg1, void *arg2) {
-    void (*fn)(void *, s32);
+/* Kind 0: count objects at random offsets (func_80055410 on day numbers divisible by 7, else func_80055258). */
+s32 *func_80054DA4(s32 *out, s32 count, void *origin) {
+    void (*randomize)(void *, s32);
     s32 i;
-    s32 s1;
+    s32 height;
 
-    D_8008E0A4.unk18 = rand() % 7;
-    D_8008E0A4.unk10 = &D_800871C8[((u32)rand() % 5) * 12];
-    s1 = (u32)rand() % 5;
-    if (s1 != 0) {
-        s1 = D_80087328[s1];
+    g_sceneryParams.unk18 = rand() % 7;
+    g_sceneryParams.unk10 = &D_800871C8[((u32)rand() % 5) * 12];
+    height = (u32)rand() % 5;
+    if (height != 0) {
+        height = D_80087328[height];
     }
 
-    fn = func_80055410;
-    if (D_8008AC74 % 7 != 0) {
-        fn = func_80055258;
+    randomize = func_80055410;
+    if (g_placeDayNumber % 7 != 0) {
+        randomize = func_80055258;
     }
 
-    for (i = 0; i < arg1; i++) {
-        fn(arg2, s1);
-        *arg0 = (s32)func_80056320(0, (s32)&D_8008E0A4, D_8008AB4C, (s32)arg2);
-        arg0++;
+    for (i = 0; i < count; i++) {
+        randomize(origin, height);
+        *out = (s32)Scenery_New(0, (s32)&g_sceneryParams, D_8008AB4C, (s32)origin);
+        out++;
     }
-    return arg0;
+    return out;
 }
 
-s32 *func_80054F30(s32 *arg0, s32 arg1, void *arg2) {
+/* Kind 1 */
+s32 *func_80054F30(s32 *out, s32 count, void *origin) {
     s32 i;
-    s32 temp_s4 = D_80087330;
+    s32 height = D_80087330;
 
-    D_8008E0A4.unk10 = D_80087204;
-    for (i = 0; i < arg1; i++) {
-        func_80055258(arg2, temp_s4);
-        *arg0 = func_80056320(1, &D_8008E0A4, D_8008AB4C, arg2);
-        arg0++;
+    g_sceneryParams.unk10 = D_80087204;
+    for (i = 0; i < count; i++) {
+        func_80055258(origin, height);
+        *out = Scenery_New(1, &g_sceneryParams, D_8008AB4C, origin);
+        out++;
     }
-    return arg0;
+    return out;
 }
 
-s32 *func_80054FD8(s32 *arg0, s32 arg1) {
-    func_80055258((void *)arg1, D_80087330);
+/* Kind 3, one object: a fixed offset with the second band palette, else a random one behind the origin. */
+s32 *func_80054FD8(s32 *out, s32 origin) {
+    func_80055258((void *)origin, D_80087330);
     if (D_8008AB50 != 0 && D_8008AC8C == D_8008726C) {
-        D_8008E0A4.unk0 = 0xFFFF5000;
-        D_8008E0A4.unk4 = -0x2000;
-        D_8008E0A4.unk8 = 0;
-        D_8008E0A4.unk1C = D_8008721C + 3;
+        g_sceneryParams.x = 0xFFFF5000;
+        g_sceneryParams.y = -0x2000;
+        g_sceneryParams.z = 0;
+        g_sceneryParams.unk1C = D_8008721C + 3;
     } else {
-        if (D_8008E0A4.unk8 > 0) {
-            D_8008E0A4.unk8 = -D_8008E0A4.unk8;
+        if (g_sceneryParams.z > 0) {
+            g_sceneryParams.z = -g_sceneryParams.z;
         }
-        if (D_8008E0A4.unk8 < -0x7800) {
-            D_8008E0A4.unk8 = -0x7800;
+        if (g_sceneryParams.z < -0x7800) {
+            g_sceneryParams.z = -0x7800;
         }
-        D_8008E0A4.unk1C = D_8008721C + ((u32)rand() % 3) * 3;
+        g_sceneryParams.unk1C = D_8008721C + ((u32)rand() % 3) * 3;
     }
-    D_8008E0A4.unkC = D_80087174;
-    *arg0++ = (s32)func_80056320(3, (s32)&D_8008E0A4, D_8008AB4C, arg1);
-    return arg0;
+    g_sceneryParams.unkC = D_80087174;
+    *out++ = (s32)Scenery_New(3, (s32)&g_sceneryParams, D_8008AB4C, origin);
+    return out;
 }
 
-s32 *func_8005511C(s32 *arg0, s32 arg1) {
-    Unk_8005511C_Slot *p;
+/* Kind 2, one object; the word after unk1C gets day number % 20 (or D_80087430 when it is 0). */
+s32 *func_8005511C(s32 *out, s32 origin) {
+    ParamWord *p;
     s32 *q;
     s32 x;
     s32 v;
 
     v = (s32)(D_80087228 + ((u32)rand() % 3) * 3);
-    p = (Unk_8005511C_Slot *)&D_8008E0A4.unk1C;
+    p = (ParamWord *)&g_sceneryParams.unk1C;
     p->v = v;
     p++;
-    if (D_8008AC74 % 20) {
+    if (g_placeDayNumber % 20) {
         x = D_80087430;
     } else {
-        x = D_8008AC74 % 20;
+        x = g_placeDayNumber % 20;
     }
     p->v = x;
-    func_80055258((void *)arg1, D_80087330);
-    q = (s32 *)&D_8008E0A4.unkC;
+    func_80055258((void *)origin, D_80087330);
+    q = (s32 *)&g_sceneryParams.unkC;
     *q = (s32)D_80087174;
-    D_8008E0A4.unk18 = rand() % 6;
-    *arg0++ = (s32)func_80056320(2, (s32)&D_8008E0A4, D_8008AB4C, arg1);
-    return arg0;
+    g_sceneryParams.unk18 = rand() % 6;
+    *out++ = (s32)Scenery_New(2, (s32)&g_sceneryParams, D_8008AB4C, origin);
+    return out;
 }
 
-void func_80055258(void *arg0, s32 arg1) {
-    if (arg1 == 0) {
-        arg1 = D_80087328[rand() & 3];
+/* Random offset: x and z in -22..22 tiles (<< 11), y = height (or one of D_80087328 when 0). */
+void func_80055258(void *origin, s32 height) {
+    if (height == 0) {
+        height = D_80087328[rand() & 3];
     }
-    D_8008E0A4.unk4 = arg1;
-    D_8008E0A4.unk0 = (rand() % 23) << 11;
+    g_sceneryParams.y = height;
+    g_sceneryParams.x = (rand() % 23) << 11;
     if (rand() & 1) {
-        D_8008E0A4.unk0 = -D_8008E0A4.unk0;
+        g_sceneryParams.x = -g_sceneryParams.x;
     }
-    D_8008E0A4.unk8 = (rand() % 23) << 11;
+    g_sceneryParams.z = (rand() % 23) << 11;
     if (rand() & 1) {
-        D_8008E0A4.unk8 = -D_8008E0A4.unk8;
+        g_sceneryParams.z = -g_sceneryParams.z;
     }
-    D_8008E0A4.unkC = D_80087174 + ((u32)rand() % 7) * 12;
-    D_8008E0A4.unk14 = rand() % 5;
+    g_sceneryParams.unkC = D_80087174 + ((u32)rand() % 7) * 12;
+    g_sceneryParams.unk14 = rand() % 5;
 }
 
+/* Day numbers divisible by 7: x in 0..19 tiles, z 0xA000, -0x6000 or 0x800 by day number % 3. */
 void func_80055410(void) {
     s32 v;
     s32 m;
 
     rand();
-    D_8008E0A4.unk4 = D_8008732C;
+    g_sceneryParams.y = D_8008732C;
     v = rand();
-    D_8008E0A4.unk8 = 0xA000;
-    D_8008E0A4.unk0 = (v % 20) << 11;
-    m = D_8008AC74 % 3;
+    g_sceneryParams.z = 0xA000;
+    g_sceneryParams.x = (v % 20) << 11;
+    m = g_placeDayNumber % 3;
     if (m == 1) {
-        D_8008E0A4.unk8 = 0xFFFF6000;
+        g_sceneryParams.z = 0xFFFF6000;
     } else if (m == 2) {
-        D_8008E0A4.unk8 = 0x800;
+        g_sceneryParams.z = 0x800;
     }
-    D_8008E0A4.unkC = D_80087174 + ((u32)rand() % 7) * 12;
-    D_8008E0A4.unk14 = rand() % 5;
+    g_sceneryParams.unkC = D_80087174 + ((u32)rand() % 7) * 12;
+    g_sceneryParams.unk14 = rand() % 5;
 }
 
-Unk_8005556C *func_8005556C(Unk_8005556C *arg0, s32 *arg1, s32 arg2, s32 arg3) {
-    Unk_8005556C_Sub *temp;
+/* Hold the next free spot in range of origin in slot and register its handler. */
+SpotSlot *func_8005556C(SpotSlot *slot, s32 *found, s32 origin, s32 arg3) {
+    SpotRecord *record;
 
-    temp = func_80055620(&arg0->u4, &arg0->u10, arg2);
-    if (temp != NULL) {
-        arg0->u0 = temp;
-        func_8002CC34(*D_8008AC7C, &arg0->u14, temp->u6, arg0, D_800874B0[temp->u6]);
-        if (temp->u6 == *arg1) {
-            *arg1 = -temp->u6;
+    record = func_80055620(slot->pos, &slot->distance, origin);
+    if (record != NULL) {
+        slot->record = record;
+        func_8002CC34(g_placeRefs->handlerList, &slot->node, record->range, slot, D_800874B0[record->range]);
+        if (record->range == *found) {
+            *found = -record->range;
         }
-        temp->u6 = -temp->u6;
-        return arg0;
+        record->range = -record->range;
+        return slot;
     }
     return NULL;
 }
 
-Unk_8005556C_Sub *func_80055620(void *arg0, void *arg1, s32 arg2) {
-    Unk_80055620_Tmp tmp;
-    Unk_80055620_Rec *rec;
+/* Walk the stage's spots from D_8008AC98 and return the first free one within its range of origin. */
+SpotRecord *func_80055620(void *pos, void *distance, s32 origin) {
+    SpotQuery query;
+    SpotRecord *record;
     s32 *from;
     s32 i;
     s32 n;
@@ -2733,25 +1972,25 @@ Unk_8005556C_Sub *func_80055620(void *arg0, void *arg1, s32 arg2) {
     s32 dz;
     s32 dist;
 
-    from = (s32 *)arg2;
+    from = (s32 *)origin;
     if (from != NULL) {
-        n = D_800876EC[D_8008AC6C] - D_8008AC98;
-        rec = D_800876B4[D_8008AC6C] + D_8008AC98;
-        for (i = 0; i < n; i++, rec++) {
+        n = D_800876EC[g_placeStage] - D_8008AC98;
+        record = D_800876B4[g_placeStage] + D_8008AC98;
+        for (i = 0; i < n; i++, record++) {
             D_8008AC98++;
-            if (rec->range > 0) {
-                tmp.a = rec->c;
-                tmp.b = D_800874EC[rec->idx];
-                (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)D_8008AB4C + 0xE8))(D_8008AB4C, arg0, (s32)&tmp);
-                dx = ((s32 *)arg0)[0] - from[0];
+            if (record->range > 0) {
+                query.a = record->tile;
+                query.b = D_800874EC[record->idx];
+                (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)D_8008AB4C + 0xE8))(D_8008AB4C, pos, (s32)&query);
+                dx = ((s32 *)pos)[0] - from[0];
                 if (dx < 0) {
                     dx = ~dx + 1;
                 }
-                dz = ((s32 *)arg0)[2] - from[2];
+                dz = ((s32 *)pos)[2] - from[2];
                 dist = dx + (dz < 0 ? ~dz + 1 : dz);
-                *(s32 *)arg1 = dist;
-                if (dist < D_80087474[rec->range]) {
-                    return (Unk_8005556C_Sub *)rec;
+                *(s32 *)distance = dist;
+                if (dist < D_80087474[record->range]) {
+                    return record;
                 }
             }
         }
@@ -2759,686 +1998,720 @@ Unk_8005556C_Sub *func_80055620(void *arg0, void *arg1, s32 arg2) {
     return NULL;
 }
 
-s32 func_800557DC(Unk_800557DC *arg0) {
-    func_8002CC84((void *)*D_8008AC7C, &arg0->u14);
-    arg0->u0->u6 = -arg0->u0->u6;
+/* Release a slot: unregister its handler and free its spot. */
+s32 func_800557DC(SpotSlotU *slot) {
+    func_8002CC84((void *)g_placeRefs->handlerList, &slot->node);
+    slot->record->range = -slot->record->range;
     return 0;
 }
 
-s32 func_8005582C(s32 arg0, void *arg1, s32 arg2) {
-    if (func_80055874(arg0, arg1) != 0) {
-        func_8002CD08(*D_8008AC7C, arg0 + 0x14);
+s32 func_8005582C(s32 slot, void *origin, s32 arg2) {
+    if (func_80055874(slot, origin) != 0) {
+        func_8002CD08(g_placeRefs->handlerList, slot + 0x14);
         return 1;
     }
     return 0;
 }
 
-s32 func_80055874(A *arg0, B *arg1) { s32 dx,dz,d; if (arg1 != NULL) {
-    dx = arg0->u4 - arg1->u0;
+/* Is the held spot still within its range of origin (the range is negative while held)? */
+s32 func_80055874(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (origin != NULL) {
+    dx = slot->pos[0] - origin[0];
     if (dx < 0) dx = ~dx + 1;
-    dz = arg0->uC - arg1->u8;
+    dz = slot->pos[2] - origin[2];
     d = dx + (dz < 0 ? ~dz + 1 : dz);
-    arg0->u10 = d;
-    if (d < D_80087474[-arg0->u0->u6]) return 1; } return 0; }
+    slot->distance = d;
+    if (d < D_80087474[-slot->record->range]) return 1; } return 0; }
 
-s32 func_800558F0(s32 arg0, s32 arg1, s32 arg2) {
-    s32 sp10[4];
-    void *var_s3;
-    s32 var_s2;
-    s32 var_s1;
-    Unk_800557DC **var_s0;
+/*
+ * The scenery tick (Place slot 0x8C), with the map position of the dreamer. On the first tick
+ * after a place starts (g_placeTicks reads 0) it makes the extra object, the bands and the
+ * scenery; zeroing g_placeTicks makes them again without freeing the old ones (the "location_time"
+ * leak, work/hunt6/F-findings.md). Then it updates them and the two spot slots, and returns the
+ * range of a spot just taken when it equals found.
+ */
+s32 Scenery_Tick(s32 mapPos, s32 arg1, s32 found) {
+    s32 posBuf[4];
+    void *origin;
+    s32 i;
+    s32 unused;
+    SpotSlot **slot;
 
-    var_s3 = 0;
-    if (arg0 != 0) {
-        var_s3 = sp10;
-        (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)D_8008AB4C + 0xE8))(D_8008AB4C, var_s3, arg0);
+    origin = 0;
+    if (mapPos != 0) {
+        origin = posBuf;
+        (*(void (**)(s32, void *, s32))((u8 *)*(s32 *)D_8008AB4C + 0xE8))(D_8008AB4C, origin, mapPos);
     }
-    if (D_8008AC70++ == 0) {
+    if (g_placeTicks++ == 0) {
         func_80054660();
         func_80054850();
-        func_80054B84((s32)var_s3);
+        Scenery_CreateAll((s32)origin);
     }
     func_800549A8();
-    func_80054C74((s32)var_s3);
+    Scenery_UpdateAll((s32)origin);
     func_80055A24();
     D_8008AC98 = 0;
-    var_s0 = D_8008AC9C;
-    for (var_s2 = 0; var_s2 < 2; var_s2++, var_s0++) {
-        if (*var_s0 != NULL) {
-            if (func_8005582C(*var_s0, var_s3, arg1) == 0) {
-                *var_s0 = (Unk_800557DC *)func_800557DC(*var_s0);
+    slot = D_8008AC9C;
+    for (i = 0; i < 2; i++, slot++) {
+        if (*slot != NULL) {
+            if (func_8005582C(*slot, origin, arg1) == 0) {
+                *slot = (SpotSlot *)func_800557DC(*slot);
             }
         } else {
-            *var_s0 = (Unk_800557DC *)func_8005556C(&D_8008E154[var_s2], &arg2, var_s3, arg1);
+            *slot = (SpotSlot *)func_8005556C(&D_8008E154[i], &found, origin, arg1);
         }
     }
-    return arg2;
+    return found;
 }
 
 void func_80055A24(void) {
-    if (D_8008AC6C == 2) {
+    if (g_placeStage == 2) {
         func_8003B624(D_80087444, 1, D_80087450);
-    } else if (D_8008AC6C >= 3 && D_8008AC6C < 6) {
+    } else if (g_placeStage >= 3 && g_placeStage < 6) {
         func_8003B624(D_8008745C, 1, D_80087468);
     }
 }
 
-void func_80055A88(void *arg0, Unk_80056238 *arg1) {
-    s32 temp_v1;
+/* Spot handlers (table D_800874B0, by range): slot is the SpotSlot, state the handler's state. */
+void func_80055A88(void *slot, SpotState *state) {
+    s32 tick;
 
-    arg1->u10 = func_8005627C(arg0);
-    temp_v1 = arg1->u4;
-    if (temp_v1 == 0) {
-        arg1->u1C = 7;
-        arg1->u20 = 0;
-    } else if (temp_v1 == 2) {
-        arg1->u30 = 7;
-        arg1->u34 = 0;
-    } else if (temp_v1 == 5) {
-        arg1->u44 = 7;
-        arg1->u48 = 0;
-    } else if (temp_v1 >= 8) {
-        arg1->u4 = -1;
+    state->level = func_8005627C(slot);
+    tick = state->tick;
+    if (tick == 0) {
+        state->unk1C = 7;
+        state->unk20 = 0;
+    } else if (tick == 2) {
+        state->unk30 = 7;
+        state->unk34 = 0;
+    } else if (tick == 5) {
+        state->unk44 = 7;
+        state->unk48 = 0;
+    } else if (tick >= 8) {
+        state->tick = -1;
     }
 }
 
-void func_80055B10(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C(arg0);
-    if (arg1->u4 == 0) {
-        arg1->u1C = 0x18;
-        arg1->u20 = -2;
+void func_80055B10(void *slot, SpotState *state) {
+    state->level = func_8005627C(slot);
+    if (state->tick == 0) {
+        state->unk1C = 0x18;
+        state->unk20 = -2;
         return;
     }
-    if (arg1->u4 >= 0x401) {
-        arg1->u4 = -1;
+    if (state->tick >= 0x401) {
+        state->tick = -1;
     }
 }
 
-void func_80055B6C(void *arg0, Unk_80056238 *arg1) {
-    s32 temp_v1;
+void func_80055B6C(void *slot, SpotState *state) {
+    s32 tick;
 
-    arg1->u10 = func_8005627C(arg0);
-    temp_v1 = arg1->u4;
-    if (temp_v1 == 0) {
-        arg1->u1C = 0xC;
-        arg1->u20 = 2;
+    state->level = func_8005627C(slot);
+    tick = state->tick;
+    if (tick == 0) {
+        state->unk1C = 0xC;
+        state->unk20 = 2;
         return;
     }
-    if (temp_v1 >= 5) {
-        arg1->u4 = -1;
+    if (tick >= 5) {
+        state->tick = -1;
     }
 }
 
-void func_80055BC8(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C(arg0);
-    if (arg1->u4 % 20 == 0) {
-        arg1->u1C = 0x1E;
-        arg1->u24 = 0x20;
-        arg1->u20 = 0;
-        arg1->u28 = 0xA;
+void func_80055BC8(void *slot, SpotState *state) {
+    state->level = func_8005627C(slot);
+    if (state->tick % 20 == 0) {
+        state->unk1C = 0x1E;
+        state->unk24 = 0x20;
+        state->unk20 = 0;
+        state->unk28 = 0xA;
     }
-    if (arg1->u4 % 400 == 0) {
-        arg1->u30 = 0x1E;
-        arg1->u34 = 0;
+    if (state->tick % 400 == 0) {
+        state->unk30 = 0x1E;
+        state->unk34 = 0;
     }
-    arg1->u44 = 6;
-    arg1->u4C = 0x20;
-    arg1->u48 = 0;
-    arg1->u50 = 0xA;
+    state->unk44 = 6;
+    state->unk4C = 0x20;
+    state->unk48 = 0;
+    state->unk50 = 0xA;
 }
 
-void func_80055CA8(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C((Unk_8005627C *)arg0);
-    if (arg1->u4 % 3 == 0) {
-        arg1->u1C = 0x1E;
-        arg1->u20 = 0;
+void func_80055CA8(void *slot, SpotState *state) {
+    state->level = func_8005627C((SpotSlot *)slot);
+    if (state->tick % 3 == 0) {
+        state->unk1C = 0x1E;
+        state->unk20 = 0;
     }
-    if (arg1->u4 % 5 == 0) {
-        arg1->u30 = 0x1E;
-        arg1->u34 = 0;
-        arg1->u38 = 0x18;
-        arg1->u3C = 0x18;
+    if (state->tick % 5 == 0) {
+        state->unk30 = 0x1E;
+        state->unk34 = 0;
+        state->unk38 = 0x18;
+        state->unk3C = 0x18;
     }
-    if (arg1->u4 % 7 == 0) {
-        arg1->u1C = 0x1E;
-        arg1->u20 = 0;
+    if (state->tick % 7 == 0) {
+        state->unk1C = 0x1E;
+        state->unk20 = 0;
     }
-    arg1->u44 = 6;
-    arg1->u48 = 1;
-    arg1->u4C = 0x2A;
-    arg1->u50 = 0xA;
+    state->unk44 = 6;
+    state->unk48 = 1;
+    state->unk4C = 0x2A;
+    state->unk50 = 0xA;
 }
 
-void func_80055DB4(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C((Unk_8005627C *)arg0);
-    if (arg1->u4 == 0) {
-        arg1->u1C = 0x1E;
-        arg1->u20 = -1;
+void func_80055DB4(void *slot, SpotState *state) {
+    state->level = func_8005627C((SpotSlot *)slot);
+    if (state->tick == 0) {
+        state->unk1C = 0x1E;
+        state->unk20 = -1;
         return;
     }
-    if (arg1->u4 < 50 && arg1->u4 % 5 == 4) {
-        arg1->u30 = 0x1E;
-        arg1->u34 = 0;
-        arg1->u3C = arg1->u38 -= arg1->u4 * 2;
+    if (state->tick < 50 && state->tick % 5 == 4) {
+        state->unk30 = 0x1E;
+        state->unk34 = 0;
+        state->unk3C = state->unk38 -= state->tick * 2;
         return;
     }
-    if (arg1->u4 >= 0x65 && arg1->u4 < 0x6E) {
-        arg1->u44 = 0xD;
-        arg1->u48 = 1;
+    if (state->tick >= 0x65 && state->tick < 0x6E) {
+        state->unk44 = 0xD;
+        state->unk48 = 1;
         return;
     }
-    if (arg1->u4 >= 0xC9) {
-        arg1->u4 = -1;
+    if (state->tick >= 0xC9) {
+        state->tick = -1;
     }
 }
 
-void func_80055E94(void *arg0, Unk_80056238 *arg1) {
-    s32 temp_v1;
+void func_80055E94(void *slot, SpotState *state) {
+    s32 tick;
 
-    arg1->u10 = func_8005627C(arg0);
-    temp_v1 = arg1->u4;
-    if (temp_v1 == 0) {
-        arg1->u1C = 7;
-        arg1->u20 = 2;
+    state->level = func_8005627C(slot);
+    tick = state->tick;
+    if (tick == 0) {
+        state->unk1C = 7;
+        state->unk20 = 2;
         return;
     }
-    if (temp_v1 >= 0x1B) {
-        arg1->u4 = -1;
+    if (tick >= 0x1B) {
+        state->tick = -1;
     }
 }
 
-void func_80055EF0(void *arg0, Unk_80055F74 *arg1) {
-    s32 temp_v1;
+void func_80055EF0(void *slot, SpotState *state) {
+    s32 tick;
 
-    arg1->unk10 = func_8005627C(arg0);
-    temp_v1 = arg1->unk4;
-    if (temp_v1 == 0) {
-        arg1->unk1C = 0x14;
-        arg1->unk20 = 1;
+    state->level = func_8005627C(slot);
+    tick = state->tick;
+    if (tick == 0) {
+        state->unk1C = 0x14;
+        state->unk20 = 1;
         return;
     }
-    if (temp_v1 == 3) {
-        arg1->unk20 = 2;
-        arg1->unk24 = 0x18;
-        arg1->unk1C = 3;
-        arg1->unk28 = 0x14;
+    if (tick == 3) {
+        state->unk20 = 2;
+        state->unk24 = 0x18;
+        state->unk1C = 3;
+        state->unk28 = 0x14;
         return;
     }
-    if (temp_v1 >= 0x33) {
-        arg1->unk4 = -1;
+    if (tick >= 0x33) {
+        state->tick = -1;
     }
 }
 
-void func_80055F74(void *arg0, Unk_80055F74 *arg1) {
-    arg1->unk10 = func_8005627C(arg0);
-    if (arg1->unk4 % 20 == 0) {
-        arg1->unk1C = 9;
-        arg1->unk20 = 0;
-        arg1->unk24 = 0x40;
-        arg1->unk28 = 0x40;
+void func_80055F74(void *slot, SpotState *state) {
+    state->level = func_8005627C(slot);
+    if (state->tick % 20 == 0) {
+        state->unk1C = 9;
+        state->unk20 = 0;
+        state->unk24 = 0x40;
+        state->unk28 = 0x40;
     }
 }
 
-void func_80055FE8(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C(arg0);
-    if (arg1->u4 == ((arg1->u4 / 20) * 20)) {
-        arg1->u1C = 9;
-        arg1->u20 = -2;
+void func_80055FE8(void *slot, SpotState *state) {
+    state->level = func_8005627C(slot);
+    if (state->tick == ((state->tick / 20) * 20)) {
+        state->unk1C = 9;
+        state->unk20 = -2;
     }
 }
 
-void func_80056054(void *arg0, Unk_80056238_80056054 *arg1) {
-    s32 temp_v1;
+void func_80056054(void *slot, SpotState *state) {
+    s32 phase;
 
-    arg1->u10 = func_8005627C(arg0);
-    temp_v1 = arg1->u4 % 20;
-    if (temp_v1 == 1) {
-        arg1->u1C = 9;
-        arg1->u20 = -2;
-    } else if (temp_v1 == 16) {
-        arg1->u30 = 9;
-        arg1->u34 = -2;
+    state->level = func_8005627C(slot);
+    phase = state->tick % 20;
+    if (phase == 1) {
+        state->unk1C = 9;
+        state->unk20 = -2;
+    } else if (phase == 16) {
+        state->unk30 = 9;
+        state->unk34 = -2;
     }
 }
 
-void func_800560E4(void *arg0, Unk_80056238 *arg1) {
-    s32 temp_v1;
+void func_800560E4(void *slot, SpotState *state) {
+    s32 phase;
 
-    func_80056054(arg0, (Unk_80056238_80056054 *) arg1);
-    temp_v1 = arg1->u4 % 70;
-    if (temp_v1 == 50) {
-        arg1->u44 = 20;
-        arg1->u48 = 1;
-    } else if (temp_v1 >= 54 && temp_v1 < 59) {
-        arg1->u44 = 13;
-        arg1->u48 = 1;
-    } else if (temp_v1 == 61) {
-        arg1->u44 = 9;
-        arg1->u48 = -1;
+    func_80056054(slot, state);
+    phase = state->tick % 70;
+    if (phase == 50) {
+        state->unk44 = 20;
+        state->unk48 = 1;
+    } else if (phase >= 54 && phase < 59) {
+        state->unk44 = 13;
+        state->unk48 = 1;
+    } else if (phase == 61) {
+        state->unk44 = 9;
+        state->unk48 = -1;
     }
 }
 
-void func_80056194(void *arg0, Unk_80056238 *arg1) {
-    s32 state;
+void func_80056194(void *slot, SpotState *state) {
+    s32 tick;
 
-    arg1->u10 = func_8005627C(arg0);
-    state = arg1->u4;
-    if (state == 0) {
-        arg1->u1C = 0x14;
-        arg1->u20 = -2;
-        arg1->u30 = 0x14;
-        arg1->u34 = -2;
+    state->level = func_8005627C(slot);
+    tick = state->tick;
+    if (tick == 0) {
+        state->unk1C = 0x14;
+        state->unk20 = -2;
+        state->unk30 = 0x14;
+        state->unk34 = -2;
         return;
     }
-    if (state == 4) {
-        arg1->u30 = 0x14;
-        arg1->u34 = -2;
+    if (tick == 4) {
+        state->unk30 = 0x14;
+        state->unk34 = -2;
         return;
     }
-    if (state == 20) {
-        arg1->u1C = 0x10;
-        arg1->u20 = -2;
-        arg1->u30 = 0x12;
-        arg1->u34 = -2;
+    if (tick == 20) {
+        state->unk1C = 0x10;
+        state->unk20 = -2;
+        state->unk30 = 0x12;
+        state->unk34 = -2;
         return;
     }
-    if (state >= 0xC9) {
-        arg1->u4 = -1;
+    if (tick >= 0xC9) {
+        state->tick = -1;
     }
 }
 
-void func_80056238(void *arg0, Unk_80056238 *arg1) {
-    arg1->u10 = func_8005627C(arg0);
-    if (arg1->u4 == 0) {
-        arg1->u1C = 0x18;
-        arg1->u20 = 0;
+void func_80056238(void *slot, SpotState *state) {
+    state->level = func_8005627C(slot);
+    if (state->tick == 0) {
+        state->unk1C = 0x18;
+        state->unk20 = 0;
     }
 }
 
-s32 func_8005627C(Unk_8005627C *arg0) {
-    return arg0->u10 / (D_80087474[-arg0->u0->u6] / arg0->u28);
+/* distance / (range / unk28): grows with the distance to the spot. */
+s32 func_8005627C(SpotSlot *slot) {
+    return slot->distance / (D_80087474[-slot->record->range] / slot->unk28);
 }
 
-s32 func_8005630C(void) {
-    return (D_8008AC80 & 1) ^ 1;
+/* Spawn rule 7 (Sym_CheckRule): 1 when the ambience family is even, 0 for odd ones and none (-1). */
+s32 Ambience_IsEvenFamily(void) {
+    return (g_ambienceFamily & 1) ^ 1;
 }
 
-void *func_80056320(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    void *temp;
+/* Allocate a scenery object (0x98 bytes) of a kind from params at map, origin. */
+void *Scenery_New(s32 kind, s32 params, s32 map, s32 origin) {
+    void *scenery;
 
-    temp = Heap_Alloc(0x98);
-    if (temp == 0) {
+    scenery = Heap_Alloc(0x98);
+    if (scenery == 0) {
         return 0;
     }
-    if (func_80056F4C()->unk8(temp, arg0, arg1, arg2, arg3) != 0) {
-        return temp;
+    if (Scenery_GetVtbl()->construct(scenery, kind, params, map, origin) != 0) {
+        return scenery;
     }
-    Heap_Free(temp);
+    Heap_Free(scenery);
     return 0;
 }
 
-void *func_800563C0(Unk_800563C0 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    if (func_80057C84()->unk8(arg0) != 0) {
-        arg0->unk0 = func_80056F4C();
-        arg0->unk44 = 0;
-        arg0->unk54 = arg1;
-        arg0->unk0->unk40(arg0, arg2);
-        func_80056520(arg0, arg3, arg4);
-        return arg0;
+/* Slot 0x08 */
+void *func_800563C0(Scenery *scenery, s32 kind, s32 params, s32 map, s32 origin) {
+    if (func_80057C84()->construct(scenery) != 0) {
+        scenery->vt = Scenery_GetVtbl();
+        scenery->unk44 = 0;
+        scenery->kind = kind;
+        scenery->vt->init(scenery, params);
+        func_80056520(scenery, map, origin);
+        return scenery;
     }
     return NULL;
 }
 
-void func_80056464(s32 arg0) {
+/* Slot 0x0C (func_80056718 is called without the object; a0 still holds it). */
+void func_80056464(s32 scenery) {
     func_80056718();
-    func_80057C84()->unkC(arg0);
+    func_80057C84()->destruct(scenery);
 }
 
-void func_800564A4(Unk_80059394 *arg0, Unk_800564A4 *arg1) {
-    *(Unk_800564A4 *)((u8 *)arg0 + 0x58) = *arg1;
-    arg0->u24 = 0;
+/* Slot 0x40: copy the parameters to +0x58. */
+void func_800564A4(Scenery *scenery, SceneryParams *params) {
+    *(SceneryParams *)((u8 *)scenery + 0x58) = *params;
+    scenery->ticks = 0;
 }
 
-void func_800564F4(Unk_80059394 *arg0) {
-    arg0->u24++;
+/* Slot 0xEC, every tick (func_80056640 is called without arguments; a0 and a1 still hold them). */
+void func_800564F4(Scenery *scenery) {
+    scenery->ticks++;
     func_80056640();
 }
 
-void func_80056520(void *arg0, s32 arg1, s32 arg2) {
-    Unk_80056520 *obj = (Unk_80056520 *)arg0;
-    Unk_80056794 sp18;
-    s32 temp_v1;
+/* Place it at origin + offset and build its parts by kind. */
+void func_80056520(void *self, s32 map, s32 origin) {
+    Scenery *scenery = (Scenery *)self;
+    Vec3 pos;
+    s32 kind;
 
-    D_8008ACB0 = ((s32 *)D_8008ACAC)[6];
-    func_80056794(&sp18, (Unk_80056794 *)arg2, &obj->unk58);
-    func_800567D4(arg0, arg1, &sp18, obj->unk64, obj->unk68);
-    temp_v1 = obj->unk54;
-    if (temp_v1 < 2) {
-        func_8001E770(arg0, ((Unk_80056F5C_Obj *)D_8008ACA4)->vt->unk80(D_8008ACA4, D_8008AB98[temp_v1]));
+    D_8008ACB0 = D_8008ACAC->unk18;
+    func_80056794(&pos, (Vec3 *)origin, &scenery->offset);
+    func_800567D4(self, map, &pos, scenery->unk64, (s32)scenery->unk68);
+    kind = scenery->kind;
+    if (kind < 2) {
+        func_8001E770(self, D_8008ACA4->vt->unk80(D_8008ACA4, D_8008AB98[kind]));
     }
-    switch (obj->unk54) {
+    switch (scenery->kind) {
     case 0:
-        func_80056858(arg0, 0);
+        func_80056858(self, 0);
         return;
     case 2:
-        func_80056BBC(arg0, 0);
+        func_80056BBC(self, 0);
         return;
     case 3:
-        func_80056E1C(arg0, 0);
+        func_80056E1C(self, 0);
         return;
     }
 }
 
-void func_80056640(Unk_80056640 *arg0, Unk_80056794 *arg1) {
-    Unk_80056794 sp10;
+/* Follow the origin (and the view's height since it was made), then update the parts by kind. */
+void func_80056640(Scenery *scenery, Vec3 *origin) {
+    Vec3 pos;
 
-    func_80056794(&sp10, arg1, &arg0->unk58);
-    sp10.u4 += ((s32 *)D_8008ACAC)[6] - D_8008ACB0;
-    arg0->unk0->unkB8(arg0, &sp10);
-    switch (arg0->unk54) {
+    func_80056794(&pos, origin, &scenery->offset);
+    pos.y += D_8008ACAC->unk18 - D_8008ACB0;
+    scenery->vt->setPos(scenery, &pos);
+    switch (scenery->kind) {
     case 0:
-        func_800569A8(arg0, arg1);
+        func_800569A8(scenery, origin);
         return;
     case 2:
-        func_80056DF0(arg0, arg1);
+        func_80056DF0(scenery, origin);
         return;
     case 3:
-        func_80056E44(arg0, arg1);
+        func_80056E44(scenery, origin);
         return;
     }
 }
 
-void func_80056718(Unk_80056718 *arg0) {
-    switch (arg0->unk54) {
+/* Delete the parts by kind. */
+void func_80056718(Scenery *scenery) {
+    switch (scenery->kind) {
     case 0:
-        func_80056B8C((u8 *)arg0);
+        func_80056B8C(scenery);
         break;
     case 2:
-        func_80056DF8((u8 *)arg0);
+        func_80056DF8(scenery);
         break;
     case 3:
-        func_80056F28((u8 *)arg0);
+        func_80056F28(scenery);
         break;
     }
 }
 
-void func_80056794(Unk_80056794 *arg0, Unk_80056794 *arg1, Unk_80056794 *arg2) {
-    arg0->u0 = arg1->u0 + arg2->u0;
-    arg0->u4 = arg1->u4 + arg2->u4;
-    arg0->u8 = arg1->u8 + arg2->u8;
+void func_80056794(Vec3 *out, Vec3 *a, Vec3 *b) {
+    out->x = a->x + b->x;
+    out->y = a->y + b->y;
+    out->z = a->z + b->z;
 }
 
-void func_800567D4(void *arg0, s32 arg1, Unk_80056794 *arg2, s32 arg3, s32 arg4) {
-    Unk_800567D4_Obj *obj = arg0;
+/* Slots 0x4C, 0x44 and 0x48 of a scenery object or part (pos is not used). */
+void func_800567D4(void *self, s32 parent, Vec3 *pos, s32 arg3, s32 arg4) {
+    SceneryPart *obj = self;
 
-    obj->vt->unk4C(obj, arg1);
+    obj->vt->unk4C(obj, parent);
     obj->vt->unk44(obj, 1, arg3);
     obj->vt->unk48(obj, 1, arg4);
 }
 
-void func_80056858(void *arg0, s32 arg1) {
-    Unk_80056858 *self = arg0;
-    Unk_80056794 pos;
+/* Kind 0: make (move == 0) or move its two parts, set apart along direction unk6C (1 to 4). */
+void func_80056858(void *self, s32 move) {
+    Scenery *scenery = self;
+    Vec3 pos;
     s32 dir;
-    void **objs;
+    SceneryPart **part;
     s32 i;
 
-    dir = self->unk6C;
+    dir = scenery->unk6C;
     if (dir != 0) {
         pos = D_800877EC;
-        objs = self->unk7C;
+        part = scenery->u.pair;
         for (i = 0; i < 2; i++) {
             if (dir < 3) {
-                pos.u0 += *self->unk68 * D_800877F8[dir];
+                pos.x += *scenery->unk68 * D_800877F8[dir];
             } else {
-                pos.u4 += D_800877F8[dir];
+                pos.y += D_800877F8[dir];
             }
-            if (arg1 != 0) {
-                Unk_80056858_Obj *obj = *objs;
+            if (move != 0) {
+                SceneryPart *obj = *part;
                 obj->vt->unkB8(obj, &pos);
             } else {
-                *objs = func_80056FE4();
-                func_8001E770(*objs, self->unk20);
-                func_800567D4(*objs, (s32)self, &pos, self->unk64, (s32)self->unk68);
+                *part = func_80056FE4();
+                func_8001E770(*part, scenery->model);
+                func_800567D4(*part, (s32)scenery, &pos, scenery->unk64, (s32)scenery->unk68);
             }
-            objs++;
+            part++;
         }
     }
 }
 
-void func_800569A8(void *arg0, Unk_80056794 *arg1) {
-    Unk_800569A8 *obj = arg0;
-    Unk_800569A8_Obj **p;
-    Unk_80056794 tmp;
-    s32 *base;
+/* Kind 0 tick: past 500 ticks, with a speed in D_8008780C[unk70], move the parts every 0x5FB4 / speed ticks. */
+void func_800569A8(void *self, Vec3 *origin) {
+    Scenery *scenery = self;
+    SceneryPart **part;
+    Vec3 pos;
+    s32 *speed;
     s32 idx;
     s32 i;
     s32 off;
-    s32 q;
-    u32 u;
+    s32 period;
+    u32 ticks;
 
-    idx = obj->u70;
-    if (obj->u6C != 0) {
+    idx = scenery->unk70;
+    if (scenery->unk6C != 0) {
         if (D_8008780C[idx] != 0) {
-            p = obj->u7C;
-            if (obj->u24 >= 0x1F5) {
-                obj->vt->f44(obj, 0, &D_80087838);
+            part = scenery->u.pair;
+            if (scenery->ticks >= 0x1F5) {
+                scenery->vt->unk44(scenery, 0, &D_80087838);
                 i = 0;
-                base = &D_8008780C[idx];
+                speed = &D_8008780C[idx];
                 off = 0;
                 do {
-                    tmp = D_8008782C;
-                    tmp.u8 += off + *base;
-                    (*p)->vt->fBC(*p, &tmp);
+                    pos = D_8008782C;
+                    pos.z += off + *speed;
+                    (*part)->vt->unkBC(*part, &pos);
                     i++;
                     off += 3;
-                    (*p)->vt->f44(*p, 0, &D_80087838);
-                    p++;
+                    (*part)->vt->unk44(*part, 0, &D_80087838);
+                    part++;
                 } while (i < 2);
-                q = 0x5FB4 / D_8008780C[idx];
-                u = obj->u24;
-                if (q >= 0) {
-                    if (u % (u32)q == 0) {
-                        func_80056858(obj, 1);
+                period = 0x5FB4 / D_8008780C[idx];
+                ticks = scenery->ticks;
+                if (period >= 0) {
+                    if (ticks % (u32)period == 0) {
+                        func_80056858(scenery, 1);
                     }
                 } else {
-                    if (u % (u32)(~q + 1) == 0) {
-                        func_80056858(obj, 1);
+                    if (ticks % (u32)(~period + 1) == 0) {
+                        func_80056858(scenery, 1);
                     }
                 }
             }
         }
     }
-    *obj->u14 = 0;
+    *scenery->posBlock = 0;
 }
 
-void func_80056B8C(u8 *arg0) {
-    if (*(s32 *)(arg0 + 0x6C) != 0) {
-        Object_DeleteArray(arg0 + 0x7C, 2);
+void func_80056B8C(Scenery *scenery) {
+    if (scenery->unk6C != 0) {
+        Object_DeleteArray(scenery->u.pair, 2);
     }
 }
 
-void func_80056BBC(void *arg0, s32 arg1) {
-    Unk_80056BBC *obj;
-    Unk_80056BBC_Obj *s0;
-    Unk_80056BBC_Vt *vt;
-    s32 *var_a1;
-    s32 rnd;
-    s32 var_a2;
-    s32 var_a3;
-    s32 temp_a1;
+/* Kind 2: five parts, then part 1 placed from D_80087844[unk70] or coloured, part 2 shown. */
+void func_80056BBC(void *self, s32 arg1) {
+    Scenery *scenery;
+    SceneryPart *part;
+    SceneryPartVtbl *vt;
+    s32 *value;
+    s32 coin;
+    s32 color;
+    s32 partColor;
+    s32 arg;
 
-    obj = (Unk_80056BBC *)arg0;
-    rnd = rand() % 2;
-    var_a3 = 0;
-    if (rnd == 0) {
-        var_a3 = (s32)D_80087868;
+    scenery = (Scenery *)self;
+    coin = rand() % 2;
+    partColor = 0;
+    if (coin == 0) {
+        partColor = (s32)D_80087868;
     }
-    func_80056D18((u8 *)arg0, 0, 0, var_a3);
-    if (obj->unk70 >= 2) {
-        var_a1 = D_80087880;
-        s0 = obj->unk88;
-        *var_a1 = D_80087844[obj->unk70];
-        func_800573A8(s0, var_a1);
-        temp_a1 = obj->unk78;
-        vt = s0->vt;
-        if (temp_a1 == 0) {
-            temp_a1 = obj->unk74;
+    func_80056D18(self, 0, 0, partColor);
+    if (scenery->unk70 >= 2) {
+        value = D_80087880;
+        part = scenery->u.many.parts[1];
+        *value = D_80087844[scenery->unk70];
+        Actor_MovePos(part, value);
+        arg = scenery->unk78;
+        vt = part->vt;
+        if (arg == 0) {
+            arg = scenery->unk74;
         }
-        vt->unkB8(s0, temp_a1);
+        vt->unkB8(part, arg);
     } else {
-        s0 = obj->unk88;
-        s0->vt->unk64(s0, 1);
-        s0->vt->unk68(s0, 0);
-        vt = s0->vt;
-        var_a2 = (s32)D_80087874;
-        if (rnd != 0) {
-            var_a2 = (s32)D_8008785C;
+        part = scenery->u.many.parts[1];
+        part->vt->unk64(part, 1);
+        part->vt->unk68(part, 0);
+        vt = part->vt;
+        color = (s32)D_80087874;
+        if (coin != 0) {
+            color = (s32)D_8008785C;
         }
-        vt->unk48(s0, 1, var_a2);
+        vt->unk48(part, 1, color);
     }
-    obj->unk8C->vt->unk60(obj->unk8C, 0);
+    scenery->u.many.parts[2]->vt->unk60(scenery->u.many.parts[2], 0);
 }
 
-void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    Unk_80056D18_Obj **slot;
+/* Kinds 2 and 3: five parts of class D_800879C4 in the place's font. */
+void func_80056D18(Scenery *scenery, s32 arg1, s32 arg2, s32 color) {
+    SceneryPart **part;
     s32 i;
 
-    slot = (Unk_80056D18_Obj **)(arg0 + 0x84);
+    part = scenery->u.many.parts;
     for (i = 0; i < 5; i++) {
-        *slot = func_80057C94(arg2, 0, (s32)D_8008ACA8);
-        (*slot)->vt->unk4C(*slot, arg0, 0);
-        (*slot)->vt->unkB8(*slot, *(s32 *)(arg0 + 0x74));
-        if (arg3 != 0) {
-            (*slot)->vt->unk48(*slot, 1, arg3);
+        *part = func_80057C94(arg2, 0, (s32)D_8008ACA8);
+        (*part)->vt->unk4C(*part, scenery, 0);
+        (*part)->vt->unkB8(*part, scenery->unk74);
+        if (color != 0) {
+            (*part)->vt->unk48(*part, 1, color);
         }
-        slot++;
+        part++;
     }
 }
 
-void func_80056DF0(void *arg0, Unk_80056794 *arg1) {
+void func_80056DF0(void *scenery, Vec3 *origin) {
 }
 
-void func_80056DF8(u8 *arg0) {
-    Object_DeleteArray(arg0 + 0x84, 5);
+void func_80056DF8(Scenery *scenery) {
+    Object_DeleteArray(scenery->u.many.parts, 5);
 }
 
-void func_80056E1C(u8 *arg0, s32 arg1) {
-    func_80056D18(arg0, 0, 0, 0);
+void func_80056E1C(Scenery *scenery, s32 arg1) {
+    func_80056D18(scenery, 0, 0, 0);
 }
 
-void func_80056E44(Unk_80056E44_Parent *arg0, Unk_80056794 *arg1) {
+/* Kind 3 tick: parts 1 to 4 get a random colour of D_8008788C and a random angle. */
+void func_80056E44(Scenery *scenery, Vec3 *origin) {
     s32 i;
-    Unk_80056E44 **p;
+    SceneryPart **part;
 
-    p = arg0->unk88;
+    part = &scenery->u.many.parts[1];
     for (i = 0; i < 4; i++) {
-        (*p)->vt->f48(*p, 1, D_8008788C + ((u32)rand() % 6) * 12);
-        (*p)->u84 = (rand() % 360) << 12;
-        p++;
+        (*part)->vt->unk48(*part, 1, D_8008788C + ((u32)rand() % 6) * 12);
+        (*part)->unk84 = (rand() % 360) << 12;
+        part++;
     }
 }
 
-void func_80056F28(u8 *arg0) {
-    Object_DeleteArray(arg0 + 0x84, 5);
+void func_80056F28(Scenery *scenery) {
+    Object_DeleteArray(scenery->u.many.parts, 5);
 }
 
-Unk_80056320_Vt *func_80056F4C(void) {
-    return (Unk_80056320_Vt *)D_800876FC;
+SceneryVtbl *Scenery_GetVtbl(void) {
+    return (SceneryVtbl *)D_800876FC;
 }
 
-void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3) {
+/* Keep the place's models, font and view for the scenery, and prepare models D_8008AB98[0..1]. */
+void func_80056F5C(s32 family, PlaceObj *models, void *font, PlaceView *view) {
     s32 i;
 
-    D_8008ACA4 = obj;
-    D_8008ACA8 = a2;
-    D_8008ACAC = a3;
+    D_8008ACA4 = models;
+    D_8008ACA8 = font;
+    D_8008ACAC = view;
     for (i = 0; i < 2; i++) {
-        func_80020510(obj->vt->unk80(obj, D_8008AB98[i]), D_8008AB94);
+        func_80020510(models->vt->unk80(models, D_8008AB98[i]), D_8008AB94);
     }
 }
 
+/* Allocate a kind 0 part: an object of the base class D_800878D4 (0x58 bytes). */
 void *func_80056FE4(void) {
-    void *temp;
+    void *part;
 
-    temp = Heap_Alloc(0x58);
-    if (temp == 0) {
+    part = Heap_Alloc(0x58);
+    if (part == 0) {
         return 0;
     }
-    if (func_80057C84()->unk8(temp) != 0) {
-        return temp;
+    if (func_80057C84()->construct(part) != 0) {
+        return part;
     }
-    Heap_Free(temp);
+    Heap_Free(part);
     return 0;
 }
 
-void *func_80057044(Unk_80057044 *arg0) {
-    if (func_8001E57C()->unk8(arg0) != 0) {
-        arg0->unk0 = func_80057C84();
-        arg0->unk44 = 0;
-        arg0->unk4C = 0;
-        arg0->unk50 = 0;
-        arg0->unk0->unk40(arg0);
-        return arg0;
+/* Slot 0x08 of the base class D_800878D4 */
+void *func_80057044(Actor *actor) {
+    if (func_8001E57C()->construct(actor) != 0) {
+        actor->vt = func_80057C84();
+        actor->unk44 = 0;
+        actor->map = 0;
+        actor->unk50 = 0;
+        actor->vt->init(actor);
+        return actor;
     }
     return 0;
 }
 
-void func_800570B4(Unk_800571A8 *arg0, s32 **arg1) {
-    s32 temp;
+/* Slot 0x10, watch: keep a map (class id ending in 0x114) at +0x4C, a class id ending in 5 at +0x50. */
+void func_800570B4(Actor *actor, s32 **other) {
+    s32 classId;
 
-    ((Unk_800571A8_vt_800570B4 *)func_8001E57C())->unk10(arg0, arg1);
-    temp = **arg1;
-    if ((temp & 0xFFF) == 0x114) {
-        arg0->unk4C = (s32)arg1;
+    func_8001E57C()->watch(actor, other);
+    classId = **other;
+    if ((classId & 0xFFF) == 0x114) {
+        actor->map = (s32)other;
         return;
     }
-    if ((temp & 0xF) == 5) {
-        arg0->unk50 = (s32)arg1;
+    if ((classId & 0xF) == 5) {
+        actor->unk50 = (s32)other;
     }
 }
 
-void func_80057130(Unk_800571A8 *arg0, s32 **arg1) {
-    s32 temp;
+/* Slot 0x14, unwatch */
+void func_80057130(Actor *actor, s32 **other) {
+    s32 classId;
 
-    temp = **arg1;
-    if ((temp & 0xFFF) == 0x114) {
-        arg0->unk4C = 0;
-    } else if ((temp & 0xF) == 5) {
-        arg0->unk50 = 0;
+    classId = **other;
+    if ((classId & 0xFFF) == 0x114) {
+        actor->map = 0;
+    } else if ((classId & 0xF) == 5) {
+        actor->unk50 = 0;
     }
-    ((Unk_80057130_Vt *)func_8001E57C())->unk14(arg0, arg1);
+    func_8001E57C()->unwatch(actor, other);
 }
 
-void func_800571A8(Unk_800571A8 *arg0) {
-    arg0->unk4C = 0;
-    arg0->unk50 = 0;
-    func_8001E57C()->unk18(arg0);
+/* Slot 0x18, unwatch all */
+void func_800571A8(Actor *actor) {
+    actor->map = 0;
+    actor->unk50 = 0;
+    func_8001E57C()->unwatchAll(actor);
 }
 
-void func_800571E8(Unk_800571E8 *arg0) {
-    arg0->u48 = 0x12C;
-    arg0->u54 = 0;
+/* Slot 0x40 */
+void func_800571E8(Actor *actor) {
+    actor->unk48 = 0x12C;
+    actor->unk54 = 0;
 }
 
-void func_800571F8(Unk_800571F8 *arg0, s32 arg1) {
+/* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_IsReady. */
+void func_800571F8(Actor *actor, s32 message) {
     s32 *buf[14];
-    Unk_800571F8_Obj *obj;
+    Actor *contact;
 
-    ((Unk_800571F8_SysVt *)func_8001E57C())->unk88(arg0, arg1);
-    if (arg1 < 9) {
-        if (arg1 >= 5) {
-            if ((arg0->unk20 != 0) && (func_8001F3A4(arg0->unk20) != 0)) {
-                arg0->unk0->unk8C(arg0, buf);
-                if (arg1 != 5) {
-                    func_8001F66C(buf, arg1 == 7, arg0->unk48 >= 0,
-                                  arg0->unk48 >= 0 ? arg0->unk48 + arg0->unk54 : arg0->unk48 - arg0->unk54);
+    func_8001E57C()->unk88(actor, message);
+    if (message < 9) {
+        if (message >= 5) {
+            if ((actor->unk20 != 0) && (ModelObject_IsReady(actor->unk20) != 0)) {
+                actor->vt->unk8C(actor, buf);
+                if (message != 5) {
+                    ModelBox_ShiftList(buf, message == 7, actor->unk48 >= 0,
+                                  actor->unk48 >= 0 ? actor->unk48 + actor->unk54 : actor->unk48 - actor->unk54);
                 }
-                arg0->unk0->unk90(arg0, buf, arg1);
-                obj = arg0->unk28;
-                if (obj != NULL) {
-                    if (obj->vt->unk0 == 0x34) {
-                        obj->vt->unkE8(obj, obj->vt);
+                actor->vt->unk90(actor, buf, message);
+                contact = (Actor *)actor->contact;
+                if (contact != NULL) {
+                    if (*(u8 *)contact->vt == 0x34) {
+                        contact->vt->unkE8(contact, contact->vt);
                     }
                 }
             }
@@ -3446,122 +2719,132 @@ void func_800571F8(Unk_800571F8 *arg0, s32 arg1) {
     }
 }
 
-void func_80057320(Unk_80057320 **arg0, u8 **arg1) {
-    u8 c = **arg1;
+/* Slot 0x9C: message byte 0x34 goes to slot 0xDC, 0x24 to 0xE0 (both called without arguments). */
+void func_80057320(Actor *actor, u8 **message) {
+    u8 c = **message;
 
     if (c == 0x34) {
-        (*arg0)->unkDC();
+        actor->vt->onTouch34();
     } else if (c == 0x24) {
-        (*arg0)->unkE0();
+        actor->vt->onTouch24();
     }
 }
 
-void func_80057384(void *arg0, s32 *arg1) {
-    func_800573CC(arg0, 1, arg1);
+/* Slot 0xB8: set the position. */
+void Actor_SetPos(void *actor, s32 *pos) {
+    func_800573CC(actor, 1, pos);
 }
 
-void func_800573A8(void *arg0, s32 *arg1) {
-    func_800573CC(arg0, 0, arg1);
+/* Slot 0xBC: move by a vector. */
+void Actor_MovePos(void *actor, s32 *delta) {
+    func_800573CC(actor, 0, delta);
 }
 
-void func_800573CC(void *arg0, s32 arg1, s32 *arg2) {
-    Unk_800573CC_Arg0 *obj = arg0;
-    Unk_800573CC_Node *temp = obj->u14;
-    if (arg1 != 0) {
-        temp->u18 = *(Unk_800573CC_Vec3 *)arg2;
+void func_800573CC(void *self, s32 set, s32 *vec) {
+    Actor *actor = self;
+    ActorPos *block = actor->posBlock;
+    if (set != 0) {
+        block->pos = *(Vec3 *)vec;
     } else {
-        temp->u18.x += arg2[0];
-        temp->u18.y += arg2[1];
-        temp->u18.z += arg2[2];
+        block->pos.x += vec[0];
+        block->pos.y += vec[1];
+        block->pos.z += vec[2];
     }
-    obj->u14->u0 = 0;
+    actor->posBlock->unk0 = 0;
 }
 
-void func_80057444(Unk_80057444 **arg0, void *arg1) {
-    s32 sp10[3];
+/* Slot 0xC0 */
+void func_80057444(Actor *actor, void *arg1) {
+    s32 delta[3];
 
-    func_8001E58C(arg0, sp10, arg1);
-    (*arg0)->unkBC(arg0, sp10);
+    func_8001E58C(actor, delta, arg1);
+    actor->vt->movePos(actor, delta);
 }
 
-void func_8005748C(void *arg0, s32 arg1, s32 arg2) {
-    func_80057534(arg0, D_8008ABA8, arg1, arg2, 6);
+/* Slots 0xC4 to 0xCC: one of the three s16 of D_8008ABA4/D_8008ABA8 set for slot 0xC0, then message 6, 7 or 8. */
+void func_8005748C(void *actor, s32 value, s32 notify) {
+    func_80057534(actor, D_8008ABA8, value, notify, 6);
 }
 
-void func_800574C4(void *arg0, s32 arg1, s32 arg2) {
-    func_80057534(arg0, D_8008ABA4, arg1, arg2, 7);
+void func_800574C4(void *actor, s32 value, s32 notify) {
+    func_80057534(actor, D_8008ABA4, value, notify, 7);
 }
 
-void func_800574FC(void *arg0, s32 arg1, s32 arg2) {
-    func_80057534(arg0, D_8008ABA4 + 1, arg1, arg2, 8);
+void func_800574FC(void *actor, s32 value, s32 notify) {
+    func_80057534(actor, D_8008ABA4 + 1, value, notify, 8);
 }
 
-void func_80057534(void *arg0, s16 *arg1, s32 arg2, s32 arg3, s32 arg4) {
-    Unk_80057534 *obj = arg0;
+void func_80057534(void *self, s16 *field, s32 value, s32 notify, s32 message) {
+    Actor *actor = self;
 
-    obj->unk48 = *arg1 = arg2;
-    obj->unk0->unkC0(obj, D_8008ABA4);
-    *arg1 = 0;
-    if (arg3 != 0) {
-        obj->unk0->unk88(obj, arg4);
+    actor->unk48 = *field = value;
+    actor->vt->unkC0(actor, D_8008ABA4);
+    *field = 0;
+    if (notify != 0) {
+        actor->vt->unk88(actor, message);
     }
 }
 
-void func_800575B0(Unk_800575B0_Obj *arg0, s32 arg1, s32 arg2) {
-    func_80057618((Unk_80057618 *)arg0, arg0->vt->fC4, arg1, arg2);
+/* Slot 0xD0 */
+void func_800575B0(Actor *actor, s32 arg1, s32 arg2) {
+    func_80057618(actor, actor->vt->unkC4, arg1, arg2);
 }
 
-void func_800575E0(Unk_800575E0 *arg0, s32 arg1, s32 arg2) {
-    func_80057618((Unk_80057618 *)arg0, arg0->unk0->unkC8, arg1, arg2);
+/* Slot 0xD4 */
+void func_800575E0(Actor *actor, s32 arg1, s32 arg2) {
+    func_80057618(actor, actor->vt->unkC8, arg1, arg2);
 }
 
 void func_80057610(void) {
 }
 
-void func_80057618(Unk_80057618 *arg0, void (*arg1)(void *, s32, s32), s32 arg2, s32 arg3) {
-    arg0->u28 = 0;
-    arg1(arg0, arg2, arg3);
-    if (arg0->u28 == 0) {
-        func_80057668(arg0);
+/* Run a move, then look for a contact when the move found none. */
+void func_80057618(Actor *actor, void (*move)(void *, s32, s32), s32 arg2, s32 arg3) {
+    actor->contact = 0;
+    move(actor, arg2, arg3);
+    if (actor->contact == 0) {
+        func_80057668(actor);
     }
 }
 
-s32 func_80057668(Unk_80057668 *arg0) {
-    s32 sp18[0xC];
-    s32 sp48[0xC];
-    void *sp78[4];
-    s32 sp88[4];
-    u8 *s4;
-    s32 temp;
+/* Look for an object in the map cells around the actor's position (+0x14 block, +0x18). */
+s32 func_80057668(GridActor *actor) {
+    s32 cell[0xC];
+    s32 rects[0xC];
+    void *cells[4];
+    s32 delta[4];
+    u8 *pos;
+    s32 found;
 
-    if (arg0->u4C != NULL) {
-        s4 = arg0->u14 + 0x18;
-        if (arg0->u4C->vt->unk110(arg0->u4C, sp18, s4) == 0) {
-            temp = func_80057784(arg0, sp48, sp78, sp18, 1);
-            temp = func_80057954((s32)arg0, (s32)sp88, (s32)s4, temp, (s32)sp48, sp78);
-            arg0->u28 = temp;
-            if (temp != 0) {
-                arg0->vt->unkBC(arg0, sp88);
-                arg0->vt->unk88(arg0, -1);
+    if (actor->map != NULL) {
+        pos = actor->posBlock + 0x18;
+        if (actor->map->vt->query(actor->map, cell, pos) == 0) {
+            found = func_80057784(actor, rects, cells, cell, 1);
+            found = func_80057954((s32)actor, (s32)delta, (s32)pos, found, (s32)rects, cells);
+            actor->contact = found;
+            if (found != 0) {
+                actor->vt->movePos(actor, delta);
+                actor->vt->unk88(actor, -1);
                 return 1;
             }
-            arg0->vt->unk88(arg0, -2);
+            actor->vt->unk88(actor, -2);
         }
     }
     return 0;
 }
 
-s32 func_80057784(void *arg0, void *arg1, void *arg2, void *arg3, s32 arg4) {
-    Unk_80057784_Sub **ptrs;
-    Unk_80057784_Elem *out;
-    Unk_80057784_Arg3 *in = arg3;
-    s32 n = arg4;
-    s32 x = in->u2;
-    s32 y = in->u3;
+/* The rectangles of cells to search: the cell itself and the slots above and below it (n == 1), else the n x n square clipped to the 20 x 20 grid. */
+s32 func_80057784(void *actor, void *outRects, void *outCells, void *cellInfo, s32 size) {
+    GridSlot **cells;
+    GridRect *rects;
+    GridQuery *in = cellInfo;
+    s32 n = size;
+    s32 x = in->x;
+    s32 y = in->y;
     s32 left, top, w, h, count;
 
-    out = arg1;
-    ptrs = arg2;
+    rects = outRects;
+    cells = outCells;
 
     if (!(n & 1)) {
         h = ++n;
@@ -3573,31 +2856,31 @@ s32 func_80057784(void *arg0, void *arg1, void *arg2, void *arg3, s32 arg4) {
     count = 1;
     top = y;
     if (n == 1) {
-        Unk_80057668_Obj *obj;
-        Unk_80057784_Sub *sub;
-        Unk_80057784_Range *rng;
+        GridMap *map;
+        GridSlot *slot;
+        GridRange *range;
         s16 idx;
 
-        out[0].a = left;
-        out[0].b = top;
-        out[0].c = w;
-        out[0].d = h;
-        sub = in->u24;
-        ptrs[0] = sub;
-        obj = ((Unk_80057668 *) arg0)->u4C;
-        rng = obj->u68;
-        if (rng->u4 != 1) {
+        rects[0].left = left;
+        rects[0].top = top;
+        rects[0].width = w;
+        rects[0].height = h;
+        slot = in->slot;
+        cells[0] = slot;
+        map = ((GridActor *) actor)->map;
+        range = map->range;
+        if (range->mode != 1) {
             return 1;
         }
-        idx = sub->u4->u32;
-        if (idx + 1 < rng->u2) {
-            ptrs[1] = obj->vt->unk118(obj, idx + 1);
+        idx = slot->info->index;
+        if (idx + 1 < range->count) {
+            cells[1] = map->vt->slotAt(map, idx + 1);
             count = 2;
-            out[1] = out[0];
+            rects[1] = rects[0];
         }
         if (idx - 1 >= 0) {
-            ptrs[count] = obj->vt->unk118(obj, idx - 1);
-            out[count] = out[0];
+            cells[count] = map->vt->slotAt(map, idx - 1);
+            rects[count] = rects[0];
             count++;
         }
         return count;
@@ -3615,139 +2898,148 @@ s32 func_80057784(void *arg0, void *arg1, void *arg2, void *arg3, s32 arg4) {
     } else {
         top++;
     }
-    out[0].a = left;
+    rects[0].left = left;
     if (y == 0) {
         h--;
     }
-    out[0].b = top;
-    out[0].c = w;
-    out[0].d = h;
-    ptrs[0] = in->u24;
+    rects[0].top = top;
+    rects[0].width = w;
+    rects[0].height = h;
+    cells[0] = in->slot;
     return 1;
 }
 
-s32 func_80057954(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, void **arg5) {
-    s32 var_v0;
-    Unk_80057954_Obj *temp_v1;
-    s32 var_s0;
+s32 func_80057954(s32 actor, s32 delta, s32 pos, s32 count, s32 rects, void **cells) {
+    s32 found;
+    GridSlot *cell;
+    s32 i;
 
-    var_s0 = 0;
-    while (var_s0 < arg3) {
-        temp_v1 = *arg5;
-        var_s0 += 1;
-        if (temp_v1->u4->u2C != 0) {
-            var_v0 = func_80057A18(arg0, arg1, arg2, arg4, temp_v1);
-            if (var_v0 != 0) {
-                return var_v0;
+    i = 0;
+    while (i < count) {
+        cell = *cells;
+        i += 1;
+        if (cell->info->unk2C != 0) {
+            found = func_80057A18(actor, delta, pos, rects, cell);
+            if (found != 0) {
+                return found;
             }
         }
-        arg4 += 0xC;
-        arg5 += 1;
+        rects += 0xC;
+        cells += 1;
     }
     return 0;
 }
 
-s32 func_80057A18(s32 arg0, s32 arg1, s32 arg2, s32 arg3, void *arg4) {
-    Unk_80057A18 *p = (Unk_80057A18 *)arg3;
-    A *obj = (A *)arg4;
-    s32 var_s0;
-    s32 var_s2;
-    s32 var_s4;
-    s32 *var_s1;
+/* Walk a rectangle of a cell's 20-wide grid (+0x10) and each entry's chain (+0x38). */
+s32 func_80057A18(s32 actor, s32 delta, s32 pos, s32 rect, void *cell) {
+    GridRect *r = (GridRect *)rect;
+    GridCell *grid = (GridCell *)cell;
+    s32 entry;
+    s32 col;
+    s32 row;
+    s32 *slot;
 
-    var_s1 = (s32 *)(obj->u10 + p->u2 * 0x50 + p->u0 * 4);
-    for (var_s4 = 0; var_s4 < p->u8; var_s4++) {
-        for (var_s2 = 0; var_s2 < p->u4; var_s2++) {
-            if (func_80057B54(*var_s1, arg1, arg2) != 0) {
-                return *var_s1;
+    slot = (s32 *)(grid->entries + r->top * 0x50 + r->left * 4);
+    for (row = 0; row < r->height; row++) {
+        for (col = 0; col < r->width; col++) {
+            if (func_80057B54(*slot, delta, pos) != 0) {
+                return *slot;
             }
-            var_s0 = ((Unk_80052E7C *)*var_s1)->u38;
-            if (var_s0 != 0) {
+            entry = ((GridEntry *)*slot)->next;
+            if (entry != 0) {
                 do {
-                    if (func_80057B54(var_s0, arg1, arg2) != 0) {
-                        return var_s0;
+                    if (func_80057B54(entry, delta, pos) != 0) {
+                        return entry;
                     }
-                    var_s0 = ((Unk_80052E7C *)var_s0)->u38;
-                } while (var_s0 != 0);
+                    entry = ((GridEntry *)entry)->next;
+                } while (entry != 0);
             }
-            var_s1 += 1;
+            slot += 1;
         }
-        var_s1 -= p->u4 + 0x14;
+        slot -= r->width + 0x14;
     }
     return 0;
 }
 
-s32 func_80057B54(s32 arg0) {
-    if (arg0 != 0 && func_8001E7BC() != 0) {
-        return arg0;
+s32 func_80057B54(s32 entry) {
+    if (entry != 0 && func_8001E7BC() != 0) {
+        return entry;
     }
     return 0;
 }
 
-void func_80057B90(Unk_80057B90_Obj *arg0, void *arg1, s32 arg2) {
-    ((Unk_80057C14_Vt *)func_8001E57C())->unk9C(arg0, arg1, arg2);
-    if (arg2 < 9) {
-        if (arg2 >= 5) {
-            arg0->vt->unkA0(arg0, arg1, arg2);
+/* Slot 0xDC: the base slot 0x9C, then slot 0xA0 for messages 5 to 8. */
+void func_80057B90(Actor *actor, void *arg1, s32 message) {
+    func_8001E57C()->unk9C(actor, arg1, message);
+    if (message < 9) {
+        if (message >= 5) {
+            actor->vt->unkA0(actor, arg1, message);
         }
     }
 }
 
-void func_80057C14(s32 arg0, s32 arg1, s32 arg2) {
-    ((Unk_80057C14_Vt *)func_8001E57C())->unk9C(arg0, arg1, arg2);
+/* Slot 0xE0 */
+void func_80057C14(s32 actor, s32 arg1, s32 message) {
+    func_8001E57C()->unk9C(actor, arg1, message);
 }
 
-void func_80057C6C(Unk_80057C6C *arg0, s16 arg1) {
-    arg0->u48 = arg1;
+/* Slot 0xE4 */
+void func_80057C6C(Actor *actor, s16 value) {
+    actor->unk48 = value;
 }
 
 void func_80057C74(void) {
 }
 
-void func_80057C7C(Unk_80057C7C *arg0, s32 arg1) {
-    arg0->u54 = arg1;
+/* Slot 0xEC */
+void func_80057C7C(Actor *actor, s32 value) {
+    actor->unk54 = value;
 }
 
-Unk_80056464_Vtbl *func_80057C84(void) {
-    return (Unk_80056464_Vtbl *)D_800878D4;
+ActorVtbl *func_80057C84(void) {
+    return (ActorVtbl *)D_800878D4;
 }
 
-void *func_80057C94(s32 arg0, s32 arg1, s32 arg2) {
-    void *temp;
+/* Allocate a scenery part of class D_800879C4 (0xA8 bytes) for kinds 2 and 3. */
+void *func_80057C94(s32 index, s32 arg1, s32 font) {
+    void *part;
 
-    temp = Heap_Alloc(0xA8);
-    if (temp != NULL) {
-        func_80057F58()->unk8(temp, arg0, arg1, arg2);
-        return temp;
+    part = Heap_Alloc(0xA8);
+    if (part != NULL) {
+        func_80057F58()->construct(part, index, arg1, font);
+        return part;
     }
     return NULL;
 }
 
-void func_80057D10(Unk_80057D10 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    func_800422BC()->unk8(arg0, arg3, 0, D_80087A8C + arg1 * 0xC, arg2, 0);
-    arg0->unk0 = func_80057F58();
-    arg0->unkA4 = 0;
-    arg0->unk0->unk40(arg0, arg1);
+/* Slot 0x08 of D_800879C4: base construct with the font and the 12-byte entry D_80087A8C[index]. */
+void func_80057D10(TextPart *part, s32 index, s32 arg2, s32 font) {
+    func_800422BC()->construct(part, font, 0, D_80087A8C + index * 0xC, arg2, 0);
+    part->vt = func_80057F58();
+    part->unkA4 = 0;
+    part->vt->init(part, index);
 }
 
-void func_80057DBC(Unk_80057DBC *arg0, s32 arg1) {
-    arg0->unkA0 = arg1;
-    arg0->unk74 = D_80087AA4[arg1 * 2];
-    arg0->unk76 = D_80087AA6[arg1 * 2];
+/* Slot 0x40 */
+void func_80057DBC(TextPart *part, s32 index) {
+    part->index = index;
+    part->unk74 = D_80087AA4[index * 2];
+    part->unk76 = D_80087AA6[index * 2];
 }
 
-void func_80057DF4(Unk_80057DF4 *arg0, s32 arg1, s16 *arg2) {
+/* Slot 0x48: two 4.12 ratios from ratio[0] / ratio[1] and ratio[2] / ratio[3]. */
+void func_80057DF4(TextPart *part, s32 arg1, s16 *ratio) {
     s16 x;
     s16 y;
 
-    x = ((arg2[0] / arg2[1]) << 12) + (((arg2[0] % arg2[1]) << 12) / arg2[1]);
-    y = ((arg2[2] / arg2[3]) << 12) + (((arg2[2] % arg2[3]) << 12) / arg2[3]);
-    if (arg0->u58 != 0) {
-        arg0->u5C = (x * arg0->u5C) >> 12;
-        arg0->u60 = (y * arg0->u60) >> 12;
+    x = ((ratio[0] / ratio[1]) << 12) + (((ratio[0] % ratio[1]) << 12) / ratio[1]);
+    y = ((ratio[2] / ratio[3]) << 12) + (((ratio[2] % ratio[3]) << 12) / ratio[3]);
+    if (part->unk58 != 0) {
+        part->unk5C = (x * part->unk5C) >> 12;
+        part->unk60 = (y * part->unk60) >> 12;
     } else {
-        arg0->u80 = x;
-        arg0->u82 = y;
+        part->unk80 = x;
+        part->unk82 = y;
     }
 }
 
@@ -3763,20 +3055,21 @@ void func_80057F48(void) {
 void func_80057F50(void) {
 }
 
-Unk_80057C94_vt *func_80057F58(void) {
-    return (Unk_80057C94_vt *)D_800879C4;
+TextPartVtbl *func_80057F58(void) {
+    return (TextPartVtbl *)D_800879C4;
 }
 
-void *func_80057F68(s32 arg0) {
-    void *temp;
+/* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
+void *Graph_New(s32 arg0) {
+    void *graph;
 
-    temp = Heap_Alloc(0x244);
-    if (temp != 0) {
-        Graph_GetVtable()->unk8(temp, arg0);
-        return temp;
+    graph = Heap_Alloc(0x244);
+    if (graph != 0) {
+        Graph_GetVtable()->construct(graph, arg0);
+        return graph;
     }
     return 0;
 }
 
-Unk_80054850_Pair D_8008AB68 = { -100, -60 };
-Unk_80054850_Pair D_8008AB70 = { 0x140, 0x90 };
+Point D_8008AB68 = { -100, -60 };
+Point D_8008AB70 = { 0x140, 0x90 };

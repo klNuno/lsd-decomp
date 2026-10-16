@@ -11,18 +11,18 @@ struct Unk_80026CE8 {
     s32 unk8;
 };
 s32 D_8008A84C;
-void func_800280D0(void);
-void func_800280E0(void);
-s32 func_80027EC8(void);
-s32 func_80027ED4(void);
-s32 func_80027EE0(void);
-s32 func_80027EEC(void);
-void *func_80027E68(void);
+void File_Lock(void);
+void File_Unlock(void);
+s32 File_IsBusy(void);
+s32 File_IsDone(void);
+s32 File_GetOpKind(void);
+s32 File_GetState(void);
+void *File_GetVtable(void);
 void *func_8002C438(void);
 s32 func_8002C448(s32 *arg0);
-s32 func_80027EF8(s32 *arg0);
+s32 File_GetEnabled(s32 *arg0);
 s32 func_8002C478(void);
-s32 func_80028B6C(void);
+s32 File_GetVSyncMode(void);
 typedef struct Unk_80026AB4_Vtbl {
     u8 pad_00[0x48];
     void (*unk48)(void);
@@ -51,7 +51,7 @@ typedef struct Unk_80026A50 {
     /* 0x2A */ s16 unk2A;
 } Unk_80026A50;
 void *Object_GetBaseVtbl(void);
-s32 func_80026C9C(void);
+s32 Object_GetClassTable(void);
 typedef struct Unk_80026108 {
     u8 pad_00[0x18];
     s32 unk18;
@@ -96,7 +96,7 @@ typedef struct Unk_80025F7C {
 s32 Heap_Alloc(s32);
 Unk_80025F7C *func_800269E0(void);
 s32 func_8002C468(s32, s32, s32);
-s32 func_80027F18(s32, s32, s32);
+s32 File_Enable(s32, s32, s32);
 typedef struct Unk_80026D88 {
     u8 pad_00[0x40];
     s32 unk40;
@@ -113,10 +113,10 @@ typedef struct Unk_80026D88 {
     s32 unk74;
 } Unk_80026D88;
 s32 D_8008A850;
-void func_80027FD8(s32);
-void func_80027FE4(s32);
-s32 func_80027FF0(void);
-s32 func_80027FFC(s32, s32);
+void File_SetDirTable(s32);
+void File_SetDirCount(s32);
+s32 File_GetDirCount(void);
+s32 File_ResolveEntries(s32, s32);
 void func_80026D88(Unk_80026D88 *arg0, Unk_80026D88 *arg1);
 extern s32 (*D_8006D4AC[])();
 typedef struct Unk_80025FDC_Obj {
@@ -146,7 +146,7 @@ typedef struct Unk_80025FDC {
 } Unk_80025FDC;
 void *func_80048CF0(void);
 void func_800270AC(void *arg0);
-s32 func_80043840(s32 arg0);
+s32 Tmd_Create(s32 arg0);
 void *DreamSys_New(s32 arg0, s32 arg1, s32 arg2);
 typedef struct Unk_80026348_Sub {
     u8 pad_00[0x8];
@@ -168,7 +168,7 @@ typedef struct Unk_80026348_Obj {
     Unk_80026348_Vtbl *vt;
 } Unk_80026348_Obj;
 void func_80026F34(s32 arg0, s32 arg1, s32 arg2);
-s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
+s32 VideoScreen_New(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
 s32 func_8004913C(s32 *arg0, s32 arg1);
 s32 func_800493C8(s32 arg0);
 typedef struct Unk_80026254_Vtbl {
@@ -186,7 +186,7 @@ typedef struct Unk_80026254_Vtbl {
 typedef struct Unk_80026254_Obj {
     Unk_80026254_Vtbl *vt;
 } Unk_80026254_Obj;
-s32 func_8003BE94(s32, s32, s32);
+s32 MenuScreen_New(s32, s32, s32);
 void func_80026328(void);
 typedef struct Unk_80026900_Vtbl {
     u8 pad_00[0x4];
@@ -226,7 +226,7 @@ typedef struct Unk_80026348_80026698 {
     s32 unk24;
     Unk_80026698_Obj *unk28;
 } Unk_80026348_80026698;
-s32 func_80049608(s32, s32, s32);
+s32 DreamRunner_New(s32, s32, s32);
 void Scene_PlayCinematic(Unk_80026348_80026698 *arg0);
 typedef struct Unk_8002658C_Vtbl {
     u8 pad_00[0x4];
@@ -249,7 +249,7 @@ typedef struct Unk_8002658C_Local {
 } Unk_8002658C_Local;
 s32 func_800493E4(s32 *arg0, s32 arg1, s32 arg2);
 s32 func_80026518(Unk_80026518 *(*arg0)(s32), s32 arg1, s32 arg2);
-extern Unk_80026518 *func_80057F68(s32 arg0);
+extern Unk_80026518 *Graph_New(s32 arg0);
 extern Unk_80026518 *func_8004D518(s32 arg0);
 typedef struct Unk_80026B08_Vtbl {
     u8 pad_00[0x44];
@@ -301,7 +301,7 @@ void func_80025FDC(Unk_80025FDC *arg0, Unk_80025FDC_Arg1 *arg1) {
     func_800270AC(func_80048CF0());
     sp10.unk0 = 0;
     sp10.unk4 = (s32)"ETC\\DREAME5.TMD";
-    arg0->unk28 = (Unk_80025FDC_VObj *)DreamSys_New(func_80043840((s32)&sp10), 0, 0);
+    arg0->unk28 = (Unk_80025FDC_VObj *)DreamSys_New(Tmd_Create((s32)&sp10), 0, 0);
     arg0->unk24 = 0;
     arg0->unk28->vt->unk228(arg0->unk28, arg1->unk14);
     ((Unk_80025FDC_Obj *)arg0->unk0)->unk40(arg0);
@@ -325,7 +325,7 @@ void func_80026170(Unk_80026348 *arg0) {
     if (arg0->unk20->unkC != 0) {
         func_80026F34(0, 0, 0);
         func_80026254(arg0, "ETC\\ASMKLOGO.TIM");
-        temp_s1 = func_8003B854(0, 0, 0, 0);
+        temp_s1 = VideoScreen_New(0, 0, 0, 0);
         temp_s0 = func_800490F4(&sp18);
         temp_s1->vt->unk44(temp_s1, arg0->unk1C, temp_s0, func_800493C8(sp18), 1);
         temp_s1->vt->unk4(temp_s1);
@@ -336,7 +336,7 @@ void func_80026170(Unk_80026348 *arg0) {
 void func_80026254(Unk_80026348 *arg0, void *arg1) {
     Unk_80026254_Obj *obj;
 
-    obj = (Unk_80026254_Obj *)func_8003BE94(0, 0, 0);
+    obj = (Unk_80026254_Obj *)MenuScreen_New(0, 0, 0);
     obj->vt->unk98(obj, func_80026328, arg0);
     obj->vt->unk6C(obj, 0);
     obj->vt->unkD4(obj, arg1, 0);
@@ -355,7 +355,7 @@ void func_80026348(Unk_80026348 *arg0) {
 
     if (arg0->unk20->unk8 != 0) {
         func_80026F34(0, 0, 0);
-        temp_s1 = (Unk_80026348_Obj *)func_8003B854(0, 0, 0, 0);
+        temp_s1 = (Unk_80026348_Obj *)VideoScreen_New(0, 0, 0, 0);
         temp_s0 = func_8004913C(&sp18, 0);
         temp_s1->vt->unk44(temp_s1, arg0->unk1C, temp_s0, func_800493C8(sp18), 1);
         temp_s1->vt->unk4(temp_s1);
@@ -368,7 +368,7 @@ s32 func_80026410(Unk_80026348_80026698 *arg0) {
     if (arg0->unk20->unk10 != 0) {
         func_80026F34(0, 0, 0);
         if (arg0->unk28->vt->unk1A0(arg0->unk28, 0) != 1 && arg0->unk24 == 0 &&
-            func_80026518(func_80057F68, (s32)arg0->unk28, arg0->unk1C) == 2) {
+            func_80026518(Graph_New, (s32)arg0->unk28, arg0->unk1C) == 2) {
             func_8002658C(arg0);
         }
         for (;;) {
@@ -376,7 +376,7 @@ s32 func_80026410(Unk_80026348_80026698 *arg0) {
             if (temp_v0 != 2) {
                 break;
             }
-            func_80026518(func_80057F68, (s32)arg0->unk28, arg0->unk1C);
+            func_80026518(Graph_New, (s32)arg0->unk28, arg0->unk1C);
         }
         arg0->unk24 = 0;
         return temp_v0 == 0 ? 2 : 0;
@@ -398,7 +398,7 @@ void func_8002658C(Unk_80026348 *arg0) {
 
     if (arg0->unk20->unk8 != 0) {
         func_80026F34(0, 0, 0);
-        temp_s0 = (Unk_8002658C_Obj *)func_8003B854(0, 0, 0, 0);
+        temp_s0 = (Unk_8002658C_Obj *)VideoScreen_New(0, 0, 0, 0);
         temp_s1 = func_800493E4(&sp18.unk8, 0, 0xA);
         temp_s0->vt->unk6C(temp_s0, (u32)sp18.unk8 / 15);
         temp_s0->vt->unk12C(temp_s0, 0);
@@ -418,7 +418,7 @@ s32 func_80026698(Unk_80026348_80026698 *arg0) {
     s32 sp10[2];
     s32 result;
 
-    temp_v0 = (Unk_80026698_Obj *)func_80049608(arg0->unk1C, (s32)arg0->unk28, arg0->unk20->unk4);
+    temp_v0 = (Unk_80026698_Obj *)DreamRunner_New(arg0->unk1C, (s32)arg0->unk28, arg0->unk20->unk4);
     temp_s0 = temp_v0->vt->unk44(temp_v0);
     temp_v0->vt->unk4(temp_v0);
     switch (temp_s0) {
@@ -454,11 +454,11 @@ void Scene_PlayCinematic(Unk_80026348_80026698 *arg0) {
         if (arg0->unk20->unk8 == 0) {
             return;
         }
-        temp_s0 = (Unk_8002677C_Obj *)func_8003B854(0, 0, 0, 0);
+        temp_s0 = (Unk_8002677C_Obj *)VideoScreen_New(0, 0, 0, 0);
         ((Unk_8002658C_Obj *)temp_s0)->vt->unk12C(temp_s0, 0);
         ((Unk_8002658C_Obj *)temp_s0)->vt->unk44(temp_s0, arg0->unk1C, temp_s2, func_800493C8(sp20[0]), 1);
     } else {
-        temp_s0 = (Unk_8002677C_Obj *)func_8003BE94(0, 0, 0);
+        temp_s0 = (Unk_8002677C_Obj *)MenuScreen_New(0, 0, 0);
         ((Unk_80026254_Obj *)temp_s0)->vt->unk6C(temp_s0, 0xA);
         ((Unk_80026254_Obj *)temp_s0)->vt->unkD4(temp_s0, temp_s2, 0);
         ((Unk_80026254_Obj *)temp_s0)->vt->unk44(temp_s0, arg0->unk1C, 0);
@@ -473,7 +473,7 @@ void func_80026900(Unk_80026348 *arg0) {
 
     if (arg0->unk20->unk8 != 0) {
         func_80026F34(0, 0, 0);
-        temp_s1 = (Unk_80026900_Obj *)func_8003B854(0, 0, 0, 0);
+        temp_s1 = (Unk_80026900_Obj *)VideoScreen_New(0, 0, 0, 0);
         temp_s1->vt->unk12C(temp_s1, 0);
         temp_s0 = func_800491FC(&sp18, 0);
         temp_s1->vt->unk44(temp_s1, arg0->unk1C, temp_s0, func_800493C8(sp18), 1);
@@ -495,7 +495,7 @@ s32 func_800269F0(Unk_800269F0 *arg0) {
 
 void func_80026A50(Unk_80026A50 *arg0) {
     ((Unk_80026A50_Vtbl *)Object_GetBaseVtbl())->unk8(arg0);
-    arg0->unk0 = func_80026C9C();
+    arg0->unk0 = Object_GetClassTable();
     arg0->unkC = 0;
     arg0->unk10 = 0;
     arg0->unk14 = 0;
@@ -550,7 +550,7 @@ void func_80026C88(Unk_80026C88 *arg0) {
     arg0->unk24 |= 1;
 }
 
-s32 func_80026C9C(void) {
+s32 Object_GetClassTable(void) {
     return (s32)D_8006D430;
 }
 
@@ -558,7 +558,7 @@ void *func_80026CAC(void) {
     if (D_8008A84C == 0x23) {
         return func_8002C438();
     }
-    return func_80027E68();
+    return File_GetVtable();
 }
 
 struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, s32 arg2, s32 arg3) {
@@ -576,11 +576,11 @@ void func_80026CFC(s32 arg0) {
     var_s0 = D_8006D4AC;
     D_8008A84C = arg0;
     if (arg0 == 0x13) {
-        var_v0 = func_80027E68();
+        var_v0 = File_GetVtable();
     } else {
         var_v0 = func_8002C438();
     }
-    var_a0 = func_80026C9C();
+    var_a0 = Object_GetClassTable();
     func_80026D88((Unk_80026D88 *)var_a0, var_v0);
     while (*var_s0 != NULL) {
         var_a0 = (*var_s0)();
@@ -605,40 +605,40 @@ void func_80026D88(Unk_80026D88 *arg0, Unk_80026D88 *arg1) {
 
 void func_80026E0C(void) {
     if (D_8008A84C == 0x13) {
-        func_800280D0();
+        File_Lock();
     }
 }
 
 void func_80026E38(void) {
     if (D_8008A84C == 0x13) {
-        func_800280E0();
+        File_Unlock();
     }
 }
 
 s32 func_80026E64(void) {
     if (D_8008A84C == 0x13) {
-        return func_80027EC8();
+        return File_IsBusy();
     }
     return 0;
 }
 
 s32 func_80026E98(void) {
     if (D_8008A84C == 0x13) {
-        return func_80027ED4();
+        return File_IsDone();
     }
     return 1;
 }
 
 s32 func_80026ECC(void) {
     if (D_8008A84C == 0x13) {
-        return func_80027EE0();
+        return File_GetOpKind();
     }
     return 0;
 }
 
 s32 func_80026F00(void) {
     if (D_8008A84C == 0x13) {
-        return func_80027EEC();
+        return File_GetState();
     }
     return 0;
 }
@@ -648,7 +648,7 @@ void func_80026F34(s32 arg0, s32 arg1, s32 arg2) {
 
     var_s0 = func_8002C468;
     if (D_8008A84C == 0x13) {
-        var_s0 = func_80027F18;
+        var_s0 = File_Enable;
     }
     while (var_s0(arg0, arg1, arg2) == 0) {
     }
@@ -656,14 +656,14 @@ void func_80026F34(s32 arg0, s32 arg1, s32 arg2) {
 
 s32 func_80026FAC(s32 *arg0) {
     if (D_8008A84C == 0x13) {
-        return func_80027EF8(arg0);
+        return File_GetEnabled(arg0);
     }
     return func_8002C448(arg0);
 }
 
 s32 func_80026FE8(void) {
     if (D_8008A84C == 0x13) {
-        return func_80028B6C();
+        return File_GetVSyncMode();
     }
     return func_8002C478();
 }
@@ -673,10 +673,10 @@ s32 func_80027024(s32 arg0, s32 arg1) {
 
     if (D_8008A84C == 0x13) {
         D_8008A850 = 1;
-        func_80027FD8(arg0);
-        temp_v0 = func_80027FF0();
-        func_80027FE4(temp_v0 + arg1);
-        return func_80027FFC(arg0 + (temp_v0 * 0x1C), arg1);
+        File_SetDirTable(arg0);
+        temp_v0 = File_GetDirCount();
+        File_SetDirCount(temp_v0 + arg1);
+        return File_ResolveEntries(arg0 + (temp_v0 * 0x1C), arg1);
     }
     return 1;
 }

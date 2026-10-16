@@ -1,847 +1,104 @@
 #include "common.h"
+#include "game/menu.h"
 
-typedef struct { s16 unk_0; s16 unk_2; s32 unk_4; } Unk_800861D4;
-typedef struct { u8 pad[0xC]; s32 uC; u8 pad2[0x2F4 - 0x10]; s32 u2F4; } A;
-typedef struct { u8 pad[0xBC]; A *uBC; } P;
-typedef struct { s32 u0; s32 u4; } C;
-typedef struct { u8 pad[0x18]; C *u18; } Q;
-typedef struct Unk_8004E3F4 {
-    u8 pad_00[0x60];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    u8 pad_6C[0x74 - 0x6C];
-    s32 unk74;
-    s32 unk78;
-    s32 unk7C;
-} Unk_8004E3F4;
+/*
+ * The main menu (class Menu, vtable g_menuVtbl 0x80086B60) and the memory card object it
+ * drives (class Card, vtable g_cardVtbl 0x80086DC4). Types and states: include/game/menu.h.
+ */
+
+/* The PS1 save file header: the icon palette and one 16x16 4-bit icon frame. */
+typedef struct CardIconPalette {
+    u8 b[0x20];
+} CardIconPalette;
+typedef struct CardIconFrame {
+    u8 b[0x80];
+} CardIconFrame;
+
 extern s32 EnableEvent();
-s32 func_8004F40C(s32 arg0, s32 (*arg1)(), s32 arg2);
-s32 func_8004F4C8(s32 *arg0, s32 arg1);
+s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical);
+s32 Card_WaitAnyEvent(s32 *events, s32 count);
 extern s32 DisableEvent();
 extern s32 TestEvent();
-void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *arg4);
 extern s32 CloseEvent();
-void func_8004F3BC(s32 arg0);
-typedef struct Unk_8004E40C { s32 unk0, unk4, unk8; void (*unkC)(s32); u8 pad_10[0x4]; void (*unk14)(void *, s32 **); void (*unk18)(void *); u8 pad_1C[0x38 - 0x1C]; void (*unk38)(void *, s32 **, s32); } Unk_8004E40C;
-extern Unk_8004E40C *Object_GetBaseVtbl(void);
-typedef struct Unk_8004FFF4_vt { u8 pad[0x80]; void (*unk80)(void *, s32, s32, s32); } Unk_8004FFF4_vt;
-typedef struct Unk_8004FFF4_obj { Unk_8004FFF4_vt *unk0; } Unk_8004FFF4_obj;
-typedef struct Unk_8004FFF4 { u8 pad[0x6C]; Unk_8004FFF4_obj *unk6C; } Unk_8004FFF4;
-typedef struct Unk_8004FF40_vt { u8 pad[4]; void *(*unk4)(void *); } Unk_8004FF40_vt;
-typedef struct Unk_8004FF40_obj { Unk_8004FF40_vt *unk0; } Unk_8004FF40_obj;
-typedef struct Unk_8004FF40 { u8 pad[0x70]; Unk_8004FF40_obj *unk70; } Unk_8004FF40;
-s32 func_8004E7D0();
-s32 func_8004E890();
-typedef struct Unk_8004DABC_mgr { u8 pad[0x94]; void (*unk94)(void *); u8 pad_98[0xDC - 0x98]; void (*unkDC)(void *); void (*unkE0)(void *, s32); void (*unkE4)(void *, void *); } Unk_8004DABC_mgr;
-typedef struct Unk_8004DABC_vt { u8 pad[0x19C]; void (*unk19C)(void *, s32 *); } Unk_8004DABC_vt;
-typedef struct Unk_8004DABC_obj { Unk_8004DABC_vt *vt; } Unk_8004DABC_obj;
-typedef struct Unk_8004DABC_sub { u8 pad[0x14]; s32 unk14; } Unk_8004DABC_sub;
-typedef struct Unk_8004DABC { u8 pad[0x60]; Unk_8004DABC_sub *unk60; u8 pad2[0xA4 - 0x64]; Unk_8004DABC_obj *unkA4; } Unk_8004DABC;
-extern Unk_8004DABC_mgr *func_8003DFBC(void);
-typedef struct Unk_8004F5DC_Vtbl {
-    u8 pad[0x14];
-    void (*unk14)(void *, s32);
-} Unk_8004F5DC_Vtbl;
-typedef struct Unk_8004F5DC {
-    Unk_8004F5DC_Vtbl *unk0;
-    u8 pad_04[0x60 - 0x04];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-} Unk_8004F5DC;
-struct Unk_8004FF90;
-typedef struct Unk_8004FF90_Vtbl {
-    u8 pad[0x90];
-    void (*unk90)(struct Unk_8004FF90 *);
-    void (*unk94)(struct Unk_8004FF90 *);
-} Unk_8004FF90_Vtbl;
-typedef struct Unk_8004FF90 {
-    Unk_8004FF90_Vtbl *unk0;
-    u8 pad_04[0x28 - 0x4];
-    s32 unk28;
-} Unk_8004FF90;
-struct Unk_8004E1C4;
-typedef struct Unk_8004E1C4_vt {
-    u8 pad[0x128];
-    void (*unk128)(struct Unk_8004E1C4 *);
-} Unk_8004E1C4_vt;
-typedef struct Unk_8004E1C4_obj_vt {
-    u8 pad[0x74];
-    void (*unk74)(void *, s32, s32, s32, s32);
-} Unk_8004E1C4_obj_vt;
-typedef struct Unk_8004E1C4_obj {
-    Unk_8004E1C4_obj_vt *unk0;
-} Unk_8004E1C4_obj;
-typedef struct Unk_8004E1C4 {
-    Unk_8004E1C4_vt *unk0;
-    u8 pad_04[0xAC - 0x04];
-    Unk_8004E1C4_obj *unkAC;
-    u8 pad_B0[0xBC - 0xB0];
-    s32 unkBC;
-    s32 unkC0;
-} Unk_8004E1C4;
+void Card_DisableEvents(Card *card);
+extern ObjectVtbl *Object_GetBaseVtbl(void);
+s32 Card_GetInfo();
+s32 Card_ReadDirectory();
+extern MenuVtbl *MenuScreen_GetVtbl(void);
 s32 g_cardFileName;
 s32 g_cardTitle;
-typedef struct Unk_8004E2E0 {
-    u8 pad_00[0x8];
-    void (*unk8)(s32, s32, s32);
-} Unk_8004E2E0;
 extern s32 Heap_Alloc(s32);
-Unk_8004E2E0 *func_800507E8(void);
+CardVtbl *Card_GetVtbl(void);
 extern s32 format(char *);
-extern char D_8008AA9C[];
-extern char D_8008AAA4[];
-typedef struct Unk_8004E940 { u8 pad[0xC]; s32 unkC; } Unk_8004E940;
-s32 func_8004ECCC();
-typedef struct Unk_8004D898_tbl {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-} Unk_8004D898_tbl;
-typedef struct Unk_8004D898_vt {
-    u8 pad_00[0x78];
-    void (*unk78)(void *, void *, Unk_8004D898_tbl *);
-} Unk_8004D898_vt;
-typedef struct Unk_8004D898_obj {
-    Unk_8004D898_vt *vt;
-} Unk_8004D898_obj;
-typedef struct Unk_8004D898 {
-    u8 pad_00[0xC];
-    Unk_8004D898_obj **unkC;
-    u8 pad_10[0x93 - 0x10];
-    u8 unk93;
-} Unk_8004D898;
-extern Unk_8004D898_tbl D_80086DAC[];
-typedef struct Unk_8004DC08_vt { u8 pad_00[0x4]; void (*unk4)(void *); } Unk_8004DC08_vt;
-typedef struct Unk_8004DC08_obj { Unk_8004DC08_vt *unk0; } Unk_8004DC08_obj;
-typedef struct Unk_8004DC08 { u8 pad_00[0xB0]; Unk_8004DC08_obj *unkB0; } Unk_8004DC08;
-typedef struct Unk_8004DC64_Vtbl {
-    u8 pad_00[0x4C];
-    void (*unk4C)(void *, s32, void *);
-} Unk_8004DC64_Vtbl;
-typedef struct Unk_8004DC64_Obj {
-    Unk_8004DC64_Vtbl *unk0;
-} Unk_8004DC64_Obj;
-typedef struct Unk_8004DC64 {
-    u8 pad_00[0xB0];
-    Unk_8004DC64_Obj *unkB0;
-} Unk_8004DC64;
+extern char g_cardDevice1[];
+extern char g_cardDevice0[];
+s32 Card_HasSpaceOnce();
+extern MenuFillRect g_menuFillRects[];
 extern s32 D_8008A9B4;
-typedef struct Unk_8004ECCC {
-    u8 pad_00[0xC];
-    s32 unkC;
-} Unk_8004ECCC;
-extern char D_8008AAAC[];
-char *func_8004F32C(char *buf, s32 sel, char *suffix);
+extern char g_cardTempName[];
+char *Card_MakePath(char *buf, s32 port, char *name);
 s32 open(char *name, s32 flags);
 s32 close(s32 fd);
 s32 delete(char *name);
-s32 func_8004EDC0(s32 arg0, s32 arg1, s32 arg2, s32 arg3);
-typedef struct Unk_8004F55C_vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-} Unk_8004F55C_vt;
-typedef struct Unk_8004F55C {
-    Unk_8004F55C_vt *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    s32 unk28;
-    u8 pad_2C[0x30 - 0x2C];
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    u8 pad_3C[0x68 - 0x3C];
-    s32 unk68;
-    s32 unk6C;
-    s32 unk70;
-} Unk_8004F55C;
-typedef struct Unk_8004F704 {
-    u8 pad_00[0x38];
-    s32 *unk38;
-    s32 unk3C;
-} Unk_8004F704;
-typedef struct Unk_8004D704_vt { u8 pad[4]; void (*unk4)(void *); } Unk_8004D704_vt;
-typedef struct Unk_8004D704_obj { Unk_8004D704_vt *unk0; } Unk_8004D704_obj;
-typedef struct Unk_8004D704 { u8 pad[0xA8]; Unk_8004D704_obj *unkA8; Unk_8004D704_obj *unkAC; } Unk_8004D704;
-typedef struct Unk_8004D704_mgr { u8 pad[0xC]; void (*unkC)(void *); } Unk_8004D704_mgr;
-typedef struct Unk_8004D814_Vtbl {
-    u8 pad_00[0x6C];
-    void (*unk6C)(void *, s32);
-    u8 pad_70[0xD4 - 0x70];
-    void (*unkD4)(void *, void *, s32);
-} Unk_8004D814_Vtbl;
-typedef struct Unk_8004D814_ObjVtbl {
-    u8 pad_00[0xF0];
-    void (*unkF0)(void *, s32, s32);
-} Unk_8004D814_ObjVtbl;
-typedef struct Unk_8004D814_Obj {
-    Unk_8004D814_ObjVtbl *vt;
-} Unk_8004D814_Obj;
-typedef struct Unk_8004D814 {
-    Unk_8004D814_Vtbl *unk0;
-    u8 pad_04[0x2C - 0x04];
-    s32 unk2C;
-    u8 pad_30[0x34 - 0x30];
-    s32 unk34;
-    u8 pad_38[0xA4 - 0x38];
-    Unk_8004D814_Obj *unkA4;
-} Unk_8004D814;
-typedef struct Unk_8004D788_mgr {
-    u8 pad[0x38];
-    void (*unk38)(void *, void *, s32);
-} Unk_8004D788_mgr;
-typedef struct Unk_8004D788_vt {
-    u8 pad[0x138];
-    void (*unk138)(void *, void *, s32);
-} Unk_8004D788_vt;
-typedef struct Unk_8004D788_obj {
-    Unk_8004D788_vt *vt;
-} Unk_8004D788_obj;
-s32 func_8004EA38(s32 arg0, s32 arg1, u8 *arg2);
-typedef struct Unk_8004F784 {
-    u8 pad_00[0x2C];
-    s32 unk2C;
-    u8 pad_30[0x38 - 0x30];
-    s32 *unk38;
-} Unk_8004F784;
+s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size);
+s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name);
 extern s32 Heap_Free(s32);
-typedef struct Unk_8004E054_sub { u8 pad_00[0x4]; s32 unk4; } Unk_8004E054_sub;
-typedef struct Unk_8004E054_vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-    void (*unk14)(void *, void *);
-} Unk_8004E054_vt;
-typedef struct Unk_8004E054_obj_vt {
-    u8 pad_00[0x70];
-    void (*unk70)(void *);
-} Unk_8004E054_obj_vt;
-typedef struct Unk_8004E054_obj {
-    Unk_8004E054_obj_vt *unk0;
-} Unk_8004E054_obj;
-typedef struct Unk_8004E054 {
-    Unk_8004E054_vt *unk0;
-    u8 pad_04[0x8];
-    Unk_8004E054_sub *unkC;
-    s32 unk10;
-    u8 pad_14[0xAC - 0x14];
-    Unk_8004E054_obj *unkAC;
-} Unk_8004E054;
-typedef struct Unk_800501F0_vt {
-    u8 pad_00[0x7C];
-    void (*unk7C)(void *, s32);
-    u8 pad_80[0x8C - 0x80];
-    void (*unk8C)(void *, s32);
-} Unk_800501F0_vt;
-typedef struct Unk_800501F0 {
-    Unk_800501F0_vt *unk0;
-    u8 pad_04[0x28 - 0x04];
-    s32 unk28;
-    u8 pad_2C[0x5C - 0x2C];
-    s32 unk5C;
-} Unk_800501F0;
 extern s32 EnterCriticalSection();
 extern s32 ExitCriticalSection();
 extern s32 OpenEvent(u32, s32, s32, s32);
-extern s32 D_80086E78[];
-typedef struct Unk_8004F810 {
-    u8 pad_00[0x2C];
-    s32 unk2C;
-    u8 pad_30[0x38 - 0x30];
-    s32 *unk38;
-    s32 unk3C;
-} Unk_8004F810;
-typedef struct Unk_8004F40C {
-    u8 pad_00[0x14];
-    s32 unk14[4];
-} Unk_8004F40C;
-typedef struct Unk_8004E230_obj_vt {
-    u8 pad_00[0x1A8];
-    void (*unk1A8)(void *);
-} Unk_8004E230_obj_vt;
-typedef struct Unk_8004E230_obj {
-    Unk_8004E230_obj_vt *unk0;
-} Unk_8004E230_obj;
-typedef struct Unk_8004E230_vt {
-    u8 pad_00[0x124];
-    void (*unk124)(void *, s32);
-    u8 pad_128[0x12C - 0x128];
-    void (*unk12C)(void *);
-} Unk_8004E230_vt;
-typedef struct Unk_8004E230 {
-    Unk_8004E230_vt *unk0;
-    u8 pad_04[0xA4 - 0x04];
-    Unk_8004E230_obj *unkA4;
-} Unk_8004E230;
+extern s32 g_cardEventSpecs[];
 s32 read(s32 fd, s32 buf, s32 n);
 s32 strcpy(s32 dst, s32 src);
-typedef struct Unk_8004EADC_vt { u8 pad_00[0x54]; s32 (*unk54)(void *, s32, s8 *); } Unk_8004EADC_vt;
-typedef struct Unk_8004EADC_obj { Unk_8004EADC_vt *vt; } Unk_8004EADC_obj;
 s8 *strcat(s8 *dst, s8 *src);
-typedef struct Unk_80050730_vt {
-    u8 pad_00[0x7C];
-    void (*unk7C)(void *, s32);
-    u8 pad_80[0xAC - 0x80];
-    void (*unkAC)(void *);
-} Unk_80050730_vt;
-typedef struct Unk_80050730_obj {
-    Unk_80050730_vt *unk0;
-    u8 pad_04[0x80 - 0x04];
-    s32 unk80;
-} Unk_80050730_obj;
-typedef struct Unk_80050730_src_vt {
-    u8 pad_00[0x9C];
-    s32 (*unk9C)(void *);
-} Unk_80050730_src_vt;
-typedef struct Unk_80050730_src {
-    Unk_80050730_src_vt *unk0;
-} Unk_80050730_src;
-typedef struct Unk_80050410_vt {
-    u8 pad_00[0x4];
-    void (*unk4)(void *);
-    u8 pad_08[0x48 - 0x08];
-    void (*unk48)(void *);
-    void (*unk4C)(void *);
-    void (*unk50)(void *);
-} Unk_80050410_vt;
-typedef struct Unk_80050410_obj {
-    Unk_80050410_vt *vt;
-} Unk_80050410_obj;
-typedef struct Unk_80050410 {
-    u8 pad_00[0x60];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    u8 pad_6C[0x74 - 0x6C];
-    s32 unk74;
-    Unk_80050410_obj *unk78;
-} Unk_80050410;
-typedef struct Unk_80050670_vt {
-    u8 pad_00[0x4];
-    void (*unk4)(void *);
-    u8 pad_08[0x48 - 0x08];
-    void (*unk48)(void *);
-    u8 pad_4C[0x50 - 0x4C];
-    void (*unk50)(void *);
-} Unk_80050670_vt;
-typedef struct Unk_80050670_obj {
-    Unk_80050670_vt *vt;
-} Unk_80050670_obj;
-s32 func_8004E77C(s32 arg0, s32 *arg1, s32 *arg2, s32 *arg3);
-typedef struct Unk_8004D90C_mgr {
-    u8 pad_00[0x60];
-    void (*unk60)(void *, s32);
-} Unk_8004D90C_mgr;
-typedef struct Unk_8004D90C_vt {
-    u8 pad_00[0x78];
-    void (*unk78)(void *);
-    void (*unk7C)(void *);
-    u8 pad_80[0xF0 - 0x80];
-    void (*unkF0)(void *, s32, s32);
-    u8 pad_F4[0x124 - 0xF4];
-    void (*unk124)(void *, s32);
-} Unk_8004D90C_vt;
-typedef struct Unk_8004D90C_sub {
-    u8 pad_00[0x8];
-    s32 unk8;
-} Unk_8004D90C_sub;
-typedef struct Unk_8004D90C {
-    Unk_8004D90C_vt *unk0;
-    u8 pad_04[0x4C - 0x4];
-    Unk_8004D90C_sub *unk4C;
-} Unk_8004D90C;
-typedef struct Unk_800505A8_vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-} Unk_800505A8_vt;
-typedef struct Unk_800505A8_obj_vt {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32);
-    u8 pad_48[0x4C - 0x48];
-    void (*unk4C)(void *, s32, s32, s32);
-} Unk_800505A8_obj_vt;
-typedef struct Unk_800505A8_obj {
-    Unk_800505A8_obj_vt *vt;
-} Unk_800505A8_obj;
-typedef struct Unk_800505A8 {
-    Unk_800505A8_vt *unk0;
-    u8 pad_04[0x38 - 0x04];
-    s32 unk38;
-    u8 pad_3C[0x60 - 0x3C];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-    u8 pad_70[0x74 - 0x70];
-    s32 unk74;
-    u8 pad_78[0x7C - 0x78];
-    s32 unk7C;
-} Unk_800505A8;
-s32 func_80051A5C(s32 arg0, s32 arg1);
-s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32 arg6);
-typedef struct Unk_800507F8_Pair {
-    s8 x, y;
-} Unk_800507F8_Pair;
-typedef struct Unk_800507F8_Tri {
-    Unk_800507F8_Pair p[3];
-} Unk_800507F8_Tri;
-typedef struct Unk_800507F8_Hex {
-    Unk_800507F8_Tri a;
-    Unk_800507F8_Tri b;
-} Unk_800507F8_Hex;
-typedef struct Unk_800507F8 {
-    u8 pad_0[0x6];
-    Unk_800507F8_Hex unk6;
-    u8 pad_12[0x18 - 0x12];
-    Unk_800507F8_Pair unk18;
-} Unk_800507F8;
-void func_800507F8(Unk_800507F8 *arg0, u8 *arg1);
-typedef struct Unk_8004F638_vt {
-    u8 pad_00[0x44];
-    void (*unk44)(void *);
-    void (*unk48)(void *);
-    s32 (*unk4C)(void *, s32 *, s32 *, s32 *);
-    u8 pad_50[0x54 - 0x50];
-    s32 (*unk54)(void *, s32, s32);
-    u8 pad_58[0x5C - 0x58];
-    s32 (*unk5C)(void *, s32, s32, s32, s32);
-    s32 (*unk60)(void *, s32, s32);
-    u8 pad_64[0x7C - 0x64];
-    void (*unk7C)(void *, s32);
-} Unk_8004F638_vt;
-typedef struct Unk_8004F638 {
-    Unk_8004F638_vt *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    s32 unk28;
-    s32 unk2C;
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    s32 unk3C;
-    s32 unk40;
-    s32 unk44;
-    s32 unk48;
-    u8 unk4C;
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-} Unk_8004F638;
-s32 func_8004F9D8();
-void func_8004F810(Unk_8004F810 *arg0);
-void func_8004F704(Unk_8004F704 *arg0);
-void func_8004F784(Unk_8004F784 *arg0);
-typedef struct Unk_80050340_Vtbl {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, void *);
-} Unk_80050340_Vtbl;
-typedef struct Unk_80050340_Obj_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32);
-    u8 pad_48[0x4C - 0x48];
-    void (*unk4C)(void *, s32, s32, s32);
-} Unk_80050340_Obj_Vtbl;
-typedef struct Unk_80050340_Obj {
-    Unk_80050340_Obj_Vtbl *vt;
-} Unk_80050340_Obj;
-typedef struct Unk_80050340 {
-    Unk_80050340_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    s32 unk48;
-    u8 pad_4C[0x60 - 0x4C];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-    u8 pad_70[0x74 - 0x70];
-    s32 unk74;
-    Unk_80050340_Obj *unk78;
-} Unk_80050340;
-void *func_80050BA8(s32 arg0, s32 arg1);
-typedef struct Unk_800504D0_vt {
-    u8 pad_00[0x78];
-    void (*unk78)(void *, s32, s32, s32, s32, s32, s32, s32);
-    void (*unk7C)(void *, s32);
-    u8 pad_80[0xA0 - 0x80];
-    void (*unkA0)(void *);
-} Unk_800504D0_vt;
-typedef struct Unk_800504D0 {
-    Unk_800504D0_vt *unk0;
-    u8 pad_04[0x40 - 0x04];
-    s32 unk40;
-    s32 unk44;
-    s32 unk48;
-    u8 unk4C;
-    u8 pad_4D[0x50 - 0x4D];
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-} Unk_800504D0;
-typedef struct Unk_8004E0E4_vt {
-    u8 pad_00[0x128];
-    void (*unk128)(void *);
-} Unk_8004E0E4_vt;
-typedef struct Unk_8004E0E4_mgr_vt {
-    u8 pad_00[0x19C];
-    void (*unk19C)(void *, s32 *);
-    u8 pad_1A0[0x1AC - 0x1A0];
-    s32 (*unk1AC)(void *);
-} Unk_8004E0E4_mgr_vt;
-typedef struct Unk_8004E0E4_obj {
-    Unk_8004E0E4_mgr_vt *vt;
-} Unk_8004E0E4_obj;
-typedef struct Unk_8004E0E4_draw_vt {
-    u8 pad_00[0x78];
-    void (*unk78)(void *, s32, s32, s32, s32, s32, s32, s32);
-} Unk_8004E0E4_draw_vt;
-typedef struct Unk_8004E0E4_draw {
-    Unk_8004E0E4_draw_vt *vt;
-} Unk_8004E0E4_draw;
-typedef struct Unk_8004E0E4 {
-    Unk_8004E0E4_vt *unk0;
-    u8 pad_04[0x60 - 0x04];
-    Unk_8004DABC_sub *unk60;
-    u8 pad_64[0xA4 - 0x64];
-    Unk_8004E0E4_obj *unkA4;
-    s32 unkA8;
-    Unk_8004E0E4_draw *unkAC;
-    u8 pad_B0[0xBC - 0xB0];
-    s32 unkBC;
-    s32 unkC0;
-} Unk_8004E0E4;
+s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted);
+CardDialog *StringList_New(char **titles, s32 arg1);
+void Card_SetTitleLetter(CardTitle *title, u8 *fileName);
+s32 Card_CheckReady();
+void Card_FreeFileList(Card *card);
+void Card_AllocFileList(Card *card);
+void Card_TrimFileList(Card *card);
+CardDialog *CommentObject_New(s32 text, s32 arg1);
 s32 lseek(s32 fd, s32 offset, s32 whence);
-typedef struct Unk_8004FB04_vt {
-    u8 pad_00[0x88];
-    void (*unk88)(void *, s32 **, s32);
-    u8 pad_8C[0x98 - 0x8C];
-    void (*unk98)(void *, s32 **, s32);
-    u8 pad_9C[0xA4 - 0x9C];
-    void (*unkA4)(void *, s32 **, s32);
-    u8 pad_A8[0xB0 - 0xA8];
-    void (*unkB0)(void *, s32 **, s32);
-} Unk_8004FB04_vt;
-typedef struct Unk_8004FB04_obj {
-    Unk_8004FB04_vt *vt;
-} Unk_8004FB04_obj;
-typedef struct Unk_8004DB18_vt {
-    u8 pad_00[0x1AC];
-    s32 (*unk1AC)(void *);
-} Unk_8004DB18_vt;
-typedef struct Unk_8004DB18_obj {
-    Unk_8004DB18_vt *vt;
-} Unk_8004DB18_obj;
-typedef struct Unk_8004DB18_rec {
-    u8 pad_00[0xAA];
-    u8 unkAA;
-    u8 unkAB;
-    u8 unkAC;
-} Unk_8004DB18_rec;
-typedef struct Unk_8004DB18 {
-    u8 pad_00[0xA4];
-    Unk_8004DB18_obj *unkA4;
-    u8 pad_A8[0xB0 - 0xA8];
-    Unk_8004DB18_rec *unkB0;
-} Unk_8004DB18;
-typedef struct Unk_8004DB18_arg1 {
-    u8 pad_00[0x4];
-    s32 unk4;
-} Unk_8004DB18_arg1;
-s32 D_8008AA14;
+s32 g_cardBlankComment;
 extern s32 func_800408CC(s32, s32, s32);
-extern s8 *func_80040FC0(s8 *, u8 *);
+extern s8 *Text_Decode(s8 *, u8 *);
 extern s32 strlen(u8 *);
-typedef struct Unk_8004DF64_C {
-    u8 pad_00[0x4];
-    s32 unk4;
-} Unk_8004DF64_C;
-typedef struct Unk_8004DF64_Vt {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, void *);
-    void (*unk14)(void *, s32);
-} Unk_8004DF64_Vt;
-typedef struct Unk_8004DF64_ObjVt {
-    u8 pad_00[0x6C];
-    void (*unk6C)(void *, s32, void *, s32, s32, s32, s32);
-} Unk_8004DF64_ObjVt;
-typedef struct Unk_8004DF64_Obj {
-    Unk_8004DF64_ObjVt *vt;
-} Unk_8004DF64_Obj;
-typedef struct Unk_8004DF64 {
-    Unk_8004DF64_Vt *unk0;
-    u8 pad_04[0x8];
-    Unk_8004DF64_C *unkC;
-    s32 unk10;
-    s32 unk14;
-    u8 pad_18[0x48 - 0x18];
-    s32 unk48;
-    u8 pad_4C[0xA8 - 0x4C];
-    s32 unkA8;
-    Unk_8004DF64_Obj *unkAC;
-} Unk_8004DF64;
-s32 func_8003B39C(s32 arg0);
-s32 func_8004E2E0(s32 arg0, s32 arg1);
-extern u8 D_80086D6C[];
-void *D_8008A9D0;
-typedef struct Unk_8004E40C_8004E444 { s32 unk0, unk4, unk8; void (*unkC)(s32); u8 pad_10[0x8]; void (*unk18)(void *); } Unk_8004E40C_8004E444;
-typedef struct Unk_8004E444 { u8 pad_00[0x10]; void (*unk10)(void *, s32 **); } Unk_8004E444;
-typedef struct Unk_8004E3F4_8004E444 {
-    u8 pad_00[0x60];
-    s32 unk60;
-    s32 unk64;
-    s32 unk68;
-    u8 pad_6C[0x78 - 0x6C];
-    s32 unk78;
-    s32 unk7C;
-} Unk_8004E3F4_8004E444;
-typedef struct Unk_8004D9D4_mgr { u8 pad[0x90]; void (*unk90)(void *); } Unk_8004D9D4_mgr;
-typedef struct Unk_8004D9D4_obj_vt { u8 pad[0xF0]; void (*unkF0)(void *, s32, s32); } Unk_8004D9D4_obj_vt;
-typedef struct Unk_8004D9D4_obj { Unk_8004D9D4_obj_vt *vt; } Unk_8004D9D4_obj;
-typedef struct Unk_8004D9D4_vt {
-    u8 pad[0x94];
-    void (*unk94)(void *);
-    u8 pad_98[0x130 - 0x98];
-    void (*unk130)(void *);
-    void (*unk134)(void *);
-} Unk_8004D9D4_vt;
-typedef struct Unk_8004D9D4 {
-    Unk_8004D9D4_vt *unk0;
-    u8 pad_04[0x38 - 0x04];
-    s32 unk38;
-    u8 pad_3C[0x58 - 0x3C];
-    s32 unk58;
-    u8 pad_5C[0xA4 - 0x5C];
-    Unk_8004D9D4_obj *unkA4;
-} Unk_8004D9D4;
-typedef struct Unk_8004E34C_Base {
-    u8 pad0[0x8];
-    void (*unk8)(void *);
-} Unk_8004E34C_Base;
-typedef struct Unk_8004E34C_Vtbl {
-    u8 pad0[0x40];
-    void (*unk40)(void *, s32);
-} Unk_8004E34C_Vtbl;
-void func_8004E3F4(Unk_8004E3F4 *);
+s32 func_8003B39C(s32 path);
+Card *Card_New(s32 sharePad, s32 port);
+extern u8 g_cardFileSuffixes[];
+void *g_cardFilePrefix;
+void Card_ClearLinks(Card *card);
+void Card_EnableEvents(Card *card);
 void InitCARD(s32);
 void StartCARD(void);
 void _bu_init(void);
-s32 D_8008AA30;
-typedef struct Unk_8004E7D0 {
-    u8 pad[0x10];
-    s32 unk10;
-} Unk_8004E7D0;
+s32 g_cardCount;
 s32 _card_info(s32);
 void _card_clear(s32);
-void func_8004F3E4(s32);
-s32 func_8004F4A4(s32);
-typedef struct Unk_8004E890 {
-    u8 pad_00[0x10];
-    s32 unk10;
-} Unk_8004E890;
+void Card_ClearEvents(Card *card);
+s32 Card_WaitEvent(Card *card);
 extern s32 _card_load(s32);
-void func_8004F3E4(s32 arg0);
-s32 func_8004F4A4(s32 arg0);
-extern s8 *D_80086E80[];
+extern s8 *g_cardMessageNames[];
 extern s32 D_80086EC4[];
-extern s32 D_8008AA94[];
-extern s8 D_8008AAB4[];
-extern s8 D_8008AABC[];
-typedef struct Unk_8004FE24_obj Unk_8004FE24_obj;
-typedef struct Unk_8004FE24_vt {
-    u8 pad_00[0x4];
-    void (*unk4)(Unk_8004FE24_obj *self);
-    u8 pad_08[0x44];
-    void (*unk4C)(Unk_8004FE24_obj *self, s32 arg1, s32 *arg2);
-    u8 pad_50[0x28];
-    void (*unk78)(Unk_8004FE24_obj *self);
-} Unk_8004FE24_vt;
-struct Unk_8004FE24_obj {
-    Unk_8004FE24_vt *vt;
-};
-Unk_8004FE24_obj *func_80041C9C(Unk_8004FE24_obj *arg0, s32 *arg1, s32 arg2);
-typedef struct Unk_8004FE24 {
-    u8 pad_00[0x68];
-    s32 unk68;
-    u8 pad_6C[0x4];
-    void *unk70;
-} Unk_8004FE24;
-void *func_8004E2D0(void);
-void SaveMenu_SetTitleDay(s32 arg0);
-extern u8 D_80086D44[];
-typedef struct Unk_8004D578_mgr {
-    u8 pad[0x8];
-    void (*unk8)(void *, void *, void *, s32);
-} Unk_8004D578_mgr;
-typedef struct Unk_8004D578_vt {
-    u8 pad[0x40];
-    void (*unk40)(void *, void *);
-    u8 pad_44[0xD8 - 0x44];
-    void (*unkD8)(void *, void *);
-} Unk_8004D578_vt;
-typedef struct Unk_8004D578_obj_vt {
-    u8 pad[0x9C];
-    void (*unk9C)(void *, s32);
-} Unk_8004D578_obj_vt;
-typedef struct Unk_8004D578_obj {
-    Unk_8004D578_obj_vt *unk0;
-} Unk_8004D578_obj;
-typedef struct Unk_8004D578 {
-    Unk_8004D578_vt *unk0;
-    u8 pad_04[0x48 - 0x04];
-    Unk_8004D578_obj *unk48;
-    u8 pad_4C[0xA4 - 0x4C];
-    void *unkA4;
-    s32 unkA8;
-    s32 unkAC;
-    u8 pad_B0[0xBC - 0xB0];
-    s32 unkBC;
-    s32 unkC0;
-} Unk_8004D578;
-typedef struct Unk_8004D578_arg1_vt {
-    u8 pad[0x1A0];
-    s32 (*unk1A0)(void *, s32);
-    u8 pad_1A4[0x1B0 - 0x1A4];
-    s32 (*unk1B0)(void *, void *);
-} Unk_8004D578_arg1_vt;
-typedef struct Unk_8004D578_arg1 {
-    Unk_8004D578_arg1_vt *unk0;
-} Unk_8004D578_arg1;
-typedef struct Unk_8004DE08_vt {
-    u8 pad_00[0x60];
-    void (*unk60)(void *, s32);
-    u8 pad_64[0xE0 - 0x64];
-    void (*unkE0)(void *, s32);
-    u8 pad_E4[0xF0 - 0xE4];
-    void (*unkF0)(void *, s32, s32);
-    u8 pad_F4[0x11C - 0xF4];
-    void (*unk11C)(void *, s32, s32);
-} Unk_8004DE08_vt;
-typedef struct Unk_8004DE08_obj_vt {
-    u8 pad_00[0xCC];
-    void (*unkCC)(void *, s32);
-    u8 pad_D0[0x19C - 0xD0];
-    void (*unk19C)(void *, s32 *);
-} Unk_8004DE08_obj_vt;
-typedef struct Unk_8004DE08_obj {
-    Unk_8004DE08_obj_vt *unk0;
-    u8 pad_04[0xA9 - 0x04];
-    u8 unkA9;
-} Unk_8004DE08_obj;
-typedef struct Unk_8004DE08 {
-    Unk_8004DE08_vt *unk0;
-    u8 pad_04[0x14 - 0x04];
-    s32 unk14;
-    u8 pad_18[0x4C - 0x18];
-    s32 unk4C;
-    u8 pad_50[0x58 - 0x50];
-    s32 unk58;
-    u8 pad_5C[0xA4 - 0x5C];
-    Unk_8004DE08_obj *unkA4;
-    u8 pad_A8[0xB0 - 0xA8];
-    Unk_8004DE08_obj *unkB0;
-} Unk_8004DE08;
-typedef struct Unk_8004DCD0_rgb { s8 r, g, b; } Unk_8004DCD0_rgb;
-typedef struct Unk_8004DCD0_vt { u8 pad_00[0xB8]; void (*unkB8)(void *, Unk_8004DCD0_rgb *); } Unk_8004DCD0_vt;
-typedef struct Unk_8004DCD0_obj { Unk_8004DCD0_vt *vt; } Unk_8004DCD0_obj;
-typedef struct Unk_8004DCD0 { u8 pad_00[0x3C]; s32 unk3C; u8 pad_40[0xB0 - 0x40]; Unk_8004DCD0_obj *unkB0; } Unk_8004DCD0;
-u8 D_8008AA28;
-s32 D_8008AA2C;
-extern u8 D_80086B60[];
-typedef struct Unk_8004E5D4 {
-    u8 pad_00[0xC];
-    s32 unkC;
-    s32 unk10;
-} Unk_8004E5D4;
-extern u8 D_80086DC4[];
-typedef struct Unk_80050034_vt {
-    u8 pad_00[0x74];
-    void (*unk74)(void *, s32, s32, s32, s32);
-    void (*unk78)(void *, s32, s32, s32, s32, s32, s32, s32);
-    void (*unk7C)(void *, s32);
-    u8 pad_80[0x8C - 0x80];
-    void (*unk8C)(void *, s32);
-} Unk_80050034_vt;
-typedef struct Unk_80050034 {
-    Unk_80050034_vt *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    s32 unk28;
-    u8 pad_2C[0x30 - 0x2C];
-    s8 *unk30;
-    u8 pad_34[0x38 - 0x34];
-    s8 **unk38;
-    s8 **unk3C;
-    s8 *unk40;
-    s8 *unk44;
-    s32 unk48;
-    u8 unk4C;
-    u8 pad_4D[0x50 - 0x4D];
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-    u8 pad_5C[0x80 - 0x5C];
-    s32 unk80;
-} Unk_80050034;
+extern s32 g_cardMessagePos[];
+extern s8 g_cardPictureDir[];
+extern s8 g_timSuffix[];
+CardMessage *func_80041C9C(CardMessage *picture, s32 *arg1, s32 arg2);
+MenuVtbl *Menu_GetVtbl(void);
+void SaveMenu_SetTitleDay(s32 dayNumber);
+extern u8 g_mainMenuDesc[];
+u8 g_titleBlinkChannel;
+s32 g_titleBlinkTick;
+extern u8 g_menuVtbl[];
+extern u8 g_cardVtbl[];
 void *memcpy(void *dst, const void *src, u32 n);
-typedef struct { u8 r, g, b, cd; s8 e; s8 f; } Unk_8004D6AC_Col;
-typedef struct { u8 pad[0x12]; Unk_8004D6AC_Col col; } Unk_8004D6AC_Dst;
-s8 *D_8008AA24;
-void func_8004109C(s8 *arg0, s32 arg1, s32 arg2, s32 arg3);
-Unk_800507F8_Pair *D_8008AAC4;
+s8 *g_titleDayDigits;
+void Text_FormatNumber(s8 *buf, s32 number, s32 digits, s32 arg3);
+SjisChar *g_titleLetters;
 s32 atoi(u8 *s);
-typedef struct Unk_8004FBE4_vt {
-    u8 pad_00[0x30];
-    void (*unk30)(void *, s32);
-    u8 pad_34[0x50 - 0x34];
-    s32 (*unk50)(void *);
-    u8 pad_54[0x58 - 0x54];
-    void (*unk58)(void *, u8 *, s32, s32);
-    u8 pad_5C[0x64 - 0x5C];
-    s32 (*unk64)(void *, u8 *, s32, s32);
-    s32 (*unk68)(void *, u8 *, s32, u8, s32, s32, s32);
-    u8 pad_6C[0x7C - 0x6C];
-    void (*unk7C)(void *, s32);
-    void (*unk80)(void *, s32);
-    void (*unk84)(void *);
-    u8 pad_88[0x9C - 0x88];
-    void (*unk9C)(void *);
-    u8 pad_A0[0xA8 - 0xA0];
-    void (*unkA8)(void *);
-} Unk_8004FBE4_vt;
-typedef struct Unk_8004FBE4 {
-    Unk_8004FBE4_vt *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    s32 unk28;
-    s32 unk2C;
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-    s32 unk3C;
-    u8 *unk40;
-    s32 unk44;
-    u8 pad_48[0x4C - 0x48];
-    u8 unk4C;
-    u8 pad_4D[0x50 - 0x4D];
-    s32 unk50;
-    s32 unk54;
-    s32 unk58;
-    s32 unk5C;
-} Unk_8004FBE4;
-typedef struct Unk_8004EF6C_arg4 {
-    u8 pad_00[0x10];
-    u8 *unk10;
-} Unk_8004EF6C_arg4;
-typedef struct Unk_8004EF6C_H {
-    u8 b[0x20];
-} Unk_8004EF6C_H;
-typedef struct Unk_8004EF6C_Icon {
-    u8 b[0x80];
-} Unk_8004EF6C_Icon;
 s32 write(s32 fd, void *buf, s32 n);
 s32 printf(char *fmt, ...);
-s32 func_8004EF6C(s32, s32, s32, u8, s32, s32, s32);
+s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011434);
 
@@ -855,594 +112,647 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011474);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001149C);
 
-void func_8004D578(Unk_8004D578 *arg0, Unk_8004D578_arg1 *arg1) {
-    ((Unk_8004D578_mgr *)func_8003DFBC())->unk8(arg0, D_80086D44, "ETC\\ETCSE", 0);
-    arg0->unk0 = func_8004E2D0();
-    arg0->unk48->unk0->unk9C(arg0->unk48, -1);
-    arg0->unkA4 = arg1;
-    arg0->unkAC = 0;
-    arg0->unkBC = arg1->unk0->unk1B0(arg1, &arg0->unkC0);
-    SaveMenu_SetTitleDay(arg1->unk0->unk1A0(arg1, 0));
-    arg0->unk0->unkD8(arg0, D_80086D44);
-    arg0->unk0->unk40(arg0, arg1);
+/* Menu slot 0x08: base constructor with the menu description and ETC\ETCSE, then the save block. */
+void Menu_Init(Menu *menu, DreamSys *dreamSys) {
+    MenuScreen_GetVtbl()->init(menu, g_mainMenuDesc, "ETC\\ETCSE", 0);
+    menu->vtbl = Menu_GetVtbl();
+    menu->sound->vt->unk9C(menu->sound, -1);
+    menu->dreamSys = dreamSys;
+    menu->card = 0;
+    menu->saveBlock = dreamSys->vtbl->getSaveBlock(dreamSys, &menu->saveSize);
+    SaveMenu_SetTitleDay(dreamSys->vtbl->getDayNumber(dreamSys, 0));
+    menu->vtbl->setMenu(menu, g_mainMenuDesc);
+    menu->vtbl->reset(menu, dreamSys);
 }
 
-void Menu_UpdateFlashbackItem(P *arg0, Q *arg1, void *arg2) {
-    A *a = arg0->uBC;
-    s32 r = 1;
-    if (a->uC > 9999999) {
-        r = a->u2F4 == 0;
+/* FLASHBACK is drawn only with an unlock score above 9,999,999 and one flashback kept. */
+void Menu_UpdateFlashbackItem(Menu *menu, MenuDesc *desc, DreamSys *dreamSys) {
+    SaveBlock *save = menu->saveBlock;
+    s32 hidden = 1;
+    if (save->unlockScore > 9999999) {
+        hidden = save->flashbackCount == 0;
     }
-    arg1->u18->u4 = r;
+    desc->hidden[MENU_ITEM_FLASHBACK] = hidden;
 }
 
-void SaveMenu_SetTitleDay(s32 arg0) {
-    func_8004109C(D_8008AA24, arg0, 3, 0);
-    ((Unk_8004D6AC_Dst *)g_cardTitle)->col = *(Unk_8004D6AC_Col *)D_8008AA24;
+/* Writes the day number as three full-width digits into the card title. */
+void SaveMenu_SetTitleDay(s32 dayNumber) {
+    Text_FormatNumber(g_titleDayDigits, dayNumber, 3, 0);
+    ((CardTitle *)g_cardTitle)->day = *(SjisChar3 *)g_titleDayDigits;
 }
 
-void func_8004D704(Unk_8004D704 *arg0) {
-    Unk_8004D704_obj *temp_a0;
+/* Menu slot 0x0C: deletes the card and the file icon, then the base destructor. */
+void Menu_Destroy(Menu *menu) {
+    Card *card;
+    MenuPicture *icon;
 
-    temp_a0 = arg0->unkAC;
-    if (temp_a0 != NULL) {
-        temp_a0->unk0->unk4(temp_a0);
-        temp_a0 = arg0->unkA8;
-        temp_a0->unk0->unk4(temp_a0);
+    card = menu->card;
+    if (card != NULL) {
+        card->vtbl->delete_(card);
+        icon = menu->fileIcon;
+        icon->vt->delete_(icon);
     }
-    ((Unk_8004D704_mgr *)func_8003DFBC())->unkC(arg0);
+    MenuScreen_GetVtbl()->destroy(menu);
 }
 
-void func_8004D788(Unk_8004D788_obj *arg0, s32 **arg1, s32 arg2) {
-    ((Unk_8004D788_mgr *)func_8003DFBC())->unk38(arg0, arg1, arg2);
-    if ((**arg1 & 0xF) == 0xB) {
-        arg0->vt->unk138(arg0, arg1, arg2);
+/* Menu slot 0x38: messages from the card (class word & 0xF == 0xB) go to slot 0x138. */
+void Menu_OnNotify(Menu *menu, s32 **sender, s32 message) {
+    MenuScreen_GetVtbl()->onNotify(menu, sender, message);
+    if ((**sender & 0xF) == 0xB) {
+        menu->vtbl->onCardNotify(menu, sender, message);
     }
 }
 
-void func_8004D814(Unk_8004D814 *arg0) {
-    Unk_8004D814_Obj *temp_a0;
+/* Menu slot 0x40 (reset): title picture, 10 s timeout, and flashback mode off. */
+void Menu_Reset(Menu *menu) {
+    DreamSys *dreamSys;
 
-    arg0->unk34 = 0;
-    arg0->unk2C = 0x190;
-    arg0->unk0->unkD4(arg0, "ETC\\TITLE.TIM", 0);
-    arg0->unk0->unk6C(arg0, 10);
-    temp_a0 = arg0->unkA4;
-    temp_a0->vt->unkF0(temp_a0, 0, 0);
+    menu->clearOnEnd = 0;
+    menu->viewPacketCount = 0x190;
+    menu->vtbl->setPicture(menu, "ETC\\TITLE.TIM", 0);
+    menu->vtbl->setTimeout(menu, 10);
+    dreamSys = menu->dreamSys;
+    dreamSys->vtbl->setFlashbackMode(dreamSys, 0, 0);
 }
 
-void func_8004D898(Unk_8004D898 *arg0) {
+/* Menu slot 0x50 (end): clears both 320 x 240 buffers to the end colour. */
+void Menu_End(Menu *menu) {
     u32 i;
 
     for (i = 0; i < 2; i++) {
-        (*arg0->unkC)->vt->unk78(*arg0->unkC, &arg0->unk93, &D_80086DAC[i]);
+        menu->env->display->vt->clearImage(menu->env->display, menu->endColor, &g_menuFillRects[i]);
     }
 }
 
-void func_8004D90C(Unk_8004D90C *arg0, s32 arg1) {
-    ((Unk_8004D90C_mgr *)func_8003DFBC())->unk60(arg0, arg1);
-    if (arg1 == 5) {
-        arg0->unk0->unk124(arg0, 0);
+/*
+ * Menu slot 0x60 (setState, states SCREEN_* of scene.h): on 5 (active) reloads the save title
+ * and SHAKE; on 10 (START pressed) closes the option list, selects START and confirms it.
+ */
+void Menu_SetState(Menu *menu, s32 state) {
+    MenuScreen_GetVtbl()->setState(menu, state);
+    if (state == 5) {
+        menu->vtbl->refreshFromSave(menu, 0);
     }
-    if (arg1 == 0xA) {
-        arg0->unk0->unk7C(arg0);
-        arg0->unk0->unkF0(arg0, arg0->unk4C->unk8, 1);
-        arg0->unk0->unk78(arg0);
+    if (state == 0xA) {
+        menu->vtbl->onCross(menu);
+        menu->vtbl->selectItem(menu, menu->desc->unk8, 1);
+        menu->vtbl->onCircle(menu);
     }
 }
 
-void func_8004D9D4(Unk_8004D9D4 *arg0) {
-    void (*fn)(void *);
-    Unk_8004D9D4_obj *temp_a0;
+/* Menu slot 0x90 (confirm): CIRCLE on an item (START closes through the base). */
+void Menu_Confirm(Menu *menu) {
+    void (*fn)(Menu *);
+    DreamSys *dreamSys;
 
-    ((Unk_8004D9D4_mgr *)func_8003DFBC())->unk90(arg0);
-    switch (arg0->unk58) {
-    case 1:
-        temp_a0 = arg0->unkA4;
-        arg0->unk38 = 0;
-        temp_a0->vt->unkF0(temp_a0, 0, 1);
-        fn = arg0->unk0->unk94;
+    MenuScreen_GetVtbl()->confirm(menu);
+    switch (menu->selected) {
+    case MENU_ITEM_FLASHBACK:
+        dreamSys = menu->dreamSys;
+        menu->result = 0;
+        dreamSys->vtbl->setFlashbackMode(dreamSys, 0, 1);
+        fn = menu->vtbl->close;
         break;
-    case 2:
-        fn = arg0->unk0->unk130;
+    case MENU_ITEM_SAVE:
+        fn = menu->vtbl->save;
         break;
-    case 3:
-        fn = arg0->unk0->unk134;
+    case MENU_ITEM_LOAD:
+        fn = menu->vtbl->load;
         break;
-    case 4:
-        arg0->unk38 = 2;
-        fn = arg0->unk0->unk94;
+    case MENU_ITEM_GRAPH:
+        menu->result = 2;
+        fn = menu->vtbl->close;
         break;
     default:
         return;
     }
-    fn(arg0);
+    fn(menu);
 }
 
-void func_8004DABC(Unk_8004DABC *arg0) {
-    s32 sp10;
-    Unk_8004DABC_obj *temp_a0;
+/* Menu slot 0x94 (close): closes the menu and stores the SHAKE choice in DreamSys. */
+void Menu_Close(Menu *menu) {
+    s32 shake;
+    DreamSys *dreamSys;
 
-    func_8003DFBC()->unk94(arg0);
-    temp_a0 = arg0->unkA4;
-    sp10 = arg0->unk60->unk14;
-    temp_a0->vt->unk19C(temp_a0, &sp10);
+    MenuScreen_GetVtbl()->close(menu);
+    dreamSys = menu->dreamSys;
+    shake = menu->optionSelected[MENU_ITEM_SHAKE];
+    dreamSys->vtbl->swapShake(dreamSys, &shake);
 }
 
-void func_8004DB18(Unk_8004DB18 *arg0, Unk_8004DB18_arg1 *arg1) {
-    s32 n;
-    s32 v;
-    s32 p;
+/* Menu slot 0xD8 (setMenu): makes the title label; a game never saved gets a blank comment and no letter. */
+void Menu_CreateTitleLabel(Menu *menu, MenuDesc *desc) {
+    s32 size;
+    s32 label;
+    s32 text;
 
-    if (arg1 != NULL) {
-        if (arg0->unkA4->vt->unk1AC(arg0->unkA4) != 0) {
-            strcpy(g_cardTitle + 0x18, D_8008AA14);
-            func_800507F8(g_cardTitle, 0);
+    if (desc != NULL) {
+        if (menu->dreamSys->vtbl->isNeverSaved(menu->dreamSys) != 0) {
+            strcpy(g_cardTitle + 0x18, g_cardBlankComment);
+            Card_SetTitleLetter(g_cardTitle, 0);
         }
-        n = ((u32)strlen(g_cardTitle) >> 1) + 4;
-        p = Heap_Alloc(n);
-        func_80040FC0((s8 *)p, (u8 *)g_cardTitle);
-        v = func_800408CC(arg1->unk4, n, p);
-        arg0->unkB0 = (Unk_8004DB18_rec *)v;
-        arg0->unkB0->unkAB = 8;
-        arg0->unkB0->unkAC = 4;
-        arg0->unkB0->unkAA = 9;
-        Heap_Free(p);
+        size = ((u32)strlen(g_cardTitle) >> 1) + 4;
+        text = Heap_Alloc(size);
+        Text_Decode((s8 *)text, (u8 *)g_cardTitle);
+        label = func_800408CC(desc->font, size, text);
+        menu->titleLabel = (MenuLabel *)label;
+        menu->titleLabel->unkAB = 8;
+        menu->titleLabel->unkAC = 4;
+        menu->titleLabel->unkAA = 9;
+        Heap_Free(text);
     }
 }
 
-void func_8004DC08(Unk_8004DC08 *arg0) {
-    Unk_8004DC08_obj *temp_a0;
+/* Menu slot 0xDC (freeMenu) */
+void Menu_FreeMenu(Menu *menu) {
+    MenuLabel *label;
 
-    temp_a0 = arg0->unkB0;
-    temp_a0->unk0->unk4(temp_a0);
-    func_8003DFBC()->unkDC(arg0);
+    label = menu->titleLabel;
+    label->vt->delete_(label);
+    MenuScreen_GetVtbl()->freeMenu(menu);
 }
 
-void func_8004DC64(Unk_8004DC64 *arg0, s32 arg1) {
-    Unk_8004DC64_Obj *obj;
+/* Menu slot 0xE0 (showItems) */
+void Menu_ShowItems(Menu *menu, s32 root) {
+    MenuLabel *label;
 
-    func_8003DFBC()->unkE0(arg0, arg1);
-    obj = arg0->unkB0;
-    obj->unk0->unk4C(obj, arg1, &D_8008A9B4);
+    MenuScreen_GetVtbl()->showItems(menu, root);
+    label = menu->titleLabel;
+    label->vt->draw(label, root, &D_8008A9B4);
 }
 
-void func_8004DCD0(Unk_8004DCD0 *arg0, Unk_8004DCD0_rgb *arg1) {
-    Unk_8004DCD0_rgb col;
-    u8 *p;
+/*
+ * Menu slot 0xE4 (setItemsColor): the title label blinks. While the menu has focus one channel is lit at
+ * 0x80, a different one each call (g_titleBlinkChannel); otherwise the label colour gets 0x80 more red
+ * for 128 calls, then 0x80 more on the cycling channel (g_titleBlinkTick counts 0 to 256).
+ */
+void Menu_SetItemsColor(Menu *menu, MenuRgb *color) {
+    MenuRgb blink;
+    u8 *channels;
 
-    p = (u8 *)&col;
-    func_8003DFBC()->unkE4(arg0, arg1);
-    if (arg0->unk3C != 0) {
-        col.r = 0;
-        col.g = 0;
-        col.b = 0;
-        p[D_8008AA28] = 0x80;
+    channels = (u8 *)&blink;
+    MenuScreen_GetVtbl()->setItemsColor(menu, color);
+    if (menu->focus != 0) {
+        blink.r = 0;
+        blink.g = 0;
+        blink.b = 0;
+        channels[g_titleBlinkChannel] = 0x80;
     } else {
-        col = *arg1;
-        if (D_8008AA2C < 0x80) {
-            p[0] += 0x80;
+        blink = *color;
+        if (g_titleBlinkTick < 0x80) {
+            channels[0] += 0x80;
         } else {
-            p[D_8008AA28] += 0x80;
+            channels[g_titleBlinkChannel] += 0x80;
         }
     }
-    if (++D_8008AA28 >= 3) {
-        D_8008AA28 = 0;
+    if (++g_titleBlinkChannel >= 3) {
+        g_titleBlinkChannel = 0;
     }
-    if (++D_8008AA2C >= 0x101) {
-        D_8008AA2C = 0;
+    if (++g_titleBlinkTick >= 0x101) {
+        g_titleBlinkTick = 0;
     }
-    arg0->unkB0->vt->unkB8(arg0->unkB0, &col);
+    menu->titleLabel->vt->setColor(menu->titleLabel, &blink);
 }
 
-void func_8004DE08(Unk_8004DE08 *arg0) {
-    s32 sp10;
-    s32 temp_s1;
-    s32 temp_s2;
+/*
+ * Menu slot 0x124: on opening (message 5) and after a load or a save, redraws the title
+ * label and FLASHBACK, and sets the SHAKE item from DreamSys. The first swap trades an
+ * unset value for the saved SHAKE, the second puts the saved value back.
+ */
+void Menu_RefreshFromSave(Menu *menu) {
+    s32 shake;
+    s32 text;
+    s32 selected;
 
-    temp_s2 = arg0->unk58;
-    temp_s1 = Heap_Alloc(arg0->unkB0->unkA9);
-    func_80040FC0((s8 *)temp_s1, (u8 *)g_cardTitle);
-    arg0->unkB0->unk0->unkCC(arg0->unkB0, temp_s1);
-    Heap_Free(temp_s1);
-    Menu_UpdateFlashbackItem(arg0, arg0->unk4C, arg0->unkA4);
-    arg0->unk0->unkE0(arg0, arg0->unk14);
-    arg0->unkA4->unk0->unk19C(arg0->unkA4, &sp10);
-    arg0->unk58 = 5;
-    arg0->unk0->unk60(arg0, 0xB);
-    arg0->unk0->unk11C(arg0, sp10, 1);
-    arg0->unk0->unk60(arg0, 0xF);
-    arg0->unk0->unkF0(arg0, temp_s2, 0);
-    arg0->unkA4->unk0->unk19C(arg0->unkA4, &sp10);
+    selected = menu->selected;
+    text = Heap_Alloc(menu->titleLabel->capacity);
+    Text_Decode((s8 *)text, (u8 *)g_cardTitle);
+    menu->titleLabel->vt->setText(menu->titleLabel, text);
+    Heap_Free(text);
+    Menu_UpdateFlashbackItem(menu, menu->desc, menu->dreamSys);
+    menu->vtbl->showItems(menu, menu->root);
+    menu->dreamSys->vtbl->swapShake(menu->dreamSys, &shake);
+    menu->selected = MENU_ITEM_SHAKE;
+    menu->vtbl->setState(menu, 0xB);
+    menu->vtbl->selectOption(menu, shake, 1);
+    menu->vtbl->setState(menu, 0xF);
+    menu->vtbl->selectItem(menu, selected, 0);
+    menu->dreamSys->vtbl->swapShake(menu->dreamSys, &shake);
 }
 
-void func_8004DF64(Unk_8004DF64 *arg0) {
-    if (arg0->unkAC == NULL) {
-        arg0->unkA8 = func_8003B39C((s32)"CARD\\FILEICN1.TIM");
-        arg0->unkAC = (Unk_8004DF64_Obj *)func_8004E2E0(1, 0);
+/* Menu slot 0x128: makes the card (first time) and hands it the pad and the clock. */
+void Menu_OpenCard(Menu *menu) {
+    if (menu->card == NULL) {
+        menu->fileIcon = (MenuPicture *)func_8003B39C((s32)"CARD\\FILEICN1.TIM");
+        menu->card = Card_New(1, 0);
     }
-    arg0->unkAC->vt->unk6C(arg0->unkAC, (s32)D_8008A9D0, D_80086D6C, arg0->unkC->unk4, arg0->unk10, arg0->unk14, arg0->unk48);
-    arg0->unk0->unk10(arg0, arg0->unkAC);
-    arg0->unk0->unk14(arg0, arg0->unkC->unk4);
-    arg0->unk0->unk14(arg0, arg0->unk10);
+    menu->card->vtbl->open(menu->card, g_cardFilePrefix, g_cardFileSuffixes, menu->env->pad, menu->clock, menu->root, menu->sound);
+    menu->vtbl->watch(menu, menu->card);
+    menu->vtbl->unwatch(menu, menu->env->pad);
+    menu->vtbl->unwatch(menu, menu->clock);
 }
 
-void func_8004E054(Unk_8004E054 *arg0) {
-    arg0->unk0->unk10(arg0, arg0->unkC->unk4);
-    arg0->unk0->unk10(arg0, arg0->unk10);
-    arg0->unk0->unk14(arg0, arg0->unkAC);
-    arg0->unkAC->unk0->unk70(arg0->unkAC);
+/* Menu slot 0x12C: takes the pad and the clock back and closes the card. */
+void Menu_CloseCard(Menu *menu) {
+    menu->vtbl->watch(menu, menu->env->pad);
+    menu->vtbl->watch(menu, menu->clock);
+    menu->vtbl->unwatch(menu, menu->card);
+    menu->card->vtbl->close(menu->card);
 }
 
-void SaveMenu_Save(Unk_8004E0E4 *arg0) {
-    s32 sp20;
+/* Menu slot 0x130: SHAKE into DreamSys, then saves the block; a game never saved gets a new file. */
+void SaveMenu_Save(Menu *menu) {
+    s32 shake;
 
-    sp20 = arg0->unk60->unk14;
-    arg0->unkA4->vt->unk19C(arg0->unkA4, &sp20);
-    arg0->unk0->unk128(arg0);
-    if (arg0->unkA4->vt->unk1AC(arg0->unkA4) != 0) {
+    shake = menu->optionSelected[MENU_ITEM_SHAKE];
+    menu->dreamSys->vtbl->swapShake(menu->dreamSys, &shake);
+    menu->vtbl->openCard(menu);
+    if (menu->dreamSys->vtbl->isNeverSaved(menu->dreamSys) != 0) {
         *(s8 *)g_cardFileName = 0;
     }
-    arg0->unkAC->vt->unk78(arg0->unkAC, g_cardFileName, g_cardTitle, 0xD, 3, arg0->unkA8, arg0->unkBC, arg0->unkC0);
+    menu->card->vtbl->save(menu->card, g_cardFileName, g_cardTitle, 0xD, 3, menu->fileIcon, menu->saveBlock, menu->saveSize);
 }
 
-void SaveMenu_Load(Unk_8004E1C4 *arg0) {
-    arg0->unk0->unk128(arg0);
-    arg0->unkAC->unk0->unk74(arg0->unkAC, g_cardFileName, g_cardTitle, arg0->unkBC, arg0->unkC0);
+/* Menu slot 0x134 */
+void SaveMenu_Load(Menu *menu) {
+    menu->vtbl->openCard(menu);
+    menu->card->vtbl->load(menu->card, g_cardFileName, g_cardTitle, menu->saveBlock, menu->saveSize);
 }
 
-void func_8004E230(Unk_8004E230 *arg0, s32 arg1, s32 arg2) {
-    Unk_8004E230_obj *temp_a0;
+/* Menu slot 0x138: the card reached CARD_STATE_DONE or CARD_STATE_CLOSED. */
+void Menu_OnCardNotify(Menu *menu, s32 **sender, s32 state) {
+    DreamSys *dreamSys;
 
-    if (arg2 < 0x18) {
-        if (arg2 < 0x16) {
+    if (state < CARD_STATE_CLOSED + 1) {
+        if (state < CARD_STATE_DONE) {
             return;
         }
-        arg0->unk0->unk12C(arg0);
-        if (arg2 == 0x16) {
-            temp_a0 = arg0->unkA4;
-            temp_a0->unk0->unk1A8(temp_a0);
-            arg0->unk0->unk124(arg0, 0x16);
+        menu->vtbl->closeCard(menu);
+        if (state == CARD_STATE_DONE) {
+            dreamSys = menu->dreamSys;
+            dreamSys->vtbl->clearNeverSaved(dreamSys);
+            menu->vtbl->refreshFromSave(menu, CARD_STATE_DONE);
         }
     }
 }
 
-void *func_8004E2D0(void) {
-    return D_80086B60;
+MenuVtbl *Menu_GetVtbl(void) {
+    return (MenuVtbl *)g_menuVtbl;
 }
 
-s32 func_8004E2E0(s32 arg0, s32 arg1) {
-    s32 temp_v0;
+/* Allocates a Card (0x84 bytes) and runs Card_Init. */
+Card *Card_New(s32 sharePad, s32 port) {
+    Card *card;
 
-    temp_v0 = Heap_Alloc(0x84);
-    if (temp_v0 != 0) {
-        func_800507E8()->unk8(temp_v0, arg0, arg1);
-        return temp_v0;
+    card = (Card *)Heap_Alloc(0x84);
+    if (card != NULL) {
+        Card_GetVtbl()->init(card, sharePad, port);
+        return card;
     }
-    return 0;
+    return NULL;
 }
 
-void func_8004E34C(Unk_8004E34C_Vtbl **arg0, s32 arg1, s32 arg2) {
-    Unk_8004E34C_Vtbl *vt;
+/* Card slot 0x08: the first card starts the card BIOS (InitCARD, StartCARD, _bu_init). */
+void Card_Init(Card *card, s32 sharePad, s32 port) {
+    CardVtbl *vtbl;
     s32 count;
 
-    ((Unk_8004E34C_Base *)Object_GetBaseVtbl())->unk8(arg0);
-    vt = ((Unk_8004E34C_Vtbl *)func_800507E8());
-    count = D_8008AA30;
-    *arg0 = vt;
-    D_8008AA30 = count + 1;
+    Object_GetBaseVtbl()->init(card);
+    vtbl = Card_GetVtbl();
+    count = g_cardCount;
+    card->vtbl = vtbl;
+    g_cardCount = count + 1;
     if (count == 0) {
-        InitCARD(arg1);
+        InitCARD(sharePad);
         StartCARD();
         _bu_init();
     }
-    func_8004E3F4((Unk_8004E3F4 *)arg0);
-    (*arg0)->unk40(arg0, arg2);
+    Card_ClearLinks(card);
+    card->vtbl->setPort(card, port);
 }
 
-void func_8004E3F4(Unk_8004E3F4 *arg0) {
-    arg0->unk60 = 0;
-    arg0->unk64 = 0;
-    arg0->unk68 = 0;
-    arg0->unk78 = 0;
-    arg0->unk7C = 0;
+void Card_ClearLinks(Card *card) {
+    card->pad = 0;
+    card->clock = 0;
+    card->root = 0;
+    card->keyboard = 0;
+    card->chooser = 0;
 }
 
-void func_8004E40C(s32 arg0) {
-    Object_GetBaseVtbl()->unkC(arg0);
+/* Card slot 0x0C */
+void Card_Destroy(Card *card) {
+    Object_GetBaseVtbl()->destroy(card);
 }
 
-void func_8004E444(Unk_8004E3F4_8004E444 *arg0, s32 **arg1) {
-    if (arg1 != NULL) {
-        ((Unk_8004E444 *)((Unk_8004E40C_8004E444 *)Object_GetBaseVtbl()))->unk10(arg0, arg1);
-        if ((**arg1 & 0xF) == 2) {
-            arg0->unk60 = (s32)arg1;
+/* Card slot 0x10: keeps the watched object in the field of its class. */
+void Card_Watch(Card *card, s32 **object) {
+    if (object != NULL) {
+        Object_GetBaseVtbl()->watch(card, object);
+        if ((**object & 0xF) == 2) {
+            card->pad = object;
             return;
         }
-        if ((**arg1 & 0xF) == 5) {
-            arg0->unk64 = (s32)arg1;
+        if ((**object & 0xF) == 5) {
+            card->clock = object;
             return;
         }
-        if ((**arg1 & 0xFF) == 16) {
-            arg0->unk78 = (s32)arg1;
+        if ((**object & 0xFF) == 16) {
+            card->keyboard = (CardDialog *)object;
             return;
         }
-        if ((**arg1 & 0xFF) == 32) {
-            arg0->unk7C = (s32)arg1;
+        if ((**object & 0xFF) == 32) {
+            card->chooser = (CardDialog *)object;
         }
     }
 }
 
-void func_8004E4E8(Unk_8004E3F4 *arg0, s32 **arg1) {
-    s32 temp;
+/* Card slot 0x14 */
+void Card_Unwatch(Card *card, s32 **object) {
+    s32 classWord;
 
-    if (arg1 != NULL) {
-        temp = **arg1;
-        if ((temp & 0xF) == 2) {
-            arg0->unk60 = 0;
-        } else if ((temp & 0xF) == 5) {
-            arg0->unk64 = 0;
-        } else if ((temp & 0xFF) == 0x10) {
-            arg0->unk78 = 0;
-        } else if ((temp & 0xFF) == 0x20) {
-            arg0->unk7C = 0;
+    if (object != NULL) {
+        classWord = **object;
+        if ((classWord & 0xF) == 2) {
+            card->pad = 0;
+        } else if ((classWord & 0xF) == 5) {
+            card->clock = 0;
+        } else if ((classWord & 0xFF) == 0x10) {
+            card->keyboard = 0;
+        } else if ((classWord & 0xFF) == 0x20) {
+            card->chooser = 0;
         }
-        Object_GetBaseVtbl()->unk14(arg0, arg1);
+        Object_GetBaseVtbl()->unwatch(card, object);
     }
 }
 
-void func_8004E588(Unk_8004E3F4 *arg0) {
-    arg0->unk60 = 0;
-    arg0->unk64 = 0;
-    arg0->unk68 = 0;
-    arg0->unk78 = 0;
-    arg0->unk7C = 0;
-    Object_GetBaseVtbl()->unk18(arg0);
+/* Card slot 0x18 */
+void Card_UnwatchAll(Card *card) {
+    card->pad = 0;
+    card->clock = 0;
+    card->root = 0;
+    card->keyboard = 0;
+    card->chooser = 0;
+    Object_GetBaseVtbl()->unwatchAll(card);
 }
 
-void func_8004E5D4(Unk_8004E5D4 *arg0, s32 arg1) {
-    arg0->unkC = arg1;
-    arg0->unk10 = arg1 << 4;
+/* Card slot 0x40 */
+void Card_SetPort(Card *card, s32 port) {
+    card->port = port;
+    card->channel = port << 4;
 }
 
-s32 func_8004E5E4(s32 *arg0) {
+/* Card slot 0x44: the four card BIOS events (class SwCARD 0xF4000001, specs g_cardEventSpecs). */
+s32 Card_OpenEvents(Card *card) {
     s32 i;
 
     EnterCriticalSection();
     for (i = 0; i < 4; i++) {
-        arg0[i + 5] = OpenEvent(0xF4000001, D_80086E78[i], 0x2000, 0);
+        card->events[i] = OpenEvent(0xF4000001, g_cardEventSpecs[i], 0x2000, 0);
     }
     ExitCriticalSection();
-    func_8004F394(arg0);
+    Card_EnableEvents(card);
     return 1;
 }
 
-s32 func_8004E678(s32 arg0) {
-    func_8004F3BC(arg0);
-    func_8004F40C(arg0, CloseEvent, 1);
+/* Card slot 0x48 */
+s32 Card_CloseEvents(Card *card) {
+    Card_DisableEvents(card);
+    Card_ForEachEvent(card, CloseEvent, 1);
     return 1;
 }
 
-s32 func_8004E6B8(s32 arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
-    s32 sp10;
-    s32 var_a1;
-    s32 var_s2;
+/* Card slot 0x4C: info and directory, tried up to 11 more times while either fails. */
+s32 Card_Probe(Card *card, s32 *error, s32 *changed, s32 *formatted) {
+    s32 firstChanged;
+    s32 ok;
+    s32 tries;
 
-    var_s2 = 0xA;
-    *arg2 = 0;
-    var_a1 = func_8004E77C(arg0, arg1, &sp10, arg3);
-    if (var_a1 == 0 || *arg1 != 0 || *arg3 == 0) {
+    tries = 0xA;
+    *changed = 0;
+    ok = Card_ProbeOnce(card, error, &firstChanged, formatted);
+    if (ok == 0 || *error != 0 || *formatted == 0) {
         do {
-            var_a1 = func_8004E77C(arg0, arg1, arg2, arg3);
-        } while (var_s2-- != 0 && (var_a1 == 0 || *arg1 != 0 || *arg3 == 0));
+            ok = Card_ProbeOnce(card, error, changed, formatted);
+        } while (tries-- != 0 && (ok == 0 || *error != 0 || *formatted == 0));
     }
-    *arg2 |= sp10;
-    return var_a1;
+    *changed |= firstChanged;
+    return ok;
 }
 
-s32 func_8004E77C(s32 arg0, s32 *arg1, s32 *arg2, s32 *arg3) {
-    s32 ret;
+s32 Card_ProbeOnce(Card *card, s32 *error, s32 *changed, s32 *formatted) {
+    s32 ok;
 
-    ret = func_8004E7D0(arg0, arg1, arg2);
-    if (ret != 0) {
-        ret = func_8004E890(arg0, arg1, arg3);
+    ok = Card_GetInfo(card, error, changed);
+    if (ok != 0) {
+        ok = Card_ReadDirectory(card, error, formatted);
     }
-    return ret;
+    return ok;
 }
 
-s32 func_8004E7D0(Unk_8004E7D0 *arg0, s32 *arg1, s32 *arg2) {
-    s32 ret;
-    s32 status;
+/* _card_info, then the event it raised: 0x100 timeout (no card), 0x8000 error, 0x2000 new card. */
+s32 Card_GetInfo(Card *card, s32 *error, s32 *changed) {
+    s32 ok;
+    s32 result;
 
-    ret = 1;
-    *arg1 = 0;
-    *arg2 = 0;
-    func_8004F3E4((s32)arg0);
+    ok = 1;
+    *error = 0;
+    *changed = 0;
+    Card_ClearEvents(card);
     do {
-        status = _card_info(arg0->unk10);
-    } while (status == 0);
-    status = func_8004F4A4((s32)arg0);
-    if (status == 0x100) {
-        ret = 0;
-    } else if (status == 0x8000) {
-        ret = 0;
-        *arg1 = 1;
-    } else if (status == 0x2000) {
-        *arg2 = 1;
-        _card_clear(arg0->unk10);
+        result = _card_info(card->channel);
+    } while (result == 0);
+    result = Card_WaitEvent(card);
+    if (result == 0x100) {
+        ok = 0;
+    } else if (result == 0x8000) {
+        ok = 0;
+        *error = 1;
+    } else if (result == 0x2000) {
+        *changed = 1;
+        _card_clear(card->channel);
     }
-    return ret;
+    return ok;
 }
 
-s32 func_8004E890(Unk_8004E890 *arg0, s32 *arg1, s32 *arg2) {
-    s32 ret;
-    s32 r;
+/* _card_load reads the directory; 0x2000 (new card) here means the card is not formatted. */
+s32 Card_ReadDirectory(Card *card, s32 *error, s32 *formatted) {
+    s32 ok;
+    s32 result;
 
-    ret = 1;
-    *arg1 = 0;
-    *arg2 = 1;
-    func_8004F3E4((s32)arg0);
-    while (_card_load(arg0->unk10) == 0) {
+    ok = 1;
+    *error = 0;
+    *formatted = 1;
+    Card_ClearEvents(card);
+    while (_card_load(card->channel) == 0) {
     }
-    r = func_8004F4A4((s32)arg0);
-    if (r == 0x100) {
-        ret = 0;
-    } else if (r == 0x8000) {
-        ret = 0;
-        *arg1 = 1;
-    } else if (r == 0x2000) {
-        *arg2 = 0;
+    result = Card_WaitEvent(card);
+    if (result == 0x100) {
+        ok = 0;
+    } else if (result == 0x8000) {
+        ok = 0;
+        *error = 1;
+    } else if (result == 0x2000) {
+        *formatted = 0;
     }
-    return ret;
+    return ok;
 }
 
-s32 func_8004E940(Unk_8004E940 *arg0) {
-    s32 r;
-    s32 n = 10;
+/* Card slot 0x50 */
+s32 Card_Format(Card *card) {
+    s32 ok;
+    s32 tries = 10;
     do {
-        r = format(arg0->unkC != 0 ? D_8008AA9C : D_8008AAA4);
-        if (r != 0) {
+        ok = format(card->port != 0 ? g_cardDevice1 : g_cardDevice0);
+        if (ok != 0) {
             break;
         }
-    } while (n-- != 0);
-    return r;
+    } while (tries-- != 0);
+    return ok;
 }
 
-s32 func_8004E9AC(s32 arg0, s32 arg1, u8 *arg2) {
-    s32 temp;
-    s32 var_s0 = 0;
+/* Card slot 0x54: 1 when the file exists; copies its title to titleOut when that is not 0. */
+s32 Card_FindFile(Card *card, s32 titleOut, u8 *name) {
+    s32 found;
+    s32 tries = 0;
 
-    if ((arg2 == NULL) || (*arg2 == 0)) {
+    if ((name == NULL) || (*name == 0)) {
         return 0;
     }
     do {
-        temp = func_8004EA38(arg0, arg1, arg2);
-        if (temp != 0) {
+        found = Card_FindFileOnce(card, titleOut, name);
+        if (found != 0) {
             break;
         }
-    } while (var_s0-- != 0);
-    return temp;
+    } while (tries-- != 0);
+    return found;
 }
 
-s32 func_8004EA38(s32 arg0, s32 arg1, u8 *arg2) {
-    char buf[32];
+s32 Card_FindFileOnce(Card *card, s32 titleOut, u8 *name) {
+    char path[32];
     s32 fd;
-    s32 p;
+    s32 header;
 
-    fd = open(func_8004F32C(buf, ((Unk_8004ECCC *)arg0)->unkC, (char *)arg2), 1);
+    fd = open(Card_MakePath(path, card->port, (char *)name), 1);
     if (fd == -1) {
         return 0;
     }
-    if (arg1 != 0) {
-        p = Heap_Alloc(0x80);
-        read(fd, p, 0x80);
-        strcpy(arg1, p + 4);
-        Heap_Free(p);
+    if (titleOut != 0) {
+        header = Heap_Alloc(0x80);
+        read(fd, header, 0x80);
+        strcpy(titleOut, header + 4);
+        Heap_Free(header);
     }
     close(fd);
     return 1;
 }
 
-s8 *func_8004EADC(Unk_8004EADC_obj *arg0, s8 *arg1, s8 *arg2, s8 **arg3) {
-    while (*arg3 != NULL) {
-        strcpy(arg1, arg2);
-        strcat(arg1, *arg3);
-        if (arg0->vt->unk54(arg0, 0, arg1) == 0) {
-            return arg1;
+/* Card slot 0x58: the first prefix + suffix with no file, written into buf. */
+char *Card_FindFreeName(Card *card, char *buf, char *prefix, char **suffixes) {
+    while (*suffixes != NULL) {
+        strcpy(buf, prefix);
+        strcat(buf, *suffixes);
+        if (card->vtbl->findFile(card, 0, buf) == 0) {
+            return buf;
         }
-        arg3++;
+        suffixes++;
     }
     return NULL;
 }
 
-s32 func_8004EB88(Unk_8004EADC_obj *arg0, s32 *arg1, s8 **arg2, s8 *arg3, s8 **arg4) {
-    s8 buf[32];
-    s8 **var_s0;
-    s32 var_s3;
+/* Card slot 0x5C: for each file that exists, its title and its suffix; returns how many. */
+s32 Card_ListFiles(Card *card, char **titles, char **found, char *prefix, char **suffixes) {
+    char path[32];
+    char **suffix;
+    s32 count;
 
-    var_s0 = arg4;
-    var_s3 = 0;
-    while (*var_s0 != NULL) {
-        strcpy((s32)buf, (s32)arg3);
-        strcat(buf, *var_s0);
-        if (arg0->vt->unk54(arg0, *arg1, buf) != 0) {
-            var_s3++;
-            arg1++;
-            *arg2++ = *var_s0;
+    suffix = suffixes;
+    count = 0;
+    while (*suffix != NULL) {
+        strcpy((s32)path, (s32)prefix);
+        strcat(path, *suffix);
+        if (card->vtbl->findFile(card, *titles, path) != 0) {
+            count++;
+            titles++;
+            *found++ = *suffix;
         }
-        var_s0++;
+        suffix++;
     }
-    return var_s3;
+    return count;
 }
 
-s32 func_8004EC5C(s32 arg0, u8 arg1, s32 arg2) {
-    s32 ret;
+/* Card slot 0x60 */
+s32 Card_HasSpace(Card *card, u8 iconFrames, s32 size) {
+    s32 ok;
     s32 tries = 10;
 
     do {
-        ret = func_8004ECCC(arg0, arg1, arg2);
-    } while (ret == 0 && tries-- != 0);
-    return ret;
+        ok = Card_HasSpaceOnce(card, iconFrames, size);
+    } while (ok == 0 && tries-- != 0);
+    return ok;
 }
 
-s32 func_8004ECCC(Unk_8004ECCC *arg0, s32 arg1, s32 arg2) {
-    char buf[32];
+/* Creates then deletes a TEMP file of the blocks size needs (8 KB blocks, header included). */
+s32 Card_HasSpaceOnce(Card *card, s32 iconFrames, s32 size) {
+    char path[32];
     s32 fd;
     u32 blocks;
 
-    blocks = (u32)(arg2 + 0x21FF) >> 13;
-    fd = open(func_8004F32C(buf, arg0->unkC, D_8008AAAC), (blocks << 16) | 0x200);
+    blocks = (u32)(size + 0x21FF) >> 13;
+    fd = open(Card_MakePath(path, card->port, g_cardTempName), (blocks << 16) | 0x200);
     if (fd != -1) {
         close(fd);
-        delete(buf);
+        delete(path);
         return 1;
     }
     return 0;
 }
 
-s32 func_8004ED40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    s32 ret;
+/* Card slot 0x64 */
+s32 Card_ReadFile(Card *card, char *name, void *buf, s32 size) {
+    s32 ok;
     s32 tries = 10;
 
     do {
-        ret = func_8004EDC0(arg0, arg1, arg2, arg3);
-    } while (ret == 0 && tries-- != 0);
-    return ret;
+        ok = Card_ReadFileOnce(card, name, buf, size);
+    } while (ok == 0 && tries-- != 0);
+    return ok;
 }
 
-s32 func_8004EDC0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-    char buf[32];
+/* Reads a save file's data: header byte 2 (0x10 + icon frames) gives the header size. */
+s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
+    char path[32];
     s32 fd;
-    s32 p;
-    s32 ofs;
+    s32 header;
+    s32 offset;
 
-    fd = open(func_8004F32C(buf, ((Unk_8004ECCC *)arg0)->unkC, (char *)arg1), 1);
+    fd = open(Card_MakePath(path, card->port, name), 1);
     if (fd == -1) {
         return 0;
     }
-    p = Heap_Alloc(0x80);
-    read(fd, p, 0x80);
-    ofs = (((u8 *)p)[2] << 7) - 0x780;
-    Heap_Free(p);
-    lseek(fd, ofs, 0);
-    read(fd, arg2, arg3);
+    header = Heap_Alloc(0x80);
+    read(fd, header, 0x80);
+    offset = (((u8 *)header)[2] << 7) - 0x780;
+    Heap_Free(header);
+    lseek(fd, offset, 0);
+    read(fd, buf, size);
     close(fd);
     return 1;
 }
 
-s32 func_8004EEA0(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    s32 ret;
-    s32 n;
+/* Card slot 0x68: sets the title letter from the file name; clears it again when the write fails. */
+s32 Card_WriteFile(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+    s32 ok;
+    s32 tries;
 
-    n = 10;
-    func_800507F8(arg2, arg1);
+    tries = 10;
+    Card_SetTitleLetter(title, name);
     do {
-        ret = func_8004EF6C(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-    } while (ret == 0 && n-- != 0);
-    if (ret == 0) {
-        func_800507F8(arg2, 0);
+        ok = Card_WriteFileOnce(card, name, title, iconFrames, icon, data, size);
+    } while (ok == 0 && tries-- != 0);
+    if (ok == 0) {
+        Card_SetTitleLetter(title, 0);
     }
-    return ret;
+    return ok;
 }
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_8001150C);
@@ -1451,550 +761,590 @@ INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011518);
 
 INCLUDE_RODATA("asm/nonmatchings/game/8004D578", D_80011524);
 
-s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32 arg6) {
-    char sp10[0x20];
-    char *name;
+/*
+ * Writes a save file: the header ("SC", 0x10 + icon frames, blocks, the title, the icon
+ * palette and frames from the TIM) then the data, rounded up to 128 bytes.
+ */
+s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+    char pathBuf[0x20];
+    char *path;
     s32 fd;
-    u8 *buf;
-    u8 *p;
+    u8 *header;
+    u8 *tim;
 
-    name = func_8004F32C(sp10, ((Unk_8004ECCC *)arg0)->unkC, (char *)arg1);
-    delete(name);
-    fd = open(name, (((u32)(arg6 + 0x21FF) >> 13) << 16) | 0x200);
+    path = Card_MakePath(pathBuf, card->port, name);
+    delete(path);
+    fd = open(path, (((u32)(size + 0x21FF) >> 13) << 16) | 0x200);
     if (fd == -1) {
         printf("File not create in WriteFile\n");
         return 0;
     }
     close(fd);
-    fd = open(name, 2);
+    fd = open(path, 2);
     if (fd == -1) {
         return 0;
     }
-    p = ((Unk_8004EF6C_arg4 *)arg4)->unk10;
-    buf = (u8 *)Heap_Alloc(0x200);
-    buf[0] = 0x53;
-    buf[1] = 0x43;
-    buf[2] = arg3 + 0x10;
-    buf[3] = (u32)(arg6 + 0x1FFF) >> 13;
-    strcpy((s32)(buf + 4), arg2);
-    *(Unk_8004EF6C_H *)(buf + 0x60) = *(Unk_8004EF6C_H *)(p + 0x14);
-    *(Unk_8004EF6C_Icon *)(buf + 0x80) = *(Unk_8004EF6C_Icon *)(p + 0x40);
-    *(Unk_8004EF6C_Icon *)(buf + 0x100) = *(Unk_8004EF6C_Icon *)(p + 0xC0);
-    *(Unk_8004EF6C_Icon *)(buf + 0x180) = *(Unk_8004EF6C_Icon *)(p + 0x140);
-    write(fd, buf, (arg3 << 7) + 0x80);
-    Heap_Free((s32)buf);
-    write(fd, (u8 *)arg5, ((u32)(arg6 + 0x7F) >> 7) << 7);
+    tim = icon->tim;
+    header = (u8 *)Heap_Alloc(0x200);
+    header[0] = 0x53;
+    header[1] = 0x43;
+    header[2] = iconFrames + 0x10;
+    header[3] = (u32)(size + 0x1FFF) >> 13;
+    strcpy((s32)(header + 4), title);
+    *(CardIconPalette *)(header + 0x60) = *(CardIconPalette *)(tim + 0x14);
+    *(CardIconFrame *)(header + 0x80) = *(CardIconFrame *)(tim + 0x40);
+    *(CardIconFrame *)(header + 0x100) = *(CardIconFrame *)(tim + 0xC0);
+    *(CardIconFrame *)(header + 0x180) = *(CardIconFrame *)(tim + 0x140);
+    write(fd, header, (iconFrames << 7) + 0x80);
+    Heap_Free((s32)header);
+    write(fd, (u8 *)data, ((u32)(size + 0x7F) >> 7) << 7);
     close(fd);
     return 1;
 }
 
-char *func_8004F32C(char *buf, s32 sel, char *suffix) {
-    char *src = D_8008AAA4;
-    if (sel != 0) {
-        src = D_8008AA9C;
+/* "bu00:" or "bu10:" followed by the name. */
+char *Card_MakePath(char *buf, s32 port, char *name) {
+    char *device = g_cardDevice0;
+    if (port != 0) {
+        device = g_cardDevice1;
     }
-    memcpy(buf, src, 6);
-    strcat((s8 *)buf, (s8 *)suffix);
+    memcpy(buf, device, 6);
+    strcat((s8 *)buf, (s8 *)name);
     return buf;
 }
 
-void func_8004F394(s32 arg0) {
-    func_8004F40C(arg0, EnableEvent, 1);
+void Card_EnableEvents(Card *card) {
+    Card_ForEachEvent(card, EnableEvent, 1);
 }
 
-void func_8004F3BC(s32 arg0) {
-    func_8004F40C(arg0, DisableEvent, 1);
+void Card_DisableEvents(Card *card) {
+    Card_ForEachEvent(card, DisableEvent, 1);
 }
 
-void func_8004F3E4(s32 arg0) {
-    func_8004F40C(arg0, TestEvent, 0);
+/* Clears the four events. */
+void Card_ClearEvents(Card *card) {
+    Card_ForEachEvent(card, TestEvent, 0);
 }
 
-s32 func_8004F40C(s32 arg0, s32 (*arg1)(), s32 arg2) {
+/* Runs eventFn on each event until one returns 0. */
+s32 Card_ForEachEvent(Card *card, s32 (*eventFn)(), s32 critical) {
     s32 ret;
     s32 i;
 
-    if (arg2 != 0) {
+    if (critical != 0) {
         EnterCriticalSection();
     }
     for (i = 0; i < 4; i++) {
-        ret = arg1(*(s32 *)(arg0 + 0x14 + i * 4));
+        ret = eventFn(card->events[i]);
         if (ret == 0) {
             break;
         }
     }
-    if (arg2 != 0) {
+    if (critical != 0) {
         ExitCriticalSection();
     }
     return ret;
 }
 
-s32 func_8004F4A4(s32 arg0) {
-    return func_8004F4C8(arg0 + 0x14, 4);
+s32 Card_WaitEvent(Card *card) {
+    return Card_WaitAnyEvent(card->events, 4);
 }
 
-s32 func_8004F4C8(s32 *arg0, s32 arg1) {
+/* Waits for one of the events and returns its spec. */
+s32 Card_WaitAnyEvent(s32 *events, s32 count) {
     s32 i;
 
     for (;;) {
-        for (i = 0; i < arg1; i++) {
-            if (TestEvent(arg0[i]) != 0) {
-                return D_80086E78[i];
+        for (i = 0; i < count; i++) {
+            if (TestEvent(events[i]) != 0) {
+                return g_cardEventSpecs[i];
             }
         }
     }
 }
 
-void func_8004F55C(Unk_8004F55C *arg0, s32 arg1, s32 arg2, void *arg3, s32 arg4, s32 arg5, s32 arg6) {
-    arg0->unk30 = arg1;
-    arg0->unk34 = arg2;
-    arg0->unk38 = 0;
-    arg0->unk68 = arg5;
-    arg0->unk6C = arg6;
-    arg0->unk0->unk10(arg0, (s32)arg3);
-    arg0->unk0->unk10(arg0, arg4);
-    arg0->unk70 = 0;
-    arg0->unk28 = 0;
-    arg0->unk24 = 0;
+/* Card slot 0x6C: the file name parts, the menu's pad, clock, root and sounds. */
+void Card_Open(Card *card, char *prefix, char **suffixes, void *pad, void *clock, s32 root, MenuSound *sound) {
+    card->prefix = prefix;
+    card->suffixes = suffixes;
+    card->titles = 0;
+    card->root = root;
+    card->sound = sound;
+    card->vtbl->watch(card, pad);
+    card->vtbl->watch(card, clock);
+    card->message = 0;
+    card->state = 0;
+    card->operation = 0;
 }
 
-void func_8004F5DC(Unk_8004F5DC *arg0) {
-    arg0->unk6C = 0;
-    arg0->unk68 = 0;
-    arg0->unk0->unk14(arg0, arg0->unk60);
-    arg0->unk0->unk14(arg0, arg0->unk64);
+/* Card slot 0x70 */
+void Card_Close(Card *card) {
+    card->sound = 0;
+    card->root = 0;
+    card->vtbl->unwatch(card, card->pad);
+    card->vtbl->unwatch(card, card->clock);
 }
 
-void func_8004F638(Unk_8004F638 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    s32 var_a1;
-    s32 temp_v0;
+/* Card slot 0x74: lists the save files, then the chooser (or LOADING once one is confirmed). */
+void Card_Load(Card *card, char *fileName, char *title, void *data, s32 size) {
+    s32 next;
+    s32 found;
 
-    arg0->unk40 = arg1;
-    arg0->unk44 = arg2;
-    arg0->unk54 = arg3;
-    arg0->unk24 = 1;
-    arg0->unk58 = arg4;
-    if (func_8004F9D8() != 0) {
-        func_8004F810((Unk_8004F810 *)arg0);
-        func_8004F704((Unk_8004F704 *)arg0);
-        temp_v0 = arg0->unk0->unk5C(arg0, arg0->unk38, arg0->unk3C, arg0->unk30, arg0->unk34);
-        arg0->unk2C = temp_v0;
-        if (temp_v0 != 0) {
-            func_8004F784((Unk_8004F784 *)arg0);
-            var_a1 = 0x12;
-            if (arg0->unk28 == 0xE) {
-                var_a1 = 0xF;
+    card->fileName = fileName;
+    card->title = title;
+    card->data = data;
+    card->operation = CARD_OP_LOAD;
+    card->size = size;
+    if (Card_CheckReady() != 0) {
+        Card_FreeFileList(card);
+        Card_AllocFileList(card);
+        found = card->vtbl->listFiles(card, card->titles, card->foundSuffixes, card->prefix, card->suffixes);
+        card->fileCount = found;
+        if (found != 0) {
+            Card_TrimFileList(card);
+            next = CARD_STATE_CHOOSE;
+            if (card->state == CARD_STATE_LOAD_CONFIRM) {
+                next = CARD_STATE_LOADING;
             }
         } else {
-            var_a1 = 0xD;
-            arg0->unk2C = 0xF;
+            next = CARD_STATE_NOT_FOUND;
+            card->fileCount = 0xF;
         }
-        arg0->unk0->unk7C(arg0, var_a1);
+        card->vtbl->setState(card, next);
     }
 }
 
-void func_8004F704(Unk_8004F704 *arg0) {
+void Card_AllocFileList(Card *card) {
     s32 i;
 
-    if (arg0->unk38 == NULL) {
-        arg0->unk38 = (s32 *)Heap_Alloc(0x40);
+    if (card->titles == NULL) {
+        card->titles = (char **)Heap_Alloc(0x40);
         for (i = 0; i < 0xF; i++) {
-            arg0->unk38[i] = Heap_Alloc(0x41);
+            card->titles[i] = (char *)Heap_Alloc(0x41);
         }
-        arg0->unk3C = Heap_Alloc(0x40);
+        card->foundSuffixes = (char **)Heap_Alloc(0x40);
     }
 }
 
-void func_8004F784(Unk_8004F784 *arg0) {
+/* Frees the title buffers past the files found. */
+void Card_TrimFileList(Card *card) {
     s32 i;
 
-    for (i = arg0->unk2C; i < 0xF; i++) {
-        arg0->unk38[i] = Heap_Free(arg0->unk38[i]);
+    for (i = card->fileCount; i < 0xF; i++) {
+        card->titles[i] = (char *)Heap_Free((s32)card->titles[i]);
     }
-    arg0->unk38[i] = 0;
+    card->titles[i] = 0;
 }
 
-void func_8004F810(Unk_8004F810 *arg0) {
+void Card_FreeFileList(Card *card) {
     s32 i;
 
-    if (arg0->unk38 != NULL) {
-        Heap_Free(arg0->unk3C);
-        for (i = 0; i < arg0->unk2C; i++) {
-            Heap_Free(arg0->unk38[i]);
+    if (card->titles != NULL) {
+        Heap_Free((s32)card->foundSuffixes);
+        for (i = 0; i < card->fileCount; i++) {
+            Heap_Free((s32)card->titles[i]);
         }
-        Heap_Free((s32)arg0->unk38);
-        arg0->unk38 = NULL;
+        Heap_Free((s32)card->titles);
+        card->titles = NULL;
     }
 }
 
-void func_8004F8A4(Unk_8004F638 *arg0, s32 arg1, s32 arg2, s32 arg3, u8 arg4, s32 arg5, s32 arg6, s32 arg7) {
+/*
+ * Card slot 0x78: an existing file asks to overwrite first; then the comment keyboard, then
+ * SAVING. No room for a new file: CARD_STATE_FULL.
+ */
+void Card_Save(Card *card, char *fileName, char *title, s32 unk48, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
     s32 next;
 
-    arg0->unk40 = arg1;
-    arg0->unk44 = arg2;
-    arg0->unk48 = arg3;
-    arg0->unk24 = 2;
-    arg0->unk4C = arg4;
-    arg0->unk50 = arg5;
-    arg0->unk54 = arg6;
-    arg0->unk58 = arg7;
-    if (func_8004F9D8(arg0) != 0) {
-        if (arg0->unk0->unk54(arg0, 0, arg1) != 0) {
-            next = 0xA;
-            if (arg0->unk28 == 0xA) {
-                next = 0x11;
-            } else if (arg0->unk28 == 0x11) {
-                next = 0xB;
+    card->fileName = fileName;
+    card->title = title;
+    card->unk48 = unk48;
+    card->operation = CARD_OP_SAVE;
+    card->iconFrames = iconFrames;
+    card->icon = icon;
+    card->data = data;
+    card->size = size;
+    if (Card_CheckReady(card) != 0) {
+        if (card->vtbl->findFile(card, 0, fileName) != 0) {
+            next = CARD_STATE_OVERWRITE;
+            if (card->state == CARD_STATE_OVERWRITE) {
+                next = CARD_STATE_KEYBOARD;
+            } else if (card->state == CARD_STATE_KEYBOARD) {
+                next = CARD_STATE_SAVING;
             }
-            arg0->unk0->unk7C(arg0, next);
-        } else if (arg0->unk0->unk60(arg0, arg4, arg7) == 0) {
-            arg0->unk0->unk7C(arg0, 9);
+            card->vtbl->setState(card, next);
+        } else if (card->vtbl->hasSpace(card, iconFrames, size) == 0) {
+            card->vtbl->setState(card, CARD_STATE_FULL);
         } else {
-            arg0->unk0->unk7C(arg0, arg0->unk28 == 0x11 ? 0xB : 0x11);
+            card->vtbl->setState(card, card->state == CARD_STATE_KEYBOARD ? CARD_STATE_SAVING : CARD_STATE_KEYBOARD);
         }
     }
 }
 
-s32 func_8004F9D8(Unk_8004F638 *arg0) {
-    s32 sp10;
-    s32 sp14;
-    s32 sp18;
-    s32 s1;
-    s32 s2;
+/* 1 when a formatted card answers; otherwise sets the state that says why and returns 0. */
+s32 Card_CheckReady(Card *card) {
+    s32 error;
+    s32 changed;
+    s32 formatted;
+    s32 ok;
+    s32 state;
 
-    arg0->unk0->unk44(arg0);
-    s1 = arg0->unk0->unk4C(arg0, &sp10, &sp14, &sp18);
-    arg0->unk0->unk48(arg0);
-    if (s1 != 0 && sp14 == 0 && sp18 != 0) {
+    card->vtbl->openEvents(card);
+    ok = card->vtbl->probe(card, &error, &changed, &formatted);
+    card->vtbl->closeEvents(card);
+    if (ok != 0 && changed == 0 && formatted != 0) {
         return 1;
     }
-    if (s1 == 0) {
-        s2 = 2;
-    } else if (sp10 != 0) {
-        s2 = 3;
-    } else if (sp14 != 0) {
-        s2 = 4;
-    } else if (sp18 == 0) {
-        s2 = 6;
-        if (arg0->unk24 == 1) {
-            s2 = 5;
+    if (ok == 0) {
+        state = CARD_STATE_NO_CARD;
+    } else if (error != 0) {
+        state = CARD_STATE_ERROR;
+    } else if (changed != 0) {
+        state = CARD_STATE_CHANGED;
+    } else if (formatted == 0) {
+        state = CARD_STATE_UNFORMATTED_SAVE;
+        if (card->operation == CARD_OP_LOAD) {
+            state = CARD_STATE_UNFORMATTED_LOAD;
         }
     }
-    arg0->unk0->unk7C(arg0, s2);
+    card->vtbl->setState(card, state);
     return 0;
 }
 
-void func_8004FB04(Unk_8004FB04_obj *arg0, s32 **arg1, s32 arg2) {
-    Unk_8004FB04_vt *vt;
-    s32 t;
+/* Card slot 0x38: pad (class 2), clock (5), keyboard (0x10), chooser (0x20). */
+void Card_OnNotify(Card *card, s32 **sender, s32 message) {
+    CardVtbl *vtbl;
+    s32 classWord;
 
-    vt = arg0->vt;
-    Object_GetBaseVtbl()->unk38(arg0, arg1, arg2);
-    t = **arg1;
-    if ((t & 0xF) == 2) {
-        vt->unk88(arg0, arg1, arg2);
-    } else if ((t & 0xF) == 5) {
-        vt->unk98(arg0, arg1, arg2);
-    } else if ((t & 0xFF) == 0x10) {
-        vt->unkA4(arg0, arg1, arg2);
-    } else if ((t & 0xFF) == 0x20) {
-        vt->unkB0(arg0, arg1, arg2);
+    vtbl = card->vtbl;
+    Object_GetBaseVtbl()->onNotify(card, sender, message);
+    classWord = **sender;
+    if ((classWord & 0xF) == 2) {
+        vtbl->onPad(card, sender, message);
+    } else if ((classWord & 0xF) == 5) {
+        vtbl->onTick(card, sender, message);
+    } else if ((classWord & 0xFF) == 0x10) {
+        vtbl->onKeyboard(card, sender, message);
+    } else if ((classWord & 0xFF) == 0x20) {
+        vtbl->onChooser(card, sender, message);
     }
 }
 
-void func_8004FBE4(Unk_8004FBE4 *arg0, s32 arg1) {
-    Unk_8004FBE4_vt *s2;
+/*
+ * Card slot 0x7C: tells the watchers (the menu) the new state, shows its picture and runs
+ * it. Setting the current state again closes. DONE and CLOSED free the file list and go idle.
+ */
+void Card_SetState(Card *card, s32 state) {
+    CardVtbl *vtbl;
     s32 i;
-    u8 *a1;
-    s32 var_v0_2;
-    void (*var_v0_3)(void *);
-    u32 var_v0;
+    char *fileName;
+    s32 ok;
+    void (*openDialog)(Card *);
+    u32 finished;
 
-    s2 = arg0->unk0;
-    if (arg0->unk28 == arg1) {
-        arg1 = 0x17;
+    vtbl = card->vtbl;
+    if (card->state == state) {
+        state = CARD_STATE_CLOSED;
     }
-    s2->unk30(arg0, arg1);
-    s2->unk84(arg0);
-    s2->unk80(arg0, arg1);
-    arg0->unk5C = 0;
-    switch (arg1) {
-    case 19:
-        var_v0_2 = s2->unk50(arg0);
-        arg1 = 8;
-        if (var_v0_2 != 0) {
-            arg1 = 0x11;
+    vtbl->notify(card, state);
+    vtbl->hideMessage(card);
+    vtbl->showMessage(card, state);
+    card->ticks = 0;
+    switch (state) {
+    case CARD_STATE_DO_FORMAT:
+        ok = vtbl->format(card);
+        state = CARD_STATE_FORMAT_ERROR;
+        if (ok != 0) {
+            state = CARD_STATE_KEYBOARD;
         }
-        goto block_12;
-    case 20:
-        a1 = arg0->unk40;
-        if (*a1 == 0) {
-            s2->unk58(arg0, a1, arg0->unk30, arg0->unk34);
+        goto setNext;
+    case CARD_STATE_DO_SAVE:
+        fileName = card->fileName;
+        if (*fileName == 0) {
+            vtbl->findFreeName(card, fileName, card->prefix, card->suffixes);
         }
-        var_v0_2 = s2->unk68(arg0, arg0->unk40, arg0->unk44, arg0->unk4C, arg0->unk50, arg0->unk54, arg0->unk58);
-        arg1 = 0xC;
-        goto block_10;
-    case 21:
-        var_v0_2 = s2->unk64(arg0, arg0->unk40, arg0->unk54, arg0->unk58);
-        arg1 = 0x10;
-block_10:
-        if (var_v0_2 != 0) {
-            arg1 = 0x16;
+        ok = vtbl->writeFile(card, card->fileName, card->title, card->iconFrames, card->icon, card->data, card->size);
+        state = CARD_STATE_SAVE_ERROR;
+        goto checkOk;
+    case CARD_STATE_DO_LOAD:
+        ok = vtbl->readFile(card, card->fileName, card->data, card->size);
+        state = CARD_STATE_LOAD_ERROR;
+checkOk:
+        if (ok != 0) {
+            state = CARD_STATE_DONE;
         }
-block_12:
-        s2->unk7C(arg0, arg1);
-        var_v0 = arg1 - 0x16;
+setNext:
+        vtbl->setState(card, state);
+        finished = state - CARD_STATE_DONE;
         break;
-    case 17:
-        var_v0_3 = s2->unk9C;
-        goto block_15;
-    case 18:
-        var_v0_3 = s2->unkA8;
-block_15:
-        var_v0_3(arg0);
+    case CARD_STATE_KEYBOARD:
+        openDialog = vtbl->openKeyboard;
+        goto runOpen;
+    case CARD_STATE_CHOOSE:
+        openDialog = vtbl->openChooser;
+runOpen:
+        openDialog(card);
     default:
-        var_v0 = arg1 - 0x16;
+        finished = state - CARD_STATE_DONE;
         break;
     }
-    if (var_v0 < 2U) {
-        if (arg0->unk24 == 1 && arg0->unk38 != 0) {
-            Heap_Free(arg0->unk3C);
-            for (i = 0; i < arg0->unk2C; i++) {
-                Heap_Free(((s32 *)arg0->unk38)[i]);
+    if (finished < 2U) {
+        if (card->operation == CARD_OP_LOAD && card->titles != 0) {
+            Heap_Free((s32)card->foundSuffixes);
+            for (i = 0; i < card->fileCount; i++) {
+                Heap_Free((s32)card->titles[i]);
             }
-            Heap_Free(arg0->unk38);
-            arg0->unk38 = 0;
+            Heap_Free((s32)card->titles);
+            card->titles = 0;
         }
-        arg0->unk28 = 0;
-        arg0->unk24 = 0;
+        card->state = 0;
+        card->operation = 0;
     } else {
-        arg0->unk28 = arg1;
+        card->state = state;
     }
 }
 
-void func_8004FE24(Unk_8004FE24 *arg0, s32 arg1) {
-    s8 buf[0x20];
+/* Card slot 0x80: draws CARD\<g_cardMessageNames[state]>.TIM. */
+void Card_ShowMessage(Card *card, s32 state) {
+    s8 path[0x20];
     s8 *dst;
-    s8 *str;
-    Unk_8004FE24_obj *obj;
-    Unk_8004FE24_obj *obj2;
+    s8 *name;
+    CardMessage *picture;
+    CardMessage *message;
 
-    if (arg1 < 0x11 && arg0->unk68 != 0 && arg0->unk70 == 0) {
-        dst = buf;
+    if (state < 0x11 && card->root != 0 && card->message == NULL) {
+        dst = path;
         dst[0] = 0;
-        str = D_80086E80[arg1];
-        strcat(dst, D_8008AAB4);
-        strcat(dst, str);
-        strcat(dst, D_8008AABC);
-        obj = func_8003B39C(dst);
-        obj->vt->unk78(obj);
-        obj2 = func_80041C9C(obj, D_80086EC4, 0);
-        arg0->unk70 = obj2;
-        obj->vt->unk4(obj);
-        obj2->vt->unk4C(obj2, arg0->unk68, D_8008AA94);
+        name = g_cardMessageNames[state];
+        strcat(dst, g_cardPictureDir);
+        strcat(dst, name);
+        strcat(dst, g_timSuffix);
+        picture = func_8003B39C(dst);
+        picture->vt->unk78(picture);
+        message = func_80041C9C(picture, D_80086EC4, 0);
+        card->message = message;
+        picture->vt->delete_(picture);
+        message->vt->draw(message, card->root, g_cardMessagePos);
     }
 }
 
-void func_8004FF40(Unk_8004FF40 *arg0) {
-    Unk_8004FF40_obj *obj = arg0->unk70;
-    if (obj != NULL) {
-        arg0->unk70 = obj->unk0->unk4(obj);
+/* Card slot 0x84 */
+void Card_HideMessage(Card *card) {
+    CardMessage *message = card->message;
+    if (message != NULL) {
+        card->message = message->vt->delete_(message);
     }
 }
 
-void func_8004FF90(Unk_8004FF90 *arg0, s32 arg1, s32 arg2) {
-    if (arg0->unk28 != 0) {
-        if (arg2 == 0x19) {
-            arg0->unk0->unk90(arg0);
-        } else if (arg2 == 0x17) {
-            arg0->unk0->unk94(arg0);
+/* Card slot 0x88: CIRCLE (0x19) confirms, CROSS (0x17) cancels. */
+void Card_OnPad(Card *card, void *sender, s32 padCode) {
+    if (card->state != 0) {
+        if (padCode == 0x19) {
+            card->vtbl->onConfirm(card);
+        } else if (padCode == 0x17) {
+            card->vtbl->onCancel(card);
         }
     }
 }
 
-void func_8004FFF4(Unk_8004FFF4 *arg0, s32 arg1) {
-    Unk_8004FFF4_obj *obj = arg0->unk6C;
-    if (obj != NULL) {
-        obj->unk0->unk80(obj, arg1, 0x7F, 0x7F);
+/* Card slot 0x8C */
+void Card_PlaySound(Card *card, s32 sound) {
+    MenuSound *bank = card->sound;
+    if (bank != NULL) {
+        bank->vt->play(bank, sound, 0x7F, 0x7F);
     }
 }
 
-void func_80050034(Unk_80050034 *arg0) {
-    Unk_80050034_vt *vt;
+/* Card slot 0x90: CIRCLE retries, goes on, starts the format or closes on an error. */
+void Card_OnConfirm(Card *card) {
+    CardVtbl *vtbl;
 
-    vt = arg0->unk0;
-    switch (arg0->unk28) {
-    case 2:
-    case 4:
-    case 10:
-    case 14:
-        vt->unk8C(arg0, 0);
-        if (arg0->unk28 == 14) {
-            strcpy(arg0->unk40, arg0->unk30);
-            strcat(arg0->unk40, arg0->unk3C[arg0->unk80]);
-            strcpy(arg0->unk44, arg0->unk38[arg0->unk80]);
+    vtbl = card->vtbl;
+    switch (card->state) {
+    case CARD_STATE_NO_CARD:
+    case CARD_STATE_CHANGED:
+    case CARD_STATE_OVERWRITE:
+    case CARD_STATE_LOAD_CONFIRM:
+        vtbl->playSound(card, 0);
+        if (card->state == CARD_STATE_LOAD_CONFIRM) {
+            strcpy(card->fileName, card->prefix);
+            strcat(card->fileName, card->foundSuffixes[card->choice]);
+            strcpy(card->title, card->titles[card->choice]);
         }
-        if (arg0->unk24 == 2) {
-            vt->unk78(arg0, arg0->unk40, arg0->unk44, arg0->unk48, arg0->unk4C, arg0->unk50, arg0->unk54, arg0->unk58);
+        if (card->operation == CARD_OP_SAVE) {
+            vtbl->save(card, card->fileName, card->title, card->unk48, card->iconFrames, card->icon, card->data, card->size);
             return;
-        } else if (arg0->unk24 == 1) {
-            vt->unk74(arg0, arg0->unk40, arg0->unk44, arg0->unk54, arg0->unk58);
+        } else if (card->operation == CARD_OP_LOAD) {
+            vtbl->load(card, card->fileName, card->title, card->data, card->size);
             return;
         }
         break;
-    case 6:
-        vt->unk8C(arg0, 0);
-        vt->unk7C(arg0, 7);
+    case CARD_STATE_UNFORMATTED_SAVE:
+        vtbl->playSound(card, 0);
+        vtbl->setState(card, CARD_STATE_FORMATTING);
         break;
-    case 3:
-    case 5:
-    case 8:
-    case 9:
-    case 12:
-    case 13:
-    case 16:
-        vt->unk8C(arg0, 0x10);
-        vt->unk7C(arg0, 0x17);
-        break;
-    }
-}
-
-void func_800501F0(Unk_800501F0 *arg0) {
-    switch (arg0->unk28) {
-    case 4:
-    case 6:
-    case 0xA:
-    case 0xE:
-        arg0->unk0->unk8C(arg0, 0x10);
-        arg0->unk0->unk7C(arg0, 0x17);
+    case CARD_STATE_ERROR:
+    case CARD_STATE_UNFORMATTED_LOAD:
+    case CARD_STATE_FORMAT_ERROR:
+    case CARD_STATE_FULL:
+    case CARD_STATE_SAVE_ERROR:
+    case CARD_STATE_NOT_FOUND:
+    case CARD_STATE_LOAD_ERROR:
+        vtbl->playSound(card, 0x10);
+        vtbl->setState(card, CARD_STATE_CLOSED);
         break;
     }
 }
 
-void func_80050280(Unk_800501F0 *arg0) {
-    if (arg0->unk28 == 7) {
-        if (arg0->unk5C++ >= 6) {
-            arg0->unk0->unk7C(arg0, 0x13);
+/* Card slot 0x94: CROSS closes the questions. */
+void Card_OnCancel(Card *card) {
+    switch (card->state) {
+    case CARD_STATE_CHANGED:
+    case CARD_STATE_UNFORMATTED_SAVE:
+    case CARD_STATE_OVERWRITE:
+    case CARD_STATE_LOAD_CONFIRM:
+        card->vtbl->playSound(card, 0x10);
+        card->vtbl->setState(card, CARD_STATE_CLOSED);
+        break;
+    }
+}
+
+/* Card slot 0x98 (clock message): FORMATTING, SAVING and LOADING stay 7 ticks before the work. */
+void Card_OnTick(Card *card) {
+    if (card->state == CARD_STATE_FORMATTING) {
+        if (card->ticks++ >= 6) {
+            card->vtbl->setState(card, CARD_STATE_DO_FORMAT);
         }
-    } else if (arg0->unk28 == 0xB) {
-        if (arg0->unk5C++ >= 6) {
-            arg0->unk0->unk7C(arg0, 0x14);
+    } else if (card->state == CARD_STATE_SAVING) {
+        if (card->ticks++ >= 6) {
+            card->vtbl->setState(card, CARD_STATE_DO_SAVE);
         }
-    } else if (arg0->unk28 == 0xF) {
-        if (arg0->unk5C++ >= 6) {
-            arg0->unk0->unk7C(arg0, 0x15);
+    } else if (card->state == CARD_STATE_LOADING) {
+        if (card->ticks++ >= 6) {
+            card->vtbl->setState(card, CARD_STATE_DO_LOAD);
         }
     }
 }
 
-void func_80050340(Unk_80050340 *arg0) {
-    if (arg0->unk68 != 0 && arg0->unk60 != 0) {
-        if (arg0->unk78 == NULL) {
-            arg0->unk78 = func_80050BA8((arg0->unk48 * 2) + arg0->unk44, 1);
-            arg0->unk74 = 1;
+/* Card slot 0x9C: the comment keyboard on the title text. */
+void Card_OpenKeyboard(Card *card) {
+    if (card->root != 0 && card->pad != 0) {
+        if (card->keyboard == NULL) {
+            card->keyboard = CommentObject_New((card->unk48 * 2) + (s32)card->title, 1);
+            card->ownsDialog = 1;
         }
-        arg0->unk0->unk10(arg0, arg0->unk78);
-        arg0->unk78->vt->unk44(arg0->unk78, arg0->unk68);
-        arg0->unk78->vt->unk4C(arg0->unk78, arg0->unk60, arg0->unk64, arg0->unk6C);
+        card->vtbl->watch(card, card->keyboard);
+        card->keyboard->vt->unk44(card->keyboard, card->root);
+        card->keyboard->vt->unk4C(card->keyboard, card->pad, card->clock, card->sound);
     }
 }
 
-void func_80050410(Unk_80050410 *arg0) {
-    Unk_80050410_obj *temp;
+/* Card slot 0xA0 */
+void Card_CloseKeyboard(Card *card) {
+    CardDialog *keyboard;
 
-    if (arg0->unk68 != 0 && arg0->unk60 != 0) {
-        temp = arg0->unk78;
-        if (temp != NULL) {
-            temp->vt->unk50(temp);
-            arg0->unk78->vt->unk48(arg0->unk78);
-            if (arg0->unk74 != 0) {
-                arg0->unk78->vt->unk4(arg0->unk78);
-                arg0->unk78 = NULL;
+    if (card->root != 0 && card->pad != 0) {
+        keyboard = card->keyboard;
+        if (keyboard != NULL) {
+            keyboard->vt->unk50(keyboard);
+            card->keyboard->vt->unk48(card->keyboard);
+            if (card->ownsDialog != 0) {
+                card->keyboard->vt->delete_(card->keyboard);
+                card->keyboard = NULL;
             }
         }
     }
 }
 
-void func_800504D0(Unk_800504D0 *arg0, s32 arg1, s32 arg2) {
-    switch (arg2) {
+/* Card slot 0xA4: keyboard message 2 (done) saves, 3 (cancelled) closes. */
+void Card_OnKeyboard(Card *card, void *sender, s32 message) {
+    switch (message) {
     case 2:
-        arg0->unk0->unkA0(arg0);
-        arg0->unk0->unk78(arg0, arg0->unk40, arg0->unk44, arg0->unk48, arg0->unk4C, arg0->unk50, arg0->unk54, arg0->unk58);
+        card->vtbl->closeKeyboard(card);
+        card->vtbl->save(card, card->fileName, card->title, card->unk48, card->iconFrames, card->icon, card->data, card->size);
         break;
     case 3:
-        arg0->unk0->unkA0(arg0);
-        arg0->unk0->unk7C(arg0, 0x17);
+        card->vtbl->closeKeyboard(card);
+        card->vtbl->setState(card, CARD_STATE_CLOSED);
         break;
     }
 }
 
-void func_800505A8(Unk_800505A8 *arg0) {
-    Unk_800505A8_obj *temp_a0;
+/* Card slot 0xA8: the chooser over the titles of the files found. */
+void Card_OpenChooser(Card *card) {
+    CardDialog *chooser;
 
-    if (arg0->unk68 != 0 && arg0->unk60 != 0) {
-        if (arg0->unk7C == 0) {
-            arg0->unk7C = func_80051A5C(arg0->unk38, 1);
-            arg0->unk74 = 1;
+    if (card->root != 0 && card->pad != 0) {
+        if (card->chooser == 0) {
+            card->chooser = StringList_New(card->titles, 1);
+            card->ownsDialog = 1;
         }
-        arg0->unk0->unk10(arg0, arg0->unk7C);
-        temp_a0 = (Unk_800505A8_obj *)arg0->unk7C;
-        temp_a0->vt->unk44(temp_a0, arg0->unk68);
-        temp_a0 = (Unk_800505A8_obj *)arg0->unk7C;
-        temp_a0->vt->unk4C(temp_a0, arg0->unk60, arg0->unk64, arg0->unk6C);
+        card->vtbl->watch(card, card->chooser);
+        chooser = card->chooser;
+        chooser->vt->unk44(chooser, card->root);
+        chooser = card->chooser;
+        chooser->vt->unk4C(chooser, card->pad, card->clock, card->sound);
     }
 }
 
-void func_80050670(Unk_8004E3F4 *arg0) {
-    Unk_80050670_obj *obj;
+/* Card slot 0xAC */
+void Card_CloseChooser(Card *card) {
+    CardDialog *chooser;
 
-    if (arg0->unk68 != 0 && arg0->unk60 != 0) {
-        obj = (Unk_80050670_obj *)arg0->unk7C;
-        if (obj != NULL) {
-            obj->vt->unk50(obj);
-            obj = (Unk_80050670_obj *)arg0->unk7C;
-            obj->vt->unk48(obj);
-            if (arg0->unk74 != 0) {
-                obj = (Unk_80050670_obj *)arg0->unk7C;
-                obj->vt->unk4(obj);
-                arg0->unk7C = 0;
+    if (card->root != 0 && card->pad != 0) {
+        chooser = card->chooser;
+        if (chooser != NULL) {
+            chooser->vt->unk50(chooser);
+            chooser = card->chooser;
+            chooser->vt->unk48(chooser);
+            if (card->ownsDialog != 0) {
+                chooser = card->chooser;
+                chooser->vt->delete_(chooser);
+                card->chooser = 0;
             }
         }
     }
 }
 
-void func_80050730(Unk_80050730_obj *arg0, Unk_80050730_src *arg1, s32 arg2) {
-    switch (arg2) {
+/* Card slot 0xB0: message 2 keeps the file picked and asks to confirm, 3 closes. */
+void Card_OnChooser(Card *card, CardDialog *chooser, s32 message) {
+    switch (message) {
     case 2:
-        arg0->unk80 = arg1->unk0->unk9C(arg1);
-        arg0->unk0->unkAC(arg0);
-        arg0->unk0->unk7C(arg0, 0xE);
+        card->choice = chooser->vt->getChoice(chooser);
+        card->vtbl->closeChooser(card);
+        card->vtbl->setState(card, CARD_STATE_LOAD_CONFIRM);
         break;
     case 3:
-        arg0->unk0->unkAC(arg0);
-        arg0->unk0->unk7C(arg0, 0x17);
+        card->vtbl->closeChooser(card);
+        card->vtbl->setState(card, CARD_STATE_CLOSED);
         break;
     }
 }
 
-Unk_8004E2E0 *func_800507E8(void) {
-    return (Unk_8004E2E0 *)D_80086DC4;
+CardVtbl *Card_GetVtbl(void) {
+    return (CardVtbl *)g_cardVtbl;
 }
 
-void func_800507F8(Unk_800507F8 *arg0, u8 *arg1) {
-    s32 t;
+/*
+ * Puts the letter of the save file in the title: the number after the dash of fileName
+ * ("-01" is ａ, "-15" is ｏ). For "-08" and "-09" atoi starts after the 0 (a leading 0 reads
+ * as octal). With no name, the letter is blanked.
+ */
+void Card_SetTitleLetter(CardTitle *title, u8 *fileName) {
+    s32 start;
     s32 i;
 
-    if (arg1 != NULL) {
-        t = 0xD;
-        if ((u32)(arg1[0xE] - 0x38) < 2U) {
-            t = 0xE;
+    if (fileName != NULL) {
+        start = 0xD;
+        if ((u32)(fileName[0xE] - 0x38) < 2U) {
+            start = 0xE;
         }
-        arg0->unk18 = D_8008AAC4[15];
-        arg0->unk6 = *(Unk_800507F8_Hex *)&D_8008AAC4[15];
-        i = atoi(arg1 + t) - 1;
-        arg0->unk6.a.p[1] = D_8008AAC4[i];
+        title->comment[0] = g_titleLetters[15];
+        title->mark = *(CardTitleMark *)&g_titleLetters[15];
+        i = atoi(fileName + start) - 1;
+        title->mark.letter.c[1] = g_titleLetters[i];
     } else {
-        arg0->unk6.a = *(Unk_800507F8_Tri *)&D_8008AAC4[15];
+        title->mark.letter = *(SjisChar3 *)&g_titleLetters[15];
     }
 }
 

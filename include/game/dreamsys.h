@@ -174,8 +174,8 @@ typedef struct DreamSysVtbl {
     void (*unkAC)();                                                 /* 0x0AC func_8001DDF4 */
     void (*unkB0)();                                                 /* 0x0B0 0x00000000 */
     void (*unkB4)();                                                 /* 0x0B4 func_8001E4A4 */
-    void (*unkB8)(struct DreamSys *, void *);                        /* 0x0B8 func_80057384 */
-    void (*unkBC)(struct DreamSys *, s32 *);                         /* 0x0BC func_800573A8 */
+    void (*unkB8)(struct DreamSys *, void *);                        /* 0x0B8 Actor_SetPos */
+    void (*unkBC)(struct DreamSys *, s32 *);                         /* 0x0BC Actor_MovePos */
     void (*unkC0)();                                                 /* 0x0C0 func_80057444 */
     void (*unkC4)();                                                 /* 0x0C4 func_8005748C */
     void (*unkC8)();                                                 /* 0x0C8 func_800574C4 */

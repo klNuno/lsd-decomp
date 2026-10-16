@@ -19,7 +19,7 @@ typedef struct Unk_8005B5A4 {
 extern s16 g_stageTimeLimits[];
 void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
 extern void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
-extern void func_800531CC(void *, void *);
+extern void Place_CheckTextureLoad(void *, void *);
 typedef struct { s32 u0; s32 u4; u8 pad[0x14]; s32 u1C; s32 u20; u8 pad2[0xC]; s32 u30; s32 u34; } S;
 void func_8002CC84(void *, void *);
 s32 Mood_GetColor(s16 *arg0);
@@ -97,7 +97,7 @@ typedef struct Unk_80058390 {
     u8 pad_3C[0x238 - 0x3C];
     s32 unk238;
 } Unk_80058390;
-extern Unk_80058390_Vt *func_8003DFBC(void);
+extern Unk_80058390_Vt *MenuScreen_GetVtbl(void);
 typedef struct Unk_80058A94_RetVt {
     u8 pad_00[0x8];
     void (*unk8)(void *);
@@ -198,7 +198,7 @@ typedef struct Unk_8005942C_Vec {
 } Unk_8005942C_Vec;
 extern s32 D_80087EE8[];
 extern void func_8001E600(void *arg0, void *arg1, void *arg2, s32 arg3);
-s32 func_8001EF14(s32 *arg0, s32 arg1, s32 *arg2);
+s32 Entity_IsWithinBox(s32 *arg0, s32 arg1, s32 *arg2);
 s32 func_8005950C(Unk_8005B5A4 *arg0, Unk_8005B5A4 *arg1, s32 arg2);
 typedef struct Unk_800580E0_Vt {
     u8 pad_00[0x5C];
@@ -376,7 +376,7 @@ void Graph_LoadImage(Unk_80058078 *arg0) {
 void func_800580E0(Unk_800580E0 *arg0, void *arg1, s32 arg2) {
     Unk_800580E0_Res *res;
 
-    ((Unk_800580E0_Vt *)func_8003DFBC())->unk5C(arg0, arg1, arg2);
+    ((Unk_800580E0_Vt *)MenuScreen_GetVtbl())->unk5C(arg0, arg1, arg2);
     if (arg0->unk3C == 1) {
         res = arg0->unkA4->vt->unk1B0(arg0->unkA4, 0);
         if (res->unk4 != 0 || res->unk8 != 0) {
@@ -421,13 +421,13 @@ void Graph_FreeSprites(Unk_80058308 *arg0) {
         obj = arg0->unkA8[i];
         obj->vt->unk4(obj);
     }
-    ((Unk_80058308_Ret *)func_8003DFBC())->unkDC(arg0);
+    ((Unk_80058308_Ret *)MenuScreen_GetVtbl())->unkDC(arg0);
 }
 
 s32 func_80058390(Unk_80058390 *arg0, void *arg1, s32 arg2) {
     s32 ret;
 
-    func_8003DFBC()->unk44(arg0, arg1, arg2);
+    MenuScreen_GetVtbl()->unk44(arg0, arg1, arg2);
     ret = 2;
     if (arg0->unk238 == 0) {
         ret = arg0->unk38;
@@ -447,7 +447,7 @@ void Graph_Draw(Unk_80058404 *arg0, void *arg1) {
     s32 i;
     s32 n;
 
-    ((Unk_80058404_Vt *)func_8003DFBC())->unkE0(arg0, arg1);
+    ((Unk_80058404_Vt *)MenuScreen_GetVtbl())->unkE0(arg0, arg1);
     temp_a0 = arg0->unkA4;
     res = temp_a0->vt->unk1B0(temp_a0, 0);
     arg0->unk238 = Graph_CheckReel(arg0, res);
@@ -877,7 +877,7 @@ s32 func_8005942C(DreamSys *dreamSys, Unk_8005942C_Vec *arg1, s32 arg2, s32 *arg
         *arg1 = sp10;
     }
     if (arg3 != NULL) {
-        return func_8001EF14((s32 *)&sp10, arg4, arg3);
+        return Entity_IsWithinBox((s32 *)&sp10, arg4, arg3);
     }
     return 0;
 }

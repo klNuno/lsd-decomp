@@ -63,6 +63,44 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Object | The root class (vtable 0x8006B58C) every game object derives from: init, destroy, and lists of the objects it watches and of its watchers, told with message 1 when it goes away | code: `include/game/heap.h` (`Object`, `ObjectVtbl`) |
 | Render | Model drawing: TMD polygons sorted into the ordering table, projected, clipped and turned into GPU packets | code: src/game/80017A20.c second half |
 | Entity | A character or object of the dream (0x108 bytes, vtable 0x80089AD4), created from a spawn group with its 16-byte record at 0x80089EA4 | code: `include/game/entity.h`, discoveries "The character record" |
+| Screen | The base screen class (vtable 0x8006E878): a state machine run by the display loop, with clock, pad and view | code: src/game/8003B854.c, `include/game/scene.h` |
+| MenuScreen | A Screen with sound bank, picture, fades, timeout and an item menu (vtable 0x8006E730): logos, special-day pictures, the main menu | code: `include/game/scene.h` |
+| VideoScreen | The MenuScreen that plays one STR video (vtable 0x8006E5F8) | code: `include/game/scene.h` |
+| View | The 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables, fog and light mode | code: `include/game/scene.h` |
+| Task | A class with a tick count, a timeout and a result (vtable 0x80086668) that DreamRunner and Place derive from | code: `include/game/stage.h` |
+| DreamRunner | The object built for each dream (vtable 0x800865C8): loads the dreamer model and the music bank, creates the place, rebuilds it after a link | code: `include/game/stage.h` |
+| StageMap | The map that keeps the 7 chunks around the dreamer loaded and shows the tiles in view (vtable 0x800866E8) | code: `include/game/stage.h` |
+| MapTile | One tile model of a chunk (vtable 0x80086AA0), a GsDOBJ2 at +0x10 | code: `include/game/stage.h` |
+| Place | The object that runs one stage while the dreamer is in it (vtable 0x80087034): load, pad handler, pause, fades | code: `include/game/place.h` |
+| Actor | The base class of scenery objects and their parts (vtable 0x800878D4, 0x58 bytes) | code: `include/game/place.h` |
+| Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/place.h`, work/hunt6/F-findings.md |
+| Ambience | The fog and sky record of a place, picked per stage or from the day's family | code: src/game/80051F24.c |
+| Model | The model base class every entity derives from (vtable 0x8008A6C4, 0x98 bytes): model file, parts, animation, per-tick function, sound bank | code: src/game/8005C508.c |
+| ModelObject | One model instance of a TMD object, an Object subclass of 0x24 bytes, with its box and ray test | code: src/game/8001F250.c |
+| ModelBox | The min and max corners of a model object, and the 8-corner box list of the ray tests | code: src/game/8001F250.c |
+| SceneNode | An object of the node classes of src/game/8001CA94.c: parent at +0xC, GsCOORDINATE2 at +0x14 | code: src/game/8001CA94.c |
+| File | The CD file object: locate, load, seek and the read queue (0x2C bytes) | code: src/game/800271D8.c |
+| Tix | A TEXx.TIX texture set file and its palette fades | code: `include/game/loader.h` |
+| TimPack | One part of a TIX, a list of TIM images | code: `include/game/loader.h` |
+| Tmd | A TMD model file and its model objects | code: `include/game/loader.h` |
+| Tod | A TOD animation file | code: `include/game/loader.h` |
+| TodPack | A list of TOD files, the motions of a MOM | code: `include/game/loader.h` |
+| Mom | A MOM model file: a TMD and a TodPack | code: `include/game/loader.h` |
+| Mml | The list of MOM models of a map square | code: `include/game/loader.h` |
+| Bg | A PSY-Q GsBG background object | code: `include/game/loader.h` |
+| BgMap | The GsMAP of a Bg | code: `include/game/loader.h` |
+| BgCells | The GsCELL table of a BgMap | code: `include/game/loader.h` |
+| Movie | The MDEC movie player | code: `include/game/loader.h` |
+| Card | The memory card object (vtable 0x80086DC4, 0x84 bytes): card events, bu00 and bu10 file access, the save format, the save and load dialogs | code: `include/game/menu.h` |
+| Sound | A model's sound bank (0x64 bytes): loads a VAB, builds its tone tables, starts and stops voices | code: src/game/8002C12C.c |
+| Fade | A color fade object and its steps; RgbFade fades one RGB triple | code: src/game/8003FDB0.c |
+| RgbFade | See Fade | code: src/game/8003FDB0.c |
+| Rgb | Color byte helpers | code: src/game/8003FDB0.c |
+| Effect | An effect object of 0xA0 bytes and its vtable table | code: src/game/8003FDB0.c |
+| Pos | Position pair helpers: set, save, restore | code: src/game/8003FDB0.c |
+| Text | Shift-JIS fullwidth text: encode, decode, format a number | code: src/game/8003FDB0.c |
+| CommentObject | The on-screen keyboard object (0x4C bytes, vtable 0x80086ED0): text buffer, alphabet, caret | code: src/game/80050BA8.c |
+| StringList | A list of strings with their lengths and a maximum length | code: src/game/80050BA8.c |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |
 
 Rows sourced to community knowledge are working terms, not verified facts; rows sourced to code cite their discoveries entry.

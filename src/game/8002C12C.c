@@ -1,338 +1,294 @@
 #include "common.h"
 
-typedef struct { u8 pad[0x74]; s16 u74; s16 u76; u8 pad2[0xAC - 0x78]; } Unk_800305F4;
-extern Unk_800305F4 *D_800902E8[];
-/* One bss record of 0x20 bytes (config/symbol_addrs.txt): bytes up to 0x15, then s16 fields. */
-typedef struct Unk_8008EA0C {
-    u8 unk0[0x16];
-    s16 unk16;
-    s16 unk18;
-    s16 unk1A;
-    s16 unk1C;
-    s16 unk1E;
-} Unk_8008EA0C;
-extern Unk_8008EA0C D_8008EA0C;
-typedef struct { u8 pad[0x60]; s32 unk60; } Unk_8002CBF4;
+/*
+ * Sound: the PSY-Q sound bank (VAB) that a model holds at +0x58, its tone table, and the handler
+ * nodes that play sounds from the bank once per tick (see 8005C508.c). Several functions see the
+ * bank through a view struct where a field has another type or width there.
+ */
+
+/* Heap and root object services. */
+void *Heap_Alloc(s32 size);
+void Heap_Free(s32 block);
+void *func_80026CAC(void);
+
+/* The object that func_8002C238 marks: only 0x30 is used here. */
+typedef struct RootObject {
+    u8 pad_00[0x30];
+    s32 unk_30;
+} RootObject;
+
+/* Vtable of the root object class returned by func_80026CAC (heap.h ObjectVtbl: init 0x08, destroy 0x0C). */
+typedef struct ObjectRootVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *object);     /* 0x08 */
+    void (*destroy)(s32 object);    /* 0x0C, the caller passes the pointer as s32 */
+    u8 pad_10[0x54];
+    void (*unk_64)(void *object);   /* 0x64, not named in heap.h */
+} ObjectRootVtbl;
+
+/* Vtable of the 0x34-byte object class at D_8006D940 (func_8002C12C; stage.h calls it a model set). */
+typedef struct ModelSetVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *modelSet, s32 param);   /* 0x08 */
+    u8 pad_0C[0x60];
+    void (*unk_6C)(void *modelSet, s32 param); /* 0x6C */
+} ModelSetVtbl;
+
+typedef struct ModelSet {
+    ModelSetVtbl *vt;     /* 0x00 */
+    u8 pad_04[0x28];
+    s32 unk_2C;
+    s32 unk_30;
+} ModelSet;
+
+extern ModelSetVtbl D_8006D940;
+ModelSetVtbl *func_8002C3A8(void);
+
+/* One tone of a program: 0x20 bytes, the layout SsUtGetVagAtr fills (center and fine are read here). */
+typedef struct SoundTone {
+    u8 pad_00[4];
+    u8 center;   /* 0x04 passed to SsUtKeyOn as the note */
+    u8 fine;     /* 0x05 passed to SsUtKeyOn as the fine tuning */
+    u8 pad_06[0x1A];
+} SoundTone;
+
+/* Vtable of the sound bank class at D_8006DA34 (Sound_GetBankClass); slots 0x80, 0x84, 0x9C are the sound calls. */
+typedef struct SoundBankVtbl {
+    u8 pad_00[0x8];
+    void (*init)(void *bank, s32 param);                                     /* 0x08 Sound_CreateBank */
+    u8 pad_0C[0x4C];
+    void (*unk_58)(void *bank, void *fullPath, s32 vabBuffer);               /* 0x58 */
+    void (*unk_5C)(void);                                                    /* 0x5C */
+    u8 pad_60[0xC];
+    void (*unk_6C)(void *bank, s8 *fullPath);                                /* 0x6C */
+    u8 pad_70[0x8];
+    void (*unk_78)(void *bank, s32 param);                                   /* 0x78 */
+    void (*unk_7C)(void *bank);                                              /* 0x7C */
+    s32 (*playTone)(void *bank, s32 sound, s32 volume, s32 endVolume);      /* 0x80 Sound_PlayTone */
+    s32 (*stopVoice)(void *bank, s32 voice);                                 /* 0x84 Sound_StopVoice */
+    u8 pad_88[0x14];
+    void (*setOctave)(void *bank, s32 octave);                               /* 0x9C Sound_SetOctave */
+} SoundBankVtbl;
+
+/* The sound bank: 0x64 bytes, allocated by Sound_CreateBank with the class vtable at D_8006DA34. */
+typedef struct SoundBank {
+    /* 0x00 */ SoundBankVtbl *vt;
+    /* 0x04 */ u8 pad_04[0xC];
+    /* 0x10 */ s32 vabBuffer;     /* VAB data being loaded; g_vabBuffer keeps it between calls */
+    /* 0x14 */ u8 pad_14[0x10];
+    /* 0x24 */ s32 unk_24;        /* flags: bit 0x200 means the file has been read */
+    /* 0x28 */ u8 pad_28[0x2];
+    /* 0x2A */ u16 state;         /* 0 idle, 1 open the VAB header, 6 transfer the body */
+    /* 0x2C */ u8 pad_2C[0x20];   /* the VAB header, see SoundBankVab */
+    /* 0x4C */ s32 toneData;      /* SoundBankVab: u8 *, one 0x20-byte tone per entry */
+    /* 0x50 */ s32 programTones;  /* SoundBankVab: u8 **, SoundBankTones: SoundTone ** */
+    /* 0x54 */ s16 vabId;
+    /* 0x56 */ s16 muted;         /* 1 after SsSetMute(1) */
+    /* 0x58 */ u16 transferDone;  /* 1 once SsVabTransCompleted has run */
+    /* 0x5A */ u16 transferring;  /* 1 while the VAB body is sent */
+    /* 0x5C */ s32 path;          /* heap copy of the file path given to Sound_InitBank */
+    /* 0x60 */ s32 noteShift;     /* octave * 12 - 24, set by Sound_SetOctave */
+} SoundBank;
+
+/* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
+typedef struct SoundBankVab {
+    SoundBankVtbl *vt;
+    u8 pad_04[0xC];
+    s32 vabBuffer;
+    u8 pad_14[0x18];
+    u8 vabHeader[0x12];        /* 0x2C, filled by SsUtGetVabHdr (ps at +0x12, ts at +0x14) */
+    u16 programCount;          /* 0x3E */
+    u16 toneCount;             /* 0x40 */
+    u8 pad_42[0xA];
+    u8 *toneData;              /* 0x4C */
+    u8 **programTones;         /* 0x50 */
+    s16 vabId;                 /* 0x54 */
+    u8 pad_56[0x2];
+    u16 transferDone;          /* 0x58 */
+} SoundBankVab;
+
+/* Sound_PlayTone view of the bank: the tone table pointers and the note shift (u16 there). */
+typedef struct SoundBankTones {
+    u8 pad_00[0x50];
+    SoundTone **programTones;  /* 0x50 */
+    s16 vabId;                 /* 0x54 */
+    u8 pad_56[0xA];
+    u16 noteShift;             /* 0x60 */
+} SoundBankTones;
+
+extern SoundBankVtbl D_8006DA34;
+SoundBankVtbl *Sound_GetBankClass(void);
+
+/* Globals of the bank code, in their original order. */
 s32 D_8008A8B0;
 s32 D_8008A8B4;
-u8 SpuVmKeyOff(s16 arg0, s16 arg1, s16 arg2, u16 arg3);
-typedef struct Unk_8002C238 { u8 pad[0x30]; s32 unk30; } Unk_8002C238;
-typedef struct { u8 pad[0x64]; void (*unk64)(Unk_8002C238 *); } Unk_8002C238_vt;
-void *func_80026CAC(void);
-void SsUtKeyOffV(s16 arg0);
-void SsUtAllKeyOff(s32 arg0);
-typedef struct { u8 pad[0x56]; s16 unk56; } Unk_8002CB9C;
-void SsSetMute(s16 arg0);
-typedef struct { u8 pad[0xC]; void (*unkC)(s32); } Unk_8002C200;
-typedef struct Unk_8002CB58 { u8 pad[0x56]; s16 unk56; } Unk_8002CB58;
-typedef struct { s32 unk0; s32 unk4[4]; } Unk_8002CC34_Entry;
-typedef struct Unk_8002CC34 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    Unk_8002CC34_Entry entries[3];
-} Unk_8002CC34;
-typedef struct Unk_8002C12C {
-    /* 0x00 */ u8 pad_00[0x8];
-    /* 0x08 */ void (*unk8)(void *, s32);
-    /* 0x0C */ u8 pad_0C[0x60];
-    /* 0x6C */ void (*unk6C)(void *, s32);
-} Unk_8002C12C;
-void *Heap_Alloc(s32 size);
-Unk_8002C12C *func_8002C3A8(void);
-typedef struct Unk_8002C480_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32);
-} Unk_8002C480_vt;
-Unk_8002C480_vt *func_8002CC0C(void);
-typedef struct Unk_8002C824_vt {
-    u8 pad_00[0x7C];
-    void (*unk7C)(void *);
-} Unk_8002C824_vt;
-typedef struct Unk_8002C824 {
-    Unk_8002C824_vt *unk0;
-    u8 pad_04[0x54];
-    s16 unk58;
-    u16 unk5A;
-} Unk_8002C824;
-s16 SsVabTransCompleted(s16 immediateFlag);
-typedef struct Unk_8002C18C {
-    Unk_8002C12C *unk0;
-    u8 pad_04[0x28];
-    s32 unk2C;
-    s32 unk30;
-} Unk_8002C18C;
-typedef struct Unk_8002C18C_sys_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-} Unk_8002C18C_sys_vt;
-typedef struct Unk_8002CC84_vt {
-    u8 pad_00[0x80];
-    s32 (*unk80)(void *, s32, s32, s32);
-    s32 (*unk84)(void *, s32);
-    u8 pad_88[0x14];
-    void (*unk9C)(void *, s32);
-} Unk_8002CC84_vt;
-typedef struct Unk_8002CC84 {
-    Unk_8002CC84_vt *vt;
-} Unk_8002CC84;
-extern u8 D_8008E9D0;
-s32 SpuVmAlloc(s32 arg0);
-void vmNoiseOn2(u8 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
-/* copied from src/game/8002C12C.c */
-extern u16 D_8006DAD8[];
-typedef struct Unk_8002C638 {
-    u8 pad_00[0x4C];
-    s32 unk4C;
-    s32 unk50;
-    s16 unk54;
-    u8 pad_56[0x6];
-    s32 unk5C;
-} Unk_8002C638;
 s32 D_8008A8B8;
 s32 D_8008A8BC;
 s32 D_8008A8C0;
-s32 D_8008A8C4;
-void SsVabClose(s16 arg0);
-s32 func_8003A05C(void);
-void func_800329D8(void);
-void func_80032A7C(void);
-void Heap_Free(s32 arg0);
-typedef struct Unk_8002F2A4 {
-    u8 pad_00[0x194];
-    s16 unk194;
-    s16 unk196;
-} Unk_8002F2A4;
-extern u8 D_8008D98C[];
-extern u8 D_8008D9A3[];
-extern Unk_8002F2A4 *D_8006DAD4;
-void SpuVmVSetUp(s16 arg0, s16 arg1);
-s16 SpuVmPBVoice(s16 arg0, s16 arg1, s16 arg2, s16 arg3, u16 arg4);
-typedef struct Unk_8002E038 {
-    u8 pad_00[0x4];
-    u8 unk4;
-    u8 unk5;
-    u8 pad_06[0x1A];
-} Unk_8002E038;
-extern Unk_8002E038 *D_8008E978;
-typedef struct Unk_8002C6FC_vt {
-    u8 pad_00[0x58];
-    void (*unk58)(void *, void *, s32);
-    u8 pad_5C[0x1C];
-    void (*unk78)(void *, s32);
-} Unk_8002C6FC_vt;
-typedef struct Unk_8002C6FC {
-    /* 0x00 */ Unk_8002C6FC_vt *unk0;
-    /* 0x04 */ u8 pad_04[0xC];
-    /* 0x10 */ s32 unk10;
-    /* 0x14 */ u8 pad_14[0x10];
-    /* 0x24 */ s32 unk24;
-    /* 0x28 */ u8 pad_28[0x2];
-    /* 0x2A */ u16 unk2A;
-    /* 0x2C */ u8 pad_2C[0x28];
-    /* 0x54 */ s16 unk54;
-    /* 0x56 */ u8 pad_56[0x4];
-    /* 0x5A */ u16 unk5A;
-    /* 0x5C */ s32 unk5C;
-} Unk_8002C6FC;
-extern s8 D_8008A8D4[];
-s32 D_8008A8C8;
-s16 SsVabOpenHead(void *vh, s16 vabid);
-s16 SsVabTransBody(void *vb, s16 vabid);
-s8 *func_800270C4(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
-typedef struct Unk_8002C278_rec {
-    u8 unk0;
-    u8 unk1;
-    u16 unk2;
-    u8 unk4;
-    u8 unk5;
-    s16 unk6;
-    s32 unk8;
-} Unk_8002C278_rec;
-typedef struct Unk_8002C278_vt {
-    u8 pad_00[0x80];
-    s32 (*unk80)(void *, u16, s32, void *);
-} Unk_8002C278_vt;
-typedef struct Unk_8002C278_obj {
-    Unk_8002C278_vt *vt;
-} Unk_8002C278_obj;
-typedef struct Unk_8002C278_ctx {
-    u8 pad_00[0x10];
-    u8 *unk10;
-    u8 pad_14[0x18];
-    Unk_8002C278_obj *unk2C;
-} Unk_8002C278_ctx;
-typedef struct Unk_8002C278 {
-    u8 pad_00[0xC];
-    s32 unkC;
-    s32 unk10;
-    s32 unk14;
-    u8 pad_18[0x2];
-    s16 unk1A;
-    u8 pad_1C[0x10];
-    s16 unk2C;
-    s16 unk2E;
-    s32 unk30;
-    s32 unk34;
-    s32 unk38;
-} Unk_8002C278;
-typedef struct Unk_8002C4E0_sys_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-} Unk_8002C4E0_sys_vt;
-typedef struct Unk_8002C4E0_vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32);
-    u8 pad_0C[0x60];
-    void (*unk6C)(void *, s8 *);
-    u8 pad_70[0x2C];
-    void (*unk9C)(void *, s32);
-} Unk_8002C4E0_vt;
-typedef struct Unk_8002C4E0 {
-    /* 0x00 */ Unk_8002C4E0_vt *unk0;
-    /* 0x04 */ u8 pad_04[0x26];
-    /* 0x2A */ u16 unk2A;
-    /* 0x2C */ u8 pad_2C[0x20];
-    /* 0x4C */ s32 unk4C;
-    /* 0x50 */ s32 unk50;
-    /* 0x54 */ s16 unk54;
-    /* 0x56 */ s16 unk56;
-    /* 0x58 */ s16 unk58;
-    /* 0x5A */ u16 unk5A;
-    /* 0x5C */ s32 unk5C;
-} Unk_8002C4E0;
+s32 g_bankCount;
+s32 g_vabBuffer;
 s32 D_8008A8CC;
 extern s8 D_8008A8D0[];
-void func_80032368(void);
-s32 func_8003A068(void);
-void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
-void func_80032588(s32 arg0);
-s32 strlen(u8 *s);
-s8 *strcpy(s8 *dst, s8 *src);
-void SpuVmKeyOn(s32 arg0, s16 arg1, s16 arg2, u16 arg3, u16 arg4, u16 arg5);
-/* Only unk16 is used here: the asm stores the arg0 halfword at D_8008EA0C + 0x16. */
-typedef struct { s16 s0; u8 pad[0x34 - 2]; } Unk_8008D996;
-extern Unk_8008D996 D_8008D996[];
-extern u8 D_8008D7F0[];
-extern u8 D_8008D970[];
-extern Unk_8002C12C D_8006D940;
+extern s8 D_8008A8D4[];
 extern u8 D_8006D9BC[];
-extern Unk_8002C480_vt D_8006DA34;
-extern u8 D_8008D9B0[];
-extern u8 D_8008D9B2[];
-extern u8 D_8008D9B4[];
-extern u8 D_8008D9B6[];
-extern u8 D_8008D9B8[];
-extern u8 D_8008D9BA[];
-typedef struct Unk_8002C890_vt {
-    u8 pad_00[0x5C];
-    void (*unk5C)(void);
-} Unk_8002C890_vt;
-typedef struct Unk_8002C890 {
-    Unk_8002C890_vt *unk0;
-    u8 pad_04[0xC];
-    s32 unk10;
+
+/* One voice of a handler node (5 words, 0x14 bytes); see 8005C508.c HandlerVoice. */
+typedef struct HandlerVoice {
+    s32 voice;     /* 0x00 SPU voice playing, -1 none */
+    s32 sound;     /* 0x04 sound to start this tick, -1 none, -2 stops the voice */
+    s32 octave;    /* 0x08 bank slot 0x9C: notes shift by octave * 12 - 24 */
+    s32 volume;    /* 0x0C start volume, 0x7F by default */
+    s32 endVolume; /* 0x10 volume the fade slides to, 0x40 by default */
+} HandlerVoice;
+
+/* A handler node (0x54 bytes), the second argument of a handler; see 8005C508.c HandlerNode. */
+typedef struct HandlerNode {
+    s32 id;                  /* 0x00 entity type + 1 while running, 0 once stopped */
+    s32 tick;                /* 0x04 runs so far, counted by func_8002CD08 */
+    s32 owner;               /* 0x08 the entity, the handler's first argument */
+    s32 handler;             /* 0x0C the handler function */
+    s32 fade;                /* 0x10 set by the handler, lowers both volumes by volume / fadeSteps */
+    s32 fadeSteps;           /* 0x14 10 */
+    HandlerVoice voices[3];  /* 0x18 */
+} HandlerNode;
+
+/* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through unk_08. */
+typedef struct GridRecord {
+    u8 unk_00;
+    u8 unk_01;
+    u16 unk_02;
+    u8 unk_04;
+    u8 unk_05;
+    s16 unk_06;
+    s32 unk_08;   /* offset of the next record, 0 at the end of the chain */
+} GridRecord;
+
+/* The grid item that func_8002C278 fills for one cell (0x3C bytes). */
+typedef struct GridItem {
+    u8 pad_00[0xC];
+    s32 unk_0C;
+    s32 unk_10;
+    s32 unk_14;
+    u8 pad_18[0x2];
+    s16 unk_1A;
+    u8 pad_1C[0x10];
+    s16 unk_2C;
+    s16 unk_2E;
+    s32 unk_30;
+    s32 unk_34;   /* offset of the next record in the chain */
+    s32 unk_38;
+} GridItem;
+
+typedef struct GridObjectVtbl {
+    u8 pad_00[0x80];
+    s32 (*unk_80)(void *object, u16 id, s32 cell, void *item);
+} GridObjectVtbl;
+
+typedef struct GridObject {
+    GridObjectVtbl *vt;
+} GridObject;
+
+/* The grid context: the record table at unk_10 and the object at unk_2C that places the item. */
+typedef struct GridContext {
+    u8 pad_00[0x10];
+    u8 *unk_10;
     u8 pad_14[0x18];
-    u8 unk2C[0x12];
-    u16 unk3E;
-    u16 unk40;
-    u8 pad_42[0xA];
-    u8 *unk4C;
-    u8 **unk50;
-    s16 unk54;
-    u8 pad_56[0x2];
-    u16 unk58;
-} Unk_8002C890;
+    GridObject *unk_2C;
+} GridContext;
+
+/* Sound services of PSY-Q and the SPU helpers. */
+void SsUtKeyOffV(s16 voice);
+void SsUtAllKeyOff(s32 arg0);
+void SsSetMute(s16 mute);
+s16 SsVabTransCompleted(s16 immediateFlag);
+void SsVabClose(s16 vabId);
+s16 SsVabOpenHead(void *vabBuffer, s16 vabId);
+s16 SsVabTransBody(void *vabBuffer, s16 vabId);
 s16 SsUtGetVabHdr(s16 vabId, void *vabhdr);
 s16 SsUtGetProgAtr(s16 vabId, s16 progNum, u8 *progatr);
 s16 SsUtGetVagAtr(s16 vabId, s16 progNum, s16 toneNum, u8 *vagatr);
-void func_80032998(void);
 void SsSetMVol(s16 voll, s16 volr);
-typedef struct Unk_8002CA3C_Tone {
-    u8 pad_00[4];
-    u8 unk4;
-    u8 unk5;
-    u8 pad_06[0x1A];
-} Unk_8002CA3C_Tone;
-typedef struct Unk_8002CA3C {
-    u8 pad_00[0x50];
-    Unk_8002CA3C_Tone **unk50;
-    s16 unk54;
-    u8 pad_56[0xA];
-    u16 unk60;
-} Unk_8002CA3C;
 s16 SsUtKeyOn(s16 vabId, s16 prog, s16 tone, s16 note, s16 fine, s16 voll, s16 volr);
 s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
+void SsSetTableSize(s8 *arg0, s16 arg1, s16 arg2);
 
-s32 func_8002C12C(s32 arg0) {
-    s32 temp_v0;
+/* Other functions of the game code used here. */
+s8 *func_800270C4(s8 *arg0, s8 *arg1, s8 *arg2, s8 *arg3);
+s32 func_8003A05C(void);
+void func_800329D8(void);
+void func_80032A7C(void);
+void func_80032368(void);
+s32 func_8003A068(void);
+void func_80032588(s32 arg0);
+void func_80032998(void);
+s32 strlen(u8 *s);
+s8 *strcpy(s8 *dst, s8 *src);
+s32 func_8002C12C(s32 initParam) {
+    s32 modelSet;
 
-    temp_v0 = (s32)Heap_Alloc(0x34);
-    if (temp_v0 != 0) {
-        func_8002C3A8()->unk8((void *)temp_v0, arg0);
-        return temp_v0;
+    modelSet = (s32)Heap_Alloc(0x34);
+    if (modelSet != 0) {
+        func_8002C3A8()->init((void *)modelSet, initParam);
+        return modelSet;
     }
     return 0;
 }
 
-void func_8002C18C(Unk_8002C18C *arg0, s32 arg1) {
-    ((Unk_8002C18C_sys_vt *)func_80026CAC())->unk8(arg0);
-    arg0->unk0 = func_8002C3A8();
-    arg0->unk2C = 0;
-    arg0->unk30 = 0;
-    if (arg1 != 0) {
-        arg0->unk0->unk6C(arg0, arg1);
+void func_8002C18C(ModelSet *modelSet, s32 initParam) {
+    ((ObjectRootVtbl *)func_80026CAC())->init(modelSet);
+    modelSet->vt = func_8002C3A8();
+    modelSet->unk_2C = 0;
+    modelSet->unk_30 = 0;
+    if (initParam != 0) {
+        modelSet->vt->unk_6C(modelSet, initParam);
     }
 }
 
-void func_8002C200(s32 arg0) {
-    ((Unk_8002C200 *)func_80026CAC())->unkC(arg0);
+void func_8002C200(s32 object) {
+    ((ObjectRootVtbl *)func_80026CAC())->destroy(object);
 }
 
-void func_8002C238(Unk_8002C238 *arg0) {
-    arg0->unk30 = 1;
-    ((Unk_8002C238_vt *)func_80026CAC())->unk64(arg0);
+void func_8002C238(RootObject *object) {
+    object->unk_30 = 1;
+    ((ObjectRootVtbl *)func_80026CAC())->unk_64(object);
 }
 
-s32 func_8002C278(Unk_8002C278_ctx *arg0, Unk_8002C278 *arg1, s32 arg2) {
-    Unk_8002C278_rec *rec;
-    s32 next;
-    u16 id;
+s32 func_8002C278(GridContext *context, GridItem *item, s32 cellIndex) {
+    GridRecord *record;
+    s32 nextOffset;
+    u16 itemId;
     s32 val6;
     u8 *base;
 
-    if (arg2 < 0x190) {
-        next = arg1->unk34;
-        if (next != 0) {
-            base = arg0->unk10;
-            rec = (Unk_8002C278_rec *)(base + next);
-            arg1->unk30 = 1;
+    if (cellIndex < 0x190) {
+        nextOffset = item->unk_34;
+        if (nextOffset != 0) {
+            base = context->unk_10;
+            record = (GridRecord *)(base + nextOffset);
+            item->unk_30 = 1;
         } else {
-            rec = (Unk_8002C278_rec *)(arg2 * 0xC + 8 + arg0->unk10);
-            arg1->unk30 = 0;
+            record = (GridRecord *)(cellIndex * 0xC + 8 + context->unk_10);
+            item->unk_30 = 0;
         }
-        arg1->unk34 = rec->unk8;
-        if (rec->unk0 != 0) {
-            arg1->unkC = ((arg2 % 20) << 0xB) + 0x400;
-            val6 = rec->unk6;
-            arg1->unk14 = ((arg2 / 20) << 0xB) + 0x400;
-            arg1->unk10 = val6 << 0xB;
-            arg1->unk1A = rec->unk5 << 0xA;
-            arg1->unk2C = rec->unk1;
-            arg1->unk2E = rec->unk4;
-            id = rec->unk2;
-            arg1->unk38 = id;
-            return arg0->unk2C->vt->unk80(arg0->unk2C, id, arg2, arg1);
+        item->unk_34 = record->unk_08;
+        if (record->unk_00 != 0) {
+            item->unk_0C = ((cellIndex % 20) << 0xB) + 0x400;
+            val6 = record->unk_06;
+            item->unk_14 = ((cellIndex / 20) << 0xB) + 0x400;
+            item->unk_10 = val6 << 0xB;
+            item->unk_1A = record->unk_05 << 0xA;
+            item->unk_2C = record->unk_01;
+            item->unk_2E = record->unk_04;
+            itemId = record->unk_02;
+            item->unk_38 = itemId;
+            return context->unk_2C->vt->unk_80(context->unk_2C, itemId, cellIndex, item);
         }
         return -1;
     }
     return 0;
 }
 
-Unk_8002C12C *func_8002C3A8(void) {
+ModelSetVtbl *func_8002C3A8(void) {
     return &D_8006D940;
 }
 
@@ -386,16 +342,16 @@ void *func_8002C438(void) {
     return D_8006D9BC;
 }
 
-s32 func_8002C448(s32 *arg0) {
-    if (arg0 != NULL) {
-        *arg0 = D_8008A8B4;
+s32 func_8002C448(s32 *valueOut) {
+    if (valueOut != NULL) {
+        *valueOut = D_8008A8B4;
     }
     return D_8008A8B0;
 }
 
-s32 func_8002C468(s32 arg0, s32 arg1) {
-    D_8008A8B0 = arg0;
-    D_8008A8B4 = arg1;
+s32 func_8002C468(s32 firstValue, s32 secondValue) {
+    D_8008A8B0 = firstValue;
+    D_8008A8B4 = secondValue;
     return 1;
 }
 
@@ -403,31 +359,31 @@ s32 func_8002C478(void) {
     return 0;
 }
 
-void *func_8002C480(s32 arg0) {
-    void *temp;
+void *Sound_CreateBank(s32 initParam) {
+    void *bank;
 
-    temp = Heap_Alloc(0x64);
-    if (temp != 0) {
-        func_8002CC0C()->unk8(temp, arg0);
-        return temp;
+    bank = Heap_Alloc(0x64);
+    if (bank != 0) {
+        Sound_GetBankClass()->init(bank, initParam);
+        return bank;
     }
     return 0;
 }
 
-void func_8002C4E0(Unk_8002C4E0 *arg0, s8 *arg1) {
-    s8 sp10[0x20];
-    s8 *temp;
+void Sound_InitBank(SoundBank *bank, s8 *path) {
+    s8 fullPath[0x20];
+    s8 *pathCopy;
 
-    ((Unk_8002C4E0_sys_vt *)func_80026CAC())->unk8(arg0);
-    arg0->unk0 = (Unk_8002C4E0_vt *)func_8002CC0C();
-    arg0->unk4C = 0;
-    arg0->unk50 = 0;
-    arg0->unk54 = 0;
-    arg0->unk56 = 0;
-    arg0->unk0->unk9C(arg0, 0);
-    arg0->unk58 = 0;
-    arg0->unk5A = 0;
-    arg0->unk5C = 0;
+    ((ObjectRootVtbl *)func_80026CAC())->init(bank);
+    bank->vt = Sound_GetBankClass();
+    bank->toneData = 0;
+    bank->programTones = 0;
+    bank->vabId = 0;
+    bank->muted = 0;
+    bank->vt->setOctave(bank, 0);
+    bank->transferDone = 0;
+    bank->transferring = 0;
+    bank->path = 0;
     if (D_8008A8B8 == 0) {
         func_80032368();
         D_8008A8B8 = 1;
@@ -438,118 +394,118 @@ void func_8002C4E0(Unk_8002C4E0 *arg0, s8 *arg1) {
         func_80032588(1);
         D_8008A8BC = 1;
     }
-    D_8008A8C4 += 1;
-    if (arg1 != 0) {
-        temp = Heap_Alloc(strlen((u8 *)arg1) + 1);
-        if (temp != NULL) {
-            arg0->unk5C = (s32)temp;
-            strcpy(temp, arg1);
-            func_800270C4(sp10, temp, (s8 *)0, D_8008A8D0);
-            arg0->unk2A = 1;
-            arg0->unk0->unk6C(arg0, sp10);
+    g_bankCount += 1;
+    if (path != 0) {
+        pathCopy = Heap_Alloc(strlen((u8 *)path) + 1);
+        if (pathCopy != NULL) {
+            bank->path = (s32)pathCopy;
+            strcpy(pathCopy, path);
+            func_800270C4(fullPath, pathCopy, (s8 *)0, D_8008A8D0);
+            bank->state = 1;
+            bank->vt->unk_6C(bank, fullPath);
         }
     }
 }
 
-void func_8002C638(Unk_8002C638 *arg0) {
-    SsVabClose(arg0->unk54);
-    if (--D_8008A8C4 < 0) {
-        D_8008A8C4 = 0;
+void Sound_DestroyBank(SoundBank *bank) {
+    SsVabClose(bank->vabId);
+    if (--g_bankCount < 0) {
+        g_bankCount = 0;
     }
-    if (D_8008A8C4 == 0 && func_8003A05C() == 0) {
+    if (g_bankCount == 0 && func_8003A05C() == 0) {
         D_8008A8B8 = 0;
         D_8008A8C0 = 0;
         D_8008A8BC = 0;
         func_800329D8();
         func_80032A7C();
     }
-    Heap_Free(arg0->unk4C);
-    Heap_Free(arg0->unk50);
-    Heap_Free(arg0->unk5C);
-    ((Unk_8002C200 *)func_80026CAC())->unkC((s32)arg0);
+    Heap_Free(bank->toneData);
+    Heap_Free(bank->programTones);
+    Heap_Free(bank->path);
+    ((ObjectRootVtbl *)func_80026CAC())->destroy((s32)bank);
 }
 
-void func_8002C6FC(Unk_8002C6FC *arg0) {
-    u8 sp10[0x20];
-    s32 old;
+void Sound_UpdateBank(SoundBank *bank) {
+    u8 fullPath[0x20];
+    s32 oldVabBuffer;
     s16 ret;
 
-    switch (arg0->unk2A) {
+    switch (bank->state) {
         case 0:
             break;
         case 1:
-            if (arg0->unk24 & 0x200) {
-                arg0->unk54 = SsVabOpenHead((void *)arg0->unk10, -1);
-                func_800270C4((s8 *)sp10, (s8 *)arg0->unk5C, (s8 *)0, D_8008A8D4);
-                arg0->unk2A = 6;
-                old = arg0->unk10;
-                arg0->unk10 = 0;
-                D_8008A8C8 = old;
-                arg0->unk0->unk58(arg0, sp10, old);
-                if (arg0->unk5C != 0) {
-                    Heap_Free(arg0->unk5C);
-                    arg0->unk5C = 0;
+            if (bank->unk_24 & 0x200) {
+                bank->vabId = SsVabOpenHead((void *)bank->vabBuffer, -1);
+                func_800270C4((s8 *)fullPath, (s8 *)bank->path, (s8 *)0, D_8008A8D4);
+                bank->state = 6;
+                oldVabBuffer = bank->vabBuffer;
+                bank->vabBuffer = 0;
+                g_vabBuffer = oldVabBuffer;
+                bank->vt->unk_58(bank, fullPath, oldVabBuffer);
+                if (bank->path != 0) {
+                    Heap_Free(bank->path);
+                    bank->path = 0;
                 }
             }
             break;
         case 6:
-            if (arg0->unk24 & 0x200) {
-                ret = SsVabTransBody((void *)arg0->unk10, arg0->unk54);
-                arg0->unk54 = ret;
+            if (bank->unk_24 & 0x200) {
+                ret = SsVabTransBody((void *)bank->vabBuffer, bank->vabId);
+                bank->vabId = ret;
                 if (ret != -1) {
-                    arg0->unk5A = 1;
-                    arg0->unk0->unk78(arg0, 1);
+                    bank->transferring = 1;
+                    bank->vt->unk_78(bank, 1);
                 }
             }
             break;
     }
 }
 
-s32 func_8002C824(Unk_8002C824 *arg0, s32 arg1) {
+s32 Sound_PollTransfer(SoundBank *bank, s32 allowFinish) {
     s32 ret = 0;
 
-    if (arg0->unk5A != 0) {
-        if (arg1 != 0) {
+    if (bank->transferring != 0) {
+        if (allowFinish != 0) {
             SsVabTransCompleted(1);
-            arg0->unk5A = 0;
-            arg0->unk58 = 1;
-            arg0->unk0->unk7C(arg0);
+            bank->transferring = 0;
+            bank->transferDone = 1;
+            bank->vt->unk_7C(bank);
             ret = 1;
         }
     }
     return ret;
 }
 
-void func_8002C890(Unk_8002C890 *arg0) {
+void Sound_LoadProgramTable(SoundBankVab *bank) {
     s32 i;
     s32 j;
     u8 *vagp;
     u8 progAtr[0x10];
 
-    if (arg0->unk58 == 0) {
+    if (bank->transferDone == 0) {
         return;
     }
-    arg0->unk0->unk5C();
-    arg0->unk10 = D_8008A8C8;
-    if (SsUtGetVabHdr(arg0->unk54, &arg0->unk2C) == -1) {
+    bank->vt->unk_5C();
+    bank->vabBuffer = g_vabBuffer;
+    if (SsUtGetVabHdr(bank->vabId, &bank->vabHeader) == -1) {
         return;
     }
-    arg0->unk4C = Heap_Alloc(arg0->unk40 << 5);
-    if (arg0->unk4C == NULL) {
+    bank->toneData = Heap_Alloc(bank->toneCount << 5);
+    if (bank->toneData == NULL) {
         return;
     }
-    arg0->unk50 = (u8 **)Heap_Alloc(arg0->unk3E << 2);
-    if (arg0->unk50 == NULL) {
+    bank->programTones = (u8 **)Heap_Alloc(bank->programCount << 2);
+    if (bank->programTones == NULL) {
         return;
     }
-    vagp = arg0->unk4C;
-    for (i = 0; i < arg0->unk3E; i++) {
-        arg0->unk50[i] = vagp;
-        if (SsUtGetProgAtr(arg0->unk54, i, progAtr) == -1) {
+    vagp = bank->toneData;
+    for (i = 0; i < bank->programCount; i++) {
+        bank->programTones[i] = vagp;
+        if (SsUtGetProgAtr(bank->vabId, i, progAtr) == -1) {
             return;
         }
         for (j = 0; j < progAtr[0]; j++) {
-            if (SsUtGetVagAtr(arg0->unk54, i, j, vagp) == -1) {
+            if (SsUtGetVagAtr(bank->vabId, i, j, vagp) == -1) {
                 return;
             }
             vagp += 0x20;
@@ -562,45 +518,45 @@ void func_8002C890(Unk_8002C890 *arg0) {
     }
 }
 
-s16 func_8002CA3C(Unk_8002CA3C *arg0, s32 arg1, s16 arg2, s16 arg3) {
-    s32 prog;
-    Unk_8002CA3C_Tone *t;
-    s16 vc;
+s16 Sound_PlayTone(SoundBankTones *bank, s32 sound, s16 volume, s16 endVolume) {
+    s32 program;
+    SoundTone *tone;
+    s16 voice;
 
-    if (arg1 < 0) {
+    if (sound < 0) {
         return -1;
     }
-    prog = arg1 >> 4;
-    t = arg0->unk50[prog];
-    t += arg1 - (prog << 4);
-    vc = SsUtKeyOn(arg0->unk54, prog, arg1 - (prog << 4), t->unk4 + arg0->unk60, t->unk5, arg2, arg2);
-    if (vc < 0) {
+    program = sound >> 4;
+    tone = bank->programTones[program];
+    tone += sound - (program << 4);
+    voice = SsUtKeyOn(bank->vabId, program, sound - (program << 4), tone->center + bank->noteShift, tone->fine, volume, volume);
+    if (voice < 0) {
         return -1;
     }
-    SsUtAutoVol(vc, arg2, arg3, 2);
-    return vc;
+    SsUtAutoVol(voice, volume, endVolume, 2);
+    return voice;
 }
 
-s32 func_8002CB18(s32 arg0, s32 arg1) {
-    if (arg1 < 0x18) {
-        SsUtKeyOffV(arg1);
+s32 Sound_StopVoice(s32 bank, s32 voice) {
+    if (voice < 0x18) {
+        SsUtKeyOffV(voice);
     } else {
         SsUtAllKeyOff(0);
     }
     return -1;
 }
 
-void func_8002CB58(Unk_8002CB58 *arg0) {
-    if (arg0->unk56 == 0) {
+void Sound_MuteBank(SoundBank *bank) {
+    if (bank->muted == 0) {
         SsSetMute(1);
-        arg0->unk56 = 1;
+        bank->muted = 1;
     }
 }
 
-void func_8002CB9C(Unk_8002CB9C *arg0) {
-    if (arg0->unk56 != 0) {
+void Sound_UnmuteBank(SoundBank *bank) {
+    if (bank->muted != 0) {
         SsSetMute(0);
-        arg0->unk56 = 0;
+        bank->muted = 0;
     }
 }
 
@@ -613,92 +569,92 @@ void func_8002CBE4(void) {
 void func_8002CBEC(void) {
 }
 
-void func_8002CBF4(Unk_8002CBF4 *arg0, s32 arg1) {
-    arg0->unk60 = arg1 * 12 - 24;
+void Sound_SetOctave(SoundBank *bank, s32 octave) {
+    bank->noteShift = octave * 12 - 24;
 }
 
-Unk_8002C480_vt *func_8002CC0C(void) {
+SoundBankVtbl *Sound_GetBankClass(void) {
     return &D_8006DA34;
 }
 
-s32 func_8002CC1C(void) {
-    return D_8008A8C4;
+s32 Sound_GetBankCount(void) {
+    return g_bankCount;
 }
 
 s32 func_8002CC28(void) {
     return D_8008A8CC;
 }
 
-s32 func_8002CC34(s32 arg0, Unk_8002CC34 *arg1, s32 arg2, s32 arg3, s32 arg4) {
-    Unk_8002CC34_Entry *entry;
-    s32 none;
+s32 func_8002CC34(s32 arg0, HandlerNode *node, s32 nodeId, s32 owner, s32 handler) {
+    HandlerVoice *voice;
+    s32 noVoice;
     s32 i;
 
-    if (arg1->unk0 != 0) {
+    if (node->id != 0) {
         return 0;
     }
-    entry = arg1->entries;
-    none = -1;
-    arg1->unk0 = arg2;
-    arg1->unk8 = arg3;
-    arg1->unkC = arg4;
+    voice = node->voices;
+    noVoice = -1;
+    node->id = nodeId;
+    node->owner = owner;
+    node->handler = handler;
     for (i = 2; i >= 0; i--) {
-        entry->unk0 = none;
-        entry++;
+        voice->voice = noVoice;
+        voice++;
     }
-    arg1->unk4 = 0;
-    arg1->unk14 = 0xA;
+    node->tick = 0;
+    node->fadeSteps = 0xA;
     return 1;
 }
 
-void func_8002CC84(Unk_8002CC84 *arg0, Unk_8002CC34 *arg1) {
-    Unk_8002CC34_Entry *entry;
+void func_8002CC84(SoundBank *bank, HandlerNode *node) {
+    HandlerVoice *voice;
     s32 i;
 
-    entry = arg1->entries;
-    for (i = 0; i < 3; i++, entry++) {
-        if (entry->unk0 >= 0) {
-            entry->unk0 = arg0->vt->unk84(arg0, entry->unk0);
+    voice = node->voices;
+    for (i = 0; i < 3; i++, voice++) {
+        if (voice->voice >= 0) {
+            voice->voice = bank->vt->stopVoice(bank, voice->voice);
         }
     }
-    arg1->unk0 = 0;
+    node->id = 0;
 }
 
-void func_8002CD08(Unk_8002CC84 *arg0, Unk_8002CC34 *arg1) {
-    Unk_8002CC34_Entry *e;
-    void (*cb)(s32, void *);
+void func_8002CD08(SoundBank *bank, HandlerNode *node) {
+    HandlerVoice *voice;
+    void (*callback)(s32, void *);
     s32 i;
-    s32 slot;
+    s32 activeVoice;
 
-    if (arg1->unk0 > 0) {
-        for (e = arg1->entries, i = 0; i < 3; i++, e++) {
-            e->unk4[0] = -1;
-            e->unk4[1] = 0;
-            e->unk4[2] = 0x7F;
-            e->unk4[3] = 0x40;
+    if (node->id > 0) {
+        for (voice = node->voices, i = 0; i < 3; i++, voice++) {
+            voice->sound = -1;
+            voice->octave = 0;
+            voice->volume = 0x7F;
+            voice->endVolume = 0x40;
         }
-        cb = (void (*)(s32, void *)) arg1->unkC;
-        arg1->unk10 = 0;
-        if (cb != NULL) {
-            cb(arg1->unk8, arg1);
+        callback = (void (*)(s32, void *)) node->handler;
+        node->fade = 0;
+        if (callback != NULL) {
+            callback(node->owner, node);
         }
-        if (arg1->unk10 >= 0) {
-            for (e = arg1->entries, i = 0; i < 3; i++, e++) {
-                if (e->unk4[0] >= 0) {
-                    slot = e->unk0;
-                    if (slot >= 0) {
-                        arg0->vt->unk84(arg0, slot);
+        if (node->fade >= 0) {
+            for (voice = node->voices, i = 0; i < 3; i++, voice++) {
+                if (voice->sound >= 0) {
+                    activeVoice = voice->voice;
+                    if (activeVoice >= 0) {
+                        bank->vt->stopVoice(bank, activeVoice);
                     }
-                    arg0->vt->unk9C(arg0, e->unk4[1]);
-                    e->unk0 = arg0->vt->unk80(arg0, e->unk4[0] << 4, e->unk4[2] - (e->unk4[2] / arg1->unk14) * arg1->unk10, e->unk4[3] - (e->unk4[3] / arg1->unk14) * arg1->unk10);
-                } else if (e->unk4[0] == -2) {
-                    slot = e->unk0;
-                    if (slot >= 0) {
-                        arg0->vt->unk84(arg0, slot);
+                    bank->vt->setOctave(bank, voice->octave);
+                    voice->voice = bank->vt->playTone(bank, voice->sound << 4, voice->volume - (voice->volume / node->fadeSteps) * node->fade, voice->endVolume - (voice->endVolume / node->fadeSteps) * node->fade);
+                } else if (voice->sound == -2) {
+                    activeVoice = voice->voice;
+                    if (activeVoice >= 0) {
+                        bank->vt->stopVoice(bank, activeVoice);
                     }
                 }
             }
         }
-        arg1->unk4++;
+        node->tick++;
     }
 }

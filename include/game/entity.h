@@ -17,7 +17,7 @@ typedef struct EntityRecord {
     s8 wakeMode;     /* 0x03 0 at spawn, 1 in range, 2 out of range, 3 in range and 1/128, 4 1/128 anywhere */
     u8 sleepMode;    /* 0x04 1 in range, 2 out of range, >= 10 after sleepMode * 15 ticks */
     s8 wakeRange;    /* 0x05 range of the wake and sleep tests, << 11 */
-    s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (func_8001EACC) */
+    s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (Entity_FaceDreamer) */
     s8 link;         /* 0x07 > 0 stage link - 1, < 0 stage ~link (slot 0x154) */
     s8 video;        /* 0x08 event video + 1 (slot 0x158); with link < 0, link radius << 9 */
     s8 unk9;         /* 0x09 last parameter of every range test (Entity_IsInRange) */
@@ -112,7 +112,7 @@ typedef struct EntityVtbl {
     void (*unk130)(void *self);
     u8 pad_134[0x144 - 0x134];
     s32 (*distanceTo)();                                      /* 0x144 Entity_GroundDistance */
-    s32 (*unk148)(void *self);                                /* 0x148 func_8005D864 */
+    s32 (*unk148)(void *self);                                /* 0x148 Entity_GetSoundFade */
     EntityRecord *(*getRecord)(void *self);                   /* 0x14C Entity_GetRecord */
     s32 (*getPoints)(void *self);                             /* 0x150 Entity_GetPoints */
     s32 (*getLinkStage)(void *self);                          /* 0x154 Entity_GetLinkStage */

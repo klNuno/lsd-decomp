@@ -1,30 +1,37 @@
 #include "common.h"
+#include "game/heap.h"
 
-struct Unk_8001F360 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-};
-struct Unk_8001F33C {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    u32 *unkC;
-};
+/* 16-byte value at +0x14 of a ModelObject, copied in by ModelObject_SetValue */
+typedef struct ModelObjectValue {
+    s32 unk_00;
+    s32 unk_04;
+    s32 unk_08;
+    s32 unk_0C;
+} ModelObjectValue;
+
+/*
+ * One model object: the 0x24-byte Object subclass made by ModelObject_Create, one per TMD object.
+ * Its vtable is g_modelObjectVtbl (g_modelObjectVtbl). The first three fields are the Object root
+ * of heap.h, kept as s32 because the constructor stores an s32 in them (see the report).
+ */
+typedef struct ModelObject {
+    s32 vtbl;               /* +0x00 ObjectVtbl * in heap.h */
+    ListNode *watched;      /* +0x04 */
+    ListNode *watchers;     /* +0x08 */
+    s32 tmdObjectBase;      /* +0x0C tmdObject - 0xC, see ModelObject_GetObjectAt */
+    s32 tmdObject;          /* +0x10 address of the TMD object entry */
+    ModelObjectValue value; /* +0x14 */
+} ModelObject;
+
+/* ModelObject_MapModelingData reads +0x0C as a u32 pointer for GsMapModelingData, see the report */
+typedef struct ModelObjectMapView {
+    u8 pad_00[0xC];
+    u32 *tmdObjectBase;
+} ModelObjectMapView;
+
 extern void GsMapModelingData(u32 *p);
-struct Unk_8001F314_Data {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-};
-struct Unk_8001F314 {
-    u8 pad_00[0x14];
-    struct Unk_8001F314_Data unk14;
-};
-extern u8 D_8008B21C[];
-void func_8001F3B0(void *arg0, u8 *arg1);
+extern u8 g_modelBox[];
+void ModelObject_ComputeBox(void *modelObject, u8 *out);
 struct Unk_800204D0_Q {
     u8 pad_00[0x6];
     u16 unk6;
@@ -57,26 +64,15 @@ struct Unk_80020510_Arg {
     s16 unk0;
     s16 unk2;
 };
-typedef struct Unk_8001F2B0_Ret {
-    u8 pad_00[0x8];
-    void (*unk8)(void *);
-} Unk_8001F2B0_Ret;
-typedef struct Unk_8001F2B0 {
-    s32 unk0;
-    u8 pad_04[0x8];
-    s32 unkC;
-    s32 unk10;
-} Unk_8001F2B0;
+
 void *Object_GetBaseVtbl(void);
-s32 func_8001F384(void);
-void func_8001F394(void *arg0);
-struct Unk_8001F250 {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32);
-};
+s32 ModelObject_GetVtbl(void);
+void ModelObject_SetReady(void *modelObject);
 void *Heap_Alloc(s32 size);
-struct Unk_8001F51C {
-    s32 unk0;
+
+/* Output of ModelObject_GetBoxList: count 1, then the eight corners of a box as u16 (hex offsets) */
+typedef struct ModelBoxOut {
+    s32 count;
     u16 unk4;
     u16 unk6;
     u16 unk8;
@@ -101,14 +97,19 @@ struct Unk_8001F51C {
     u16 unk2E;
     u16 unk30;
     u16 unk32;
-};
-struct Unk_8001F51C_tmp {
+} ModelBoxOut;
+
+/* Scratch buffer of ModelObject_GetBoxList: min x, y, z then max x, y, z */
+typedef struct ModelBoxBuf {
     s32 one;
     u16 buf[6];
-};
-extern u8 D_8006BEA0[];
-s32 D_8008AC4C;
-typedef struct Unk_80020050_Prim {
+} ModelBoxBuf;
+
+extern u8 g_modelObjectVtbl[];
+s32 g_modelObjectReady;
+
+/* One primitive of a TMD object: the GPU polygon code is in unk3 (0x20 to 0x3F) */
+typedef struct ModelPrim {
     u8 unk0;
     u8 unk1;
     u8 unk2;
@@ -133,314 +134,317 @@ typedef struct Unk_80020050_Prim {
     u16 unk26;
     u16 unk28;
     u16 unk2A;
-} Unk_80020050_Prim;
-typedef struct Unk_80020050_Vec {
+} ModelPrim;
+
+typedef struct ModelVec {
     s16 x;
     s16 y;
     s16 z;
-} Unk_80020050_Vec;
-typedef struct Unk_80020050_Vert {
-    Unk_80020050_Vec v;
+} ModelVec;
+
+typedef struct ModelVertex {
+    ModelVec pos;
     s16 pad;
-} Unk_80020050_Vert;
-typedef struct Unk_80020050_Model {
-    Unk_80020050_Vert *unk0;
-    u8 pad_04[0xC];
-    Unk_80020050_Prim *unk10;
-    u32 unk14;
-} Unk_80020050_Model;
-typedef struct Unk_80020050 {
+} ModelVertex;
+
+/* One TMD object table entry, 0x1C bytes (the same layout as TmdObjectEntry in loader.h) */
+typedef struct ModelEntry {
+    ModelVertex *vertices;  /* +0x00 */
+    s32 vertexCount;        /* +0x04, read by ModelObject_ComputeBox */
+    void *normals;          /* +0x08 */
+    s32 normalCount;        /* +0x0C */
+    ModelPrim *primitives;  /* +0x10, read by ModelObject_NextPrim */
+    u32 primitiveCount;     /* +0x14, read by ModelObject_NextPrim */
+    s32 scale;              /* +0x18 */
+} ModelEntry;
+
+/* A model object as the mesh and draw functions read it: its TMD entry is at +0x10 */
+typedef struct ModelObjectView {
     u8 pad_00[0x10];
-    Unk_80020050_Model *unk10;
-} Unk_80020050;
-typedef struct {
+    ModelEntry *entry;
+} ModelObjectView;
+
+/* One box corner, u16 coordinates */
+typedef struct ModelBoxCorner {
     u16 x;
     u16 y;
     u16 z;
-} Unk_8001F66C_V;
-typedef struct {
-    Unk_8001F66C_V v[8];
-} Unk_8001F66C_Rec;
-struct Unk_8001F66C {
+} ModelBoxCorner;
+
+typedef struct ModelBoxRecord {
+    ModelBoxCorner v[8];
+} ModelBoxRecord;
+
+typedef struct ModelBoxList {
     s32 count;
-    Unk_8001F66C_Rec recs[1];
-};
-typedef struct Unk_8001F3B0_Vec {
-    s16 x, y, z;
-} Unk_8001F3B0_Vec;
-typedef struct Unk_8001F3B0_Box {
-    Unk_8001F3B0_Vec min;
-    Unk_8001F3B0_Vec max;
-} Unk_8001F3B0_Box;
-typedef struct Unk_8001F3B0_Vert {
-    s16 x, y, z, pad;
-} Unk_8001F3B0_Vert;
-typedef struct Unk_8001F3B0_Mesh {
-    Unk_8001F3B0_Vert *verts;
-    s32 count;
-} Unk_8001F3B0_Mesh;
-typedef struct Unk_8001F3B0 {
-    u8 pad_00[0x10];
-    Unk_8001F3B0_Mesh *unk10;
-} Unk_8001F3B0;
-void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk_80020050_Vec *out, u32 *index);
-typedef struct Unk_8001F8B8_LVec { s32 x; s32 y; s32 z; s32 pad; } Unk_8001F8B8_LVec;
-typedef struct Unk_8001F8B8_SVec { s16 x; s16 y; s16 z; s16 pad; } Unk_8001F8B8_SVec;
-typedef struct Unk_8001F8B8_Frac { s32 num; s32 den; } Unk_8001F8B8_Frac;
-void OuterProduct0(Unk_8001F8B8_LVec *a, Unk_8001F8B8_LVec *b, Unk_8001F8B8_LVec *out);
-void Square0(Unk_8001F8B8_LVec *in, Unk_8001F8B8_LVec *out);
+    ModelBoxRecord recs[1];
+} ModelBoxList;
+
+typedef struct ModelBox {
+    ModelVec min;
+    ModelVec max;
+} ModelBox;
+
+void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
+
+typedef struct HitLongVec { s32 x; s32 y; s32 z; s32 pad; } HitLongVec;
+typedef struct HitShortVec { s16 x; s16 y; s16 z; s16 pad; } HitShortVec;
+typedef struct HitFraction { s32 num; s32 den; } HitFraction;
+void OuterProduct0(HitLongVec *a, HitLongVec *b, HitLongVec *out);
+void Square0(HitLongVec *in, HitLongVec *out);
 s32 SquareRoot0(s32 a);
 #define ABS(x) ((x) < 0 ? ~(x) + 1 : (x))
 #define FIX_DIV(n, d) ((((n) / (d)) != 0 ? ((n) / (d)) << 16 : ((n) * (d)) & 0x80000000) | (ABS((n) % (d)) << 16) / ABS(d))
 
 
-void *func_8001F250(s32 arg0) {
-    void *temp;
+void *ModelObject_Create(s32 tmdObject) {
+    void *modelObject;
 
-    temp = Heap_Alloc(0x24);
-    if (temp != 0) {
-        ((struct Unk_8001F250 *)func_8001F384())->unk8(temp, arg0);
-        return temp;
+    modelObject = Heap_Alloc(0x24);
+    if (modelObject != 0) {
+        ((ObjectVtbl *)ModelObject_GetVtbl())->init(modelObject, tmdObject);
+        return modelObject;
     }
     return 0;
 }
 
-void func_8001F2B0(Unk_8001F2B0 *arg0, s32 arg1) {
-    s32 temp;
+void ModelObject_Init(ModelObject *modelObject, s32 tmdObject) {
+    s32 vtbl;
 
-    ((Unk_8001F2B0_Ret *)Object_GetBaseVtbl())->unk8(arg0);
-    temp = func_8001F384();
-    arg0->unk10 = arg1;
-    arg0->unk0 = temp;
-    arg0->unkC = arg1 - 0xC;
-    func_8001F394(arg0);
+    ((ObjectVtbl *)Object_GetBaseVtbl())->init(modelObject);
+    vtbl = ModelObject_GetVtbl();
+    modelObject->tmdObject = tmdObject;
+    modelObject->vtbl = vtbl;
+    modelObject->tmdObjectBase = tmdObject - 0xC;
+    ModelObject_SetReady(modelObject);
 }
 
-void func_8001F314(struct Unk_8001F314 *arg0, struct Unk_8001F314_Data *arg1) {
-    arg0->unk14 = *arg1;
+void ModelObject_SetValue(ModelObject *modelObject, ModelObjectValue *value) {
+    modelObject->value = *value;
 }
 
-void func_8001F33C(struct Unk_8001F33C *arg0) {
-    GsMapModelingData(arg0->unkC + 1);
+void ModelObject_MapModelingData(ModelObjectMapView *modelObject) {
+    GsMapModelingData(modelObject->tmdObjectBase + 1);
 }
 
-s32 func_8001F360(struct Unk_8001F360 *arg0, s32 arg1) {
-    s32 offset = arg1 * 0x1C + 0xC;
-    return offset + arg0->unkC;
+s32 ModelObject_GetObjectAt(ModelObject *modelObject, s32 index) {
+    s32 offset = index * 0x1C + 0xC;
+    return offset + modelObject->tmdObjectBase;
 }
 
 void func_8001F37C(void) {
 }
 
-s32 func_8001F384(void) {
-    return (s32)D_8006BEA0;
+s32 ModelObject_GetVtbl(void) {
+    return (s32)g_modelObjectVtbl;
 }
 
-void func_8001F394(void *arg0) {
-    D_8008AC4C = 1;
+void ModelObject_SetReady(void *modelObject) {
+    g_modelObjectReady = 1;
 }
 
-s32 func_8001F3A4(s32 arg0) {
-    return D_8008AC4C;
+s32 ModelObject_IsReady(s32 arg0) {
+    return g_modelObjectReady;
 }
 
-void func_8001F3B0(void *arg0, u8 *arg1) {
-    Unk_8001F3B0_Box *box;
-    Unk_8001F3B0_Vert *v;
+void ModelObject_ComputeBox(void *modelObject, u8 *out) {
+    ModelBox *box;
+    ModelVertex *v;
     s16 *miny;
     s16 *minz;
     s16 *maxx;
     s16 *maxy;
     s16 *maxz;
-    s32 n;
+    s32 remaining;
     s32 i;
 
-    box = (Unk_8001F3B0_Box *)arg1;
+    box = (ModelBox *)out;
     miny = &box->min.y;
     minz = &box->min.z;
     maxx = &box->max.x;
     maxy = &box->max.y;
     maxz = &box->max.z;
-    v = ((Unk_8001F3B0 *)arg0)->unk10->verts;
-    n = ((Unk_8001F3B0 *)arg0)->unk10->count - 1;
-    box->min.x = v->x;
-    box->min.y = v->y;
-    box->min.z = v->z;
+    v = ((ModelObjectView *)modelObject)->entry->vertices;
+    remaining = ((ModelObjectView *)modelObject)->entry->vertexCount - 1;
+    box->min.x = v->pos.x;
+    box->min.y = v->pos.y;
+    box->min.z = v->pos.z;
     box->max = box->min;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < remaining; i++) {
         v++;
-        if (v->x < box->min.x) {
-            box->min.x = v->x;
+        if (v->pos.x < box->min.x) {
+            box->min.x = v->pos.x;
         }
-        if (v->y < *miny) {
-            *miny = v->y;
+        if (v->pos.y < *miny) {
+            *miny = v->pos.y;
         }
-        if (v->z < *minz) {
-            *minz = v->z;
+        if (v->pos.z < *minz) {
+            *minz = v->pos.z;
         }
-        if (*maxx < v->x) {
-            *maxx = v->x;
+        if (*maxx < v->pos.x) {
+            *maxx = v->pos.x;
         }
-        if (*maxy < v->y) {
-            *maxy = v->y;
+        if (*maxy < v->pos.y) {
+            *maxy = v->pos.y;
         }
-        if (*maxz < v->z) {
-            *maxz = v->z;
+        if (*maxz < v->pos.z) {
+            *maxz = v->pos.z;
         }
     }
 }
 
-void func_8001F4E4(void *arg0) {
-    func_8001F3B0(arg0, D_8008B21C);
+void ModelObject_UpdateBox(void *modelObject) {
+    ModelObject_ComputeBox(modelObject, g_modelBox);
 }
 
-void *func_8001F50C(void) {
-    return D_8008B21C;
+void *ModelObject_GetBox(void) {
+    return g_modelBox;
 }
 
-void func_8001F51C(void *arg0, struct Unk_8001F51C *arg1) {
-    struct Unk_8001F51C_tmp t;
+void ModelObject_GetBoxList(void *modelObject, ModelBoxOut *out) {
+    ModelBoxBuf box;
 
-    func_8001F3B0(arg0, (u8 *)t.buf);
-    t.one = 1;
-    arg1->unk4 = t.buf[0];
-    arg1->unk6 = t.buf[1];
-    arg1->unk8 = t.buf[2];
-    arg1->unkA = t.buf[0];
-    arg1->unkC = t.buf[4];
-    arg1->unkE = t.buf[2];
-    arg1->unk10 = t.buf[3];
-    arg1->unk12 = t.buf[4];
-    arg1->unk14 = t.buf[2];
-    arg1->unk16 = t.buf[3];
-    arg1->unk18 = t.buf[1];
-    arg1->unk1A = t.buf[2];
-    arg1->unk1C = t.buf[0];
-    arg1->unk1E = t.buf[1];
-    arg1->unk20 = t.buf[5];
-    arg1->unk22 = t.buf[0];
-    arg1->unk24 = t.buf[4];
-    arg1->unk26 = t.buf[5];
-    arg1->unk28 = t.buf[3];
-    arg1->unk2A = t.buf[4];
-    arg1->unk2C = t.buf[5];
-    arg1->unk2E = t.buf[3];
-    arg1->unk30 = t.buf[1];
-    arg1->unk32 = t.buf[5];
-    arg1->unk0 = 1;
+    ModelObject_ComputeBox(modelObject, (u8 *)box.buf);
+    box.one = 1;
+    out->unk4 = box.buf[0];
+    out->unk6 = box.buf[1];
+    out->unk8 = box.buf[2];
+    out->unkA = box.buf[0];
+    out->unkC = box.buf[4];
+    out->unkE = box.buf[2];
+    out->unk10 = box.buf[3];
+    out->unk12 = box.buf[4];
+    out->unk14 = box.buf[2];
+    out->unk16 = box.buf[3];
+    out->unk18 = box.buf[1];
+    out->unk1A = box.buf[2];
+    out->unk1C = box.buf[0];
+    out->unk1E = box.buf[1];
+    out->unk20 = box.buf[5];
+    out->unk22 = box.buf[0];
+    out->unk24 = box.buf[4];
+    out->unk26 = box.buf[5];
+    out->unk28 = box.buf[3];
+    out->unk2A = box.buf[4];
+    out->unk2C = box.buf[5];
+    out->unk2E = box.buf[3];
+    out->unk30 = box.buf[1];
+    out->unk32 = box.buf[5];
+    out->count = 1;
 }
 
-void func_8001F66C(struct Unk_8001F66C *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    Unk_8001F66C_Rec t;
-    Unk_8001F66C_Rec *rec;
+void ModelBox_ShiftList(ModelBoxList *list, s32 alongX, s32 side, s32 delta) {
+    ModelBoxRecord copy;
+    ModelBoxRecord *rec;
     s32 i;
 
-    for (i = 0; i < arg0->count; i++) {
-        rec = &arg0->recs[i];
-        if (arg1 != 0) {
-            t = *rec;
-            rec->v[3] = t.v[0];
-            rec->v[2] = t.v[1];
-            rec->v[6] = t.v[2];
-            rec->v[7] = t.v[3];
-            rec->v[0] = t.v[4];
-            rec->v[1] = t.v[5];
-            rec->v[5] = t.v[6];
-            rec->v[4] = t.v[7];
-            if (arg2 == 0) {
+    for (i = 0; i < list->count; i++) {
+        rec = &list->recs[i];
+        if (alongX != 0) {
+            copy = *rec;
+            rec->v[3] = copy.v[0];
+            rec->v[2] = copy.v[1];
+            rec->v[6] = copy.v[2];
+            rec->v[7] = copy.v[3];
+            rec->v[0] = copy.v[4];
+            rec->v[1] = copy.v[5];
+            rec->v[5] = copy.v[6];
+            rec->v[4] = copy.v[7];
+            if (side == 0) {
                 s32 j;
 
                 for (j = 0; j < 4; j++) {
-                    rec->v[j].x += arg3;
+                    rec->v[j].x += delta;
                 }
             } else {
-                Unk_8001F66C_V *p = rec->v;
+                ModelBoxCorner *p = rec->v;
                 s32 j;
 
                 for (j = 0; j < 4; j++) {
-                    p[j + 4].x += arg3;
+                    p[j + 4].x += delta;
                 }
             }
         } else {
-            if (arg2 == 0) {
+            if (side == 0) {
                 s32 j;
 
                 for (j = 0; j < 4; j++) {
-                    rec->v[j].z += arg3;
+                    rec->v[j].z += delta;
                 }
             } else {
-                Unk_8001F66C_V *p = rec->v;
+                ModelBoxCorner *p = rec->v;
                 s32 j;
 
                 for (j = 0; j < 4; j++) {
-                    p[j + 4].z += arg3;
+                    p[j + 4].z += delta;
                 }
             }
         }
     }
 }
 
-s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *heightOut,
-                  Unk_80020050_Vec *from, Unk_80020050_Vec *to) {
-    Unk_80020050_Vec v[4];
-    Unk_8001F8B8_LVec n;
-    Unk_80020050_Vec ray[2];
-    Unk_80020050_Vec hit;
-    s32 count;
-    u32 index;
-    Unk_80020050_Prim *prim;
-    s32 ret;
-    s32 fx, i;
+/* Ray against the triangles and quads of one model object: keeps the nearest hit */
+s32 ModelObject_RayTest(ModelObjectView *modelObject, s32 *hitDist, ModelVec *hitPos, s32 *hitHeight,
+                  ModelVec *from, ModelVec *to) {
+    ModelVec corners[4];
+    HitLongVec normal;
+    ModelVec ray[2];
+    ModelVec hit;
+    s32 vertCount;
+    u32 primIndex;
+    ModelPrim *prim;
+    s32 found;
+    s32 tFix, i;
 
-    index = 0;
-    *dist = 0x7FFFFFFF;
+    primIndex = 0;
+    *hitDist = 0x7FFFFFFF;
     ray[0].x = from->x;
     ray[0].y = from->y;
     ray[0].z = from->z;
     ray[1].x = to->x - from->x;
     ray[1].y = to->y - from->y;
     ray[1].z = to->z - from->z;
-    ret = 0;
-    while ((prim = func_80020050(arg0, prim, &count, v, &index)) != NULL) {
-        Unk_8001F8B8_LVec spare;
-        Unk_8001F8B8_SVec e1;
-        Unk_8001F8B8_SVec e2;
-        Unk_8001F8B8_LVec c;
-        Unk_8001F8B8_LVec a;
-        Unk_8001F8B8_LVec b;
-        Unk_8001F8B8_Frac fa;
-        Unk_8001F8B8_Frac ft;
+    found = 0;
+    while ((prim = ModelObject_NextPrim(modelObject, prim, &vertCount, corners, &primIndex)) != NULL) {
+        HitLongVec spare;
+        HitShortVec e1;
+        HitShortVec e2;
+        HitLongVec c;
+        HitLongVec a;
+        HitLongVec b;
+        HitFraction fa;
+        HitFraction ft;
         s32 w[3];
-        Unk_8001F8B8_LVec d;
-        Unk_8001F8B8_LVec sq;
+        HitLongVec d;
+        HitLongVec sq;
         union {
-            Unk_8001F8B8_LVec sq;
-            Unk_80020050_Vec box[2];
+            HitLongVec sq;
+            ModelVec box[2];
         } u;
         s32 len[2];
 
-        e1.x = v[1].x - v[0].x;
-        e1.y = v[1].y - v[0].y;
-        e1.z = v[1].z - v[0].z;
-        e2.x = v[2].x - v[0].x;
-        e2.y = v[2].y - v[0].y;
-        e2.z = v[2].z - v[0].z;
+        e1.x = corners[1].x - corners[0].x;
+        e1.y = corners[1].y - corners[0].y;
+        e1.z = corners[1].z - corners[0].z;
+        e2.x = corners[2].x - corners[0].x;
+        e2.y = corners[2].y - corners[0].y;
+        e2.z = corners[2].z - corners[0].z;
         a.x = e1.x; a.y = e1.y; a.z = e1.z;
         b.x = e2.x; b.y = e2.y; b.z = e2.z;
         OuterProduct0(&a, &b, &c);
-        n.x = c.x; n.y = c.y; n.z = c.z;
-        n.x /= 4096;
-        n.y /= 4096;
-        n.z /= 4096;
-        n.pad = -(v[0].x * n.x + v[0].y * n.y + v[0].z * n.z);
-        w[0] = ray[1].x * n.x + ray[1].y * n.y + ray[1].z * n.z;
+        normal.x = c.x; normal.y = c.y; normal.z = c.z;
+        normal.x /= 4096;
+        normal.y /= 4096;
+        normal.z /= 4096;
+        normal.pad = -(corners[0].x * normal.x + corners[0].y * normal.y + corners[0].z * normal.z);
+        w[0] = ray[1].x * normal.x + ray[1].y * normal.y + ray[1].z * normal.z;
         if (ABS(w[0]) <= 0) {
             w[1] = 2;
         } else {
             c.x = w[0];
             c.y = 1;
-            w[2] = ray[0].x * n.x + ray[0].y * n.y + ray[0].z * n.z;
-            w[2] += n.pad;
+            w[2] = ray[0].x * normal.x + ray[0].y * normal.y + ray[0].z * normal.z;
+            w[2] += normal.pad;
             fa.num = -w[2];
             fa.den = 1;
             ft.num = fa.num * c.y;
@@ -449,18 +453,18 @@ s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *
                 ft.num /= 4096;
                 ft.den /= 4096;
             }
-            fx = FIX_DIV(ft.num, ft.den);
-            if (fx < 0) {
+            tFix = FIX_DIV(ft.num, ft.den);
+            if (tFix < 0) {
                 w[1] = 0;
             } else {
                 d.x = ray[1].x; d.y = ray[1].y; d.z = ray[1].z;
-                b.x = (ray[1].x * fx) >> 16;
+                b.x = (ray[1].x * tFix) >> 16;
                 a.x = ray[0].x + b.x;
                 b.x = a.x - ray[0].x;
-                b.y = (ray[1].y * fx) >> 16;
+                b.y = (ray[1].y * tFix) >> 16;
                 a.y = ray[0].y + b.y;
                 b.y = a.y - ray[0].y;
-                b.z = (ray[1].z * fx) >> 16;
+                b.z = (ray[1].z * tFix) >> 16;
                 a.z = ray[0].z + b.z;
                 b.z = a.z - ray[0].z;
                 Square0(&d, &sq);
@@ -481,7 +485,7 @@ s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *
             }
         }
         if (w[1] == 1) {
-            Unk_80020050_Vec *p;
+            ModelVec *p;
             s16 *x0 = &u.box[0].x;
             s16 *y0 = &u.box[0].y;
             s16 *z0 = &u.box[0].z;
@@ -489,10 +493,10 @@ s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *
             s16 *y1 = &u.box[1].y;
             s16 *z1 = &u.box[1].z;
 
-            p = v;
+            p = corners;
             u.box[0] = *p;
             u.box[1] = u.box[0];
-            for (i = 0; i < count - 1; i++) {
+            for (i = 0; i < vertCount - 1; i++) {
                 p++;
                 if (p->x < *x0) *x0 = p->x;
                 if (p->y < *y0) *y0 = p->y;
@@ -503,34 +507,35 @@ s32 func_8001F8B8(Unk_80020050 *arg0, s32 *dist, Unk_80020050_Vec *hitOut, s32 *
             }
             if (hit.x >= u.box[0].x - 24 && hit.y >= u.box[0].y - 24 && hit.z >= u.box[0].z - 24 &&
                 u.box[1].x + 24 >= hit.x && u.box[1].y + 24 >= hit.y && u.box[1].z + 24 >= hit.z) {
-                ret = 1;
-                if (len[0] < *dist) {
-                    *dist = len[0];
-                    *hitOut = hit;
-                    if (heightOut != NULL) {
-                        *heightOut = hit.y - u.box[0].y;
+                found = 1;
+                if (len[0] < *hitDist) {
+                    *hitDist = len[0];
+                    *hitPos = hit;
+                    if (hitHeight != NULL) {
+                        *hitHeight = hit.y - u.box[0].y;
                     }
                 }
             }
         }
     }
-    return ret;
+    return found;
 }
 
-void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk_80020050_Vec *out, u32 *index) {
+/* Walks the primitives of a model object, one per call, and copies up to four corners to out */
+void *ModelObject_NextPrim(ModelObjectView *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex) {
     s32 idx[4];
     s32 size;
     s32 i;
-    Unk_80020050_Model *model;
-    Unk_80020050_Vert *verts;
-    Unk_80020050_Vert *v;
+    ModelEntry *model;
+    ModelVertex *verts;
+    ModelVertex *v;
 
-    model = arg0->unk10;
-    if (model->unk14 == 0 || *index >= model->unk14) {
+    model = modelObject->entry;
+    if (model->primitiveCount == 0 || *primIndex >= model->primitiveCount) {
         return NULL;
     }
-    if (*index == 0) {
-        prim = model->unk10;
+    if (*primIndex == 0) {
+        prim = model->primitives;
     }
     *count = 4;
     switch (prim->unk3) {
@@ -696,13 +701,13 @@ void *func_80020050(Unk_80020050 *arg0, Unk_80020050_Prim *prim, s32 *count, Unk
         *count = 0;
         break;
     }
-    verts = arg0->unk10->unk0;
+    verts = modelObject->entry->vertices;
     for (i = 0; i < *count; i++) {
         v = &verts[idx[i]];
-        *out = v->v;
+        *out = v->pos;
         out++;
     }
-    (*index)++;
+    (*primIndex)++;
     return (u8 *)prim + size;
 }
 
