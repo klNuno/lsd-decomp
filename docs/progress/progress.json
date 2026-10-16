@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "commit": "a7b3fbf",
+ "commit": "a483d62",
  "tracked_tree_dirty": false,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
@@ -3414,13 +3414,13 @@
     {
      "name": "_patch_gte",
      "address": "0x80024C40",
-     "bytes": 112,
+     "bytes": 104,
      "level": "sony"
     },
     {
-     "name": "func_80024CB0",
-     "address": "0x80024CB0",
-     "bytes": 48,
+     "name": "D_80024CA8",
+     "address": "0x80024CA8",
+     "bytes": 56,
      "level": "sony"
     },
     {
