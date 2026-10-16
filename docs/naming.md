@@ -1,5 +1,7 @@
 # Naming guide
 
+How the systems behind these names work is in [the engine docs](engine/README.md).
+
 A wrong name costs more than no name. Rename only with evidence, and write the evidence down.
 
 ## Default names
