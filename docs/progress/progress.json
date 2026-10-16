@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "commit": "2f6b18c",
+ "commit": "13f1667",
  "tracked_tree_dirty": false,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
@@ -14,16 +14,16 @@
     "bytes": 204
    },
    "named": {
-    "functions": 140,
-    "bytes": 33208
+    "functions": 139,
+    "bytes": 33032
    },
    "read": {
-    "functions": 1299,
-    "bytes": 176760
+    "functions": 1300,
+    "bytes": 176936
    }
   },
   "unknowns": {
-   "unk_fields": 201,
+   "unk_fields": 199,
    "m2c_names": 25,
    "unk_types": 3,
    "d_globals": 14
@@ -34,7 +34,7 @@
  },
  "units": [
   {
-   "unit": "src/game/800118DC.c",
+   "unit": "src/game/main.c",
    "game": true,
    "bytes": 184,
    "functions": [
@@ -127,7 +127,7 @@
    "libraries": "2MBYTE, LIBAPI, MALLOC"
   },
   {
-   "unit": "src/game/80012064.c",
+   "unit": "src/game/scene_draw.c",
    "game": true,
    "bytes": 1796,
    "functions": [
@@ -736,9 +736,9 @@
    "libraries": "LIBAPI, LIBC2, LIBGS, LIBGTE"
   },
   {
-   "unit": "src/game/80017A20.c",
+   "unit": "src/game/heap.c",
    "game": true,
-   "bytes": 11076,
+   "bytes": 2628,
    "functions": [
     {
      "name": "Heap_Create",
@@ -1058,7 +1058,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Heap"
+  },
+  {
+   "unit": "src/game/render.c",
+   "game": true,
+   "bytes": 8448,
+   "functions": [
     {
      "name": "Render_SortModel",
      "address": "0x80018464",
@@ -1512,7 +1520,7 @@
    "libraries": "LIBGTE"
   },
   {
-   "unit": "src/game/8001CA94.c",
+   "unit": "src/game/scene_node.c",
    "game": true,
    "bytes": 9436,
    "functions": [
@@ -2145,7 +2153,7 @@
    "libraries": "LIBGS, LIBGTE"
   },
   {
-   "unit": "src/game/8001F250.c",
+   "unit": "src/game/model_object.c",
    "game": true,
    "bytes": 4856,
    "functions": [
@@ -2377,7 +2385,7 @@
    "libraries": "LIBGS, LIBGTE"
   },
   {
-   "unit": "src/game/800206E0.c",
+   "unit": "src/game/display.c",
    "game": true,
    "bytes": 1428,
    "functions": [
@@ -3659,7 +3667,7 @@
    "libraries": "LIBAPI, LIBC2, LIBETC, LIBGPU, LIBGS, LIBGTE"
   },
   {
-   "unit": "src/game/80025B34.c",
+   "unit": "src/game/pad.c",
    "game": true,
    "bytes": 888,
    "functions": [
@@ -3821,9 +3829,9 @@
    "libraries": "LIBAPI, LIBETC"
   },
   {
-   "unit": "src/game/80025F7C.c",
+   "unit": "src/game/scene.c",
    "game": true,
-   "bytes": 4532,
+   "bytes": 2676,
    "functions": [
     {
      "name": "Scene_New",
@@ -4000,7 +4008,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Scene"
+  },
+  {
+   "unit": "src/game/file_base.c",
+   "game": true,
+   "bytes": 1856,
+   "functions": [
     {
      "name": "File_Delete",
      "address": "0x800269F0",
@@ -4277,7 +4293,7 @@
      "in_findings": false
     }
    ],
-   "subsystem": "Scene"
+   "subsystem": "File"
   },
   {
    "unit": "psyq/80027130.s.s",
@@ -4294,7 +4310,7 @@
    "libraries": "LIBC2"
   },
   {
-   "unit": "src/game/800271D8.c",
+   "unit": "src/game/file_cd.c",
    "game": true,
    "bytes": 6560,
    "functions": [
@@ -5216,9 +5232,9 @@
    "libraries": "LIBC2, LIBCD"
   },
   {
-   "unit": "src/game/8002C12C.c",
+   "unit": "src/game/map_models.c",
    "game": true,
-   "bytes": 3564,
+   "bytes": 660,
    "functions": [
     {
      "name": "MapModels_New",
@@ -5296,7 +5312,15 @@
      "d_globals": 0,
      "level": "address",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "MapModels"
+  },
+  {
+   "unit": "src/game/file_null.c",
+   "game": true,
+   "bytes": 192,
+   "functions": [
     {
      "name": "File_NullInit",
      "address": "0x8002C3C0",
@@ -5483,7 +5507,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "File"
+  },
+  {
+   "unit": "src/game/sound_bank.c",
+   "game": true,
+   "bytes": 1972,
+   "functions": [
     {
      "name": "Sound_CreateBank",
      "address": "0x8002C480",
@@ -5670,7 +5702,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Sound"
+  },
+  {
+   "unit": "src/game/handler_node.c",
+   "game": true,
+   "bytes": 740,
+   "functions": [
     {
      "name": "HandlerNode_Start",
      "address": "0x8002CC34",
@@ -5705,7 +5745,7 @@
      "in_findings": false
     }
    ],
-   "subsystem": "Sound"
+   "subsystem": "HandlerNode"
   },
   {
    "unit": "psyq/8002CF18.s.s",
@@ -6062,7 +6102,7 @@
    "libraries": "LIBSND"
   },
   {
-   "unit": "src/game/8003221C.c",
+   "unit": "src/game/spu.c",
    "game": true,
    "bytes": 396,
    "functions": [
@@ -6117,7 +6157,7 @@
    "libraries": "LIBSND"
   },
   {
-   "unit": "src/game/80032588.c",
+   "unit": "src/game/seq_timer.c",
    "game": true,
    "bytes": 1424,
    "functions": [
@@ -6925,7 +6965,7 @@
    "libraries": "LIBAPI, LIBSPU"
   },
   {
-   "unit": "src/game/800398E0.c",
+   "unit": "src/game/bgm.c",
    "game": true,
    "bytes": 1944,
    "functions": [
@@ -7300,7 +7340,7 @@
    "libraries": "LIBSND"
   },
   {
-   "unit": "src/game/8003AF8C.c",
+   "unit": "src/game/app.c",
    "game": true,
    "bytes": 656,
    "functions": [
@@ -7423,7 +7463,7 @@
    "libraries": "LIBCD, LIBGS"
   },
   {
-   "unit": "src/game/8003B39C.c",
+   "unit": "src/game/tim.c",
    "game": true,
    "bytes": 980,
    "functions": [
@@ -7610,9 +7650,9 @@
    "libraries": "LIBGS"
   },
   {
-   "unit": "src/game/8003B854.c",
+   "unit": "src/game/video_screen.c",
    "game": true,
-   "bytes": 14936,
+   "bytes": 1600,
    "functions": [
     {
      "name": "VideoScreen_New",
@@ -7844,7 +7884,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "VideoScreen"
+  },
+  {
+   "unit": "src/game/menu_screen.c",
+   "game": true,
+   "bytes": 8520,
+   "functions": [
     {
      "name": "MenuScreen_New",
      "address": "0x8003BE94",
@@ -8394,7 +8442,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "MenuScreen"
+  },
+  {
+   "unit": "src/game/screen.c",
+   "game": true,
+   "bytes": 1532,
+   "functions": [
     {
      "name": "Screen_Init",
      "address": "0x8003DFDC",
@@ -8515,7 +8571,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Screen"
+  },
+  {
+   "unit": "src/game/view.c",
+   "game": true,
+   "bytes": 3284,
+   "functions": [
     {
      "name": "View_New",
      "address": "0x8003E5D8",
@@ -8946,7 +9010,7 @@
      "in_findings": false
     }
    ],
-   "subsystem": "MenuScreen"
+   "subsystem": "View"
   },
   {
    "unit": "psyq/8003F2AC.s.s",
@@ -9035,9 +9099,9 @@
    "libraries": "LIBGS, LIBGTE"
   },
   {
-   "unit": "src/game/8003FDB0.c",
+   "unit": "src/game/fade.c",
    "game": true,
-   "bytes": 5068,
+   "bytes": 1824,
    "functions": [
     {
      "name": "Fade_Create",
@@ -9192,7 +9256,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Fade"
+  },
+  {
+   "unit": "src/game/box.c",
+   "game": true,
+   "bytes": 1020,
+   "functions": [
     {
      "name": "Box_Create",
      "address": "0x800404D0",
@@ -9357,7 +9429,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Box"
+  },
+  {
+   "unit": "src/game/label.c",
+   "game": true,
+   "bytes": 1780,
+   "functions": [
     {
      "name": "Label_Create",
      "address": "0x800408CC",
@@ -9522,7 +9602,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Label"
+  },
+  {
+   "unit": "src/game/text.c",
+   "game": true,
+   "bytes": 444,
+   "functions": [
     {
      "name": "Text_Decode",
      "address": "0x80040FC0",
@@ -9557,7 +9645,7 @@
      "in_findings": true
     }
    ],
-   "subsystem": "Fade"
+   "subsystem": "Text"
   },
   {
    "unit": "psyq/8004117C.s.s",
@@ -9592,9 +9680,9 @@
    "libraries": "LIBC, LIBC2"
   },
   {
-   "unit": "src/game/80041AB4.c",
+   "unit": "src/game/glyph.c",
    "game": true,
-   "bytes": 3648,
+   "bytes": 488,
    "functions": [
     {
      "name": "Glyph_Create",
@@ -9672,7 +9760,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Glyph"
+  },
+  {
+   "unit": "src/game/screen_sprite.c",
+   "game": true,
+   "bytes": 588,
+   "functions": [
     {
      "name": "ScreenSprite_Create",
      "address": "0x80041C9C",
@@ -9749,7 +9845,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "ScreenSprite"
+  },
+  {
+   "unit": "src/game/sprite_node.c",
+   "game": true,
+   "bytes": 996,
+   "functions": [
     {
      "name": "SpriteNode_Create",
      "address": "0x80041EE8",
@@ -9870,7 +9974,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "SpriteNode"
+  },
+  {
+   "unit": "src/game/seq_file.c",
+   "game": true,
+   "bytes": 308,
+   "functions": [
     {
      "name": "SeqFile_Create",
      "address": "0x800422CC",
@@ -9925,7 +10037,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "SeqFile"
+  },
+  {
+   "unit": "src/game/clock.c",
+   "game": true,
+   "bytes": 660,
+   "functions": [
     {
      "name": "Clock_Create",
      "address": "0x80042400",
@@ -10068,7 +10188,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Clock"
+  },
+  {
+   "unit": "src/game/root_node.c",
+   "game": true,
+   "bytes": 608,
+   "functions": [
     {
      "name": "RootNode_Create",
      "address": "0x80042694",
@@ -10158,7 +10286,7 @@
      "in_findings": false
     }
    ],
-   "subsystem": "SpriteNode"
+   "subsystem": "RootNode"
   },
   {
    "unit": "psyq/800428F4.s.s",
@@ -10175,7 +10303,7 @@
    "libraries": "LIBGS"
   },
   {
-   "unit": "src/game/8004291C.c",
+   "unit": "src/game/flat_light.c",
    "game": true,
    "bytes": 368,
    "functions": [
@@ -10275,9 +10403,9 @@
    "libraries": "LIBGS"
   },
   {
-   "unit": "src/game/80043008.c",
+   "unit": "src/game/tix.c",
    "game": true,
-   "bytes": 11852,
+   "bytes": 2104,
    "functions": [
     {
      "name": "Tix_Create",
@@ -10388,7 +10516,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Tix"
+  },
+  {
+   "unit": "src/game/tmd.c",
+   "game": true,
+   "bytes": 840,
+   "functions": [
     {
      "name": "Tmd_Create",
      "address": "0x80043840",
@@ -10487,7 +10623,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Tmd"
+  },
+  {
+   "unit": "src/game/tim_pack.c",
+   "game": true,
+   "bytes": 764,
+   "functions": [
     {
      "name": "TimPack_Create",
      "address": "0x80043B88",
@@ -10553,7 +10697,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "TimPack"
+  },
+  {
+   "unit": "src/game/tod.c",
+   "game": true,
+   "bytes": 816,
+   "functions": [
     {
      "name": "Tod_Create",
      "address": "0x80043E84",
@@ -10630,7 +10782,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Tod"
+  },
+  {
+   "unit": "src/game/bg.c",
+   "game": true,
+   "bytes": 1240,
+   "functions": [
     {
      "name": "Bg_Create",
      "address": "0x800441B4",
@@ -10718,7 +10878,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Bg"
+  },
+  {
+   "unit": "src/game/mom.c",
+   "game": true,
+   "bytes": 896,
+   "functions": [
     {
      "name": "Mom_Create",
      "address": "0x8004468C",
@@ -10817,7 +10985,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Mom"
+  },
+  {
+   "unit": "src/game/mml.c",
+   "game": true,
+   "bytes": 712,
+   "functions": [
     {
      "name": "Mml_Create",
      "address": "0x80044A0C",
@@ -10905,7 +11081,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Mml"
+  },
+  {
+   "unit": "src/game/bg_map.c",
+   "game": true,
+   "bytes": 604,
+   "functions": [
     {
      "name": "BgMap_Create",
      "address": "0x80044CD4",
@@ -10971,7 +11155,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "BgMap"
+  },
+  {
+   "unit": "src/game/bg_cells.c",
+   "game": true,
+   "bytes": 648,
+   "functions": [
     {
      "name": "BgCells_Create",
      "address": "0x80044F30",
@@ -11037,7 +11229,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "BgCells"
+  },
+  {
+   "unit": "src/game/tod_pack.c",
+   "game": true,
+   "bytes": 640,
+   "functions": [
     {
      "name": "TodPack_Create",
      "address": "0x800451B8",
@@ -11103,7 +11303,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "TodPack"
+  },
+  {
+   "unit": "src/game/movie.c",
+   "game": true,
+   "bytes": 2588,
+   "functions": [
     {
      "name": "Movie_Create",
      "address": "0x80045438",
@@ -11496,7 +11704,7 @@
    "libraries": "LIBAPI, LIBC, LIBC2, LIBPRESS"
   },
   {
-   "unit": "src/game/80046F0C.c",
+   "unit": "src/game/stream.c",
    "game": true,
    "bytes": 2564,
    "functions": [
@@ -11865,9 +12073,9 @@
    "libraries": "LIBCD"
   },
   {
-   "unit": "src/game/80048894.c",
+   "unit": "src/game/map_chunk.c",
    "game": true,
-   "bytes": 3052,
+   "bytes": 1116,
    "functions": [
     {
      "name": "MapChunk_New",
@@ -11989,7 +12197,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "MapChunk"
+  },
+  {
+   "unit": "src/game/path_table.c",
+   "game": true,
+   "bytes": 1936,
+   "functions": [
     {
      "name": "File_GetRootDir",
      "address": "0x80048CF0",
@@ -12288,7 +12504,7 @@
      "in_findings": true
     }
    ],
-   "subsystem": "MapChunk"
+   "subsystem": "Cine"
   },
   {
    "unit": "psyq/80049480.s.s",
@@ -12311,9 +12527,9 @@
    "libraries": "LIBC2"
   },
   {
-   "unit": "src/game/800494B4.c",
+   "unit": "src/game/stage.c",
    "game": true,
-   "bytes": 16580,
+   "bytes": 340,
    "functions": [
     {
      "name": "Stage_GetCount",
@@ -12369,7 +12585,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Stage"
+  },
+  {
+   "unit": "src/game/dream_runner.c",
+   "game": true,
+   "bytes": 2856,
+   "functions": [
     {
      "name": "DreamRunner_New",
      "address": "0x80049608",
@@ -12545,7 +12769,15 @@
      "d_globals": 0,
      "level": "named",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "DreamRunner"
+  },
+  {
+   "unit": "src/game/task.c",
+   "game": true,
+   "bytes": 920,
+   "functions": [
     {
      "name": "Task_New",
      "address": "0x8004A130",
@@ -12677,7 +12909,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Task"
+  },
+  {
+   "unit": "src/game/stage_map.c",
+   "game": true,
+   "bytes": 11660,
+   "functions": [
     {
      "name": "StageMap_New",
      "address": "0x8004A4C8",
@@ -13359,7 +13599,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "StageMap"
+  },
+  {
+   "unit": "src/game/dream_view.c",
+   "game": true,
+   "bytes": 312,
+   "functions": [
     {
      "name": "DreamView_New",
      "address": "0x8004D254",
@@ -13458,7 +13706,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "DreamView"
+  },
+  {
+   "unit": "src/game/map_tile.c",
+   "game": true,
+   "bytes": 396,
+   "functions": [
     {
      "name": "MapTile_New",
      "address": "0x8004D38C",
@@ -13535,7 +13791,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "MapTile"
+  },
+  {
+   "unit": "src/game/menu.c",
+   "game": true,
+   "bytes": 3528,
+   "functions": [
     {
      "name": "Menu_New",
      "address": "0x8004D518",
@@ -13546,15 +13810,7 @@
      "d_globals": 0,
      "level": "named",
      "in_findings": false
-    }
-   ],
-   "subsystem": "StageMap"
-  },
-  {
-   "unit": "src/game/8004D578.c",
-   "game": true,
-   "bytes": 13168,
-   "functions": [
+    },
     {
      "name": "Menu_Init",
      "address": "0x8004D578",
@@ -13785,7 +14041,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Menu"
+  },
+  {
+   "unit": "src/game/card.c",
+   "game": true,
+   "bytes": 9736,
+   "functions": [
     {
      "name": "Card_New",
      "address": "0x8004E2E0",
@@ -14527,9 +14791,9 @@
    "libraries": "LIBAPI, LIBC2, LIBCARD"
   },
   {
-   "unit": "src/game/80050BA8.c",
+   "unit": "src/game/comment_object.c",
    "game": true,
-   "bytes": 4988,
+   "bytes": 3764,
    "functions": [
     {
      "name": "CommentObject_New",
@@ -14827,7 +15091,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "CommentObject"
+  },
+  {
+   "unit": "src/game/string_list.c",
+   "game": true,
+   "bytes": 4372,
+   "functions": [
     {
      "name": "StringList_New",
      "address": "0x80051A5C",
@@ -14926,15 +15198,7 @@
      "d_globals": 0,
      "level": "named",
      "in_findings": false
-    }
-   ],
-   "subsystem": "CommentObject"
-  },
-  {
-   "unit": "src/game/80051F24.c",
-   "game": true,
-   "bytes": 24740,
-   "functions": [
+    },
     {
      "name": "StringList_Open",
      "address": "0x80051F24",
@@ -15154,7 +15418,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "StringList"
+  },
+  {
+   "unit": "src/game/place.c",
+   "game": true,
+   "bytes": 6516,
+   "functions": [
     {
      "name": "Place_New",
      "address": "0x80052B70",
@@ -15594,7 +15866,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Place"
+  },
+  {
+   "unit": "src/game/scenery.c",
+   "game": true,
+   "bytes": 7740,
+   "functions": [
     {
      "name": "Scenery_Begin",
      "address": "0x800544E4",
@@ -16067,7 +16347,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": true
-    },
+    }
+   ],
+   "subsystem": "SoundSpot"
+  },
+  {
+   "unit": "src/game/scenery_obj.c",
+   "game": true,
+   "bytes": 3268,
+   "functions": [
     {
      "name": "Scenery_New",
      "address": "0x80056320",
@@ -16309,7 +16597,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Scenery"
+  },
+  {
+   "unit": "src/game/actor.c",
+   "game": true,
+   "bytes": 3248,
+   "functions": [
     {
      "name": "Actor_New",
      "address": "0x80056FE4",
@@ -16650,7 +16946,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Actor"
+  },
+  {
+   "unit": "src/game/scenery_part.c",
+   "game": true,
+   "bytes": 724,
+   "functions": [
     {
      "name": "SceneryPart_New",
      "address": "0x80057C94",
@@ -16749,7 +17053,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "SceneryPart"
+  },
+  {
+   "unit": "src/game/graph.c",
+   "game": true,
+   "bytes": 2060,
+   "functions": [
     {
      "name": "Graph_New",
      "address": "0x80057F68",
@@ -16760,34 +17072,18 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    }
-   ],
-   "subsystem": "Place"
-  },
-  {
-   "unit": "src/game/80057FC8.c",
-   "game": true,
-   "bytes": 176,
-   "functions": [
+    },
     {
      "name": "Graph_Init",
      "address": "0x80057FC8",
      "bytes": 176,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false
-    }
-   ],
-   "subsystem": "Graph"
-  },
-  {
-   "unit": "src/game/80058078.c",
-   "game": true,
-   "bytes": 17552,
-   "functions": [
+    },
     {
      "name": "Graph_LoadImage",
      "address": "0x80058078",
@@ -16897,7 +17193,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Graph"
+  },
+  {
+   "unit": "src/game/dream_sys.c",
+   "game": true,
+   "bytes": 13020,
+   "functions": [
     {
      "name": "DreamSys_New",
      "address": "0x80058774",
@@ -18019,7 +18323,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "DreamSys"
+  },
+  {
+   "unit": "src/game/dream_link.c",
+   "game": true,
+   "bytes": 2744,
+   "functions": [
     {
      "name": "Nav_InitFlags",
      "address": "0x8005BA50",
@@ -18230,12 +18542,12 @@
      "in_findings": true
     }
    ],
-   "subsystem": "DreamSys"
+   "subsystem": "Link"
   },
   {
-   "unit": "src/game/8005C508.c",
+   "unit": "src/game/sym.c",
    "game": true,
-   "bytes": 41760,
+   "bytes": 2772,
    "functions": [
     {
      "name": "Sym_LoadModels",
@@ -18423,7 +18735,15 @@
      "d_globals": 0,
      "level": "named",
      "in_findings": true
-    },
+    }
+   ],
+   "subsystem": "Sym"
+  },
+  {
+   "unit": "src/game/entity.c",
+   "game": true,
+   "bytes": 34296,
+   "functions": [
     {
      "name": "Entity_Create",
      "address": "0x8005CFDC",
@@ -19985,7 +20305,15 @@
      "d_globals": 0,
      "level": "read",
      "in_findings": false
-    },
+    }
+   ],
+   "subsystem": "Behavior"
+  },
+  {
+   "unit": "src/game/model.c",
+   "game": true,
+   "bytes": 4692,
+   "functions": [
     {
      "name": "Model_New",
      "address": "0x800655D4",
@@ -20383,7 +20711,7 @@
      "in_findings": false
     }
    ],
-   "subsystem": "Behavior"
+   "subsystem": "Model"
   }
  ]
 }
