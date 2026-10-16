@@ -29,7 +29,7 @@ typedef struct Unk_8003AF8C_Mgr {
     u8 pad_00[0x8];
     void (*unk8)(void *);
 } Unk_8003AF8C_Mgr;
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 void *func_8003B20C(void);
 void func_80026CFC(s32 arg0);
 s32 CdInit(void);
@@ -56,11 +56,11 @@ typedef struct Unk_8003B044 {
 void func_80020C68(void **arg0);
 void func_80032368(void);
 void GsInit3D(void);
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 extern u8 D_8006E4F0[];
 
 void func_8003AF8C(Unk_8003AF8C *arg0, s32 arg1) {
-    ((Unk_8003AF8C_Mgr *)func_80018390())->unk8(arg0);
+    ((Unk_8003AF8C_Mgr *)Object_GetBaseVtbl())->unk8(arg0);
     arg0->unk0 = func_8003B20C();
     if (D_8008A8DC == 0) {
         CdInit();
@@ -87,7 +87,7 @@ void func_8003B044(Unk_8003B044 *arg0, void **arg1, s32 arg2) {
         ((Unk_8003B044_Vtbl *)*arg1)->unk44(arg1, &arg0->unkC, arg0->unk14);
         func_80032368();
         GsInit3D();
-        temp_v0 = func_80017B34(0x14);
+        temp_v0 = Heap_Alloc(0x14);
         arg0->unk1C = temp_v0;
         temp_v0->unk0 = arg1;
         arg0->unk1C->unk4 = arg2;

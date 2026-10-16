@@ -124,13 +124,13 @@ typedef struct Unk_8004D254 {
     u8 pad_00[0x8];
     void (*unk8)(s32);
 } Unk_8004D254;
-s32 func_80017B34(s32);
+s32 Heap_Alloc(s32);
 Unk_8004D254 *func_8004D37C(void);
 typedef struct Unk_8004D38C {
     u8 pad_00[0x8];
     void (*unk8)(s32);
 } Unk_8004D38C;
-s32 func_80017B34(s32 size);
+s32 Heap_Alloc(s32 size);
 void *func_8004D508(void);
 typedef struct Unk_8004D3DC_vt {
     u8 pad_00[0x8];
@@ -688,7 +688,7 @@ typedef struct Unk_8004A130_80049830 {
     u8 pad_00[0x8];
     void (*unk8)(s32, s32, s32);
 } Unk_8004A130_80049830;
-void func_8005C5E8(void);
+void Sym_FreeModels(void);
 typedef struct Unk_80049830_Mgr {
     u8 pad_00[0xC];
     void (*unkC)(void *);
@@ -952,7 +952,7 @@ struct Unk_80049EB4 {
     u8 pad_40[0x4C - 0x40];
     Unk_80049EB4_Obj *unk4C;
 };
-extern void func_80017CFC(void *);
+extern void Heap_Free(void *);
 extern void *func_80020C5C(void);
 extern void *func_800428E4(void);
 typedef struct Unk_8004A7C0_Vtbl {
@@ -1073,7 +1073,7 @@ s32 func_80048E08(s32 arg0);
 void Sym_LoadModels(void);
 s32 func_8003B39C(s32 arg0);
 s32 func_80043840(s32 arg0);
-s32 func_80048D74(s32 arg0);
+s32 Music_PickBank(s32 arg0);
 void *func_800398E0(s32 arg0, s32 arg1, s32 arg2);
 void func_80026F34(s32 arg0, s32 arg1, s32 arg2);
 void *func_80042400(void);
@@ -1322,7 +1322,7 @@ s16 *Stage_GetChunkMood(s32 arg0, s8 *arg1) {
 s32 func_80049608(s32 arg0, s32 arg1, s32 arg2) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x50);
+    temp_v0 = Heap_Alloc(0x50);
     if (temp_v0 != 0) {
         func_8004A060()->unk8(temp_v0, arg0, arg1, arg2);
         return temp_v0;
@@ -1348,7 +1348,7 @@ void func_80049684(Unk_80049684 *arg0, Unk_80049684_Sub *arg1, Unk_80049684_Obj 
     sp10.unk0 = 0;
     sp10.unk4 = (s32)"ETC\\DREAMER.TMD";
     arg0->unk48 = (void *)func_80043840((s32)&sp10);
-    arg0->unk40 = func_800398E0(func_80048D74(0), 0, 1);
+    arg0->unk40 = func_800398E0(Music_PickBank(0), 0, 1);
     func_8004A070(1);
     func_80026F34(arg3 == 0, 1, 1);
     arg0->unkC = arg1;
@@ -1373,7 +1373,7 @@ void func_80049830(Unk_80049830 *arg0) {
     arg0->unk40->unk0->unk4(arg0->unk40);
     arg0->unk48->unk0->unk4(arg0->unk48);
     arg0->unk44->unk0->unk4(arg0->unk44);
-    func_8005C5E8();
+    Sym_FreeModels();
     ((Unk_80049830_Mgr *)((Unk_8004A130_80049830 *)func_8004A4B8()))->unkC(arg0);
 }
 
@@ -1573,7 +1573,7 @@ void func_8004A070(s32 arg0) {
 s32 func_8004A130(s32 arg0, s32 arg1) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x38);
+    temp_v0 = Heap_Alloc(0x38);
     if (temp_v0 != 0) {
         func_8004A4B8()->unk8(temp_v0, arg0, arg1);
         return temp_v0;
@@ -1654,7 +1654,7 @@ Unk_8004A130 *func_8004A4B8(void) {
 s32 func_8004A4C8(s32 arg0, s32 arg1) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x1E8);
+    temp_s0 = Heap_Alloc(0x1E8);
     if (temp_s0 != 0) {
         func_8004D244()->unk8(temp_s0, arg0, arg1);
         return temp_s0;
@@ -1700,7 +1700,7 @@ void func_8004A534(Unk_8004A534 *arg0, Unk_8004A534_Vec *arg1, s32 arg2) {
         elem = (Unk_8004A534_Elem *)func_8004D38C();
         slot->unkC = elem;
         elem->unk0->unk4C(elem, arg0, &arg0->unk54);
-        slot->unk10 = (void **)func_80017B34(0x668);
+        slot->unk10 = (void **)Heap_Alloc(0x668);
         if (slot->unk10 == NULL) {
             return;
         }
@@ -1757,7 +1757,7 @@ void func_8004A7C0(Unk_8004A7C0 *arg0) {
                 obj->unk0->unk4(obj);
             }
         }
-        func_80017CFC(slot->unk10);
+        Heap_Free(slot->unk10);
     }
     ((Unk_8004A7C0_Vtbl *)func_800428E4())->unkC(arg0);
 }
@@ -2834,7 +2834,7 @@ Unk_8004A4C8 *func_8004D244(void) {
 s32 func_8004D254(void) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0xDC);
+    temp_v0 = Heap_Alloc(0xDC);
     if (temp_v0 != 0) {
         func_8004D37C()->unk8(temp_v0);
         return temp_v0;
@@ -2879,7 +2879,7 @@ Unk_8004D254 *func_8004D37C(void) {
 s32 func_8004D38C(void) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x3C);
+    temp_v0 = Heap_Alloc(0x3C);
     if (temp_v0 != 0) {
         ((Unk_8004D38C *)func_8004D508())->unk8(temp_v0);
         return temp_v0;
@@ -2924,7 +2924,7 @@ void *func_8004D508(void) {
 s32 func_8004D518(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0xC4);
+    temp_v0 = Heap_Alloc(0xC4);
     if (temp_v0 != 0) {
         func_8004E2D0()->unk8(temp_v0, arg0);
         return temp_v0;

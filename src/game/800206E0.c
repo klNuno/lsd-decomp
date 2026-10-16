@@ -41,7 +41,7 @@ typedef struct Unk_800206E0 {
     u8 pad_00[0x8];
     void (*unk8)(void *);
 } Unk_800206E0;
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 Unk_800206E0 *func_80020C4C(void);
 typedef struct Unk_80020A24 {
     u16 unk0;
@@ -76,7 +76,7 @@ typedef struct Unk_80020730 {
     u8 pad_00[0x40];
     void (*unk40)(void *);
 } Unk_80020730;
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 typedef struct Unk_800208F8 {
     /* 0x00 */ u8 pad_00[0x10];
     /* 0x10 */ s32 unk10;
@@ -136,7 +136,7 @@ Unk_80020AF4 *D_8008A83C;
 void *func_800206E0(void) {
     void *temp;
 
-    temp = func_80017B34(0x34);
+    temp = Heap_Alloc(0x34);
     if (temp != 0) {
         func_80020C4C()->unk8(temp);
         return temp;
@@ -147,7 +147,7 @@ void *func_800206E0(void) {
 void func_80020730(void **arg0) {
     void *temp_v0;
 
-    ((Unk_800206E0 *)func_80018390())->unk8(arg0);
+    ((Unk_800206E0 *)Object_GetBaseVtbl())->unk8(arg0);
     temp_v0 = func_80020C4C();
     *arg0 = temp_v0;
     ((Unk_80020730 *)temp_v0)->unk40(arg0);

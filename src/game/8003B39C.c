@@ -10,7 +10,7 @@ typedef struct Unk_8003B470 {
     void (*unkC)(s32);
 } Unk_8003B470;
 void *func_80026CAC(void);
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 void *func_8003B614(void);
 typedef struct Unk_8003B39C {
     u8 pad_00[8];
@@ -74,7 +74,7 @@ extern u8 D_8006E558[];
 s32 func_8003B39C(s32 arg0) {
     void *temp;
 
-    temp = func_80017B34(0x50);
+    temp = Heap_Alloc(0x50);
     if (temp != 0) {
         ((Unk_8003B39C *)func_8003B614())->unk8(temp, arg0);
         return (s32)temp;

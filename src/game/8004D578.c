@@ -24,7 +24,7 @@ void func_8004B44C(s32 *arg0, s32 *arg1, Unk_800861D4 *arg2, s32 *arg3, void *ar
 extern s32 CloseEvent();
 void func_8004F3BC(s32 arg0);
 typedef struct Unk_8004E40C { s32 unk0, unk4, unk8; void (*unkC)(s32); u8 pad_10[0x4]; void (*unk14)(void *, s32 **); void (*unk18)(void *); u8 pad_1C[0x38 - 0x1C]; void (*unk38)(void *, s32 **, s32); } Unk_8004E40C;
-extern Unk_8004E40C *func_80018390(void);
+extern Unk_8004E40C *Object_GetBaseVtbl(void);
 typedef struct Unk_8004FFF4_vt { u8 pad[0x80]; void (*unk80)(void *, s32, s32, s32); } Unk_8004FFF4_vt;
 typedef struct Unk_8004FFF4_obj { Unk_8004FFF4_vt *unk0; } Unk_8004FFF4_obj;
 typedef struct Unk_8004FFF4 { u8 pad[0x6C]; Unk_8004FFF4_obj *unk6C; } Unk_8004FFF4;
@@ -88,7 +88,7 @@ typedef struct Unk_8004E2E0 {
     u8 pad_00[0x8];
     void (*unk8)(s32, s32, s32);
 } Unk_8004E2E0;
-extern s32 func_80017B34(s32);
+extern s32 Heap_Alloc(s32);
 Unk_8004E2E0 *func_800507E8(void);
 extern s32 format(char *);
 extern char D_8008AA9C[];
@@ -206,7 +206,7 @@ typedef struct Unk_8004F784 {
     u8 pad_30[0x38 - 0x30];
     s32 *unk38;
 } Unk_8004F784;
-extern s32 func_80017CFC(s32);
+extern s32 Heap_Free(s32);
 typedef struct Unk_8004E054_sub { u8 pad_00[0x4]; s32 unk4; } Unk_8004E054_sub;
 typedef struct Unk_8004E054_vt {
     u8 pad_00[0x10];
@@ -980,14 +980,14 @@ void func_8004DB18(Unk_8004DB18 *arg0, Unk_8004DB18_arg1 *arg1) {
             func_800507F8(g_cardTitle, 0);
         }
         n = ((u32)strlen(g_cardTitle) >> 1) + 4;
-        p = func_80017B34(n);
+        p = Heap_Alloc(n);
         func_80040FC0((s8 *)p, (u8 *)g_cardTitle);
         v = func_800408CC(arg1->unk4, n, p);
         arg0->unkB0 = (Unk_8004DB18_rec *)v;
         arg0->unkB0->unkAB = 8;
         arg0->unkB0->unkAC = 4;
         arg0->unkB0->unkAA = 9;
-        func_80017CFC(p);
+        Heap_Free(p);
     }
 }
 
@@ -1041,10 +1041,10 @@ void func_8004DE08(Unk_8004DE08 *arg0) {
     s32 temp_s2;
 
     temp_s2 = arg0->unk58;
-    temp_s1 = func_80017B34(arg0->unkB0->unkA9);
+    temp_s1 = Heap_Alloc(arg0->unkB0->unkA9);
     func_80040FC0((s8 *)temp_s1, (u8 *)g_cardTitle);
     arg0->unkB0->unk0->unkCC(arg0->unkB0, temp_s1);
-    func_80017CFC(temp_s1);
+    Heap_Free(temp_s1);
     Menu_UpdateFlashbackItem(arg0, arg0->unk4C, arg0->unkA4);
     arg0->unk0->unkE0(arg0, arg0->unk14);
     arg0->unkA4->unk0->unk19C(arg0->unkA4, &sp10);
@@ -1114,7 +1114,7 @@ void *func_8004E2D0(void) {
 s32 func_8004E2E0(s32 arg0, s32 arg1) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x84);
+    temp_v0 = Heap_Alloc(0x84);
     if (temp_v0 != 0) {
         func_800507E8()->unk8(temp_v0, arg0, arg1);
         return temp_v0;
@@ -1126,7 +1126,7 @@ void func_8004E34C(Unk_8004E34C_Vtbl **arg0, s32 arg1, s32 arg2) {
     Unk_8004E34C_Vtbl *vt;
     s32 count;
 
-    ((Unk_8004E34C_Base *)func_80018390())->unk8(arg0);
+    ((Unk_8004E34C_Base *)Object_GetBaseVtbl())->unk8(arg0);
     vt = ((Unk_8004E34C_Vtbl *)func_800507E8());
     count = D_8008AA30;
     *arg0 = vt;
@@ -1149,12 +1149,12 @@ void func_8004E3F4(Unk_8004E3F4 *arg0) {
 }
 
 void func_8004E40C(s32 arg0) {
-    func_80018390()->unkC(arg0);
+    Object_GetBaseVtbl()->unkC(arg0);
 }
 
 void func_8004E444(Unk_8004E3F4_8004E444 *arg0, s32 **arg1) {
     if (arg1 != NULL) {
-        ((Unk_8004E444 *)((Unk_8004E40C_8004E444 *)func_80018390()))->unk10(arg0, arg1);
+        ((Unk_8004E444 *)((Unk_8004E40C_8004E444 *)Object_GetBaseVtbl()))->unk10(arg0, arg1);
         if ((**arg1 & 0xF) == 2) {
             arg0->unk60 = (s32)arg1;
             return;
@@ -1187,7 +1187,7 @@ void func_8004E4E8(Unk_8004E3F4 *arg0, s32 **arg1) {
         } else if ((temp & 0xFF) == 0x20) {
             arg0->unk7C = 0;
         }
-        func_80018390()->unk14(arg0, arg1);
+        Object_GetBaseVtbl()->unk14(arg0, arg1);
     }
 }
 
@@ -1197,7 +1197,7 @@ void func_8004E588(Unk_8004E3F4 *arg0) {
     arg0->unk68 = 0;
     arg0->unk78 = 0;
     arg0->unk7C = 0;
-    func_80018390()->unk18(arg0);
+    Object_GetBaseVtbl()->unk18(arg0);
 }
 
 void func_8004E5D4(Unk_8004E5D4 *arg0, s32 arg1) {
@@ -1334,10 +1334,10 @@ s32 func_8004EA38(s32 arg0, s32 arg1, u8 *arg2) {
         return 0;
     }
     if (arg1 != 0) {
-        p = func_80017B34(0x80);
+        p = Heap_Alloc(0x80);
         read(fd, p, 0x80);
         strcpy(arg1, p + 4);
-        func_80017CFC(p);
+        Heap_Free(p);
     }
     close(fd);
     return 1;
@@ -1420,10 +1420,10 @@ s32 func_8004EDC0(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     if (fd == -1) {
         return 0;
     }
-    p = func_80017B34(0x80);
+    p = Heap_Alloc(0x80);
     read(fd, p, 0x80);
     ofs = (((u8 *)p)[2] << 7) - 0x780;
-    func_80017CFC(p);
+    Heap_Free(p);
     lseek(fd, ofs, 0);
     read(fd, arg2, arg3);
     close(fd);
@@ -1471,7 +1471,7 @@ s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32
         return 0;
     }
     p = ((Unk_8004EF6C_arg4 *)arg4)->unk10;
-    buf = (u8 *)func_80017B34(0x200);
+    buf = (u8 *)Heap_Alloc(0x200);
     buf[0] = 0x53;
     buf[1] = 0x43;
     buf[2] = arg3 + 0x10;
@@ -1482,7 +1482,7 @@ s32 func_8004EF6C(s32 arg0, s32 arg1, s32 arg2, u8 arg3, s32 arg4, s32 arg5, s32
     *(Unk_8004EF6C_Icon *)(buf + 0x100) = *(Unk_8004EF6C_Icon *)(p + 0xC0);
     *(Unk_8004EF6C_Icon *)(buf + 0x180) = *(Unk_8004EF6C_Icon *)(p + 0x140);
     write(fd, buf, (arg3 << 7) + 0x80);
-    func_80017CFC((s32)buf);
+    Heap_Free((s32)buf);
     write(fd, (u8 *)arg5, ((u32)(arg6 + 0x7F) >> 7) << 7);
     close(fd);
     return 1;
@@ -1597,11 +1597,11 @@ void func_8004F704(Unk_8004F704 *arg0) {
     s32 i;
 
     if (arg0->unk38 == NULL) {
-        arg0->unk38 = (s32 *)func_80017B34(0x40);
+        arg0->unk38 = (s32 *)Heap_Alloc(0x40);
         for (i = 0; i < 0xF; i++) {
-            arg0->unk38[i] = func_80017B34(0x41);
+            arg0->unk38[i] = Heap_Alloc(0x41);
         }
-        arg0->unk3C = func_80017B34(0x40);
+        arg0->unk3C = Heap_Alloc(0x40);
     }
 }
 
@@ -1609,7 +1609,7 @@ void func_8004F784(Unk_8004F784 *arg0) {
     s32 i;
 
     for (i = arg0->unk2C; i < 0xF; i++) {
-        arg0->unk38[i] = func_80017CFC(arg0->unk38[i]);
+        arg0->unk38[i] = Heap_Free(arg0->unk38[i]);
     }
     arg0->unk38[i] = 0;
 }
@@ -1618,11 +1618,11 @@ void func_8004F810(Unk_8004F810 *arg0) {
     s32 i;
 
     if (arg0->unk38 != NULL) {
-        func_80017CFC(arg0->unk3C);
+        Heap_Free(arg0->unk3C);
         for (i = 0; i < arg0->unk2C; i++) {
-            func_80017CFC(arg0->unk38[i]);
+            Heap_Free(arg0->unk38[i]);
         }
-        func_80017CFC((s32)arg0->unk38);
+        Heap_Free((s32)arg0->unk38);
         arg0->unk38 = NULL;
     }
 }
@@ -1689,7 +1689,7 @@ void func_8004FB04(Unk_8004FB04_obj *arg0, s32 **arg1, s32 arg2) {
     s32 t;
 
     vt = arg0->vt;
-    func_80018390()->unk38(arg0, arg1, arg2);
+    Object_GetBaseVtbl()->unk38(arg0, arg1, arg2);
     t = **arg1;
     if ((t & 0xF) == 2) {
         vt->unk88(arg0, arg1, arg2);
@@ -1758,11 +1758,11 @@ block_15:
     }
     if (var_v0 < 2U) {
         if (arg0->unk24 == 1 && arg0->unk38 != 0) {
-            func_80017CFC(arg0->unk3C);
+            Heap_Free(arg0->unk3C);
             for (i = 0; i < arg0->unk2C; i++) {
-                func_80017CFC(((s32 *)arg0->unk38)[i]);
+                Heap_Free(((s32 *)arg0->unk38)[i]);
             }
-            func_80017CFC(arg0->unk38);
+            Heap_Free(arg0->unk38);
             arg0->unk38 = 0;
         }
         arg0->unk28 = 0;

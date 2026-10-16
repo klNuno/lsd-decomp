@@ -67,14 +67,14 @@ typedef struct Unk_8001F2B0 {
     s32 unkC;
     s32 unk10;
 } Unk_8001F2B0;
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 s32 func_8001F384(void);
 void func_8001F394(void *arg0);
 struct Unk_8001F250 {
     u8 pad_00[0x8];
     void (*unk8)(void *, s32);
 };
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 struct Unk_8001F51C {
     s32 unk0;
     u16 unk4;
@@ -197,7 +197,7 @@ s32 SquareRoot0(s32 a);
 void *func_8001F250(s32 arg0) {
     void *temp;
 
-    temp = func_80017B34(0x24);
+    temp = Heap_Alloc(0x24);
     if (temp != 0) {
         ((struct Unk_8001F250 *)func_8001F384())->unk8(temp, arg0);
         return temp;
@@ -208,7 +208,7 @@ void *func_8001F250(s32 arg0) {
 void func_8001F2B0(Unk_8001F2B0 *arg0, s32 arg1) {
     s32 temp;
 
-    ((Unk_8001F2B0_Ret *)func_80018390())->unk8(arg0);
+    ((Unk_8001F2B0_Ret *)Object_GetBaseVtbl())->unk8(arg0);
     temp = func_8001F384();
     arg0->unk10 = arg1;
     arg0->unk0 = temp;

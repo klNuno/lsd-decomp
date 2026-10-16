@@ -19,15 +19,15 @@ typedef struct Unk_8004297C {
     u8 pad_0C[0x34];
     void (*unk40)(void **, s32);
 } Unk_8004297C;
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 Unk_8004297C *func_80042A7C(void);
-s32 func_80017B34(s32 size);
+s32 Heap_Alloc(s32 size);
 extern Unk_8004297C D_8006F06C;
 
 s32 func_8004291C(s32 arg0) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x20);
+    temp_s0 = Heap_Alloc(0x20);
     if (temp_s0 != 0) {
         func_80042A7C()->unk8(temp_s0, arg0);
         return temp_s0;
@@ -38,7 +38,7 @@ s32 func_8004291C(s32 arg0) {
 void func_8004297C(void **arg0, s32 arg1) {
     Unk_8004297C *temp_v0;
 
-    ((Unk_8004297C_Mgr *)func_80018390())->unk8(arg0);
+    ((Unk_8004297C_Mgr *)Object_GetBaseVtbl())->unk8(arg0);
     temp_v0 = func_80042A7C();
     *arg0 = temp_v0;
     temp_v0->unk40(arg0, arg1);

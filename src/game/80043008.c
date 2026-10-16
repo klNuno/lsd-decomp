@@ -71,7 +71,7 @@ struct Unk_80044C58 {
     u8 pad_14[0x24];
     s32 unk38;
 };
-extern void func_800183DC(void *, s32);
+extern void Object_DeleteArray(void *, s32);
 typedef void (*Unk_80045DE0_Fn)(void *self);
 struct Unk_80045DE0_Vtbl {
     u8 pad_00[0x58];
@@ -114,7 +114,7 @@ struct Unk_800449B8 {
     u8 pad_00[0x30];
     struct Unk_800449B8_Obj *unk30;
 };
-extern void func_80017CFC(s32);
+extern void Heap_Free(s32);
 struct Unk_80044DC8 {
     u8 pad_00[0x38];
     s32 unk38;
@@ -208,12 +208,12 @@ struct Unk_80043008_Obj {
     void (*unk8)(s32, s32);
 };
 struct Unk_80043008_Obj *func_80043830(void);
-s32 func_80017B34(s32 arg0);
+s32 Heap_Alloc(s32 arg0);
 typedef struct Unk_80043B88 {
     u8 pad_00[0x8];
     void (*unk8)(s32, s32);
 } Unk_80043B88;
-extern s32 func_80017B34(s32 size);
+extern s32 Heap_Alloc(s32 size);
 Unk_80043B88 *func_80043E74(void);
 struct Unk_80044F30 {
     u8 pad_00[0x8];
@@ -328,7 +328,7 @@ struct Unk_800455D4_Mgr {
 extern void DecDCTReset(s32 mode);
 extern void DecDCToutCallback(void (*func)(void));
 extern void func_8004575C(struct Unk_8004575C *arg0);
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 struct Unk_800448F8_Vtbl {
     u8 pad_00[0x4];
     void (*unk4)(void *self);
@@ -830,7 +830,7 @@ u32 *func_8004416C(void *arg0, u32 *arg1, s8 *arg2, s8 *arg3, s8 *arg4, s8 *arg5
 s32 func_80043008(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x84);
+    temp_v0 = Heap_Alloc(0x84);
     if (temp_v0 != 0) {
         func_80043830()->unk8(temp_v0, arg0);
         return temp_v0;
@@ -866,9 +866,9 @@ void func_80043068(struct Unk_80043068 *arg0, s32 arg1) {
         acc += step;
     }
 
-    s1 = func_80017B34(0x24);
+    s1 = Heap_Alloc(0x24);
     if (s1 != 0) {
-        temp = func_80017B34(0x800);
+        temp = Heap_Alloc(0x800);
         arg0->unk34 = temp;
         if (temp != 0) {
             arg0->unk14 = 0x24;
@@ -882,8 +882,8 @@ void func_80043068(struct Unk_80043068 *arg0, s32 arg1) {
 }
 
 void func_800431A8(struct Unk_800431A8 *arg0) {
-    func_800183DC(arg0->unk30, arg0->unk2C);
-    func_80017CFC(arg0->unk30);
+    Object_DeleteArray(arg0->unk30, arg0->unk2C);
+    Heap_Free(arg0->unk30);
     func_80026CAC()->unkC(arg0);
 }
 
@@ -897,10 +897,10 @@ void func_80043200(struct Unk_80043200 *arg0) {
     case 9:
         if (arg0->unk24 & 0x80) {
             *(struct Unk_80043200_Hdr *)arg0->unk10 = *(struct Unk_80043200_Hdr *)arg0->unk34;
-            func_80017CFC(arg0->unk34);
+            Heap_Free(arg0->unk34);
             temp_s0 = func_800434DC((struct Unk_80043B18 *)arg0);
-            if (((arg0->unk30 = (struct Unk_80043200_Obj **)func_80017B34(arg0->unk10[0] * 4)) != 0)
-                && ((arg0->unk34 = func_80017B34(temp_s0)) != 0)) {
+            if (((arg0->unk30 = (struct Unk_80043200_Obj **)Heap_Alloc(arg0->unk10[0] * 4)) != 0)
+                && ((arg0->unk34 = Heap_Alloc(temp_s0)) != 0)) {
                 arg0->unk38 = temp_s0;
                 arg0->unk0->unk4C(arg0, arg0->unk10[1], 0);
                 arg0->unk0->unk54(arg0, arg0->unk34, temp_s0);
@@ -927,7 +927,7 @@ void func_80043200(struct Unk_80043200 *arg0) {
                 arg0->unk0->unk54(arg0, arg0->unk34, arg0->unk38);
                 arg0->unk2A = 0xA;
             } else {
-                func_80017CFC(arg0->unk34);
+                Heap_Free(arg0->unk34);
                 arg0->unk34 = 0;
                 arg0->unk38 = 0;
                 arg0->unk2A = 0;
@@ -1061,12 +1061,12 @@ struct Unk_80043008_Obj *func_80043830(void) {
 s32 func_80043840(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x30);
+    temp_v0 = Heap_Alloc(0x30);
     if (temp_v0 != 0) {
         if (func_80043B78()->unk8(temp_v0, arg0) != 0) {
             return temp_v0;
         }
-        func_80017CFC(temp_v0);
+        Heap_Free(temp_v0);
     }
     return 0;
 }
@@ -1103,7 +1103,7 @@ void func_80043954(struct Unk_80043954 *arg0) {
         obj = *p;
         obj->unk0->unk4(obj);
     }
-    func_80017CFC((s32)arg0->unk2C);
+    Heap_Free((s32)arg0->unk2C);
     func_80026CAC()->unkC(arg0);
 }
 
@@ -1111,7 +1111,7 @@ s32 func_800439EC(struct Unk_800439EC *arg0) {
     struct Unk_800439EC_Elem **q;
     u32 i;
 
-    q = (struct Unk_800439EC_Elem **)func_80017B34((arg0->unk10->unk8 + 1) * 4);
+    q = (struct Unk_800439EC_Elem **)Heap_Alloc((arg0->unk10->unk8 + 1) * 4);
     if (q == NULL) {
         return 1;
     }
@@ -1125,7 +1125,7 @@ s32 func_800439EC(struct Unk_800439EC *arg0) {
                 (*q)->unk0->unk4(*q);
                 i--;
             }
-            func_80017CFC((s32)q);
+            Heap_Free((s32)q);
             return 1;
         }
         q++;
@@ -1158,7 +1158,7 @@ struct Unk_80043840_Obj *func_80043B78(void) {
 s32 func_80043B88(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x3C);
+    temp_v0 = Heap_Alloc(0x3C);
     if (temp_v0 != 0) {
         func_80043E74()->unk8(temp_v0, arg0);
         return temp_v0;
@@ -1178,8 +1178,8 @@ void func_80043BE8(struct Unk_80043BE8 *arg0, s32 arg1) {
 }
 
 void func_80043C60(struct Unk_80043C60 *arg0) {
-    func_800183DC(arg0->unk30, arg0->unk2C);
-    func_80017CFC(arg0->unk30);
+    Object_DeleteArray(arg0->unk30, arg0->unk2C);
+    Heap_Free(arg0->unk30);
     func_80026CAC()->unkC(arg0);
 }
 
@@ -1193,7 +1193,7 @@ void func_80043CB8(struct Unk_80043CB8 *arg0) {
 
     if ((arg0->unk24 & 0x200) || arg0->unk10 != NULL) {
         arg0->unk2C = *arg0->unk10;
-        temp_v0 = (struct Unk_80043CB8_Obj **)func_80017B34(*arg0->unk10 * 4);
+        temp_v0 = (struct Unk_80043CB8_Obj **)Heap_Alloc(*arg0->unk10 * 4);
         arg0->unk30 = temp_v0;
         if (temp_v0 != NULL) {
             var_s1 = temp_v0;
@@ -1236,7 +1236,7 @@ Unk_80043B88 *func_80043E74(void) {
 s32 func_80043E84(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x2C);
+    temp_v0 = Heap_Alloc(0x2C);
     if (temp_v0 != 0) {
         func_800441A4()->unk8(temp_v0, arg0);
         return temp_v0;
@@ -1328,7 +1328,7 @@ struct Unk_800452AC_Obj *func_800441A4(void) {
 }
 
 s32 func_800441B4(s32 arg0, s32 arg1) {
-    void *temp_s0 = (void *)func_80017B34(0x68);
+    void *temp_s0 = (void *)Heap_Alloc(0x68);
 
     if (temp_s0 != NULL) {
         func_8004467C()->unk8(temp_s0, arg0, arg1);
@@ -1449,12 +1449,12 @@ struct Unk_800441B4_Mgr *func_8004467C(void) {
 s32 func_8004468C(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x38);
+    temp_v0 = Heap_Alloc(0x38);
     if (temp_v0 != 0) {
         if (func_800449FC()->unk8(temp_v0, arg0, 1) != 0) {
             return temp_v0;
         }
-        func_80017CFC(temp_v0);
+        Heap_Free(temp_v0);
     }
     return 0;
 }
@@ -1547,10 +1547,10 @@ struct Unk_800449FC *func_800449FC(void) {
 s32 func_80044A0C(s32 arg0) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x3C);
+    temp_s0 = Heap_Alloc(0x3C);
     if (temp_s0 != 0) {
         if (func_80044CC4()->unk8(temp_s0, arg0) == 0) {
-            func_80017CFC(temp_s0);
+            Heap_Free(temp_s0);
             return 0;
         }
         return temp_s0;
@@ -1609,7 +1609,7 @@ fail:
 }
 
 void func_80044C58(struct Unk_80044C58 *arg0) {
-    func_800183DC(arg0->unk10 + 8, arg0->unk38);
+    Object_DeleteArray(arg0->unk10 + 8, arg0->unk38);
     arg0->unk38 = 0;
 }
 
@@ -1629,7 +1629,7 @@ struct Unk_80044A0C_Obj *func_80044CC4(void) {
 s32 func_80044CD4(s32 arg0, s32 arg1) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x44);
+    temp_s0 = Heap_Alloc(0x44);
     if (temp_s0 != 0) {
         func_80044F20()->unk8(temp_s0, arg0, arg1);
         return temp_s0;
@@ -1652,7 +1652,7 @@ void func_80044D40(struct Unk_80044D40 *arg0, s32 arg1, s32 arg2) {
 }
 
 void func_80044DC8(struct Unk_80044DC8 *arg0) {
-    func_80017CFC(arg0->unk38);
+    Heap_Free(arg0->unk38);
     func_80026CAC()->unkC((s32)arg0);
 }
 
@@ -1676,7 +1676,7 @@ void func_80044E64(struct Unk_80044E64 *arg0) {
         arg0->unk2D = 0x10;
         arg0->unk30 = 0xF;
         n = arg0->unk2E * arg0->unk30;
-        buf = (s16 *)func_80017B34(n * 2);
+        buf = (s16 *)Heap_Alloc(n * 2);
         arg0->unk38 = buf;
         if (buf != NULL) {
             p = buf;
@@ -1696,7 +1696,7 @@ struct Unk_80044CD4_Vtbl *func_80044F20(void) {
 s32 func_80044F30(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x38);
+    temp_v0 = Heap_Alloc(0x38);
     if (temp_v0 != 0) {
         func_800451A8()->unk8((void *)temp_v0, arg0);
         return temp_v0;
@@ -1719,8 +1719,8 @@ void func_80044F90(struct Unk_80044F90 *arg0, s32 arg1) {
 }
 
 void func_8004500C(struct Unk_8004500C *arg0) {
-    func_80017CFC(arg0->unk34);
-    func_80017CFC(arg0->unk2C);
+    Heap_Free(arg0->unk34);
+    Heap_Free(arg0->unk2C);
     func_80026CAC()->unkC(arg0);
 }
 
@@ -1748,7 +1748,7 @@ void func_800450B4(struct Unk_800450B4 *arg0) {
         v = 0;
         u = 0;
         tpage = GetTPage(2, 0, 0x280, 0) & 0xFFFF;
-        temp = (struct Unk_800450B4_Entry *)func_80017B34(0x960);
+        temp = (struct Unk_800450B4_Entry *)Heap_Alloc(0x960);
         arg0->unk2C = temp;
         if (temp != NULL) {
             i = 0;
@@ -1788,14 +1788,14 @@ struct Unk_80044F30 *func_800451A8(void) {
 s32 func_800451B8(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x2C);
+    temp_v0 = Heap_Alloc(0x2C);
     if (temp_v0 == 0) {
         return 0;
     }
     if (func_80045428()->unk8(temp_v0, arg0) != 0) {
         return temp_v0;
     }
-    func_80017CFC(temp_v0);
+    Heap_Free(temp_v0);
     return 0;
 }
 
@@ -1816,7 +1816,7 @@ void **func_80045228(void **arg0, s32 *arg1) {
 void func_800452AC(struct Unk_80043B18 *arg0) {
     u32 *temp = arg0->unk10;
 
-    func_800183DC(temp + 2, temp[1]);
+    Object_DeleteArray(temp + 2, temp[1]);
     func_800441A4()->unkC(arg0);
 }
 
@@ -1861,12 +1861,12 @@ struct Unk_800451B8_Obj *func_80045428(void) {
 s32 func_80045438(s32 arg0, s32 arg1, s32 arg2) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x6C);
+    temp_s0 = Heap_Alloc(0x6C);
     if (temp_s0 == 0) {
         return 0;
     }
     if (func_80045E44()->unk8(temp_s0, arg0, arg1, arg2) != 0) {
-        func_80017CFC(temp_s0);
+        Heap_Free(temp_s0);
         return 0;
     }
     return temp_s0;
@@ -1875,7 +1875,7 @@ s32 func_80045438(s32 arg0, s32 arg1, s32 arg2) {
 s32 func_800454C4(struct Unk_800454C4 *arg0, s32 arg1, void *arg2, s32 arg3) {
     struct Unk_800454C4_Obj *obj;
 
-    ((struct Unk_80043BE8_Svc *)func_80018390())->unk8(arg0);
+    ((struct Unk_80043BE8_Svc *)Object_GetBaseVtbl())->unk8(arg0);
     arg0->unk0 = ((struct Unk_80043EE4_Obj *)func_80045E44());
     obj = func_80046F0C(arg2, 0xF, 0);
     arg0->unk60 = obj;
@@ -1903,7 +1903,7 @@ void func_800455D4(struct Unk_800455D4 *arg0) {
     DecDCToutCallback(0);
     DecDCTReset(0);
     func_8004575C((struct Unk_8004575C *)arg0);
-    ((struct Unk_800455D4_Mgr *)func_80018390())->unkC(arg0);
+    ((struct Unk_800455D4_Mgr *)Object_GetBaseVtbl())->unkC(arg0);
 }
 
 s32 func_8004564C(struct Unk_8004564C *arg0, struct Unk_8004564C_Vec *arg1, s32 arg2) {
@@ -1918,22 +1918,22 @@ s32 func_8004564C(struct Unk_8004564C *arg0, struct Unk_8004564C_Vec *arg1, s32 
         arg0->unk14 = 0;
         arg0->unk10 = 0;
         size = (arg1->unk4 * arg1->unk8 * 2) + 0x1000;
-        p = func_80017B34(size);
+        p = Heap_Alloc(size);
         arg0->unk14 = p;
         if (p == 0) {
             goto fail;
         }
-        p = func_80017B34(size);
+        p = Heap_Alloc(size);
         arg0->unk18 = p;
         if (p == 0) {
             goto fail;
         }
-        p = func_80017B34(0x12000);
+        p = Heap_Alloc(0x12000);
         arg0->unk10 = p;
         if (p == 0) {
             goto fail;
         }
-        p = func_80017B34(arg1->unk8 << 5);
+        p = Heap_Alloc(arg1->unk8 << 5);
         arg0->unk1C = p;
         if (p == 0) {
             goto fail;
@@ -1952,10 +1952,10 @@ fail:
 
 void func_8004575C(struct Unk_8004575C *arg0) {
     if (arg0->unkC == 0) {
-        func_80017CFC(arg0->unk14);
-        func_80017CFC(arg0->unk18);
-        func_80017CFC(arg0->unk10);
-        func_80017CFC(arg0->unk1C);
+        Heap_Free(arg0->unk14);
+        Heap_Free(arg0->unk18);
+        Heap_Free(arg0->unk10);
+        Heap_Free(arg0->unk1C);
     }
 }
 

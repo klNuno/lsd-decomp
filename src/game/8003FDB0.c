@@ -74,8 +74,8 @@ typedef struct Unk_80040A30 {
     u8 padAA[0xB4 - 0xAA];
     Unk_80040EDC_obj **unkB4;
 } Unk_80040A30;
-void func_800183DC(void *, s32);
-void *func_80017CFC(void *);
+void Object_DeleteArray(void *, s32);
+void *Heap_Free(void *);
 Unk_80040A30_obj *func_80041C3C(void);
 typedef struct Unk_8004042C {
     u8 pad0[0xC];
@@ -136,7 +136,7 @@ typedef struct Unk_8003FDB0_tbl {
     u8 pad_0C[0x40 - 0xC];
     void (*unk40)(void *, s32);
 } Unk_8003FDB0_tbl;
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 Unk_8003FDB0_tbl *func_800404C0(void);
 typedef struct Unk_800404D0 {
     u8 pad0[0x8];
@@ -345,7 +345,7 @@ extern u8 D_8006EB90[];
 void *func_8003FDB0(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
 
-    temp = func_80017B34(0xA0);
+    temp = Heap_Alloc(0xA0);
     if (temp != NULL) {
         func_800404C0()->unk8(temp, arg0, arg1, arg2);
         return temp;
@@ -534,7 +534,7 @@ Unk_8003FDB0_tbl *func_800404C0(void) {
 void *func_800404D0(s32 arg0, s32 arg1, s32 arg2) {
     void *obj;
 
-    obj = func_80017B34(0x6C);
+    obj = Heap_Alloc(0x6C);
     if (obj != NULL) {
         func_800408BC()->unk8(obj, arg0, arg1, arg2);
         return obj;
@@ -635,7 +635,7 @@ Unk_800404D0 *func_800408BC(void) {
 }
 
 s32 func_800408CC(s32 arg0, s32 arg1, s32 arg2) {
-    s32 temp_v0 = func_80017B34(0xB8);
+    s32 temp_v0 = Heap_Alloc(0xB8);
 
     if (temp_v0 != 0) {
         func_80040FB0()->unk8((void *)temp_v0, arg0, arg1, arg2);
@@ -654,7 +654,7 @@ void func_80040948(Unk_80040A30_80040948 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     arg0->unkAB = arg2;
     arg0->unkAC = 0;
     arg0->unkAA = 0;
-    var_s1 = ((void *)func_80017B34(arg2 * 4));
+    var_s1 = ((void *)Heap_Alloc(arg2 * 4));
     if (var_s1 != NULL) {
         arg0->unkB4 = var_s1;
         for (i = 0; i < arg2; i++) {
@@ -666,8 +666,8 @@ void func_80040948(Unk_80040A30_80040948 *arg0, s32 arg1, s32 arg2, s32 arg3) {
 }
 
 void func_80040A30(Unk_80040A30 *arg0) {
-    func_800183DC(arg0->unkB4, arg0->unkA9);
-    arg0->unkB4 = func_80017CFC(arg0->unkB4);
+    Object_DeleteArray(arg0->unkB4, arg0->unkA9);
+    arg0->unkB4 = Heap_Free(arg0->unkB4);
     func_80041C3C()->unkC(arg0);
 }
 

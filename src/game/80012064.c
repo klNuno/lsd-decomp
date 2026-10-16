@@ -86,8 +86,8 @@ void GsSetLsMatrix(Unk_80012064_Mat *m);
 void GsSortBg(void *bg, void *ot, u16 pri);
 void GsSortBoxFill(Unk_80012064_Box *box, void *ot, u16 pri);
 void GsSortSprite(Unk_80012064_Sprite *sp, void *ot, u16 pri);
-void func_800183A0(Unk_80012064_Node **node, s32 *iter);
-void func_80018464(void *obj, void *ot, s32 shift, u32 *scratch);
+void List_Next(Unk_80012064_Node **node, s32 *iter);
+void Render_SortModel(void *obj, void *ot, s32 shift, u32 *scratch);
 void func_8001EE98(Unk_80012064_Vec3 *out, Unk_80012064_Vec3 *in, s32 n, Unk_80012064_Mat *m);
 
 void func_80012064(Unk_80012064_Scene *scene, Unk_80012064_Node *node) {
@@ -136,7 +136,7 @@ void func_80012064(Unk_80012064_Scene *scene, Unk_80012064_Node *node) {
             if (child == NULL) {
                 iter = node->unk4;
             }
-            func_800183A0(&child, &iter);
+            List_Next(&child, &iter);
             if (child != NULL && (*child->unk0 & 0xF) == 4 && child->unkC == (Unk_80012064_Parent *)node) {
                 break;
             }
@@ -172,7 +172,7 @@ void func_80012064(Unk_80012064_Scene *scene, Unk_80012064_Node *node) {
         GsSetLightMatrix(lw);
         GsSetLsMatrix(ls);
         if (node->unk18 != 0) {
-            func_80018464(&node->unk10, scene->unk78[scene->unk74], 14 - scene->unk3C, (u32 *)0x1F800000);
+            Render_SortModel(&node->unk10, scene->unk78[scene->unk74], 14 - scene->unk3C, (u32 *)0x1F800000);
         }
     } else {
         Unk_80012064_Vec3 pos[2];

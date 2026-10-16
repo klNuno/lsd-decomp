@@ -1,7 +1,7 @@
 #include "common.h"
+#include "game/dreamsys.h"
 
-extern void func_800183DC(void *, s32);
-typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x70 - 0x28]; s32 u70; s32 u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
+extern void Object_DeleteArray(void *, s32);
 u8 *g_navFlags;
 s32 *g_dynamicLinkCount;
 extern s32 D_8008ABF0[];
@@ -10,86 +10,19 @@ s32 D_8008ACBC;
 typedef struct { u8 pad[5]; s8 u5; } S6;
 extern S6 *D_80088BA4[];
 s32 D_8008ACC8;
-typedef struct Unk_8005A2D0 {
-    u8 pad[0x678];
-    s32 unk678;
-} Unk_8005A2D0;
 typedef struct Unk_8005B5A4 {
     s16 unk0;
     s32 unk4;
     s32 unk8;
     s32 unkC;
 } Unk_8005B5A4;
-typedef struct Unk_80059360 {
-    u8 pad[0x18];
-    u32 unk18;
-    u8 pad2[0x24 - 0x1C];
-    u32 unk24;
-} Unk_80059360;
-typedef struct Unk_8005A168 {
-    u8 pad[0xAC];
-    s32 unkAC;
-    s32 unkB0;
-} Unk_8005A168;
 extern s16 g_stageTimeLimits[];
-typedef struct Unk_8005A184 {
-    u8 pad[0xAC];
-    s32 unkAC;
-    s32 unkB0;
-} Unk_8005A184;
-typedef struct Unk_8005A2E4 {
-    u8 pad[0x17C];
-    s32 unk17C;
-    s32 unk180;
-} Unk_8005A2E4;
-typedef struct { u8 pad[0x924]; s32 u924; } Unk_8005BA20;
 void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
 extern void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
 extern void func_800531CC(void *, void *);
 typedef struct { s32 u0; s32 u4; u8 pad[0x14]; s32 u1C; s32 u20; u8 pad2[0xC]; s32 u30; s32 u34; } S;
-typedef struct Unk_8005A134_Vtbl {
-    u8 pad_00[0xBC];
-    void (*unkBC)(void *, s32 *);
-} Unk_8005A134_Vtbl;
-typedef struct Unk_8005A134 {
-    Unk_8005A134_Vtbl *unk0;
-    u8 pad[0x58 - 0x04];
-    void *u58;
-    Unk_80059360 *unk5C;
-    u8 pad2[0xC4 - 0x60];
-    s32 uC4;
-    s32 uC8;
-    u8 uCC[1];
-} Unk_8005A134;
 void func_8002CC84(void *, void *);
-typedef struct Unk_8005A1B0 {
-    u8 pad[0x124];
-    s32 unk124;
-    s32 unk128;
-    s32 unk12C;
-    s32 unk130;
-} Unk_8005A1B0;
-typedef struct Unk_80059328 {
-    u8 pad_00[0x134];
-    s32 unk134;
-} Unk_80059328;
-typedef struct Unk_8005A304 {
-    u8 pad_00[0x17C];
-    s32 unk17C;
-    s32 unk180;
-} Unk_8005A304;
-typedef struct Unk_8005B4E0_Vtbl {
-    u8 pad_00[0x1FC];
-    void (*unk1FC)(void *, s16 *);
-} Unk_8005B4E0_Vtbl;
-typedef struct Unk_8005B4E0 {
-    Unk_8005B4E0_Vtbl *unk0;
-} Unk_8005B4E0;
-s32 func_8005B518(s16 *arg0);
-typedef struct Unk_8005B5B8 {
-    s8 unk0;
-    s8 unk1;
-} Unk_8005B5B8;
+s32 Mood_GetColor(s16 *arg0);
 extern u8 D_80088748[];
 extern s32 D_80088710[];
 extern s32 D_80088664[];
@@ -97,16 +30,6 @@ s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *ar
 extern u8 D_800889F0[];
 extern void *D_80088980[];
 extern void *D_80088820[];
-typedef struct Unk_8005B3A4_Vtbl {
-    u8 pad_00[0x208];
-    void (*unk208)(void *, void *, s16 *);
-} Unk_8005B3A4_Vtbl;
-typedef struct Unk_8005B3A4 {
-    Unk_8005B3A4_Vtbl *unk0;
-    u8 pad_04[0x144 - 0x4];
-    u8 unk144[0x164 - 0x144];
-    s32 unk164;
-} Unk_8005B3A4;
 s16 *Stage_GetChunkMood(s32 arg0, s8 *arg1);
 extern u8 D_80088B5C;
 extern s32 D_80088B24;
@@ -114,77 +37,9 @@ extern s32 D_80088A80;
 s32 D_8008ABE4;
 extern u8 D_80088CBC[];
 extern s32 D_80088C4C[];
-typedef struct Unk_800593D8 {
-    u8 pad_00[0x80];
-    void (*unk80)(void);
-    u8 pad_84[0x98 - 0x84];
-    void (*unk98)(struct Unk_800593D8 *);
-} Unk_800593D8;
-typedef struct Unk_800597C0_Vtbl {
-    u8 pad_00[0x144];
-    void (*unk144)(void *);
-    void (*unk148)(void *);
-} Unk_800597C0_Vtbl;
-typedef struct Unk_800597C0 {
-    Unk_800597C0_Vtbl *unk0;
-} Unk_800597C0;
 s32 Spawn_PickRandom(void *arg0, s32 arg1, s32 arg2);
 s32 DreamSys_ExecuteLink();
-typedef struct Unk_8005A580 {
-    u8 pad_00[0x24];
-    s32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0x164 - 0x48];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    u8 unk16C[1];
-} Unk_8005A580;
-typedef struct Unk_80059610_Vtbl {
-    u8 pad[0x138];
-    void (*unk138)(void *, s32);
-    void (*unk13C)();
-} Unk_80059610_Vtbl;
-typedef struct Unk_80059610 {
-    Unk_80059610_Vtbl *unk0;
-} Unk_80059610;
-typedef struct Unk_80059E3C_Vtbl {
-    u8 pad_00[0x84];
-    void (*unk84)(void *, s32);
-} Unk_80059E3C_Vtbl;
-typedef struct Unk_80059E3C_Obj {
-    Unk_80059E3C_Vtbl *vt;
-} Unk_80059E3C_Obj;
-typedef struct Unk_80059E3C {
-    u8 pad_00[0x58];
-    Unk_80059E3C_Obj *u58;
-    u8 pad_5C[0xBC - 0x5C];
-    s32 uBC;
-} Unk_80059E3C;
-typedef struct Unk_800590E8 {
-    u8 pad[0x68];
-    s32 unk68;
-    u8 pad2[0x180 - 0x6C];
-    s32 unk180;
-} Unk_800590E8;
-typedef struct Unk_8005A050 Unk_8005A050;
-typedef struct Unk_8005A050_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(Unk_8005A050 *, s32, void *);
-} Unk_8005A050_Vtbl;
-struct Unk_8005A050 {
-    Unk_8005A050_Vtbl *unk0;
-    u8 pad_04[0xA4 - 0x04];
-    s32 unkA4;
-};
 extern u8 D_80087E80[];
-typedef struct Unk_8005AFDC_VtblA {
-    u8 pad_00[0x1F4];
-    void (*unk1F4)(void *, s32);
-} Unk_8005AFDC_VtblA;
-typedef struct Unk_8005AFDC_A {
-    Unk_8005AFDC_VtblA *vt;
-} Unk_8005AFDC_A;
 typedef struct Unk_8005AFDC_VtblB {
     u8 pad_00[0x10C];
     s32 (*unk10C)(void *, s32, s32);
@@ -203,19 +58,6 @@ typedef struct Unk_800581C4 {
     u8 pad_04[0x238 - 0x04];
     s32 unk238;
 } Unk_800581C4;
-typedef struct Unk_80059AEC_Vtbl {
-    u8 pad_00[0x164];
-    s32 (*unk164)(void *, s32);
-    u8 pad_168[0x170 - 0x168];
-    void (*unk170)(void *, s32);
-} Unk_80059AEC_Vtbl;
-typedef struct Unk_80059AEC {
-    Unk_80059AEC_Vtbl *unk0;
-    u8 pad_04[0x70 - 0x04];
-    s32 unk70;
-    u8 pad_74[0xA0 - 0x74];
-    s32 unkA0;
-} Unk_80059AEC;
 s32 func_8005BCB4(void *, void *, s32);
 typedef struct Unk_80058078_Vtbl {
     u8 pad_00[0x6C];
@@ -244,33 +86,7 @@ typedef struct Unk_80058078 {
     u8 unk144[0x10];
     u8 unk154[0x10];
 } Unk_80058078;
-typedef struct Unk_80059148_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, s32);
-    u8 pad_48[0x180 - 0x48];
-    void (*unk180)(void *, s32);
-} Unk_80059148_Vtbl;
-typedef struct Unk_80059148 {
-    Unk_80059148_Vtbl *unk0;
-    u8 pad_04[0x6C - 0x04];
-    s32 unk6C;
-    u8 pad_70[0x884 - 0x70];
-    s32 unk884;
-} Unk_80059148;
-typedef struct Unk_8005AF64_Vtbl {
-    u8 pad_00[0xBC];
-    void (*unkBC)(void *, s32 *);
-} Unk_8005AF64_Vtbl;
-typedef struct Unk_8005AF64 {
-    Unk_8005AF64_Vtbl *unk0;
-} Unk_8005AF64;
 s32 Nav_CalcScore(void);
-typedef struct Unk_8005B6E0 {
-    u8 pad[0x184];
-    s32 unk184;
-    s32 unk188;
-    s32 unk18C;
-} Unk_8005B6E0;
 typedef struct Unk_80058390_Vt {
     u8 pad_00[0x44];
     void (*unk44)(void *, void *, s32);
@@ -282,22 +98,6 @@ typedef struct Unk_80058390 {
     s32 unk238;
 } Unk_80058390;
 extern Unk_80058390_Vt *func_8003DFBC(void);
-typedef struct Unk_80058A94_Vt {
-    u8 pad_00[0x14];
-    void (*unk14)(void *, void *);
-} Unk_80058A94_Vt;
-typedef struct Unk_80058A94_ObjVt {
-    u8 pad_00[0xF0];
-    void (*unkF0)(void *);
-} Unk_80058A94_ObjVt;
-typedef struct Unk_80058A94_Obj {
-    Unk_80058A94_ObjVt *vt;
-} Unk_80058A94_Obj;
-typedef struct Unk_80058A94 {
-    Unk_80058A94_Vt *unk0;
-    u8 pad_04[0x4C - 0x4];
-    Unk_80058A94_Obj *unk4C;
-} Unk_80058A94;
 typedef struct Unk_80058A94_RetVt {
     u8 pad_00[0x8];
     void (*unk8)(void *);
@@ -315,93 +115,15 @@ typedef struct Unk_8005BE28 {
     u8 pad_00[4];
     u16 u4;
 } Unk_8005BE28;
-s32 D_8008ABE0;
+s32 g_saveMagic;
 extern void Nav_InitFlags(u8 *arg0, s32 *arg1);
 extern void *memset(void *arg0, s32 arg1, s32 arg2);
-typedef struct Unk_8005A258 {
-    u8 pad_00[0x178];
-    s32 unk178;
-    s32 unk17C;
-    s32 unk180;
-    s32 unk184;
-    s32 unk188;
-    s32 unk18C;
-    u8 pad_190[0x46C - 0x190];
-    s32 unk46C;
-    u8 pad_470[0x5D8 - 0x470];
-    u8 unk5D8;
-    u8 pad_5D9[0x5DF - 0x5D9];
-    u8 unk5DF;
-    u8 unk5E0[0x600 - 0x5E0];
-    s32 unk600[(0x678 - 0x600) / 4];
-    s32 unk678;
-    s32 unk67C;
-    s32 unk680;
-    u8 unk684[0x1F4];
-} Unk_8005A258;
 s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3);
-typedef struct Unk_8005A508_Vtbl {
-    u8 pad_00[0x104];
-    s32 (*unk104)(void *, s32);
-    u8 pad_108[0x1EC - 0x108];
-    void (*unk1EC)(void *, void *, s32);
-} Unk_8005A508_Vtbl;
-typedef struct Unk_8005A508 {
-    Unk_8005A508_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x164 - 0x48];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    u8 unk16C[1];
-    u8 pad_16D[0x180 - 0x16D];
-    s32 unk180;
-} Unk_8005A508;
-void *func_80017B34(s32 size);
-typedef struct Unk_8005BA40_Vt {
-    u8 pad_00[0x8];
-    void (*unk8)(void *, s32, s32, s32);
-} Unk_8005BA40_Vt;
-Unk_8005BA40_Vt *func_8005BA40(void);
+void *Heap_Alloc(s32 size);
+DreamSysVtbl *DreamSys_GetVtable(void);
 extern s32 D_80087E08[];
-typedef struct Unk_800588EC_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, void *);
-    u8 pad_48[0x60 - 0x48];
-    void (*unk60)(void *, s32);
-} Unk_800588EC_Vtbl;
-typedef struct Unk_800588EC {
-    Unk_800588EC_Vtbl *unk0;
-    u8 pad_04[0x78 - 0x04];
-    s32 unk78;
-    u8 pad_7C[0x80 - 0x7C];
-    s32 unk80;
-    u8 pad_84[0x98 - 0x84];
-    s32 unk98;
-    u8 pad_9C[0xCC - 0x9C];
-    s32 unkCC;
-    u8 pad_D0[0x908 - 0xD0];
-    s32 unk908;
-    s32 unk90C;
-    s32 unk910;
-    u8 pad_914[0x924 - 0x914];
-    s32 unk924;
-} Unk_800588EC;
-typedef struct Unk_8005966C_unk0 {
-    u8 pad_00[0x140];
-    s32 unk140;
-    u8 pad_144[0x14C - 0x144];
-    s32 unk14C;
-    s32 unk150;
-} Unk_8005966C_unk0;
-typedef struct Unk_8005966C {
-    Unk_8005966C_unk0 *unk0;
-    u8 pad_04[0x80 - 0x04];
-    s32 unk80;
-    s32 unk84;
-} Unk_8005966C;
 s32 Mood_CalcAxis(s32, s32, s32);
-void func_80017CFC(s32);
+void Heap_Free(s32);
 typedef struct Unk_80058308_ObjVt {
     u8 pad_00[4];
     void (*unk4)(void *);
@@ -419,163 +141,15 @@ typedef struct Unk_80058308 {
     u8 pad_238[0x240 - 0x238];
     s32 unk240;
 } Unk_80058308;
-typedef struct Unk_80058E8C_Vtbl {
-    u8 pad_00[0x1E4];
-    void (*unk1E4)(void *, s32 **, s32);
-} Unk_80058E8C_Vtbl;
-typedef struct Unk_80058E8C {
-    Unk_80058E8C_Vtbl *unk0;
-} Unk_80058E8C;
-typedef struct Unk_8005A7A0 {
-    u8 pad_00[0x24];
-    s32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0x164 - 0x48];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    u8 unk16C[1];
-    u8 pad_16D[0x880 - 0x16D];
-    s32 *unk880;
-    s32 unk884;
-    s32 unk888;
-} Unk_8005A7A0;
 s32 func_8005BE90();
 s32 *func_8005BF48(void);
-typedef struct Unk_80058F18_Vtbl {
-    u8 pad_00[0x1E8];
-    void (*unk1E8)(void *, s32 **, s32);
-} Unk_80058F18_Vtbl;
-typedef struct Unk_80058F18 {
-    Unk_80058F18_Vtbl *unk0;
-} Unk_80058F18;
 extern s32 D_80087EA4[];
 extern void func_8002CD08(s32, void *);
-extern s8 D_80087E14[][3];
-typedef struct Unk_8005B904_B28 {
-    s32 unk[10];
-} Unk_8005B904_B28;
-typedef struct Unk_8005B904_B50 {
-    s32 unk0;
-    u8 pad_04[0x40];
-    Unk_8005B904_B28 *unk44;
-    u8 pad_48[0x8];
-} Unk_8005B904_B50;
-typedef struct Unk_8005B904 {
-    u8 pad_00[0x14];
-    Unk_8005B904_B50 *unk14;
-    u8 pad_18[0x890 - 0x18];
-    Unk_8005B904_B50 unk890;
-    Unk_8005B904_B28 unk8E0;
-} Unk_8005B904;
-typedef struct Unk_8005A9CC_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, s32);
-    u8 pad_48[0x188 - 0x48];
-    void (*unk188)(void *);
-} Unk_8005A9CC_Vtbl;
-typedef struct Unk_8005A9CC_Bytes {
-    u8 b0, b1, b2, b3, b4, b5, b6, b7;
-} Unk_8005A9CC_Bytes;
-typedef struct Unk_8005A9CC {
-    Unk_8005A9CC_Bytes bytes;
-    s16 unk8;
-} Unk_8005A9CC;
-typedef struct Unk_8005A700 {
-    Unk_8005A9CC_Vtbl *vt;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0xA8 - 0x48];
-    s32 unkA8;
-    s32 unkAC;
-    u8 pad_B0[0x164 - 0xB0];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    u8 unk16C[1];
-    u8 pad_16D[0x880 - 0x16D];
-    s32 *unk880;
-    s32 unk884;
-    s32 unk888;
-    u8 pad_88C[0x908 - 0x88C];
-    s32 unk908;
-    s32 unk90C;
-    s32 (*unk910)(void *);
-    s32 unk914;
-    Unk_8005A9CC unk918;
-} Unk_8005A700;
-void func_8001E6F8(Unk_8005A700 *arg0, s32 *arg1);
+extern s8 g_moodColors[][3];
+void func_8001E6F8(DreamSys *dreamSys, s32 *arg1);
 s32 func_8005BCF8(void *arg0, s16 *arg1, s32 arg2);
 s32 func_8005BD3C(u8 **arg0, u8 **arg1, Unk_8005BE28 *arg2);
-typedef struct Unk_8005A368_Vtbl {
-    u8 pad_00[0x1C0];
-    void (*unk1C0)(void *);
-    u8 pad_1C4[0x1CC - 0x1C4];
-    void (*unk1CC)(void *, s32);
-    u8 pad_1D0[0x1F0 - 0x1D0];
-    void (*unk1F0)(void *, s32);
-} Unk_8005A368_Vtbl;
-typedef struct Unk_8005A368 {
-    Unk_8005A368_Vtbl *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    u8 pad_28[0x68 - 0x28];
-    s32 unk68;
-    u8 pad_6C[0x164 - 0x6C];
-    s32 unk164;
-    u8 unk168[0x180 - 0x168];
-    s32 unk180;
-    u8 pad_184[0x87C - 0x184];
-    s32 unk87C;
-    u8 pad_880[0x88C - 0x880];
-    s32 unk88C;
-} Unk_8005A368;
 s32 Day_FindSpecial(void *arg0, s32 arg1);
-typedef struct Unk_8005B420_Vtbl {
-    u8 pad_00[0x20C];
-    void (*unk20C)(void *, void *, s16 *);
-} Unk_8005B420_Vtbl;
-typedef struct Unk_8005B420 {
-    Unk_8005B420_Vtbl *unk0;
-    u8 pad_04[0x144 - 0x04];
-    u8 unk144[0x154 - 0x144];
-    u8 unk154[0x160 - 0x154];
-    s32 unk160;
-} Unk_8005B420;
-typedef struct Unk_8005A41C_Vtbl {
-    u8 pad_00[0x198];
-    void (*unk198)(void *);
-    u8 pad_19C[0x1A4 - 0x19C];
-    void (*unk1A4)(void *);
-    u8 pad_1A8[0x1C0 - 0x1A8];
-    void (*unk1C0)(void *);
-    u8 pad_1C4[0x1CC - 0x1C4];
-    void (*unk1CC)(void *, s32);
-    u8 pad_1D0[0x1F0 - 0x1D0];
-    void (*unk1F0)(void *, s32);
-    u8 pad_1F4[0x1FC - 0x1F4];
-    void (*unk1FC)(void *, void *);
-    u8 pad_200[0x210 - 0x200];
-    void (*unk210)(void *);
-} Unk_8005A41C_Vtbl;
-typedef struct Unk_8005A41C {
-    Unk_8005A41C_Vtbl *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    u8 pad_28[0x68 - 0x28];
-    s32 unk68;
-    u8 pad_6C[0x164 - 0x6C];
-    s32 unk164;
-    u8 pad_168[0x180 - 0x168];
-    s32 unk180;
-    u8 pad_184[0x190 - 0x184];
-    s16 unk190[(0x878 - 0x190) / 2];
-    s32 unk878;
-    s32 unk87C;
-    u8 pad_880[0x88C - 0x880];
-    s32 unk88C;
-} Unk_8005A41C;
 typedef struct Unk_80058694_Vtbl {
     u8 pad_00[0xB8];
     void (*unkB8)(void *, s32, void *);
@@ -601,46 +175,9 @@ typedef struct Unk_8005C438 {
     s16 unk2;
 } Unk_8005C438;
 extern s32 func_8002CC34(s32, void *, s32, void *, s32);
-typedef struct Unk_800596E8_Vtbl {
-    u8 pad_00[0x154];
-    s32 unk154;
-    u8 pad_158[0x178 - 0x158];
-    s32 unk178;
-    void (*unk17C)(void *, s32);
-    u8 pad_180[0x194 - 0x180];
-    s32 unk194;
-} Unk_800596E8_Vtbl;
-typedef struct Unk_800596E8 {
-    Unk_800596E8_Vtbl *unk0;
-    u8 pad_04[0x58 - 0x04];
-    s32 unk58;
-    u8 pad_5C[0x98 - 0x5C];
-    s32 unk98;
-    s32 unk9C;
-    u8 pad_A0[0xC4 - 0xA0];
-    s32 unkC4;
-    s32 unkC8;
-    u8 unkCC[1];
-} Unk_800596E8;
-typedef struct Unk_8005AD68_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, void *);
-} Unk_8005AD68_Vtbl;
-typedef struct Unk_8005AD68 {
-    Unk_8005AD68_Vtbl *vt;
-    u8 pad_04[0xA0 - 0x04];
-    s32 unkA0;
-    s32 unkA4;
-    u8 pad_A8[0xAC - 0xA8];
-    s32 unkAC;
-    u8 pad_B0[0x914 - 0xB0];
-    s32 unk914;
-    u8 pad_918[0x91C - 0x918];
-    s16 unk91C[3];
-} Unk_8005AD68;
 extern s16 D_8008ABD0[];
 extern u8 D_80087EFC[];
-void func_8005AF64(Unk_8005AF64 *, s16 *, s16 *);
+void func_8005AF64(DreamSys *, s16 *, s16 *);
 extern u8 D_8008ABAC[];
 extern s32 D_8008ABB4[];
 void *func_800404D0(s32 arg0, s32 arg1, s32 arg2);
@@ -654,15 +191,6 @@ typedef struct Unk_80058228Bytes {
     s8 c[3];
 } Unk_80058228Bytes;
 extern Unk_80058228Bytes D_8008ABB8;
-typedef struct Unk_8005942C_Arg0 {
-    void *vt;
-    u8 pad_04[0x0C - 0x04];
-    s32 unkC;
-    u8 pad_10[0x14 - 0x10];
-    u8 *unk14;
-    u8 pad_18[0x5C - 0x18];
-    u8 *unk5C;
-} Unk_8005942C_Arg0;
 typedef struct Unk_8005942C_Vec {
     s32 x;
     s32 y;
@@ -717,163 +245,20 @@ s32 func_8005BE28(Unk_8005BE28 *arg0, u8 arg1);
 extern u8 *D_80088C84[];
 extern u8 *D_80088BDC[];
 extern s16 D_8008ABC0[];
-typedef struct Unk_8005A928_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(void *, s32);
-} Unk_8005A928_Vtbl;
-typedef struct Unk_8005A928_ObjVtbl {
-    u8 pad_00[0x80];
-    void (*unk80)(void *, s32, s32, s32);
-} Unk_8005A928_ObjVtbl;
-typedef struct Unk_8005A928_Obj {
-    Unk_8005A928_ObjVtbl *vt;
-} Unk_8005A928_Obj;
-typedef struct Unk_8005A928 {
-    Unk_8005A928_Vtbl *vt;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0x58 - 0x48];
-    Unk_8005A928_Obj *unk58;
-    u8 pad_5C[0x68 - 0x5C];
-    s32 unk68;
-    u8 pad_6C[0x164 - 0x6C];
-    s32 unk164;
-} Unk_8005A928;
-typedef struct Unk_8005B81C_Vt {
-    u8 pad_00[0x214];
-    void (*unk214)(void *, s32, s32, s32 *, s32, s32, s32);
-} Unk_8005B81C_Vt;
-typedef struct Unk_8005B81C_ObjVt {
-    u8 pad_00[0x10C];
-    s32 (*unk10C)(void *, s32, s32);
-} Unk_8005B81C_ObjVt;
-typedef struct Unk_8005B81C_Obj {
-    Unk_8005B81C_ObjVt *vt;
-} Unk_8005B81C_Obj;
-typedef struct Unk_8005B81C {
-    Unk_8005B81C_Vt *unk0;
-    u8 pad_04[0x4C - 0x4];
-    Unk_8005B81C_Obj *unk4C;
-    u8 pad_50[0x164 - 0x50];
-    s32 unk164;
-    u8 pad_168[0x180 - 0x168];
-    s32 unk180;
-} Unk_8005B81C;
 s32 D_8008ABE8;
 typedef struct Unk_8005BE90 {
     s32 unk0;
     s16 unk4;
     s16 unk6;
 } Unk_8005BE90;
-typedef struct Unk_80059814 {
-    u8 pad_00[0x5C];
-    Unk_80059360 *unk5C;
-    u8 pad_60[0x88 - 0x60];
-    s32 unk88;
-    s32 unk8C;
-} Unk_80059814;
 extern s32 D_80087E50[];
 extern s32 D_80087E5C[];
 typedef struct Unk_800587F0_ArgVtbl {
     u8 pad_00[0x80];
     s32 (*unk80)(void *, s32);
 } Unk_800587F0_ArgVtbl;
-typedef struct Unk_800587F0_Vtbl {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, s32);
-    u8 pad_14[0x40 - 0x14];
-    void (*unk40)(void *);
-    u8 pad_44[0x104 - 0x44];
-    void (*unk104)(void *, s32);
-    u8 pad_108[0x198 - 0x108];
-    void (*unk198)(void *);
-} Unk_800587F0_Vtbl;
-typedef struct Unk_800587F0 {
-    Unk_800587F0_Vtbl *unk0;
-    u8 pad_04[0x58 - 0x04];
-    s32 unk58;
-    s32 unk5C;
-    void **unk60;
-    s32 unk64;
-    s32 unk68;
-    s32 unk6C;
-    s32 unk70;
-    u8 pad_74[0x878 - 0x74];
-    s32 unk878;
-} Unk_800587F0;
-typedef struct Unk_8005B1F4 {
-    u8 pad_00[0x17C];
-    s32 unk17C;
-    s32 unk180;
-    u8 pad_184[0x190 - 0x184];
-    Unk_8005B5B8 unk190[365];
-} Unk_8005B1F4;
 extern s8 D_80087EB0[];
 extern s8 D_80087EC8[];
-typedef struct Unk_80059D1C_Vtbl {
-    u8 pad_00[0x80];
-    s32 (*unk80)(void *, s32, s32, s32);
-    u8 pad_84[0x9C - 0x84];
-    void (*unk9C)(void *, s32);
-} Unk_80059D1C_Vtbl;
-typedef struct Unk_80059D1C_Obj {
-    Unk_80059D1C_Vtbl *vt;
-} Unk_80059D1C_Obj;
-typedef struct Unk_80059D1C {
-    u8 pad_00[0x58];
-    Unk_80059D1C_Obj *unk58;
-    u8 pad_5C[0xB8 - 0x5C];
-    s32 unkB8;
-    s32 unkBC;
-} Unk_80059D1C;
-typedef struct Unk_8005A63C_U4 {
-    u8 b0, b1, b2, b3;
-} Unk_8005A63C_U4;
-typedef struct Unk_8005A63C_Blk {
-    Unk_8005A63C_U4 a;
-    Unk_8005A63C_U4 b;
-    s16 c;
-} Unk_8005A63C_Blk;
-typedef struct Unk_80058968_Vtbl {
-    u8 pad_00[0x10];
-    void (*unk10)(void *, void *);
-    u8 pad_14[0x30 - 0x14];
-    void (*unk30)(void *, s32);
-    u8 pad_34[0x44 - 0x34];
-    void (*unk44)(void *, s32, void *);
-    u8 pad_48[0x104 - 0x48];
-    void (*unk104)(void *, s32);
-} Unk_80058968_Vtbl;
-typedef struct Unk_80058968_Elem {
-    s32 unk0;
-    Unk_8005A63C_Blk unk4;
-    u8 unkE[0x1A - 0xE];
-    s16 unk1A;
-    u8 pad_1C[0x20 - 0x1C];
-    s32 unk20;
-} Unk_80058968_Elem;
-typedef struct Unk_80058968 {
-    Unk_80058968_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x6C - 0x48];
-    s32 unk6C;
-    u8 pad_70[0x164 - 0x70];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    Unk_8005A63C_Blk unk16C;
-    u8 pad_176[0x180 - 0x176];
-    s32 unk180;
-    u8 pad_184[0x46C - 0x184];
-    s32 unk46C;
-    Unk_80058968_Elem unk470[10];
-    u8 pad_5D8[0x87C - 0x5D8];
-    s32 unk87C;
-    u8 pad_880[0x888 - 0x880];
-    void *unk888;
-} Unk_80058968;
 typedef struct Unk_80058968_ArgVtbl {
     u8 pad_00[0xE4];
     void (*unkE4)(void *, void *, void *, void *);
@@ -884,103 +269,11 @@ typedef struct Unk_80058968_RetVtbl {
 } Unk_80058968_RetVtbl;
 extern s16 D_8008ABC8[];
 extern u8 D_80087F08[];
-typedef struct Unk_8005AC24 {
-    Unk_8005AD68_Vtbl *vt;
-    u8 pad_04[0x88 - 0x04];
-    s32 unk88;
-    u8 pad_8C[0xA0 - 0x8C];
-    s32 unkA0;
-    s32 unkA4;
-    u8 pad_A8[0xAC - 0xA8];
-    s32 unkAC;
-    u8 pad_B0[0x914 - 0xB0];
-    s32 unk914;
-    u8 pad_918[0x91C - 0x918];
-    s16 unk91C[3];
-} Unk_8005AC24;
 typedef struct Unk_80058B08_Ret {
     u8 pad_00[0x88];
     void (*unk88)(void *, s32);
 } Unk_80058B08_Ret;
-typedef struct Unk_80058B08_Vt {
-    u8 pad_00[0x1D4];
-    void (*unk1D4)(void *, s32);
-    u8 pad_1D8[0x224 - 0x1D8];
-    void (*unk224)(void *);
-} Unk_80058B08_Vt;
-typedef struct Unk_80058B08_Sub {
-    u8 pad_00[0x2C];
-    s16 unk2C;
-} Unk_80058B08_Sub;
-typedef struct Unk_80058B08_Ret11C {
-    u8 pad_00[4];
-    Unk_80058B08_Sub *unk4;
-} Unk_80058B08_Ret11C;
-typedef struct Unk_80058B08_ObjVt {
-    u8 pad_00[0x10C];
-    s32 (*unk10C)(void *, s32, s32);
-    u8 pad_110[0x11C - 0x110];
-    Unk_80058B08_Ret11C *(*unk11C)(void *, s32);
-} Unk_80058B08_ObjVt;
-typedef struct Unk_80058B08_Obj {
-    Unk_80058B08_ObjVt *vt;
-} Unk_80058B08_Obj;
-typedef struct Unk_80058B08_Unk28 {
-    u8 pad_00[0x36];
-    u16 unk36;
-} Unk_80058B08_Unk28;
-typedef struct Unk_80058B08 {
-    Unk_80058B08_Vt *unk0;
-    u8 pad_04[0x14 - 0x04];
-    s32 unk14;
-    u8 pad_18[0x28 - 0x18];
-    Unk_80058B08_Unk28 *unk28;
-    u8 pad_2C[0x44 - 0x2C];
-    s32 unk44;
-    u8 pad_48[0x4C - 0x48];
-    Unk_80058B08_Obj *unk4C;
-    u8 pad_50[0xB8 - 0x50];
-    s32 unkB8;
-    u8 pad_BC[0x164 - 0xBC];
-    s32 unk164;
-} Unk_80058B08;
-typedef struct Unk_8005AE40_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, void *);
-} Unk_8005AE40_Vtbl;
-typedef struct Unk_8005AE40 {
-    Unk_8005AE40_Vtbl *vt;
-    u8 pad_04[0x88 - 0x04];
-    s32 unk88;
-    u8 pad_8C[0xA0 - 0x8C];
-    s32 unkA0;
-    s32 unkA4;
-    u8 pad_A8[0xAC - 0xA8];
-    s32 unkAC;
-    u8 pad_B0[0x914 - 0xB0];
-    s32 unk914;
-    u8 pad_918[0x91C - 0x918];
-    s16 unk91C[3];
-} Unk_8005AE40;
 extern s16 D_8008ABD8[];
-typedef struct Unk_80059BE0_Vtbl {
-    u8 pad_00[0x168];
-    void (*unk168)(void *);
-    void (*unk16C)(void *, void *);
-} Unk_80059BE0_Vtbl;
-typedef struct Unk_80059BE0 {
-    Unk_80059BE0_Vtbl *unk0;
-    u8 pad_04[0x5C - 0x04];
-    Unk_80059360 *unk5C;
-    u8 pad_60[0xA0 - 0x60];
-    s32 unkA0;
-    u8 pad_A4[0xAC - 0xA4];
-    s32 unkAC;
-    u8 pad_B0[0xB4 - 0xB0];
-    s32 unkB4;
-    u8 pad_B8[0x678 - 0xB8];
-    s32 unk678;
-} Unk_80059BE0;
 typedef struct Unk_8001E6F8_Out {
     s16 unk0;
     s16 unk2;
@@ -989,73 +282,13 @@ typedef struct Unk_8001E6F8_Out {
     s16 unk8;
     s16 unkA;
 } Unk_8001E6F8_Out;
-typedef struct Unk_800591B4_Vtbl {
-    u8 pad_00[0x44];
-    void (*unk44)(void *, s32, void *);
-    u8 pad_48[0x138 - 0x48];
-    void (*unk138)(void *, s32);
-    void (*unk13C)(void *, s32);
-    u8 pad_140[0x180 - 0x140];
-    void (*unk180)(void *, s32);
-    u8 pad_184[0x18C - 0x184];
-    void (*unk18C)(void *, s32, s32, s32, s32);
-    void (*unk190)(void *, s32);
-    u8 pad_194[0x1F4 - 0x194];
-    void (*unk1F4)(void *, void *);
-} Unk_800591B4_Vtbl;
-typedef struct Unk_800591B4 {
-    Unk_800591B4_Vtbl *vt;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x70 - 0x48];
-    s32 unk70;
-    s32 unk74;
-    s32 unk78;
-    u8 pad_7C[0x88 - 0x7C];
-    s32 unk88;
-    s32 unk8C;
-    s32 unk90;
-    s32 unk94;
-    u8 pad_98[0xA0 - 0x98];
-    s32 unkA0;
-    s32 unkA4;
-    u8 pad_A8[0xB4 - 0xA8];
-    s32 unkB4;
-    s32 unkB8;
-    s32 unkBC;
-    u8 pad_C0[0x16A - 0xC0];
-    s16 unk16A;
-    u8 unk16C[1];
-    u8 pad_16D[0x908 - 0x16D];
-    s32 unk908;
-    s32 unk90C;
-    s32 unk910;
-} Unk_800591B4;
 extern s32 D_80087E68[];
 extern s32 D_80087E74[];
 extern s16 D_80087E84[];
-void func_80059A1C(void *arg0);
-typedef struct Unk_800598E8_Vtbl {
-    u8 pad0[0x44];
-    void (*unk44)(void *, s32, void *);
-} Unk_800598E8_Vtbl;
-typedef struct Unk_800598E8 {
-    Unk_800598E8_Vtbl *unk0;
-    u8 pad4[0x90 - 0x04];
-    s32 unk90;
-    s32 unk94;
-    u8 pad98[0xA0 - 0x98];
-    s32 unkA0;
-    u8 padA4[0xA8 - 0xA4];
-    s32 unkA8;
-} Unk_800598E8;
-extern s32 D_80087AAC[];
-typedef struct Unk_80059590 {
-    u8 pad[0x7C];
-    s32 unk7C;
-} Unk_80059590;
-extern u8 D_80087BDC[];
-s32 func_800585B4(void *a0, void *a1);
+void func_80059A1C(DreamSys *dreamSys);
+extern s32 g_graphVtbl[];
+extern u8 g_dreamSysVtbl[];
+s32 Graph_CheckReel(void *a0, void *a1);
 typedef struct Unk_80058404_Vt {
     u8 pad_00[0xE0];
     void (*unkE0)(void *, void *);
@@ -1091,73 +324,9 @@ typedef struct Unk_80058404 {
     Unk_80058404_A8 *unkA8[100];
     s32 unk238;
 } Unk_80058404;
-typedef struct Unk_80059E98_Vtbl {
-    u8 pad_00[0xE0];
-    void (*unkE0)(void *, void *, s32);
-    u8 pad_E4[0x12C - 0xE4];
-    void (*unk12C)(void *);
-    u8 pad_130[0x1D0 - 0x130];
-    s32 (*unk1D0)(void *, s32);
-    u8 pad_1D4[0x1D8 - 0x1D4];
-    s32 (*unk1D8)(void *, s32);
-    s32 (*unk1DC)(void *, s32);
-    u8 pad_1E0[0x220 - 0x1E0];
-    void (*unk220)(void *);
-} Unk_80059E98_Vtbl;
-typedef struct Unk_80059E98_Sub {
-    s32 unk0;
-    u8 pad_04[0x18 - 0x04];
-    s32 unk18;
-    s32 unk1C;
-} Unk_80059E98_Sub;
-typedef struct Unk_80059E98_Vtbl2 {
-    u8 pad_00[0x10C];
-    s32 (*unk10C)(void *, s32, s32);
-} Unk_80059E98_Vtbl2;
-typedef struct Unk_80059E98_Obj2 {
-    Unk_80059E98_Vtbl2 *vt;
-} Unk_80059E98_Obj2;
-typedef struct Unk_80059E98 {
-    Unk_80059E98_Vtbl *vt;
-    u8 pad_04[0x14 - 0x04];
-    Unk_80059E98_Sub *unk14;
-    u8 pad_18[0x4C - 0x18];
-    Unk_80059E98_Obj2 *unk4C;
-    u8 pad_50[0xAC - 0x50];
-    s32 unkAC;
-    u8 pad_B0[0x164 - 0xB0];
-    s32 unk164;
-    u8 pad_168[0x90C - 0x168];
-    s32 unk90C;
-} Unk_80059E98;
 extern s32 D_80087E20[];
 extern s8 D_80087E34[];
 extern void (*D_80087E3C[])(void *, s32, s32);
-typedef struct Unk_8005B03C_Vtbl {
-    u8 pad_00[0x1C4];
-    void (*unk1C4)(void *);
-    u8 pad_1C8[0x1F8 - 0x1C8];
-    void (*unk1F8)(void *, s32);
-    u8 pad_1FC[0x218 - 0x1FC];
-    void (*unk218)(void *, s32, s32);
-} Unk_8005B03C_Vtbl;
-typedef struct Unk_8005B03C {
-    Unk_8005B03C_Vtbl *unk0;
-    u8 pad_04[0x24 - 0x04];
-    s32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0x68 - 0x48];
-    s32 unk68;
-    u8 pad_6C[0x134 - 0x6C];
-    s32 unk134;
-    u8 pad_138[0x164 - 0x138];
-    s32 unk164;
-    s16 unk168;
-    s16 unk16A;
-    u8 pad_16C[0x18C - 0x16C];
-    s32 unk18C;
-} Unk_8005B03C;
 typedef struct Unk_8005B03C_ObjVtbl {
     u8 pad_00[0x38];
     void (*unk38)(void *, void *, s32);
@@ -1167,91 +336,10 @@ typedef struct Unk_8005B03C_ObjVtbl {
     s32 (*unk154)(void *);
     s32 (*unk158)(void *);
 } Unk_8005B03C_ObjVtbl;
-typedef struct Unk_8005B03C_Obj {
-    Unk_8005B03C_ObjVtbl *unk0;
-} Unk_8005B03C_Obj;
-typedef struct { u8 b0, b1, b2, b3; } Unk_8005A4E8_Ret;
-typedef struct Unk_8005A4E8 {
-    u8 pad[0x168];
-    Unk_8005A4E8_Ret c;
-} Unk_8005A4E8;
-typedef struct { u8 b[8]; s16 h; } Unk_8005B74C_A;
-typedef struct { u8 b[12]; } Unk_8005B74C_B;
-typedef struct Unk_8005B74C_Ent {
-    s32 unk0;
-    Unk_8005B74C_A unk4;
-    Unk_8005B74C_B unkE;
-    s16 unk1A;
-    s16 unk1C;
-    s32 unk20;
-} Unk_8005B74C_Ent;
-typedef struct Unk_8005B74C {
-    u8 pad_00[0x24];
-    u32 unk24;
-    u8 pad_28[0x46C - 0x28];
-    s32 unk46C;
-    Unk_8005B74C_Ent unk470[10];
-} Unk_8005B74C;
-typedef struct Unk_80058FAC_B4 {
-    u8 b0, b1, b2, b3;
-} Unk_80058FAC_B4;
-typedef struct Unk_80058FAC_Src {
-    Unk_80058FAC_B4 a;
-    Unk_80058FAC_B4 b;
-    s16 c;
-} Unk_80058FAC_Src;
-typedef struct Unk_80058FAC_Vt {
-    u8 pad_00[0xE8];
-    void (*unkE8)(void *);
-    u8 pad_EC[0x1C4 - 0xEC];
-    void (*unk1C4)(void *);
-    s32 (*unk1C8)(void *, void *);
-    u8 pad_1CC[0x224 - 0x1CC];
-    void (*unk224)(void *);
-} Unk_80058FAC_Vt;
-typedef struct Unk_80058FAC_ObjVt {
-    u8 pad_00[0xD4];
-    Unk_80058FAC_Src *(*unkD4)(void *, s32 **);
-} Unk_80058FAC_ObjVt;
-typedef struct Unk_80058FAC_Obj {
-    Unk_80058FAC_ObjVt *vt;
-} Unk_80058FAC_Obj;
-typedef struct Unk_80058FAC {
-    Unk_80058FAC_Vt *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x4C - 0x48];
-    Unk_80058FAC_Obj *unk4C;
-    u8 pad_50[0x124 - 0x50];
-    s32 unk124;
-    u8 pad_128[0x16C - 0x128];
-    Unk_80058FAC_Src unk16C;
-} Unk_80058FAC;
 s32 func_8005BFDC(void *arg0, void *arg1, s32 arg2);
 s32 func_8005C02C(u8 **arg0, u8 **arg1, Unk_8005BE28 *arg2);
 s32 func_8005C118(void);
-extern s32 (*D_80087EEC[])(void *);
-typedef struct Unk_80058C58_Vtbl {
-    u8 pad_00[0x184];
-    void (*unk184)(void *, s32);
-    void (*unk188)(void *, s32, s32);
-} Unk_80058C58_Vtbl;
-typedef struct Unk_80058C58 {
-    Unk_80058C58_Vtbl *vt;
-    u8 pad_04[0x6C - 0x04];
-    s32 unk6C;
-    s32 unk70;
-    s32 unk74;
-    u8 pad_78[0x88 - 0x78];
-    s32 unk88;
-    u8 pad_8C[0x90 - 0x8C];
-    s32 unk90;
-    u8 pad_94[0xA0 - 0x94];
-    s32 unkA0;
-    s32 unkA4;
-    u8 pad_A8[0x908 - 0xA8];
-    s32 unk908;
-} Unk_80058C58;
+extern s32 (*g_linkSteps[])(void *);
 typedef struct { u8 r, g, b, cd; } Unk_8005C150_C;
 typedef struct { Unk_8005C150_C c; s16 v; } Unk_8005C150_E;
 typedef struct { Unk_8005C150_C c; u8 idx; s8 flag; } Unk_8005C150_Y;
@@ -1260,59 +348,10 @@ typedef struct { Unk_8005C150_C a; Unk_8005C150_E b; } Unk_8005C150;
 extern Unk_8005C150_E D_80087F30[];
 s32 func_8005BF74(void *arg0, void *arg1, s32 arg2);
 s32 func_8005BFC4(void);
-typedef struct Unk_8005A82C_Vtbl {
-    u8 pad_00[0xB8];
-    void (*unkB8)(void *, void *);
-    u8 pad_BC[0x104 - 0xBC];
-    s32 (*unk104)(void *, s32);
-    s32 (*unk108)(void *);
-} Unk_8005A82C_Vtbl;
-typedef struct Unk_8005A82C_Obj_Vtbl {
-    u8 pad_00[0xE8];
-    void (*unkE8)(void *, void *, void *);
-} Unk_8005A82C_Obj_Vtbl;
-typedef struct Unk_8005A82C_Obj {
-    Unk_8005A82C_Obj_Vtbl *vt;
-} Unk_8005A82C_Obj;
-typedef struct Unk_8005A82C {
-    Unk_8005A82C_Vtbl *unk0;
-    u8 pad_04[0x44 - 0x04];
-    s32 unk44;
-    u8 pad_48[0x4C - 0x48];
-    Unk_8005A82C_Obj *unk4C;
-    u8 pad_50[0x68 - 0x50];
-    s32 unk68;
-    u8 pad_6C[0x164 - 0x6C];
-    s32 unk164;
-    u8 pad_168[0x16C - 0x168];
-    u8 unk16C[1];
-} Unk_8005A82C;
 extern Unk_8005C150_Y *D_800885B8[];
 extern u8 D_800885F0[];
 s32 rand();
 u32 Stage_FindChunkByMood(void *arg0, void *arg1);
-typedef struct Unk_80058D94_Vtbl {
-    u8 pad_00[0x30];
-    void (*unk30)(void *, s32);
-    u8 pad_34[0x118 - 0x34];
-    void (*unk118)(void *);
-    void (*unk11C)(void *);
-    u8 pad_120[0x1CC - 0x120];
-    s32 (*unk1CC)(void *, s32);
-    u8 pad_1D0[0x218 - 0x1D0];
-    void (*unk218)(void *, s32, s32);
-} Unk_80058D94_Vtbl;
-typedef struct Unk_80058D94 {
-    Unk_80058D94_Vtbl *unk0;
-    u8 pad_04[0x24 - 0x04];
-    u32 unk24;
-    u8 pad_28[0x44 - 0x28];
-    s32 unk44;
-    u8 pad_48[0x68 - 0x48];
-    s32 unk68;
-    u8 pad_6C[0x134 - 0x6C];
-    s32 unk134;
-} Unk_80058D94;
 typedef struct Unk_800585B4_Entry { s16 v; } Unk_800585B4_Entry;
 typedef struct Unk_800585B4_A0 { u8 pad[0x23C]; u32 unk23C; s8 *unk240; } Unk_800585B4_A0;
 typedef struct Unk_800585B4_A1 {
@@ -1324,10 +363,10 @@ typedef struct Unk_800585B4_A1 {
     u8 pad_2F2[0x467 - 0x2F2];
     s8 unk467;
 } Unk_800585B4_A1;
-extern Unk_800585B4_Entry D_80087BD4[];
-/* Looks for each of the 4 codes of D_80087BD4 among the last n ring entries (n at most 100). */
+extern Unk_800585B4_Entry g_reelPoints[];
+/* Looks for each of the 4 codes of g_reelPoints among the last n ring entries (n at most 100). */
 
-void func_80058078(Unk_80058078 *arg0) {
+void Graph_LoadImage(Unk_80058078 *arg0) {
     arg0->unk84 = 5;
     arg0->unk2C = 0x190;
     arg0->vt->unkD4(arg0, "ETC\\HGRAPH.TIM", 0);
@@ -1354,7 +393,7 @@ void func_800581C4(Unk_800581C4 *arg0) {
     }
 }
 
-void func_80058228(Unk_80058228 *arg0) {
+void Graph_CreateSprites(Unk_80058228 *arg0) {
     Unk_80058228Bytes sp;
     s32 i;
     s32 step;
@@ -1370,14 +409,14 @@ void func_80058228(Unk_80058228 *arg0) {
         sp.c[1] -= step;
         sp.c[2] -= step;
     } while (i < 100);
-    arg0->unk240 = func_80017B34(4);
+    arg0->unk240 = Heap_Alloc(4);
 }
 
-void func_80058308(Unk_80058308 *arg0) {
+void Graph_FreeSprites(Unk_80058308 *arg0) {
     s32 i;
     Unk_80058308_Obj *obj;
 
-    func_80017CFC(arg0->unk240);
+    Heap_Free(arg0->unk240);
     for (i = 0; i < 100; i++) {
         obj = arg0->unkA8[i];
         obj->vt->unk4(obj);
@@ -1396,7 +435,7 @@ s32 func_80058390(Unk_80058390 *arg0, void *arg1, s32 arg2) {
     return ret;
 }
 
-void func_80058404(Unk_80058404 *arg0, void *arg1) {
+void Graph_Draw(Unk_80058404 *arg0, void *arg1) {
     Unk_80058404_Pt sp10;
     Unk_80058404_Pt sp18;
     Unk_80058404_Pt unused;
@@ -1411,7 +450,7 @@ void func_80058404(Unk_80058404 *arg0, void *arg1) {
     ((Unk_80058404_Vt *)func_8003DFBC())->unkE0(arg0, arg1);
     temp_a0 = arg0->unkA4;
     res = temp_a0->vt->unk1B0(temp_a0, 0);
-    arg0->unk238 = func_800585B4(arg0, res);
+    arg0->unk238 = Graph_CheckReel(arg0, res);
     flag = 0;
     if (res->unk4 == 0) {
         n = res->unk8;
@@ -1447,7 +486,7 @@ void func_80058404(Unk_80058404 *arg0, void *arg1) {
     }
 }
 
-s32 func_800585B4(void *a0, void *a1) {
+s32 Graph_CheckReel(void *a0, void *a1) {
     Unk_800585B4_A0 *arg0 = a0;
     Unk_800585B4_A1 *arg1 = a1;
     s32 n, j, k, count;
@@ -1462,7 +501,7 @@ loop:
     k = arg1->unk8 - 1;
     for (j = 0; j < n; j++) {
         if (k < 0) k = 0x16C;
-        if (D_80087BD4[i].v == arg1->unk18[k].v) { count++; arg0->unk240[i] = j; }
+        if (g_reelPoints[i].v == arg1->unk18[k].v) { count++; arg0->unk240[i] = j; }
         k--;
     }
     if (count == 0) return 0;
@@ -1472,7 +511,7 @@ loop:
     return 1;
 }
 
-void func_80058694(Unk_80058694 *arg0) {
+void Graph_BlinkReel(Unk_80058694 *arg0) {
     u32 temp_a0;
     u32 temp_a1;
     Unk_80058694_Obj *obj;
@@ -1490,159 +529,159 @@ void func_80058694(Unk_80058694 *arg0) {
     }
 }
 
-void *func_80058764(void) {
-    return D_80087AAC;
+void *Graph_GetVtable(void) {
+    return g_graphVtbl;
 }
 
-void *func_80058774(s32 arg0, s32 arg1, s32 arg2) {
-    void *temp_v0;
+void *DreamSys_New(s32 arg0, s32 arg1, s32 arg2) {
+    void *dreamSys;
 
-    temp_v0 = func_80017B34(0x928);
-    if (temp_v0 != 0) {
-        func_8005BA40()->unk8(temp_v0, arg0, arg1, arg2);
-        return temp_v0;
+    dreamSys = Heap_Alloc(0x928);
+    if (dreamSys != 0) {
+        DreamSys_GetVtable()->init(dreamSys, arg0, arg1, arg2);
+        return dreamSys;
     }
     return 0;
 }
 
-void func_800587F0(Unk_800587F0 *arg0, void **arg1, s32 arg2, s32 arg3) {
-    func_80057C84()->unk8(arg0);
-    arg0->unk0 = (Unk_800587F0_Vtbl *)func_8005BA40();
-    arg0->unk58 = arg2;
-    arg0->unk5C = arg3;
-    arg0->unk64 = 0;
-    arg0->unk60 = arg1;
-    arg0->unk0->unk10(arg0, ((Unk_800587F0_ArgVtbl *)*arg1)->unk80(arg1, 0));
-    arg0->unk0->unk104(arg0, -1);
-    arg0->unk70 = 1;
-    arg0->unk6C = 0;
-    arg0->unk878 = 1;
-    arg0->unk0->unk198(arg0);
-    arg0->unk0->unk40(arg0);
+void DreamSys_Init(DreamSys *dreamSys, void **arg1, s32 arg2, s32 camera) {
+    func_80057C84()->unk8(dreamSys);
+    dreamSys->vtbl = (DreamSysVtbl *)DreamSys_GetVtable();
+    dreamSys->unk58 = arg2;
+    dreamSys->camera.obj = camera;
+    dreamSys->unk64 = 0;
+    dreamSys->unk60 = arg1;
+    dreamSys->vtbl->unk10(dreamSys, ((Unk_800587F0_ArgVtbl *)*arg1)->unk80(arg1, 0));
+    dreamSys->vtbl->swapTimeLimit(dreamSys, -1);
+    dreamSys->unk70 = 1;
+    dreamSys->unk6C = 0;
+    dreamSys->neverSaved = 1;
+    dreamSys->vtbl->initNewGame(dreamSys);
+    dreamSys->vtbl->unk40(dreamSys);
 }
 
-void func_800588EC(Unk_800588EC *arg0) {
-    arg0->unk0->unk60(arg0, 0);
-    arg0->unk0->unk44(arg0, 1, D_80087E08);
-    arg0->unk80 = 0;
-    arg0->unk98 = 0;
-    arg0->unkCC = 0;
-    arg0->unk908 = 0;
-    arg0->unk90C = 0;
-    arg0->unk910 = 0;
-    arg0->unk78 = 0;
-    arg0->unk924 = 0;
+void func_800588EC(DreamSys *dreamSys) {
+    dreamSys->vtbl->unk60(dreamSys, 0);
+    dreamSys->vtbl->unk44(dreamSys, 1, D_80087E08);
+    dreamSys->unk80 = 0;
+    dreamSys->unk98 = 0;
+    dreamSys->unkCC.word = 0;
+    dreamSys->unk908 = 0;
+    dreamSys->unk90C = 0;
+    dreamSys->linkStep = 0;
+    dreamSys->unk78 = 0;
+    dreamSys->unk924 = 0;
 }
 
-void func_80058968(Unk_80058968 *arg0, void **arg1) {
+void func_80058968(DreamSys *dreamSys, void **arg1) {
     s32 sp10[4];
-    Unk_80058968_Elem *elem;
+    Flashback *elem;
     void *temp_a2;
 
-    ((Unk_80058968_ArgVtbl *)*arg1)->unkE4(arg1, sp10, arg0, (u8 *)arg0 + 0x16C);
-    ((Unk_80058968_RetVtbl *)func_80057C84())->unk4C(arg0, arg1, sp10);
-    arg0->unk0->unk10(arg0, arg1);
-    if (arg0->unk44 == 0xE) {
-        elem = &arg0->unk470[arg0->unk87C];
-        arg0->unk0->unk44(arg0, 1, elem->unkE);
-        arg0->unk0->unk104(arg0, elem->unk1A + 4);
-        arg0->unk87C++;
+    ((Unk_80058968_ArgVtbl *)*arg1)->unkE4(arg1, sp10, dreamSys, (u8 *)dreamSys + 0x16C);
+    ((Unk_80058968_RetVtbl *)func_80057C84())->unk4C(dreamSys, arg1, sp10);
+    dreamSys->vtbl->unk10(dreamSys, arg1);
+    if (dreamSys->transition == 0xE) {
+        elem = &dreamSys->flashbacks[dreamSys->nextFlashback];
+        dreamSys->vtbl->unk44(dreamSys, 1, elem->rotation.bytes);
+        dreamSys->vtbl->swapTimeLimit(dreamSys, elem->length + 4);
+        dreamSys->nextFlashback++;
     }
-    if (arg0->unk6C != 0) {
-        temp_a2 = arg0->unk888;
+    if (dreamSys->unk6C != 0) {
+        temp_a2 = dreamSys->unk888;
         if (temp_a2 != 0) {
-            arg0->unk0->unk44(arg0, 1, temp_a2);
+            dreamSys->vtbl->unk44(dreamSys, 1, temp_a2);
         }
     }
 }
 
-void func_80058A94(Unk_80058A94 *arg0) {
-    Unk_80058A94_Obj *temp_a0;
+void func_80058A94(DreamSys *dreamSys) {
+    DreamPlayer *player;
 
-    temp_a0 = arg0->unk4C;
-    temp_a0->vt->unkF0(temp_a0);
-    arg0->unk0->unk14(arg0, arg0->unk4C);
-    func_80057C84()->unk50(arg0);
+    player = dreamSys->player;
+    player->vt->unkF0(player);
+    dreamSys->vtbl->unk14(dreamSys, dreamSys->player);
+    func_80057C84()->unk50(dreamSys);
 }
 
-void func_80058B08(Unk_80058B08 *arg0, s32 arg1) {
+void func_80058B08(DreamSys *dreamSys, s32 arg1) {
     s32 temp_v0;
-    Unk_80058B08_Obj *temp_a0;
-    Unk_80058B08_Obj *temp_a0_2;
+    DreamPlayer *player;
+    DreamPlayer *player2;
 
-    ((Unk_80058B08_Ret *)func_80057C84())->unk88(arg0, arg1);
+    ((Unk_80058B08_Ret *)func_80057C84())->unk88(dreamSys, arg1);
     switch (arg1) {
     case -1:
-        temp_v0 = arg0->unk28->unk36 & 0x7F;
-        arg0->unkB8 = temp_v0;
+        temp_v0 = dreamSys->unk28->unk36 & 0x7F;
+        dreamSys->unkB8 = temp_v0;
         if (temp_v0 >= 0x18) {
-            arg0->unkB8 = 0;
+            dreamSys->unkB8 = 0;
         }
-        if (arg0->unk44 == 0xF && arg0->unkB8 == 0) {
-            arg0->unkB8 = 2;
+        if (dreamSys->transition == 0xF && dreamSys->unkB8 == 0) {
+            dreamSys->unkB8 = 2;
         }
-        if (arg0->unk164 == 9) {
-            temp_a0 = arg0->unk4C;
-            arg0->unk0->unk1D4(arg0, temp_a0->vt->unk10C(temp_a0, 0, 0));
+        if (dreamSys->stage == 9) {
+            player = dreamSys->player;
+            dreamSys->vtbl->unk1D4(dreamSys, player->vt->unk10C(player, 0, 0));
         }
         return;
     case -2:
-        temp_a0_2 = arg0->unk4C;
-        if (temp_a0_2->vt->unk11C(temp_a0_2, arg0->unk14 + 0x18)->unk4->unk2C == 2) {
-            temp_a0 = arg0->unk4C;
-            arg0->unk0->unk1D4(arg0, temp_a0->vt->unk10C(temp_a0, 0, 0));
+        player2 = dreamSys->player;
+        if (player2->vt->unk11C(player2, dreamSys->unk14.bytes + 0x18)->unk4->unk2C == 2) {
+            player = dreamSys->player;
+            dreamSys->vtbl->unk1D4(dreamSys, player->vt->unk10C(player, 0, 0));
         } else {
-            arg0->unk0->unk224(arg0);
+            dreamSys->vtbl->unk224(dreamSys);
         }
         return;
     }
 }
 
-void func_80058C58(Unk_80058C58 *arg0, s32 arg1, s32 arg2) {
-    if (arg0->unk6C == 0 && arg0->unk70 == 0) {
+void func_80058C58(DreamSys *dreamSys, s32 arg1, s32 arg2) {
+    if (dreamSys->unk6C == 0 && dreamSys->unk70 == 0) {
         arg2 -= 2;
-        if (arg0->unk908 == 0) {
+        if (dreamSys->unk908 == 0) {
             switch (arg2) {
                 case 0:
-                    arg0->unkA0 = 1;
+                    dreamSys->unkA0 = 1;
                     break;
                 case 1:
-                    arg0->unkA0 = 2;
+                    dreamSys->unkA0 = 2;
                     break;
                 case 2:
-                    arg0->unkA4 = 1;
+                    dreamSys->unkA4 = 1;
                     break;
                 case 3:
-                    arg0->unkA4 = 2;
+                    dreamSys->unkA4 = 2;
                     break;
                 case 4:
-                    arg0->unk88 = 1;
+                    dreamSys->unk88 = 1;
                     break;
                 case 5:
-                    if (arg0->unkA0 == 1) {
-                        arg0->vt->unk184(arg0, 4);
+                    if (dreamSys->unkA0 == 1) {
+                        dreamSys->vtbl->unk184(dreamSys, 4);
                     }
                     break;
                 case 6:
-                    arg0->unk88 = 2;
+                    dreamSys->unk88 = 2;
                     break;
                 case 11:
-                    arg0->unk90 = 2;
+                    dreamSys->unk90 = 2;
                     break;
                 case 12:
-                    arg0->unkA0 = 4;
+                    dreamSys->unkA0 = 4;
                     break;
                 case 13:
-                    arg0->unk90 = 1;
+                    dreamSys->unk90 = 1;
                     break;
                 case 14:
-                    arg0->unkA0 = 3;
+                    dreamSys->unkA0 = 3;
                     break;
                 case 23:
-                    arg0->unk74 = 1;
+                    dreamSys->unk74 = 1;
                     break;
                 case 32:
-                    arg0->vt->unk188(arg0, arg1, arg2);
+                    dreamSys->vtbl->unk188(dreamSys, arg1, arg2);
                     break;
                 case 47:
                     break;
@@ -1651,185 +690,185 @@ void func_80058C58(Unk_80058C58 *arg0, s32 arg1, s32 arg2) {
     }
 }
 
-void DreamSys_TickTimer(Unk_80058D94 *arg0, s32 arg1, s32 arg2) {
-    u32 temp_v0;
+void DreamSys_TickTimer(DreamSys *dreamSys, s32 sender, s32 message) {
+    u32 ticks;
 
-    if (arg2 == 2) {
-        temp_v0 = arg0->unk24;
-        arg0->unk24 = temp_v0 + 1;
-        if (temp_v0 >= (u32) arg0->unk134) {
-            if (arg0->unk68 != 0) {
-                if (arg0->unk44 != 0 || arg0->unk0->unk1CC(arg0, 0) != 0) {
+    if (message == 2) {
+        ticks = dreamSys->timer;
+        dreamSys->timer = ticks + 1;
+        if (ticks >= (u32) dreamSys->timeLimit) {
+            if (dreamSys->flashbackMode != 0) {
+                if (dreamSys->transition != 0 || dreamSys->vtbl->loadNextFlashback(dreamSys, 0) != 0) {
                 reset:
-                    arg0->unk24 = 0;
+                    dreamSys->timer = 0;
                     return;
                 }
             } else {
-                arg0->unk0->unk218(arg0, 0, 0x10);
+                dreamSys->vtbl->maybeSaveFlashback(dreamSys, 0, 0x10);
             }
-            arg0->unk0->unk30(arg0, 0xA);
+            dreamSys->vtbl->unk30(dreamSys, 0xA);
             goto reset;
         }
-        arg0->unk0->unk118(arg0);
-        arg0->unk0->unk11C(arg0);
+        dreamSys->vtbl->unk118(dreamSys);
+        dreamSys->vtbl->unk11C(dreamSys);
     }
 }
 
-void func_80058E8C(Unk_80058E8C *arg0, s32 **arg1, s32 arg2) {
-    func_80057C84()->unk9C(arg0, arg1, arg2);
-    if ((**arg1 & 0xFFF) == 0x114) {
-        arg0->unk0->unk1E4(arg0, arg1, arg2);
+void func_80058E8C(DreamSys *dreamSys, s32 **sender, s32 message) {
+    func_80057C84()->unk9C(dreamSys, sender, message);
+    if ((**sender & 0xFFF) == 0x114) {
+        dreamSys->vtbl->unk1E4(dreamSys, sender, message);
     }
 }
 
-void func_80058F18(Unk_80058F18 *arg0, s32 **arg1, s32 arg2) {
-    func_80057C84()->unkDC(arg0, arg1, arg2);
-    if ((**arg1 & 0xFFFFF) == 0x1F234) {
-        arg0->unk0->unk1E8(arg0, arg1, arg2);
+void func_80058F18(DreamSys *dreamSys, s32 **sender, s32 message) {
+    func_80057C84()->unkDC(dreamSys, sender, message);
+    if ((**sender & 0xFFFFF) == 0x1F234) {
+        dreamSys->vtbl->onEntityEvent(dreamSys, sender, message);
     }
 }
 
-void DreamSys_OnWallTouch(Unk_80058FAC *arg0, s32 **arg1, s32 arg2) {
-    Unk_80058FAC_Obj *temp_a0;
-    Unk_80058FAC_Src *src;
+void DreamSys_OnWallTouch(DreamSys *dreamSys, s32 **sender, s32 message) {
+    DreamPlayer *player;
+    DreamPlace *src;
 
-    func_80057C84()->unkE0(arg0, arg1, arg2);
-    if (arg2 == 4 && arg0->unk44 == 0) {
-        temp_a0 = arg0->unk4C;
-        src = temp_a0->vt->unkD4(temp_a0, arg1);
-        arg0->unk16C = *src;
-        if (arg0->unk0->unk1C8(arg0, &arg0->unk16C) == 0 && arg0->unk124 != 0) {
-            arg0->unk0->unk1C4(arg0);
+    func_80057C84()->unkE0(dreamSys, sender, message);
+    if (message == 4 && dreamSys->transition == 0) {
+        player = dreamSys->player;
+        src = player->vt->unkD4(player, sender);
+        dreamSys->place = *src;
+        if (dreamSys->vtbl->linkStatic(dreamSys, &dreamSys->place) == 0 && dreamSys->dynamicLinkOn != 0) {
+            dreamSys->vtbl->linkDynamic(dreamSys);
         }
-        arg0->unk0->unk224(arg0);
-        arg0->unk0->unkE8(arg0);
+        dreamSys->vtbl->unk224(dreamSys);
+        dreamSys->vtbl->unkE8(dreamSys);
     }
 }
 
 void func_800590E0(void) {
 }
 
-s32 DreamSys_SetFlashbackMode(Unk_800590E8 *arg0, s32 *arg1, s32 arg2) {
-    s32 temp_s1;
+s32 DreamSys_SetFlashbackMode(DreamSys *dreamSys, s32 *colorOut, s32 mode) {
+    s32 oldMode;
 
-    temp_s1 = arg0->unk68;
-    if (arg2 < 0) {
-        *arg1 = func_8005B518((s16 *)((u8 *)arg0 + (arg0->unk180 * 2 + 0x190)));
+    oldMode = dreamSys->flashbackMode;
+    if (mode < 0) {
+        *colorOut = Mood_GetColor((s16 *)((u8 *)dreamSys + (dreamSys->day * 2 + 0x190)));
     } else {
-        arg0->unk68 = arg2;
+        dreamSys->flashbackMode = mode;
     }
-    return temp_s1;
+    return oldMode;
 }
 
-void func_80059148(Unk_80059148 *arg0, s32 arg1) {
+void func_80059148(DreamSys *dreamSys, s32 arg1) {
     s32 temp_a2;
 
-    arg0->unk6C = arg1;
+    dreamSys->unk6C = arg1;
     if (arg1 != 0) {
-        arg0->unk0->unk180(arg0, 1);
-        temp_a2 = arg0->unk884;
+        dreamSys->vtbl->unk180(dreamSys, 1);
+        temp_a2 = dreamSys->unk884;
         if (temp_a2 != 0) {
-            arg0->unk0->unk44(arg0, 1, temp_a2);
+            dreamSys->vtbl->unk44(dreamSys, 1, temp_a2);
         }
     }
 }
 
-void func_800591B4(Unk_800591B4 *arg0, s32 arg1, s32 arg2) {
+void func_800591B4(DreamSys *dreamSys, s32 arg1, s32 arg2) {
     Unk_8001E6F8_Out sp18;
 
-    arg0->vt->unk1F4(arg0, arg0->unk16C);
-    arg0->vt->unk138(arg0, 1);
-    arg0->vt->unk13C(arg0, 1);
-    arg0->vt->unk180(arg0, arg1);
-    arg0->unkBC = -1;
-    arg0->unkB4 = 0;
-    arg0->unkB8 = 0;
-    arg0->unkA0 = 0;
-    arg0->unkA4 = 0;
-    arg0->unk88 = 0;
-    arg0->unk90 = 0;
-    arg0->unk8C = 0;
-    arg0->unk94 = 0;
-    arg0->vt->unk18C(arg0, 0, 1, 1, 1);
-    arg0->vt->unk190(arg0, arg2);
-    arg0->unk16A = -1;
-    arg0->unk70 = 0;
-    arg0->unk44 = 0;
-    arg0->unk74 = 0;
-    arg0->unk908 = 0;
-    arg0->unk90C = 0;
-    arg0->unk910 = 0;
-    arg0->unk78 = 0;
-    func_8001E6F8((Unk_8005A700 *)arg0, (s32 *)&sp18);
+    dreamSys->vtbl->logChunkMood(dreamSys, &dreamSys->place);
+    dreamSys->vtbl->unk138(dreamSys, 1);
+    dreamSys->vtbl->unk13C(dreamSys, 1);
+    dreamSys->vtbl->unk180(dreamSys, arg1);
+    dreamSys->unkBC = -1;
+    dreamSys->unkB4 = 0;
+    dreamSys->unkB8 = 0;
+    dreamSys->unkA0 = 0;
+    dreamSys->unkA4 = 0;
+    dreamSys->unk88 = 0;
+    dreamSys->unk90 = 0;
+    dreamSys->unk8C = 0;
+    dreamSys->unk94 = 0;
+    dreamSys->vtbl->unk18C(dreamSys, 0, 1, 1, 1);
+    dreamSys->vtbl->unk190(dreamSys, arg2);
+    dreamSys->cinematic.id.variant = -1;
+    dreamSys->unk70 = 0;
+    dreamSys->transition = 0;
+    dreamSys->unk74 = 0;
+    dreamSys->unk908 = 0;
+    dreamSys->unk90C = 0;
+    dreamSys->linkStep = 0;
+    dreamSys->unk78 = 0;
+    func_8001E6F8(dreamSys, (s32 *)&sp18);
     sp18.unk8 = 0;
     sp18.unkA = 1;
-    arg0->vt->unk44(arg0, 1, &sp18);
+    dreamSys->vtbl->unk44(dreamSys, 1, &sp18);
 }
 
-void func_80059310(Unk_80059394 *arg0) {
-    arg0->u70 = 1;
+void func_80059310(DreamSys *dreamSys) {
+    dreamSys->unk70 = 1;
 }
 
-s32 func_8005931C(Unk_80059394 *arg0) {
-    return arg0->u74;
+s32 func_8005931C(DreamSys *dreamSys) {
+    return dreamSys->unk74;
 }
 
-s32 DreamSys_SwapTimeLimit(Unk_80059328 *arg0, s32 arg1) {
+s32 DreamSys_SwapTimeLimit(DreamSys *dreamSys, s32 seconds) {
     s32 old;
 
-    if (arg1 >= 0) {
-        arg1 *= 15;
+    if (seconds >= 0) {
+        seconds *= 15;
     }
-    old = arg0->unk134;
-    arg0->unk134 = arg1;
+    old = dreamSys->timeLimit;
+    dreamSys->timeLimit = seconds;
     if (old >= 0) {
         old = (u32)old / 15;
     }
     return old;
 }
 
-u32 DreamSys_GetElapsedSeconds(Unk_80059360 *arg0) {
-    return arg0->unk24 / 15;
+u32 DreamSys_GetElapsedSeconds(DreamSys *dreamSys) {
+    return dreamSys->timer / 15;
 }
 
-void func_8005937C(Unk_800587F0 *arg0, s32 arg1) {
-    arg0->unk58 = arg1;
+void func_8005937C(DreamSys *dreamSys, s32 value) {
+    dreamSys->unk58 = value;
 }
 
-void func_80059384(Unk_800587F0 *arg0, s32 arg1) {
-    arg0->unk5C = arg1;
+void func_80059384(DreamSys *dreamSys, s32 value) {
+    dreamSys->camera.obj = value;
 }
 
-void func_8005938C(Unk_800587F0 *arg0, s32 arg1) {
-    arg0->unk64 = arg1;
+void func_8005938C(DreamSys *dreamSys, s32 value) {
+    dreamSys->unk64 = value;
 }
 
-void func_80059394(Unk_80059394 *arg0) {
-    if (arg0->u70 == 0) {
-        arg0->u74 = 0;
-        arg0->u124 = arg0->u24 % arg0->u120 == 0;
+void func_80059394(DreamSys *dreamSys) {
+    if (dreamSys->unk70 == 0) {
+        dreamSys->unk74 = 0;
+        dreamSys->dynamicLinkOn = dreamSys->timer % dreamSys->unk120 == 0;
     }
 }
 
-void func_800593D8(Unk_800593D8 *arg0) {
-    if (arg0->unk80 != NULL) {
-        arg0->unk80();
+void func_800593D8(DreamSys *dreamSys) {
+    if (dreamSys->unk80 != NULL) {
+        dreamSys->unk80();
     }
-    if (arg0->unk98 != NULL) {
-        arg0->unk98(arg0);
+    if (dreamSys->unk98 != NULL) {
+        dreamSys->unk98(dreamSys);
     }
 }
 
-s32 func_8005942C(Unk_8005942C_Arg0 *arg0, Unk_8005942C_Vec *arg1, s32 arg2, s32 *arg3, s32 arg4) {
+s32 func_8005942C(DreamSys *dreamSys, Unk_8005942C_Vec *arg1, s32 arg2, s32 *arg3, s32 arg4) {
     Unk_8005942C_Vec sp10;
     s32 temp_v0;
     s32 *temp;
 
     D_80087EE8[0] = arg2;
-    func_8001E600(arg0, &sp10, &D_80087EE8[-2], 0);
-    temp_v0 = func_8005950C((Unk_8005B5A4 *)(arg0->unk5C + 0x14), (Unk_8005B5A4 *)(arg0->unk5C + 0x20), arg2);
-    if (arg0->unkC != 0) {
-        temp = (s32 *)(arg0->unk14 + 0x38);
+    func_8001E600(dreamSys, &sp10, &D_80087EE8[-2], 0);
+    temp_v0 = func_8005950C((Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x14), (Unk_8005B5A4 *)(dreamSys->camera.bytes + 0x20), arg2);
+    if (dreamSys->unkC != 0) {
+        temp = (s32 *)(dreamSys->unk14.bytes + 0x38);
     } else {
         temp = NULL;
     }
@@ -1843,171 +882,169 @@ s32 func_8005942C(Unk_8005942C_Arg0 *arg0, Unk_8005942C_Vec *arg1, s32 arg2, s32
     return 0;
 }
 
-s32 func_8005950C(Unk_8005B5A4 *arg0, Unk_8005B5A4 *arg1, s32 arg2) {
+s32 func_8005950C(Unk_8005B5A4 *start, Unk_8005B5A4 *end, s32 pos) {
     s32 span;
 
-    arg2 /= 1024;
-    span = (arg1->unk8 - arg0->unk8) / 1024;
+    pos /= 1024;
+    span = (end->unk8 - start->unk8) / 1024;
     if (span == 0) {
         span = 1;
     }
-    return ((arg1->unk4 - arg0->unk4) * arg2) / span + arg0->unk4;
+    return ((end->unk4 - start->unk4) * pos) / span + start->unk4;
 }
 
-void func_80059590(Unk_80059590 *arg0) {
-    arg0->unk7C = 0;
+void func_80059590(DreamSys *dreamSys) {
+    dreamSys->unk7C = 0;
 }
 
-void func_80059598(Unk_800588EC *arg0) {
-    arg0->unk78 = 0;
+void func_80059598(DreamSys *dreamSys) {
+    dreamSys->unk78 = 0;
 }
 
 s32 func_800595A0(void) {
     return 0;
 }
 
-void func_800595A8(Unk_80059610 *arg0, s32 arg1) {
-    arg0->unk0->unk13C(arg0, 0);
+void func_800595A8(DreamSys *dreamSys, s32 arg1) {
+    dreamSys->vtbl->unk13C(dreamSys, 0);
     if (arg1 != 0) {
-        arg0->unk0->unk138(arg0, 0);
+        dreamSys->vtbl->unk138(dreamSys, 0);
     }
 }
 
-void func_80059610(Unk_80059610 *arg0, s32 arg1, s32 arg2) {
-    arg0->unk0->unk13C(arg0);
-    arg0->unk0->unk138(arg0, arg2);
+void func_80059610(DreamSys *dreamSys, s32 arg1, s32 arg2) {
+    dreamSys->vtbl->unk13C(dreamSys);
+    dreamSys->vtbl->unk138(dreamSys, arg2);
 }
 
-void func_8005966C(Unk_8005966C *arg0, s32 arg1) {
-    Unk_8005966C_unk0 *temp_v1 = arg0->unk0;
+void func_8005966C(DreamSys *dreamSys, s32 mode) {
+    DreamSysVtbl *vtbl = dreamSys->vtbl;
 
-    arg0->unk84 = arg1;
-    switch (arg1) {
+    dreamSys->unk84 = mode;
+    switch (mode) {
     case 0:
-        arg0->unk80 = 0;
+        dreamSys->unk80 = 0;
         return;
     case 1:
-        arg0->unk80 = temp_v1->unk140;
+        dreamSys->unk80 = vtbl->unk140;
         return;
     case 2:
-        arg0->unk80 = temp_v1->unk14C;
+        dreamSys->unk80 = vtbl->unk14C;
         return;
     case 3:
-        arg0->unk80 = temp_v1->unk150;
+        dreamSys->unk80 = vtbl->unk150;
         return;
     }
 }
 
-void func_800596E8(Unk_800596E8 *arg0, s32 arg1) {
-    Unk_800596E8_Vtbl *vt;
+void func_800596E8(DreamSys *dreamSys, s32 mode) {
+    DreamSysVtbl *vt;
 
-    vt = arg0->unk0;
-    if (arg0->unk9C == 2) {
-        vt->unk17C(arg0, 0);
+    vt = dreamSys->vtbl;
+    if (dreamSys->unk9C == 2) {
+        vt->unk17C(dreamSys, 0);
     }
-    arg0->unk9C = arg1;
-    switch (arg1) {
+    dreamSys->unk9C = mode;
+    switch (mode) {
     case 0:
-        arg0->unk98 = 0;
+        dreamSys->unk98 = 0;
         return;
     case 1:
-        arg0->unk98 = vt->unk154;
+        dreamSys->unk98 = vt->unk154;
         return;
     case 2: {
-        s32 temp_v0;
-        Unk_800596E8_Vtbl *temp_v1;
+        s32 handler;
+        DreamSysVtbl *temp_v1;
 
-        temp_v0 = vt->unk178;
-        temp_v1 = arg0->unk0;
-        arg0->unkC4 = 1;
-        arg0->unkC8 = 1;
-        arg0->unk98 = temp_v0;
-        func_8002CC34(arg0->unk58, arg0->unkCC, 1, arg0, temp_v1->unk194);
+        handler = vt->unk178;
+        temp_v1 = dreamSys->vtbl;
+        dreamSys->unkC4 = 1;
+        dreamSys->unkC8 = 1;
+        dreamSys->unk98 = handler;
+        func_8002CC34(dreamSys->unk58, dreamSys->unkCC.bytes, 1, dreamSys, temp_v1->unk194);
         return;
     }
     }
 }
 
-void func_800597C0(Unk_800597C0 *arg0) {
-    arg0->unk0->unk144(arg0);
-    arg0->unk0->unk148(arg0);
+void func_800597C0(DreamSys *dreamSys) {
+    dreamSys->vtbl->unk144(dreamSys);
+    dreamSys->vtbl->unk148(dreamSys);
 }
 
-void func_80059814(Unk_80059814 *arg0) {
+void func_80059814(DreamSys *dreamSys) {
     s32 temp_a1;
     s32 temp_a2;
     s32 temp_v0;
     s32 temp_v1_3;
-    Unk_80059360 *temp_v0_2;
-    Unk_80059360 *temp_v1_4;
+    DreamCamera *camera2;
+    DreamCamera *camera;
     s32 temp_v1;
 
-    temp_v1 = arg0->unk88;
+    temp_v1 = dreamSys->unk88;
     if (temp_v1 != 0) {
         temp_a2 = D_80087E50[temp_v1];
         temp_v1_3 = D_80087E5C[temp_v1];
-        temp_a1 = temp_a2 + arg0->unk8C;
+        temp_a1 = temp_a2 + dreamSys->unk8C;
         if ((temp_a1 < 0 ? ~temp_a1 + 1 : temp_a1) < temp_v1_3) {
-            temp_v1_4 = arg0->unk5C;
-            temp_v1_4->unk24 = (u32) (temp_a2 + temp_v1_4->unk24);
-            arg0->unk8C = temp_a1;
+            camera = dreamSys->camera.obj;
+            camera->unk24 = (u32) (temp_a2 + camera->unk24);
+            dreamSys->unk8C = temp_a1;
         }
-        arg0->unk88 = 0;
+        dreamSys->unk88 = 0;
         return;
     }
-    temp_v0 = arg0->unk8C;
+    temp_v0 = dreamSys->unk8C;
     if (temp_v0 != 0) {
         temp_a2 = -0x258;
         if (temp_v0 < 0) {
             temp_a2 = 0x258;
         }
-        temp_v0_2 = arg0->unk5C;
-        temp_v0_2->unk24 = (u32) (temp_a2 + temp_v0_2->unk24);
-        arg0->unk8C = (s32) (temp_a2 + arg0->unk8C);
+        camera2 = dreamSys->camera.obj;
+        camera2->unk24 = (u32) (temp_a2 + camera2->unk24);
+        dreamSys->unk8C = (s32) (temp_a2 + dreamSys->unk8C);
     }
 }
 
-void func_800598E8(Unk_800598E8 *arg0) {
+void func_800598E8(DreamSys *dreamSys) {
     s32 step;
     s32 sum;
     s32 lim;
 
-    arg0->unkA8 = arg0->unkA0 == 1;
-    if (arg0->unk90 != 0) {
-        step = D_80087E68[arg0->unk90];
-        sum = step + arg0->unk94;
-        lim = D_80087E74[arg0->unk90];
+    dreamSys->unkA8 = dreamSys->unkA0 == 1;
+    if (dreamSys->unk90 != 0) {
+        step = D_80087E68[dreamSys->unk90];
+        sum = step + dreamSys->unk94;
+        lim = D_80087E74[dreamSys->unk90];
         if ((sum < 0 ? ~sum + 1 : sum) < lim) {
             D_80087E84[0] = step;
-            arg0->unk0->unk44(arg0, 0, &D_80087E84[-2]);
-            arg0->unk94 = sum;
+            dreamSys->vtbl->unk44(dreamSys, 0, &D_80087E84[-2]);
+            dreamSys->unk94 = sum;
         }
-        arg0->unk90 = 0;
-        func_80059A1C(arg0);
-    } else if (arg0->unk94 != 0) {
-        step = arg0->unk94 < 0 ? 0x2D : -0x2D;
+        dreamSys->unk90 = 0;
+        func_80059A1C(dreamSys);
+    } else if (dreamSys->unk94 != 0) {
+        step = dreamSys->unk94 < 0 ? 0x2D : -0x2D;
         D_80087E84[0] = step;
-        arg0->unk0->unk44(arg0, 0, &D_80087E84[-2]);
-        arg0->unk94 += step;
-        func_80059A1C(arg0);
+        dreamSys->vtbl->unk44(dreamSys, 0, &D_80087E84[-2]);
+        dreamSys->unk94 += step;
+        func_80059A1C(dreamSys);
     }
 }
 
-void func_80059A1C(void *arg0) {
-    Unk_800598E8 *p;
+void func_80059A1C(DreamSys *dreamSys) {
     s32 temp_v1;
     s32 var_v0;
 
-    p = arg0;
-    temp_v1 = p->unkA0;
-    p->unkA8 = 0;
+    temp_v1 = dreamSys->unkA0;
+    dreamSys->unkA8 = 0;
     if (temp_v1 != 0) {
         if (temp_v1 & 1) {
             var_v0 = temp_v1 + 1;
         } else {
             var_v0 = temp_v1 - 1;
         }
-        p->unkA0 = var_v0;
+        dreamSys->unkA0 = var_v0;
     }
 }
 
@@ -2017,94 +1054,94 @@ void func_80059A48(void) {
 void func_80059A50(void) {
 }
 
-void func_80059A58(Unk_80058078 *arg0) {
-    if (arg0->unk6C == 0) {
-        arg0->vt->unk174(arg0);
-        arg0->vt->unk158(arg0);
-    } else if (arg0->unk6C == 2) {
-        arg0->vt->unk160(arg0);
+void func_80059A58(DreamSys *dreamSys) {
+    if (dreamSys->unk6C == 0) {
+        dreamSys->vtbl->unk174(dreamSys);
+        dreamSys->vtbl->unk158(dreamSys);
+    } else if (dreamSys->unk6C == 2) {
+        dreamSys->vtbl->unk160(dreamSys);
     } else {
-        arg0->vt->unk15C(arg0);
+        dreamSys->vtbl->unk15C(dreamSys);
     }
 }
 
-void func_80059AEC(Unk_80059AEC *arg0) {
-    if (arg0->unk70 == 0) {
-        arg0->unk0->unk170(arg0, arg0->unk0->unk164(arg0, 1));
+void func_80059AEC(DreamSys *dreamSys) {
+    if (dreamSys->unk70 == 0) {
+        dreamSys->vtbl->unk170(dreamSys, dreamSys->vtbl->unk164(dreamSys, 1));
     }
 }
 
-void func_80059B50(Unk_80059AEC *arg0) {
-    arg0->unkA0 = 1;
-    if (arg0->unk70 == 0) {
-        arg0->unk0->unk170(arg0, arg0->unk0->unk164(arg0, 1));
+void func_80059B50(DreamSys *dreamSys) {
+    dreamSys->unkA0 = 1;
+    if (dreamSys->unk70 == 0) {
+        dreamSys->vtbl->unk170(dreamSys, dreamSys->vtbl->unk164(dreamSys, 1));
     } else {
-        arg0->unk0->unk164(arg0, 0);
+        dreamSys->vtbl->unk164(dreamSys, 0);
     }
 }
 
-void func_80059BD4(Unk_80059AEC *arg0) {
-    arg0->unkA0 = 1;
+void func_80059BD4(DreamSys *dreamSys) {
+    dreamSys->unkA0 = 1;
 }
 
-s32 func_80059BE0(Unk_80059BE0 *arg0, void *arg1) {
+s32 func_80059BE0(DreamSys *dreamSys, void *arg1) {
     s32 var_s1 = 0;
     s32 var_s3;
     s32 temp_a0;
     s32 bit;
     s32 step;
-    Unk_80059360 *a1 = arg1;
+    DreamCamera *camera = arg1;
 
     var_s3 = 0;
-    if (arg0->unkA0 != 0) {
-        var_s3 = arg0->unkA0;
-        temp_a0 = arg0->unkB4 + 1;
-        arg0->unkB4 = temp_a0;
+    if (dreamSys->unkA0 != 0) {
+        var_s3 = dreamSys->unkA0;
+        temp_a0 = dreamSys->unkB4 + 1;
+        dreamSys->unkB4 = temp_a0;
         if (temp_a0 < 4) {
-            if (arg0->unkAC == 4) {
+            if (dreamSys->unkAC == 4) {
                 bit = temp_a0 & 1;
                 var_s1 = bit == 0;
             }
         } else {
-            arg0->unkA0 = 0;
+            dreamSys->unkA0 = 0;
             var_s1 = 1;
         }
         if (var_s1 != 0) {
-            arg0->unk0->unk168(arg0);
+            dreamSys->vtbl->unk168(dreamSys);
         }
-        a1 = arg0->unk5C;
-        if (a1 != 0 && arg0->unk678 != 0 && arg1 != 0) {
+        camera = dreamSys->camera.obj;
+        if (camera != 0 && dreamSys->shake != 0 && arg1 != 0) {
             step = -0x32;
-            if (arg0->unkB4 >= 3) {
+            if (dreamSys->unkB4 >= 3) {
                 step = 0x32;
             }
-            a1->unk18 += step;
-            a1->unk24 += step;
+            camera->unk18 += step;
+            camera->unk24 += step;
         }
-        if (arg0->unkA0 == 0) {
-            arg0->unkB4 = 0;
+        if (dreamSys->unkA0 == 0) {
+            dreamSys->unkB4 = 0;
         }
     }
     if (var_s1 == 0) {
-        arg0->unk0->unk16C(arg0, a1);
+        dreamSys->vtbl->unk16C(dreamSys, camera);
     }
     return var_s3;
 }
 
-void func_80059D1C(Unk_80059D1C *arg0) {
-    Unk_80059D1C_Obj *obj = arg0->unk58;
-    s32 idx = arg0->unkB8;
-    Unk_80059D1C_Vtbl *vt = obj->vt;
+void func_80059D1C(DreamSys *dreamSys) {
+    DreamSysObj58 *obj = dreamSys->unk58;
+    s32 idx = dreamSys->unkB8;
+    DreamSysObj58Vtbl *vt = obj->vt;
     s32 t;
 
     if (idx != 0) {
         t = D_80087EB0[idx] * 0x10;
         vt->unk9C(obj, D_80087EC8[idx]);
-        arg0->unkBC = vt->unk80(obj, t, 0x6E, 0x6E);
-        if (arg0->unkB8 != 0x16) {
-            arg0->unkBC = -1;
+        dreamSys->unkBC = vt->unk80(obj, t, 0x6E, 0x6E);
+        if (dreamSys->unkB8 != 0x16) {
+            dreamSys->unkBC = -1;
         }
-        if (arg0->unkB8 == 0xB) {
+        if (dreamSys->unkB8 == 0xB) {
             vt->unk9C(obj, 1);
             vt->unk80(obj, t, 0x6E, 0x6E);
             vt->unk9C(obj, 2);
@@ -2113,116 +1150,116 @@ void func_80059D1C(Unk_80059D1C *arg0) {
     }
 }
 
-void func_80059E3C(Unk_80059E3C *arg0) {
+void func_80059E3C(DreamSys *dreamSys) {
     s32 temp_a1;
-    Unk_80059E3C_Obj *temp_a0;
+    DreamSysObj58 *temp_a0;
 
-    temp_a1 = arg0->uBC;
+    temp_a1 = dreamSys->unkBC;
     if (temp_a1 >= 0) {
-        temp_a0 = arg0->u58;
+        temp_a0 = dreamSys->unk58;
         temp_a0->vt->unk84(temp_a0, temp_a1);
-        arg0->uBC = -1;
+        dreamSys->unkBC = -1;
     }
 }
 
-void func_80059E98(Unk_80059E98 *arg0, s32 arg1) {
+void func_80059E98(DreamSys *dreamSys, s32 arg1) {
     s32 temp_s3;
-    s32 temp_v0;
-    Unk_80059E98_Obj2 *temp_a0;
-    Unk_80059E98_Sub *temp_v1;
+    s32 place;
+    DreamPlayer *player;
+    DreamBody *body;
 
     if (arg1 != 0) {
-        temp_s3 = D_80087E34[arg1] * D_80087E20[arg0->unkAC];
-        arg0->vt->unk12C(arg0);
-        temp_a0 = arg0->unk4C;
-        temp_v0 = temp_a0->vt->unk10C(temp_a0, 0, 0);
-        if (arg0->vt->unk1DC(arg0, temp_v0) == 0 && arg0->vt->unk1D8(arg0, temp_v0) == 0 && arg0->vt->unk1D0(arg0, temp_v0) == 0) {
-            arg0->vt->unk220(arg0);
-            D_80087E3C[arg1](arg0, temp_s3, arg0->unk90C == 0);
-            if (arg0->unk164 == 0) {
-                temp_v1 = arg0->unk14;
-                if (temp_v1->unk1C < -0x7D0 && temp_v1->unk18 >= -0x1F3) {
-                    arg0->vt->unkE0(arg0, arg0, 4);
+        temp_s3 = D_80087E34[arg1] * D_80087E20[dreamSys->unkAC];
+        dreamSys->vtbl->unk12C(dreamSys);
+        player = dreamSys->player;
+        place = player->vt->unk10C(player, 0, 0);
+        if (dreamSys->vtbl->unk1DC(dreamSys, place) == 0 && dreamSys->vtbl->unk1D8(dreamSys, place) == 0 && dreamSys->vtbl->unk1D0(dreamSys, place) == 0) {
+            dreamSys->vtbl->unk220(dreamSys);
+            D_80087E3C[arg1](dreamSys, temp_s3, dreamSys->unk90C == 0);
+            if (dreamSys->stage == 0) {
+                body = dreamSys->unk14.body;
+                if (body->unk1C < -0x7D0 && body->unk18 >= -0x1F3) {
+                    dreamSys->vtbl->onWallTouch(dreamSys, dreamSys, 4);
                 }
             }
         }
-        arg0->unk14->unk0 = 0;
+        dreamSys->unk14.body->unk0 = 0;
     }
 }
 
-void func_8005A050(Unk_8005A050 *arg0) {
+void func_8005A050(DreamSys *dreamSys) {
     s32 temp_v0;
 
-    temp_v0 = arg0->unkA4;
+    temp_v0 = dreamSys->unkA4;
     if (temp_v0 != 0) {
-        arg0->unk0->unk44(arg0, 0, D_80087E80 + temp_v0 * 12);
-        arg0->unkA4 = 0;
+        dreamSys->vtbl->unk44(dreamSys, 0, D_80087E80 + temp_v0 * 12);
+        dreamSys->unkA4 = 0;
     }
 }
 
-void func_8005A0B0(Unk_8005A134 *arg0) {
-    Unk_80059360 *temp_v1;
+void func_8005A0B0(DreamSys *dreamSys) {
+    DreamCamera *camera;
 
-    if (arg0->uC4 != 0) {
-        arg0->unk0->unkBC(arg0, D_80087EA4);
-        temp_v1 = arg0->unk5C;
-        temp_v1->unk24 = temp_v1->unk24 - 0x258;
+    if (dreamSys->unkC4 != 0) {
+        dreamSys->vtbl->unkBC(dreamSys, D_80087EA4);
+        camera = dreamSys->camera.obj;
+        camera->unk24 = camera->unk24 - 0x258;
     }
-    if (arg0->uC8 != 0) {
-        func_8002CD08((s32) arg0->u58, arg0->uCC);
+    if (dreamSys->unkC8 != 0) {
+        func_8002CD08((s32) dreamSys->unk58, dreamSys->unkCC.bytes);
     }
 }
 
-void func_8005A134(Unk_8005A134 *arg0, s32 arg1) {
-    arg0->uC4 = 0;
-    arg0->uC8 = arg1;
+void func_8005A134(DreamSys *dreamSys, s32 arg1) {
+    dreamSys->unkC4 = 0;
+    dreamSys->unkC8 = arg1;
     if (arg1 != 0) {
-        func_8002CC84(arg0->u58, arg0->uCC);
+        func_8002CC84(dreamSys->unk58, dreamSys->unkCC.bytes);
     }
 }
 
-s32 func_8005A168(Unk_8005A168 *arg0, s32 arg1) {
+s32 func_8005A168(DreamSys *dreamSys, s32 arg1) {
     s32 temp_v0;
 
-    temp_v0 = arg0->unkAC;
+    temp_v0 = dreamSys->unkAC;
     if (arg1 >= 0) {
-        arg0->unkAC = arg1;
-        arg0->unkB0 = arg1;
+        dreamSys->unkAC = arg1;
+        dreamSys->unkB0 = arg1;
     }
     return temp_v0;
 }
 
-void func_8005A184(Unk_8005A184 *arg0, s32 arg1) {
+void func_8005A184(DreamSys *dreamSys, s32 arg1) {
     s32 temp_v0;
 
-    temp_v0 = arg0->unkAC;
+    temp_v0 = dreamSys->unkAC;
     if (temp_v0 != arg1) {
-        arg0->unkB0 = temp_v0;
-        arg0->unkAC = arg1;
+        dreamSys->unkB0 = temp_v0;
+        dreamSys->unkAC = arg1;
     }
 }
 
-void func_8005A1A4(Unk_8005A168 *arg0) {
-    arg0->unkAC = arg0->unkB0;
+void func_8005A1A4(DreamSys *dreamSys) {
+    dreamSys->unkAC = dreamSys->unkB0;
 }
 
-void func_8005A1B0(Unk_8005A1B0 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    if (arg1 >= 0) {
-        arg0->unk124 = arg1;
+void func_8005A1B0(DreamSys *dreamSys, s32 dynamicLinkOn, s32 arg2, s32 arg3, s32 arg4) {
+    if (dynamicLinkOn >= 0) {
+        dreamSys->dynamicLinkOn = dynamicLinkOn;
     }
     if (arg2 >= 0) {
-        arg0->unk128 = arg2;
+        dreamSys->unk128 = arg2;
     }
     if (arg3 >= 0) {
-        arg0->unk12C = arg3;
+        dreamSys->unk12C = arg3;
     }
     if (arg4 >= 0) {
-        arg0->unk130 = arg4;
+        dreamSys->unk130 = arg4;
     }
 }
 
-void func_8005A1EC(Unk_80059394 *arg0, s32 arg1) {
-    arg0->u120 = arg1;
+void func_8005A1EC(DreamSys *dreamSys, s32 arg1) {
+    dreamSys->unk120 = arg1;
 }
 
 void func_8005A1F4(s32 arg0, S *arg1) {
@@ -2238,120 +1275,120 @@ void func_8005A1F4(s32 arg0, S *arg1) {
     }
 }
 
-void DreamSys_InitNewGame(Unk_8005A258 *arg0) {
-    arg0->unk178 = D_8008ABE0;
-    arg0->unk17C = 0;
-    arg0->unk180 = 0;
-    arg0->unk184 = 0;
-    arg0->unk188 = 0;
-    arg0->unk18C = 0;
-    arg0->unk46C = 0;
-    arg0->unk5DF = 0;
-    arg0->unk5D8 = 0;
-    arg0->unk678 = 1;
-    arg0->unk67C = 0;
-    arg0->unk680 = 0;
-    Nav_InitFlags(arg0->unk5E0, arg0->unk600);
-    memset(arg0->unk684, 0, 0x1F4);
+void DreamSys_InitNewGame(DreamSys *dreamSys) {
+    dreamSys->magic = g_saveMagic;
+    dreamSys->year = 0;
+    dreamSys->day = 0;
+    dreamSys->unlockScore = 0;
+    dreamSys->navScore = 0;
+    dreamSys->instanceScore = 0;
+    dreamSys->flashbackCount = 0;
+    dreamSys->reelSeen = 0;
+    dreamSys->unk5D8 = 0;
+    dreamSys->shake = 1;
+    dreamSys->unk67C = 0;
+    dreamSys->unk680 = 0;
+    Nav_InitFlags(dreamSys->navFlags, &dreamSys->dynamicLinkCount);
+    memset(dreamSys->unk684, 0, 0x1F4);
 }
 
-void func_8005A2D0(Unk_8005A2D0 *arg0, s32 *arg1) {
-    s32 temp_v1;
+void DreamSys_SwapShake(DreamSys *dreamSys, s32 *shake) {
+    s32 old;
 
-    temp_v1 = arg0->unk678;
-    arg0->unk678 = *arg1;
-    *arg1 = temp_v1;
+    old = dreamSys->shake;
+    dreamSys->shake = *shake;
+    *shake = old;
 }
 
-s32 DreamSys_GetDayNumber(Unk_8005A2E4 *arg0, s32 *arg1) {
-    if (arg1 != NULL) {
-        *arg1 = arg0->unk17C;
+s32 DreamSys_GetDayNumber(DreamSys *dreamSys, s32 *yearOut) {
+    if (yearOut != NULL) {
+        *yearOut = dreamSys->year;
     }
-    return arg0->unk180 + 1;
+    return dreamSys->day + 1;
 }
 
-s32 DreamSys_AdvanceDay(Unk_8005A304 *arg0) {
-    if (++arg0->unk180 >= 365) {
-        arg0->unk180 = 0;
-        arg0->unk17C++;
+s32 DreamSys_AdvanceDay(DreamSys *dreamSys) {
+    if (++dreamSys->day >= 365) {
+        dreamSys->day = 0;
+        dreamSys->year++;
     }
-    return arg0->unk180;
+    return dreamSys->day;
 }
 
-void func_8005A33C(Unk_8005A41C *arg0) {
-    arg0->unk878 = 0;
+void DreamSys_ClearNeverSaved(DreamSys *dreamSys) {
+    dreamSys->neverSaved = 0;
 }
 
-s32 func_8005A344(Unk_8005A41C *arg0) {
-    return arg0->unk878;
+s32 DreamSys_IsNeverSaved(DreamSys *dreamSys) {
+    return dreamSys->neverSaved;
 }
 
-s32 DreamSys_GetSaveBlock(s32 arg0, s32 *arg1) {
-    if (arg1 != NULL) {
-        *arg1 = 0x700;
+s32 DreamSys_GetSaveBlock(s32 dreamSys, s32 *sizeOut) {
+    if (sizeOut != NULL) {
+        *sizeOut = 0x700;
     }
-    return arg0 + 0x178;
+    return dreamSys + 0x178;
 }
 
-s32 DreamSys_StartDay(Unk_8005A368 *arg0) {
+s32 DreamSys_StartDay(DreamSys *dreamSys) {
     s32 temp;
 
-    arg0->unk87C = 0;
-    arg0->unk24 = 0;
-    arg0->unk88C = arg0->unk180;
-    if (arg0->unk68 != 0) {
-        arg0->unk0->unk1CC(arg0, 1);
-        return arg0->unk164;
+    dreamSys->nextFlashback = 0;
+    dreamSys->timer = 0;
+    dreamSys->savedDay = dreamSys->day;
+    if (dreamSys->flashbackMode != 0) {
+        dreamSys->vtbl->loadNextFlashback(dreamSys, 1);
+        return dreamSys->stage;
     }
-    temp = Day_FindSpecial(arg0->unk168, arg0->unk180 + 1);
-    arg0->unk0->unk1F0(arg0, temp);
+    temp = Day_FindSpecial(dreamSys->cinematic.bytes, dreamSys->day + 1);
+    dreamSys->vtbl->resetMoodAccumulators(dreamSys, temp);
     if (temp == 0) {
-        arg0->unk0->unk1C0(arg0);
-        return arg0->unk164;
+        dreamSys->vtbl->chooseStart(dreamSys);
+        return dreamSys->stage;
     }
     return -1;
 }
 
-s32 DreamSys_EndDay(Unk_8005A41C *arg0, s32 arg1) {
-    arg0->unk180 = arg0->unk88C;
-    if (arg0->unk68 == 0 && arg1 == 0) {
-        arg0->unk0->unk210(arg0);
-        arg0->unk0->unk1FC(arg0, &arg0->unk190[arg0->unk180]);
-        arg0->unk0->unk1A4(arg0);
-    } else if (arg1 == 2) {
-        arg0->unk0->unk198(arg0);
-        arg0->unk878 = 1;
+s32 DreamSys_EndDay(DreamSys *dreamSys, s32 reason) {
+    dreamSys->day = dreamSys->savedDay;
+    if (dreamSys->flashbackMode == 0 && reason == 0) {
+        dreamSys->vtbl->calcUnlockScore(dreamSys);
+        dreamSys->vtbl->computeDayPoint(dreamSys, &dreamSys->graph[dreamSys->day]);
+        dreamSys->vtbl->advanceDay(dreamSys);
+    } else if (reason == 2) {
+        dreamSys->vtbl->initNewGame(dreamSys);
+        dreamSys->neverSaved = 1;
     }
-    return arg0->unk68;
+    return dreamSys->flashbackMode;
 }
 
-Unk_8005A4E8_Ret DreamSys_GetCinematic(Unk_8005A4E8 *arg0) {
-    return arg0->c;
+CineRef DreamSys_GetCinematic(DreamSys *dreamSys) {
+    return dreamSys->cinematic.ref;
 }
 
-void DreamSys_ChooseStart(Unk_8005A508 *arg0) {
-    s32 sp10;
-    s32 sp14;
+void DreamSys_ChooseStart(DreamSys *dreamSys) {
+    s32 prevPoint;
+    s32 seconds;
 
-    arg0->unk0->unk1EC(arg0, &sp10, 1);
-    arg0->unk164 = Spawn_PickFromMood(arg0->unk16C, &sp14, &sp10, arg0->unk180);
-    sp14 = arg0->unk0->unk104(arg0, sp14);
-    arg0->unk44 = 0xB;
+    dreamSys->vtbl->getPreviousPoint(dreamSys, &prevPoint, 1);
+    dreamSys->stage = Spawn_PickFromMood(&dreamSys->place, &seconds, &prevPoint, dreamSys->day);
+    seconds = dreamSys->vtbl->swapTimeLimit(dreamSys, seconds);
+    dreamSys->transition = 0xB;
 }
 
-void DreamSys_LinkDynamic(Unk_8005A580 *arg0) {
-    if (arg0->unk44 == 0) {
-        DreamSys_ExecuteLink(arg0, Spawn_PickRandom(arg0->unk16C, arg0->unk164, arg0->unk24), 0xC, 1);
+void DreamSys_LinkDynamic(DreamSys *dreamSys) {
+    if (dreamSys->transition == 0) {
+        DreamSys_ExecuteLink(dreamSys, Spawn_PickRandom(&dreamSys->place, dreamSys->stage, dreamSys->timer), 0xC, 1);
     }
 }
 
-s32 DreamSys_LinkStatic(Unk_8005A580 *arg0, void *arg1) {
-    s32 temp_v0;
+s32 DreamSys_LinkStatic(DreamSys *dreamSys, void *target) {
+    s32 newStage;
 
-    if (arg0->unk44 == 0) {
-        temp_v0 = func_8005BCB4(arg0->unk16C, arg1, arg0->unk164);
-        if (temp_v0 >= 0) {
-            DreamSys_ExecuteLink(arg0, temp_v0, 0xD, 1);
+    if (dreamSys->transition == 0) {
+        newStage = func_8005BCB4(&dreamSys->place, target, dreamSys->stage);
+        if (newStage >= 0) {
+            DreamSys_ExecuteLink(dreamSys, newStage, 0xD, 1);
             return 1;
         }
         return 0;
@@ -2359,77 +1396,77 @@ s32 DreamSys_LinkStatic(Unk_8005A580 *arg0, void *arg1) {
     return 0;
 }
 
-s32 DreamSys_LoadNextFlashback(Unk_80058968 *arg0, s32 arg1) {
-    Unk_80058968_Elem *elem;
+s32 DreamSys_LoadNextFlashback(DreamSys *dreamSys, s32 arg1) {
+    Flashback *elem;
     s32 idx;
 
-    idx = arg0->unk87C;
-    if (idx < arg0->unk46C) {
-        arg0->unk44 = 0xE;
-        elem = &arg0->unk470[idx];
+    idx = dreamSys->nextFlashback;
+    if (idx < dreamSys->flashbackCount) {
+        dreamSys->transition = 0xE;
+        elem = &dreamSys->flashbacks[idx];
         if (arg1 == 0) {
-            arg0->unk0->unk30(arg0, 0xE);
+            dreamSys->vtbl->unk30(dreamSys, 0xE);
         }
-        arg0->unk180 = elem->unk20;
-        arg0->unk164 = elem->unk0;
-        arg0->unk16C = elem->unk4;
+        dreamSys->day = elem->day;
+        dreamSys->stage = elem->stage;
+        dreamSys->place = elem->place;
         return 1;
     }
     return 0;
 }
 
-s32 func_8005A700(Unk_8005A700 *arg0, s16 *arg1) {
+s32 func_8005A700(DreamSys *dreamSys, s16 *arg1) {
     s32 sp10[4];
     s32 temp;
 
-    if (arg0->unk44 != 0) {
+    if (dreamSys->transition != 0) {
         return 0;
     }
-    temp = func_8005BCF8(arg0->unk16C, arg1, arg0->unk164);
+    temp = func_8005BCF8(&dreamSys->place, arg1, dreamSys->stage);
     if (temp < 0) {
         return 0;
     }
-    func_8001E6F8(arg0, sp10);
-    if (func_8005BD3C(&arg0->unk888, &arg0->unk884, sp10) == 0) {
+    func_8001E6F8(dreamSys, sp10);
+    if (func_8005BD3C(&dreamSys->unk888, &dreamSys->unk884, sp10) == 0) {
         return 0;
     }
-    if (arg0->unkA8 == 0) {
+    if (dreamSys->unkA8 == 0) {
         return 0;
     }
-    DreamSys_ExecuteLink(arg0, temp, 0xF, 0);
+    DreamSys_ExecuteLink(dreamSys, temp, 0xF, 0);
     return 1;
 }
 
-s32 func_8005A7A0(Unk_8005A7A0 *arg0, s32 arg1) {
-    s32 temp_s1;
+s32 func_8005A7A0(DreamSys *dreamSys, s32 arg1) {
+    s32 newStage;
 
-    if (arg0->unk44 == 0) {
-        temp_s1 = func_8005BE90(arg0->unk16C, arg0->unk164, arg1, arg0->unk24);
-        if (temp_s1 >= 0) {
-            arg0->unk880 = func_8005BF48();
-            arg0->unk884 = 0;
-            arg0->unk888 = 0;
-            DreamSys_ExecuteLink(arg0, temp_s1, 0x10, 0);
+    if (dreamSys->transition == 0) {
+        newStage = func_8005BE90(&dreamSys->place, dreamSys->stage, arg1, dreamSys->timer);
+        if (newStage >= 0) {
+            dreamSys->unk880 = func_8005BF48();
+            dreamSys->unk884 = 0;
+            dreamSys->unk888 = 0;
+            DreamSys_ExecuteLink(dreamSys, newStage, 0x10, 0);
             return 1;
         }
     }
     return 0;
 }
 
-s32 func_8005A82C(Unk_8005A82C *arg0, void *arg1) {
+s32 func_8005A82C(DreamSys *dreamSys, void *arg1) {
     s32 sp10[4];
-    s32 temp_s1;
-    s32 temp_v0;
+    s32 bonusSeconds;
+    s32 newStage;
 
-    temp_v0 = func_8005BF74(&arg0->unk16C, arg1, arg0->unk164);
-    if (temp_v0 >= 0) {
-        temp_s1 = func_8005BFC4();
-        if (DreamSys_ExecuteLink(arg0, temp_v0, 0x11, 0) != 0) {
-            arg0->unk44 = 0;
-            arg0->unk4C->vt->unkE8(arg0->unk4C, sp10, &arg0->unk16C);
-            arg0->unk0->unkB8(arg0, sp10);
-            if (temp_s1 != 0 && arg0->unk68 == 0) {
-                arg0->unk0->unk104(arg0, arg0->unk0->unk108(arg0) + temp_s1);
+    newStage = func_8005BF74(&dreamSys->place, arg1, dreamSys->stage);
+    if (newStage >= 0) {
+        bonusSeconds = func_8005BFC4();
+        if (DreamSys_ExecuteLink(dreamSys, newStage, 0x11, 0) != 0) {
+            dreamSys->transition = 0;
+            dreamSys->player->vt->unkE8(dreamSys->player, sp10, &dreamSys->place);
+            dreamSys->vtbl->unkB8(dreamSys, sp10);
+            if (bonusSeconds != 0 && dreamSys->flashbackMode == 0) {
+                dreamSys->vtbl->swapTimeLimit(dreamSys, dreamSys->vtbl->getElapsedSeconds(dreamSys) + bonusSeconds);
             }
         }
         return 1;
@@ -2437,313 +1474,313 @@ s32 func_8005A82C(Unk_8005A82C *arg0, void *arg1) {
     return 0;
 }
 
-s32 DreamSys_ExecuteLink(Unk_8005A928 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    arg0->unk44 = arg2;
-    arg0->vt->unk30(arg0, arg2);
-    if (arg0->unk44 == 0) {
+s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition, s32 arg3) {
+    dreamSys->transition = transition;
+    dreamSys->vtbl->unk30(dreamSys, transition);
+    if (dreamSys->transition == 0) {
         return 0;
     }
-    arg0->unk164 = arg1;
-    if (arg0->unk68 != 0) {
-        arg0->unk24 = 0;
+    dreamSys->stage = newStage;
+    if (dreamSys->flashbackMode != 0) {
+        dreamSys->timer = 0;
     }
     if (arg3 != 0) {
-        Unk_8005A928_Obj *obj = arg0->unk58;
+        DreamSysObj58 *obj = dreamSys->unk58;
         obj->vt->unk80(obj, 0x90, 0x6E, 0x6E);
     }
     return 1;
 }
 
-s32 func_8005A9CC(Unk_8005A700 *arg0, Unk_8005A9CC *arg1) {
+s32 func_8005A9CC(DreamSys *dreamSys, DreamPlace *target) {
     s32 sp10[4];
 
-    if (arg0->unk44 == 0) {
-        if (arg0->unk910 != 0) {
-            if (arg0->unk910(arg0) != 0) {
-                arg0->unk908 = 0;
-                arg0->unk910 = 0;
-                arg0->unk90C = 0;
-                if (arg0->unkAC == 4) {
-                    arg0->vt->unk188(arg0);
+    if (dreamSys->transition == 0) {
+        if (dreamSys->linkStep != 0) {
+            if (dreamSys->linkStep(dreamSys) != 0) {
+                dreamSys->unk908 = 0;
+                dreamSys->linkStep = 0;
+                dreamSys->unk90C = 0;
+                if (dreamSys->unkAC == 4) {
+                    dreamSys->vtbl->unk188(dreamSys);
                     return 0;
                 }
             }
             return 0;
         }
-        if (func_8005BFDC(arg0->unk16C, arg1, arg0->unk164) >= 0) {
-            func_8001E6F8(arg0, sp10);
-            if (func_8005C02C((u8 **)&arg0->unk888, (u8 **)&arg0->unk884, (Unk_8005BE28 *)sp10) != 0 && arg0->unkA8 != 0) {
-                arg0->unk918 = *arg1;
-                arg0->unk908 = 1;
-                arg0->unk90C = 1;
-                arg0->unk914 = 0;
-                arg0->unk910 = D_80087EEC[func_8005C118()];
-                arg0->vt->unk44(arg0, 1, arg0->unk884);
-                arg0->unk910(arg0);
+        if (func_8005BFDC(&dreamSys->place, target, dreamSys->stage) >= 0) {
+            func_8001E6F8(dreamSys, sp10);
+            if (func_8005C02C((u8 **)&dreamSys->unk888, (u8 **)&dreamSys->unk884, (Unk_8005BE28 *)sp10) != 0 && dreamSys->unkA8 != 0) {
+                dreamSys->linkTarget = *target;
+                dreamSys->unk908 = 1;
+                dreamSys->unk90C = 1;
+                dreamSys->linkStepTick = 0;
+                dreamSys->linkStep = g_linkSteps[func_8005C118()];
+                dreamSys->vtbl->unk44(dreamSys, 1, dreamSys->unk884);
+                dreamSys->linkStep(dreamSys);
             }
         }
     }
     return 0;
 }
 
-s32 func_8005AB2C(Unk_8005AD68 *arg0) {
+s32 func_8005AB2C(DreamSys *dreamSys) {
     s32 temp_v1;
 
-    if (arg0->unk914 == 0) {
-        func_8005AF64((Unk_8005AF64 *)arg0, D_8008ABC0, arg0->unk91C);
+    if (dreamSys->linkStepTick == 0) {
+        func_8005AF64(dreamSys, D_8008ABC0, dreamSys->linkTarget.vec);
     }
-    if (arg0->unkAC != 4) {
-        temp_v1 = arg0->unk914;
+    if (dreamSys->unkAC != 4) {
+        temp_v1 = dreamSys->linkStepTick;
         if (temp_v1 >= 0x85) {
             return 1;
         }
         if ((temp_v1 >= 0x2B && temp_v1 < 0x3A) || (temp_v1 >= 0x4B && temp_v1 < 0x5A)) {
-            arg0->unkA4 = 2;
+            dreamSys->unkA4 = 2;
         }
     } else {
-        temp_v1 = arg0->unk914;
+        temp_v1 = dreamSys->linkStepTick;
         if (temp_v1 >= 0x13) {
             return 1;
         }
         if ((temp_v1 >= 8 && temp_v1 < 0xA) || (temp_v1 >= 0xD && temp_v1 < 0xF)) {
-            arg0->vt->unk44(arg0, 0, D_80087EFC);
+            dreamSys->vtbl->unk44(dreamSys, 0, D_80087EFC);
         }
     }
-    arg0->unkA0 = 1;
-    arg0->unk914++;
+    dreamSys->unkA0 = 1;
+    dreamSys->linkStepTick++;
     return 0;
 }
 
-s32 func_8005AC24(Unk_8005AC24 *arg0) {
+s32 func_8005AC24(DreamSys *dreamSys) {
     s32 flag;
 
-    if (arg0->unk914 == 0) {
-        func_8005AF64((Unk_8005AF64 *)arg0, D_8008ABC8, arg0->unk91C);
+    if (dreamSys->linkStepTick == 0) {
+        func_8005AF64(dreamSys, D_8008ABC8, dreamSys->linkTarget.vec);
     }
-    if (arg0->unkAC != 4) {
-        if (arg0->unk914 >= 0x95) {
+    if (dreamSys->unkAC != 4) {
+        if (dreamSys->linkStepTick >= 0x95) {
             return 1;
         }
-        if ((u32)(arg0->unk914 - 0x16) < 0xF || (u32)(arg0->unk914 - 0x39) < 0x10 || (u32)(arg0->unk914 - 0x6E) < 0xF) {
-            arg0->unkA4 = 1;
+        if ((u32)(dreamSys->linkStepTick - 0x16) < 0xF || (u32)(dreamSys->linkStepTick - 0x39) < 0x10 || (u32)(dreamSys->linkStepTick - 0x6E) < 0xF) {
+            dreamSys->unkA4 = 1;
         }
-        flag = (u32)(arg0->unk914 - 0x39) < 0x35;
+        flag = (u32)(dreamSys->linkStepTick - 0x39) < 0x35;
     } else {
-        if (arg0->unk914 >= 0x19) {
+        if (dreamSys->linkStepTick >= 0x19) {
             return 1;
         }
-        if ((u32)(arg0->unk914 - 6) < 2 || (u32)(arg0->unk914 - 0xB) < 2 || (u32)(arg0->unk914 - 0x14) < 2) {
-            arg0->vt->unk44(arg0, 0, D_80087F08);
+        if ((u32)(dreamSys->linkStepTick - 6) < 2 || (u32)(dreamSys->linkStepTick - 0xB) < 2 || (u32)(dreamSys->linkStepTick - 0x14) < 2) {
+            dreamSys->vtbl->unk44(dreamSys, 0, D_80087F08);
         }
-        flag = (u32)(arg0->unk914 - 3) < 0xE;
+        flag = (u32)(dreamSys->linkStepTick - 3) < 0xE;
     }
     if (flag) {
-        arg0->unk88 = 2;
+        dreamSys->unk88 = 2;
     }
-    arg0->unkA0 = 1;
-    arg0->unk914++;
+    dreamSys->unkA0 = 1;
+    dreamSys->linkStepTick++;
     return 0;
 }
 
-s32 func_8005AD68(Unk_8005AD68 *arg0) {
-    if (arg0->unk914 == 0) {
-        func_8005AF64((Unk_8005AF64 *)arg0, D_8008ABD0, arg0->unk91C);
+s32 func_8005AD68(DreamSys *dreamSys) {
+    if (dreamSys->linkStepTick == 0) {
+        func_8005AF64(dreamSys, D_8008ABD0, dreamSys->linkTarget.vec);
     }
-    if (arg0->unkAC != 4) {
-        if (arg0->unk914 > 100) {
+    if (dreamSys->unkAC != 4) {
+        if (dreamSys->linkStepTick > 100) {
             return 1;
         }
-        if (arg0->unk914 >= 43 && arg0->unk914 < 58) {
-            arg0->unkA4 = 2;
+        if (dreamSys->linkStepTick >= 43 && dreamSys->linkStepTick < 58) {
+            dreamSys->unkA4 = 2;
         }
     } else {
-        if (arg0->unk914 > 14) {
+        if (dreamSys->linkStepTick > 14) {
             return 1;
         }
-        if (arg0->unk914 >= 8 && arg0->unk914 < 10) {
-            arg0->vt->unk44(arg0, 0, D_80087EFC);
+        if (dreamSys->linkStepTick >= 8 && dreamSys->linkStepTick < 10) {
+            dreamSys->vtbl->unk44(dreamSys, 0, D_80087EFC);
         }
     }
-    arg0->unkA0 = 1;
-    arg0->unk914++;
+    dreamSys->unkA0 = 1;
+    dreamSys->linkStepTick++;
     return 0;
 }
 
-s32 func_8005AE40(Unk_8005AE40 *arg0) {
+s32 func_8005AE40(DreamSys *dreamSys) {
     s32 temp_v1;
     s32 var;
 
-    if (arg0->unk914 == 0) {
-        func_8005AF64((Unk_8005AF64 *)arg0, D_8008ABD8, arg0->unk91C);
+    if (dreamSys->linkStepTick == 0) {
+        func_8005AF64(dreamSys, D_8008ABD8, dreamSys->linkTarget.vec);
     }
-    if (arg0->unkAC != 4) {
-        temp_v1 = arg0->unk914;
+    if (dreamSys->unkAC != 4) {
+        temp_v1 = dreamSys->linkStepTick;
         if (temp_v1 >= 0x71) {
             return 1;
         }
         if ((u32)(temp_v1 - 0x1E) < 0xF || (u32)(temp_v1 - 0x52) < 0xF) {
-            arg0->unkA4 = 1;
+            dreamSys->unkA4 = 1;
         }
-        var = (u32)(arg0->unk914 - 0x1E) < 0x34;
+        var = (u32)(dreamSys->linkStepTick - 0x1E) < 0x34;
     } else {
-        temp_v1 = arg0->unk914;
+        temp_v1 = dreamSys->linkStepTick;
         if (temp_v1 >= 0x13) {
             return 1;
         }
         if ((u32)(temp_v1 - 6) < 2 || (u32)(temp_v1 - 0xF) < 2) {
-            arg0->vt->unk44(arg0, 0, D_80087F08);
+            dreamSys->vtbl->unk44(dreamSys, 0, D_80087F08);
         }
-        var = (u32)arg0->unk914 < 9;
+        var = (u32)dreamSys->linkStepTick < 9;
     }
     if (var) {
-        arg0->unk88 = 2;
+        dreamSys->unk88 = 2;
     }
-    arg0->unkA0 = 1;
-    arg0->unk914++;
+    dreamSys->unkA0 = 1;
+    dreamSys->linkStepTick++;
     return 0;
 }
 
-void func_8005AF64(Unk_8005AF64 *arg0, s16 *arg1, s16 *arg2) {
-    s32 sp10[3];
+void func_8005AF64(DreamSys *dreamSys, s16 *from, s16 *to) {
+    s32 delta[3];
 
-    sp10[0] = arg1[0] - arg2[0];
-    sp10[1] = arg1[1] - arg2[1];
-    sp10[2] = arg1[2] - arg2[2];
-    sp10[1] = 0;
-    arg0->unk0->unkBC(arg0, sp10);
+    delta[0] = from[0] - to[0];
+    delta[1] = from[1] - to[1];
+    delta[2] = from[2] - to[2];
+    delta[1] = 0;
+    dreamSys->vtbl->unkBC(dreamSys, delta);
 }
 
-s32 func_8005AFD0(Unk_8005A41C *arg0) {
-    return arg0->unk164;
+s32 DreamSys_GetStage(DreamSys *dreamSys) {
+    return dreamSys->stage;
 }
 
-void func_8005AFDC(Unk_8005AFDC_A *arg0, Unk_8005AFDC_B *arg1, s32 arg2) {
-    if (arg2 == 5) {
-        arg0->vt->unk1F4(arg0, arg1->vt->unk10C(arg1, 0, 0));
+void func_8005AFDC(DreamSys *dreamSys, Unk_8005AFDC_B *sender, s32 message) {
+    if (message == 5) {
+        dreamSys->vtbl->logChunkMood(dreamSys, sender->vt->unk10C(sender, 0, 0));
     }
 }
 
-void DreamSys_OnEntityEvent(Unk_8005B03C *arg0, Unk_8005B03C_ObjVtbl **arg1, s32 arg2) {
-    s32 temp_s1;
+void DreamSys_OnEntityEvent(DreamSys *dreamSys, Unk_8005B03C_ObjVtbl **entity, s32 message) {
+    s32 oldStage;
 
-    if (arg0->unk44 == 0) {
-        switch (arg2) {
+    if (dreamSys->transition == 0) {
+        switch (message) {
         case 4:
-            (*arg1)->unk38(arg1, arg0, arg2);
+            (*entity)->unk38(entity, dreamSys, message);
             return;
         case 9:
-            if (arg0->unk68 == 0) {
-                arg0->unk0->unk1F8(arg0, (*arg1)->unk14C(arg1));
-                arg0->unk18C = (*arg1)->unk150(arg1) + arg0->unk18C;
-                arg0->unk0->unk218(arg0, 0, 0x10);
+            if (dreamSys->flashbackMode == 0) {
+                dreamSys->vtbl->logEntityMood(dreamSys, (*entity)->unk14C(entity));
+                dreamSys->instanceScore = (*entity)->unk150(entity) + dreamSys->instanceScore;
+                dreamSys->vtbl->maybeSaveFlashback(dreamSys, 0, 0x10);
                 return;
             }
             break;
         case 10:
-            temp_s1 = arg0->unk164;
-            arg0->unk164 = -(*arg1)->unk154(arg1);
-            arg0->unk0->unk1C4(arg0);
-            if (arg0->unk164 < 0) {
-                arg0->unk164 = temp_s1;
+            oldStage = dreamSys->stage;
+            dreamSys->stage = -(*entity)->unk154(entity);
+            dreamSys->vtbl->linkDynamic(dreamSys);
+            if (dreamSys->stage < 0) {
+                dreamSys->stage = oldStage;
                 return;
             }
             break;
         case 11:
-            if (arg0->unk68 == 0) {
-                arg0->unk168 = -1;
-                arg0->unk24 = arg0->unk134;
-                arg0->unk16A = (*arg1)->unk158(arg1);
+            if (dreamSys->flashbackMode == 0) {
+                dreamSys->cinematic.id.category = -1;
+                dreamSys->timer = dreamSys->timeLimit;
+                dreamSys->cinematic.id.variant = (*entity)->unk158(entity);
                 return;
             }
             break;
         case 12:
-            if (arg0->unk68 == 0) {
-                arg0->unk24 = arg0->unk134;
+            if (dreamSys->flashbackMode == 0) {
+                dreamSys->timer = dreamSys->timeLimit;
             }
             break;
         }
     }
 }
 
-void DreamSys_GetPreviousPoint(Unk_8005B1F4 *arg0, Unk_8005B5B8 *arg1, s32 arg2) {
+void DreamSys_GetPreviousPoint(DreamSys *dreamSys, MoodPoint *out, s32 yesterday) {
     s32 sum1 = 0;
     s32 sum0 = 0;
     s32 count;
     s32 i;
-    Unk_8005B5B8 *p;
+    MoodPoint *p;
 
-    if (arg2 != 0) {
-        if (arg0->unk17C != 0 || arg0->unk180 != 0) {
-            sum0 = arg0->unk190[arg0->unk180 - 1].unk0;
-            sum1 = arg0->unk190[arg0->unk180 - 1].unk1;
+    if (yesterday != 0) {
+        if (dreamSys->year != 0 || dreamSys->day != 0) {
+            sum0 = dreamSys->graph[dreamSys->day - 1].x;
+            sum1 = dreamSys->graph[dreamSys->day - 1].y;
         }
     } else {
         count = 365;
-        if (arg0->unk17C == 0) {
-            count = arg0->unk180;
+        if (dreamSys->year == 0) {
+            count = dreamSys->day;
         }
         if (count != 0) {
-            p = arg0->unk190;
+            p = dreamSys->graph;
             for (i = 0; i < count; i++, p++) {
-                sum0 += p->unk0;
-                sum1 += p->unk1;
+                sum0 += p->x;
+                sum1 += p->y;
             }
             sum0 = sum0 / count;
             sum1 = sum1 / count;
         }
     }
-    arg1->unk0 = sum0;
-    arg1->unk1 = sum1;
+    out->x = sum0;
+    out->y = sum1;
 }
 
-void DreamSys_ResetMoodAccumulators(Unk_80058078 *arg0, s32 arg1) {
-    u8 *temp_s2 = arg0->unk144;
-    u8 *temp_s3 = arg0->unk154;
+void DreamSys_ResetMoodAccumulators(DreamSys *dreamSys, s32 point) {
+    MoodAccum *chunk = &dreamSys->chunkMood;
+    MoodAccum *entity = &dreamSys->entityMood;
 
-    arg0->vt->unk204(arg0, temp_s2);
-    arg0->vt->unk204(arg0, temp_s3);
-    if (arg1 != 0) {
-        arg0->vt->unk208(arg0, temp_s2, arg1);
-        arg0->vt->unk208(arg0, temp_s3, arg1);
+    dreamSys->vtbl->moodReset(dreamSys, chunk);
+    dreamSys->vtbl->moodReset(dreamSys, entity);
+    if (point != 0) {
+        dreamSys->vtbl->moodLog(dreamSys, chunk, point);
+        dreamSys->vtbl->moodLog(dreamSys, entity, point);
     }
 }
 
-void DreamSys_LogChunkMood(Unk_8005B3A4 *arg0, s8 *arg1) {
-    arg0->unk0->unk208(arg0, arg0->unk144, Stage_GetChunkMood(arg0->unk164, arg1));
+void DreamSys_LogChunkMood(DreamSys *dreamSys, s8 *place) {
+    dreamSys->vtbl->moodLog(dreamSys, &dreamSys->chunkMood, Stage_GetChunkMood(dreamSys->stage, place));
 }
 
-void func_8005B3F0(Unk_80058078 *arg0, s32 arg1) {
-    arg0->vt->unk208(arg0, arg0->unk154, arg1);
+void DreamSys_LogEntityMood(DreamSys *dreamSys, s32 point) {
+    dreamSys->vtbl->moodLog(dreamSys, &dreamSys->entityMood, point);
 }
 
-void DreamSys_ComputeDayPoint(Unk_8005B420 *arg0, Unk_8005B5B8 *arg1) {
-    s16 sp10;
-    s16 sp12;
+void DreamSys_ComputeDayPoint(DreamSys *dreamSys, MoodPoint *out) {
+    s16 chunkPoint;
+    s16 entityPoint;
 
-    arg0->unk0->unk20C(arg0, arg0->unk144, &sp10);
-    arg0->unk0->unk20C(arg0, arg0->unk154, &sp12);
-    if (arg0->unk160 == 0) {
-        sp12 = sp10;
+    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->chunkMood, &chunkPoint);
+    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->entityMood, &entityPoint);
+    if (dreamSys->entityMood.count == 0) {
+        entityPoint = chunkPoint;
     }
-    arg1->unk0 = ((s8)sp10 + (s8)sp12) / 2;
-    arg1->unk1 = (((s8 *)&sp10)[1] + ((s8 *)&sp12)[1]) / 2;
+    out->x = ((s8)chunkPoint + (s8)entityPoint) / 2;
+    out->y = (((s8 *)&chunkPoint)[1] + ((s8 *)&entityPoint)[1]) / 2;
 }
 
-void func_8005B4E0(Unk_8005B4E0 *arg0) {
-    s16 sp10;
+void DreamSys_GetDreamColor(DreamSys *dreamSys) {
+    s16 point;
 
-    arg0->unk0->unk1FC(arg0, &sp10);
-    func_8005B518(&sp10);
+    dreamSys->vtbl->computeDayPoint(dreamSys, &point);
+    Mood_GetColor(&point);
 }
 
-s32 func_8005B518(s16 *arg0) {
+s32 Mood_GetColor(s16 *point) {
     s8 buf[2];
     s8 *p;
     s32 i;
     s8 v;
 
 
-    *(u16 *)buf = *(u16 *)arg0;
+    *(u16 *)buf = *(u16 *)point;
     p = buf;
     i = 0;
     do {
@@ -2758,37 +1795,37 @@ s32 func_8005B518(s16 *arg0) {
         i++;
         p++;
     } while (i < 2);
-    return D_80087E14[buf[0]][buf[1]];
+    return g_moodColors[buf[0]][buf[1]];
 }
 
-void func_8005B5A4(s32 arg0, Unk_8005B5A4 *arg1) {
-    arg1->unk0 = 0;
-    arg1->unk8 = 0;
-    arg1->unk4 = 0;
-    arg1->unkC = 0;
+void Mood_Reset(DreamSys *dreamSys, MoodAccum *accum) {
+    accum->last = 0;
+    accum->sumY = 0;
+    accum->sumX = 0;
+    accum->count = 0;
 }
 
-void Mood_Log(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
-    s32 temp_v1;
+void Mood_Log(DreamSys *dreamSys, MoodAccum *accum, MoodPoint *point) {
+    s32 sumX;
 
-    temp_v1 = arg1->unk4;
-    arg1->unk0 = *(u16 *)arg2;
-    arg1->unk4 = arg2->unk0 + temp_v1;
-    arg1->unk8 = arg2->unk1 + arg1->unk8;
-    arg1->unkC = arg1->unkC + 1;
+    sumX = accum->sumX;
+    accum->last = *(u16 *)point;
+    accum->sumX = point->x + sumX;
+    accum->sumY = point->y + accum->sumY;
+    accum->count = accum->count + 1;
 }
 
-void Mood_Resolve(s32 arg0, Unk_8005B5A4 *arg1, Unk_8005B5B8 *arg2) {
-    if (arg1->unkC != 0) {
-        arg2->unk0 = Mood_CalcAxis(((Unk_8005B5B8 *)arg1)->unk0, arg1->unk4, arg1->unkC);
-        arg2->unk1 = Mood_CalcAxis(((Unk_8005B5B8 *)arg1)->unk1, arg1->unk8, arg1->unkC);
+void Mood_Resolve(DreamSys *dreamSys, MoodAccum *accum, MoodPoint *point) {
+    if (accum->count != 0) {
+        point->x = Mood_CalcAxis(((MoodPoint *)accum)->x, accum->sumX, accum->count);
+        point->y = Mood_CalcAxis(((MoodPoint *)accum)->y, accum->sumY, accum->count);
         return;
     }
-    *(u16 *)arg2 = *(u16 *)arg1;
+    *(u16 *)point = *(u16 *)accum;
 }
 
-s32 Mood_CalcAxis(s32 arg0, s32 arg1, s32 arg2) {
-    s32 r = arg1 / arg2 + arg0 / 3;
+s32 Mood_CalcAxis(s32 last, s32 sum, s32 count) {
+    s32 r = sum / count + last / 3;
     if (r > 9) {
         r = -9;
     } else if (r < -9) {
@@ -2797,96 +1834,96 @@ s32 Mood_CalcAxis(s32 arg0, s32 arg1, s32 arg2) {
     return r;
 }
 
-void DreamSys_CalcUnlockScore(Unk_8005B6E0 *arg0) {
+void DreamSys_CalcUnlockScore(DreamSys *dreamSys) {
     s32 temp;
 
-    arg0->unk188 = Nav_CalcScore();
-    temp = arg0->unk18C;
+    dreamSys->navScore = Nav_CalcScore();
+    temp = dreamSys->instanceScore;
     if (temp < 0) {
-        arg0->unk18C = 0;
+        dreamSys->instanceScore = 0;
     } else if (temp > 0x02FAF080) {
-        arg0->unk18C = 0x02FAF080;
+        dreamSys->instanceScore = 0x02FAF080;
     }
-    arg0->unk184 = arg0->unk188 + arg0->unk18C;
+    dreamSys->unlockScore = dreamSys->navScore + dreamSys->instanceScore;
 }
 
-void DreamSys_AddFlashback(Unk_8005B74C *arg0, s32 arg1, Unk_8005B74C_A *arg2, Unk_8005B74C_B *arg3, s32 arg4, s32 arg5, s32 arg6) {
-    Unk_8005B74C_Ent *ent;
+void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, DreamPlace *place, DreamRotation *rotation, s32 arg4, s32 length, s32 day) {
+    Flashback *ent;
     s32 n;
 
-    ent = arg0->unk470;
-    n = arg0->unk46C;
+    ent = dreamSys->flashbacks;
+    n = dreamSys->flashbackCount;
     if (n < 10) {
-        arg0->unk46C = n + 1;
+        dreamSys->flashbackCount = n + 1;
         ent += n;
     } else {
-        ent += arg0->unk24 % 9;
+        ent += dreamSys->timer % 9;
     }
-    ent->unk0 = arg1;
-    ent->unk4 = *arg2;
-    ent->unkE = *arg3;
+    ent->stage = stage;
+    ent->place = *place;
+    ent->rotation.rot = *rotation;
     ent->unk1C = arg4;
-    ent->unk1A = arg5;
-    ent->unk20 = arg6;
+    ent->length = length;
+    ent->day = day;
 }
 
-void DreamSys_MaybeSaveFlashback(Unk_8005B81C *arg0, s32 arg1, s32 arg2) {
-    s32 sp20[4];
-    s32 temp_s0;
-    Unk_8005B81C_Obj *temp_a0;
+void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
+    s32 rotation[4];
+    s32 place;
+    DreamPlayer *player;
 
-    if (arg0->unk4C != NULL) {
+    if (dreamSys->player != NULL) {
         if (rand() % 3 == 0) {
-            temp_a0 = arg0->unk4C;
-            temp_s0 = temp_a0->vt->unk10C(temp_a0, 0, 0);
-            func_8001E6F8((Unk_8005A700 *)arg0, sp20);
-            arg0->unk0->unk214(arg0, arg0->unk164, temp_s0, sp20, arg1, arg2, arg0->unk180);
+            player = dreamSys->player;
+            place = player->vt->unk10C(player, 0, 0);
+            func_8001E6F8(dreamSys, rotation);
+            dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, place, rotation, arg1, length, dreamSys->day);
         }
     }
 }
 
-void DreamSys_ClearFlashbacks(Unk_8005A258 *arg0) {
-    arg0->unk46C = 0;
+void DreamSys_ClearFlashbacks(DreamSys *dreamSys) {
+    dreamSys->flashbackCount = 0;
 }
 
-void func_8005B904(Unk_8005B904 *arg0) {
-    Unk_8005B904_B50 *src = arg0->unk14;
+void func_8005B904(DreamSys *dreamSys) {
+    DreamBody *src = dreamSys->unk14.body;
 
-    arg0->unk890 = *src;
-    arg0->unk8E0 = *src->unk44;
+    dreamSys->bodyCopy = *src;
+    dreamSys->bodyExtraCopy = *src->unk44;
 }
 
-void func_8005B990(Unk_8005B904 *arg0) {
-    Unk_8005B904_B50 *dst = arg0->unk14;
+void func_8005B990(DreamSys *dreamSys) {
+    DreamBody *dst = dreamSys->unk14.body;
 
-    *dst = arg0->unk890;
-    *dst->unk44 = arg0->unk8E0;
+    *dst = dreamSys->bodyCopy;
+    *dst->unk44 = dreamSys->bodyExtraCopy;
     dst->unk0 = 0;
 }
 
-s32 func_8005BA20(Unk_8005BA20 *arg0, s32 arg1) {
+s32 func_8005BA20(DreamSys *dreamSys, s32 value) {
     s32 temp;
 
-    if (arg1 < 0) {
-        return arg0->u924;
+    if (value < 0) {
+        return dreamSys->unk924;
     }
-    temp = arg0->u924;
-    arg0->u924 = arg1;
+    temp = dreamSys->unk924;
+    dreamSys->unk924 = value;
     return temp;
 }
 
-Unk_8005BA40_Vt *func_8005BA40(void) {
-    return (Unk_8005BA40_Vt *)D_80087BDC;
+DreamSysVtbl *DreamSys_GetVtable(void) {
+    return (DreamSysVtbl *)g_dreamSysVtbl;
 }
 
-void Nav_InitFlags(u8 *arg0, s32 *arg1) {
+void Nav_InitFlags(u8 *flags, s32 *linkCount) {
     s32 i;
     for (i = 29; i >= 0; i--) {
-        arg0[i] = 0;
+        flags[i] = 0;
     }
-    g_navFlags = arg0;
-    *arg1 = 0;
-    g_dynamicLinkCount = arg1;
+    g_navFlags = flags;
+    *linkCount = 0;
+    g_dynamicLinkCount = linkCount;
 }
 
 s32 Nav_CalcScore(void) {
@@ -2908,34 +1945,34 @@ s32 Nav_CalcScore(void) {
     return sum;
 }
 
-s16 Stage_GetTimeLimit(s32 arg0) {
-    return g_stageTimeLimits[arg0];
+s16 Stage_GetTimeLimit(s32 stage) {
+    return g_stageTimeLimits[stage];
 }
 
-s32 Spawn_PickRandom(void *arg0, s32 arg1, s32 arg2) {
-    s32 var_s1;
+s32 Spawn_PickRandom(void *place, s32 stage, s32 arg2) {
+    s32 newStage;
     s32 n;
     Unk_8005C150 *out;
     Unk_8005C150_Y *rec;
 
     n = 6;
-    if (arg1 >= 0) {
-        var_s1 = rand() % n;
-        if (var_s1 == arg1) {
-            var_s1 += 1;
-            if (var_s1 >= 6) {
-                var_s1 = 0;
+    if (stage >= 0) {
+        newStage = rand() % n;
+        if (newStage == stage) {
+            newStage += 1;
+            if (newStage >= 6) {
+                newStage = 0;
             }
         }
     } else {
-        var_s1 = -arg1;
+        newStage = -stage;
     }
-    rec = (Unk_8005C150_Y *)((s32)D_800885B8[var_s1] + (rand() % D_800885F0[var_s1]) * 6);
-    out = arg0;
+    rec = (Unk_8005C150_Y *)((s32)D_800885B8[newStage] + (rand() % D_800885F0[newStage]) * 6);
+    out = place;
     out->a = rec->c;
     out->b = D_80087F30[rec->idx];
     *g_dynamicLinkCount += 1;
-    return var_s1;
+    return newStage;
 }
 
 s32 func_8005BCB4(void *arg0, void *arg1, s32 arg2) {
@@ -3085,7 +2122,7 @@ s32 func_8005C150(void *arg0, void *arg1, s32 arg2, u8 *arg3, s32 *arg4, s32 *ar
     return -1;
 }
 
-s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3) {
+s32 Spawn_PickFromMood(void *place, s32 *secondsOut, void *point, s32 day) {
     s16 key[4];
     s32 idx;
     s32 cnt;
@@ -3093,9 +2130,9 @@ s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3) {
     Unk_8005C150_Y *rec;
     Unk_8005C150 *out;
 
-    idx = Stage_FindChunkByMood(key, arg2);
+    idx = Stage_FindChunkByMood(key, point);
     if (idx >= 0) {
-        *arg1 = g_stageTimeLimits[idx];
+        *secondsOut = g_stageTimeLimits[idx];
         cnt = D_800885F0[idx];
         rec = D_800885B8[idx];
         for (i = 0; i < cnt; i++, rec++) {
@@ -3105,22 +2142,22 @@ s32 Spawn_PickFromMood(void *arg0, s32 *arg1, void *arg2, s32 arg3) {
         }
         rec = D_800885B8[idx] + key[0] % cnt;
 found:
-        out = arg0;
+        out = place;
         out->a = rec->c;
         out->b = D_80087F30[rec->idx];
         return idx;
     }
-    idx = Spawn_PickRandom(arg0, idx, arg3);
-    *arg1 = g_stageTimeLimits[idx];
+    idx = Spawn_PickRandom(place, idx, day);
+    *secondsOut = g_stageTimeLimits[idx];
     return idx;
 }
 
-s32 Day_FindSpecial(void *arg0, s32 arg1) {
-    Unk_8005C438 *o = arg0;
+s32 Day_FindSpecial(void *cinematic, s32 dayNumber) {
+    Unk_8005C438 *o = cinematic;
     s32 i;
 
     for (i = 0; i < sizeof(g_specialDays) / sizeof(g_specialDays[0]); i++) {
-        if (arg1 == g_specialDays[i]) {
+        if (dayNumber == g_specialDays[i]) {
             o->unk2 = rand() % 6;
             o->unk0 = i % 12;
             return (s32) &D_8008ABF4;

@@ -15,6 +15,15 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 - A field keeps its offset in its name (`unk_14`) until two independent uses agree on its meaning.
 - Every rename goes in `config/symbol_addrs.txt` with a comment pointing to its row in `docs/discoveries.md`.
 
+## Readable C
+
+Matching is half the job; the other half is C a person can read. Every change below must keep the bytes: `tools/unit_check.sh src/game/UNIT.c` compares one unit with the reference objects, `make check` judges the whole executable.
+
+- Parameters and locals get meaningful lowerCamelCase names (`entity`, `record`, `dayNumber`, `limit`); loop counters stay `i`, `j`. The object a method works on is named after its type (`dreamSys`, `entity`, `heap`). m2c names (`arg0`, `temp_s0`, `var_v0`, `sp10`) go away once the meaning is known; when it is not, keep them.
+- Shared objects have one struct in `include/game/*.h` (`DreamSys`, `Entity`, `EntityRecord`, `Heap`), used by every unit instead of per-function `Unk_8005XXXX` copies, as long as each field a function touches has the same offset and the same type. A field keeps `unk_XX` until its meaning has evidence.
+- Functions and globals are renamed only through `tools/rename.py NAMES.tsv` (OLD, NEW, evidence per line), which rewrites src/, include/, docs/ and `config/symbol_addrs.txt`; then `make split && make check`.
+- Never change statements, their order, expression types or casts while renaming: those change the code the compiler emits.
+
 ## Evidence that counts
 
 - The function's behaviour read from matched C, with the call sites that use it.
@@ -48,6 +57,12 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Menu | The main menu object, the screen with the day number and the Flashback item, and its items | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678) |
 | SaveMenu | The memory card menu object: card file name, title with the day number, save and load of the 0x700-byte block | code: discoveries 2026-10-15 (`SaveMenu_Save` @0x8004E0E4) |
 | Rand | The game's wrapper around PSY-Q `srand` and `rand` | code: discoveries 2026-10-15 (`Rand_SeedAndNext` @0x80048CFC) |
+| Music | The dream's sound bank (one of 7, `D_800819CC`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
+| Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: work/hunt6/F-findings.md, `include/game/heap.h` |
+| List | A singly linked list of values, one 8-byte node per value | code: `include/game/heap.h` (`ListNode`) |
+| Object | The root class (vtable 0x8006B58C) every game object derives from: init, destroy, and lists of the objects it watches and of its watchers, told with message 1 when it goes away | code: `include/game/heap.h` (`Object`, `ObjectVtbl`) |
+| Render | Model drawing: TMD polygons sorted into the ordering table, projected, clipped and turned into GPU packets | code: src/game/80017A20.c second half |
+| Entity | A character or object of the dream (0x108 bytes, vtable 0x80089AD4), created from a spawn group with its 16-byte record at 0x80089EA4 | code: `include/game/entity.h`, discoveries "The character record" |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |
 
 Rows sourced to community knowledge are working terms, not verified facts; rows sourced to code cite their discoveries entry.

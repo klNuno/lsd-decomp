@@ -10,13 +10,13 @@ typedef struct Unk_800118DC_Vtbl {
 typedef struct Unk_800118DC_Obj {
     Unk_800118DC_Vtbl *vt;
 } Unk_800118DC_Obj;
-struct Heap *D_8008A808;
+struct Heap *g_mainHeap;
 Unk_800118DC_Obj *D_8008AC20;
 extern s32 D_80066828[];
 void __main(void);
 void SetMem(s32);
-struct Heap *func_80017A20(u32, s32);
-void func_80017A9C(struct Heap *);
+struct Heap *Heap_Create(u32, s32);
+void Heap_SetCurrent(struct Heap *);
 s32 func_80025F7C(s32);
 void *func_800206E0(void);
 s32 func_80025B34(s32, s32);
@@ -26,8 +26,8 @@ void func_800118DC(void) {
 
     __main();
     SetMem(2);
-    D_8008A808 = func_80017A20(0x166C00, 0);
-    func_80017A9C(D_8008A808);
+    g_mainHeap = Heap_Create(0x166C00, 0);
+    Heap_SetCurrent(g_mainHeap);
     D_8008AC20 = (Unk_800118DC_Obj *)func_80025F7C((s32)D_80066828);
     temp_s0 = func_800206E0();
     D_8008AC20->vt->unk44(D_8008AC20, temp_s0, func_80025B34(0, 0));

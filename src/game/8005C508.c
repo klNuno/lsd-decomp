@@ -1,22 +1,9 @@
 #include "common.h"
+#include "game/entity.h"
 
-extern void func_800183DC(void *, s32);
+extern void Object_DeleteArray(void *, s32);
 typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x5C - 0x28]; void *u5C; u8 p1b[0x68 - 0x60]; s32 u68; s32 u6C; void *u70; void *u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
-typedef struct Unk_80089EA4 {
-    u8 pad[0x3];
-    s8 unk3;
-    u8 unk4;
-    s8 unk5;
-    s8 unk6;
-    u8 pad_07[0x1];
-    s8 unk8;
-    s8 unk9;
-    u8 padA[0x1];
-    s8 unkB;
-    u8 padC[0x4];
-} Unk_80089EA4;
-extern Unk_80089EA4 D_80089EA4[];
-typedef struct Unk_8005D944 { u8 pad[0x98]; s32 unk98; } Unk_8005D944;
+extern EntityRecord g_entityRecords[];
 typedef struct Unk_80063CAC {
     u8 pad[0x4];
     s32 unk4;
@@ -43,7 +30,6 @@ typedef struct Unk_8005ED10 {
 extern void func_80060D80();
 void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
 extern s8 D_80089EAC[];
-typedef struct Unk_8005D9D0 { u8 pad[0x98]; s32 unk98; } Unk_8005D9D0;
 extern void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
 typedef struct { u8 pad[0x84]; s32 unk84; } Unk_80061C04_0;
 typedef struct { u8 p0[0x10]; s32 u10; u8 p1[0x08]; s32 u1C; s32 u20; u8 p2[0x0C]; s32 u30; s32 u34; } Unk_80061C04;
@@ -107,25 +93,10 @@ typedef struct Unk_80065204_Vtbl {
 typedef struct Unk_80065204 {
     Unk_80065204_Vtbl *vtbl;
 } Unk_80065204;
-typedef struct Unk_8005C9A4 {
-    u8 pad[0x2];
-    s8 unk2;
-    s8 unk3[3];
-} Unk_8005C9A4;
 extern s8 D_80089EA6[];
-typedef struct Unk_8005D95C { u8 pad[0x98]; s32 unk98; } Unk_8005D95C;
 void func_8005BF68(s32 arg0);
 extern s8 D_80089EAB[];
-typedef struct Unk_8005D994 { u8 pad[0x98]; s32 unk98; } Unk_8005D994;
 extern void func_8002CD08(s32, void *);
-typedef struct Unk_8005D6D4 {
-    u8 pad0[0x58];
-    s32 u58;
-    u8 pad1[0x9C - 0x5C];
-    u8 u9C;
-    u8 pad2[0xFC - 0x9D];
-    s32 uFC;
-} Unk_8005D6D4;
 typedef struct Unk_80061158_Vtbl {
     u8 pad[0xCC];
     void (*unkCC)(void *, s32, s32);
@@ -174,16 +145,11 @@ typedef struct Unk_8005CD58 {
     Unk_8005CD58_Vtbl *vt;
 } Unk_8005CD58;
 Unk_8005CD58 *D_8008AC00;
-extern s8 D_80088D16[];
+extern s8 g_ruleColors[];
 typedef struct Unk_8005DAAC_Vtbl {
     u8 pad[0x30];
     void (*unk30)(void *, s32);
 } Unk_8005DAAC_Vtbl;
-typedef struct Unk_8005DAAC {
-    Unk_8005DAAC_Vtbl *unk0;
-    u8 pad[0xF4 - 0x4];
-    s32 unkF4;
-} Unk_8005DAAC;
 typedef struct Unk_8005E480_0 {
     u8 pad[0x148];
     s32 (*fn148)(void *);
@@ -245,20 +211,6 @@ typedef struct Unk_80064CEC_Vtbl {
 typedef struct Unk_80064CEC {
     Unk_80064CEC_Vtbl *vtbl;
 } Unk_80064CEC;
-typedef struct Unk_8005DB8C_Vtbl {
-    u8 pad[0x114];
-    void (*unk114)(void *);
-    u8 pad2[0x130 - 0x118];
-    void (*unk130)(void *);
-} Unk_8005DB8C_Vtbl;
-typedef struct Unk_8005DB8C {
-    Unk_8005DB8C_Vtbl *unk0;
-    u8 pad[0x58 - 0x4];
-    void *unk58;
-    u8 pad2[0x9C - 0x5C];
-    u8 unk9C[0xF8 - 0x9C];
-    s32 unkF8;
-} Unk_8005DB8C;
 typedef struct Unk_8005C5E8_Vtbl {
     u8 pad0[0x4];
     void *(*unk4)(void *);
@@ -266,12 +218,14 @@ typedef struct Unk_8005C5E8_Vtbl {
 typedef struct Unk_8005C5E8_Obj {
     Unk_8005C5E8_Vtbl *vt;
 } Unk_8005C5E8_Obj;
-typedef struct Unk_8005C5E8 {
-    Unk_8005C5E8_Obj *obj;
-    s32 unk4;
-    u8 pad[0xC];
-} Unk_8005C5E8;
-extern Unk_8005C5E8 g_spyModel[];
+/* g_spyModel: the model loaded from ETC\SYMSPY.MOM and the Grey Man entity built on it */
+typedef struct SpyModel {
+    Unk_8005C5E8_Obj *model;
+    Entity *spy;
+    s32 unk8;
+    u8 pad_0C[0x8];
+} SpyModel;
+extern SpyModel g_spyModel[];
 typedef struct Unk_8005C76C_Vt {
     u8 pad[4];
     void *(*fn4)(void *);
@@ -288,13 +242,6 @@ typedef struct Unk_8005D418_Vtbl {
     u8 pad[0x160];
     void (*unk160)(void *);
 } Unk_8005D418_Vtbl;
-typedef struct Unk_8005D418 {
-    Unk_8005D418_Vtbl *unk0;
-    u8 pad[0xC - 0x4];
-    s32 unkC;
-    u8 pad2[0x4C - 0x10];
-    s32 unk4C;
-} Unk_8005D418;
 typedef struct Unk_80066818_Vtbl {
     u8 pad[0x8];
     s32 (*unk8)(void *, s32, s32);
@@ -312,21 +259,6 @@ typedef struct Unk_8005D7FC_Node {
     u8 pad2[0x4];
     s32 unk20;
 } Unk_8005D7FC_Node;
-typedef struct Unk_8005D7FC_Pos {
-    s32 unk0;
-    u8 pad[0x4];
-    s32 unk8;
-} Unk_8005D7FC_Pos;
-typedef struct Unk_8005D7FC_Arg0 {
-    u8 pad[0x14];
-    Unk_8005D7FC_Node *unk14;
-} Unk_8005D7FC_Arg0;
-typedef struct Unk_8005D7FC_Arg1 {
-    u8 pad[0xC];
-    s32 unkC;
-    u8 pad2[0x4];
-    u8 *unk14;
-} Unk_8005D7FC_Arg1;
 typedef struct Unk_80066748_Vt {
     u8 pad[0x10];
     void (*unk10)(void *, void *);
@@ -343,19 +275,6 @@ typedef struct Unk_800667B0 {
     struct Unk_800667B0 *unk94;
 } Unk_800667B0;
 extern s32 rand(void);
-typedef struct Unk_8005DA3C_Vtbl {
-    u8 pad_00[0x60];
-    void (*unk60)(void *, s32);
-    u8 pad_64[0x164 - 0x64];
-    void (*unk164)(void *, s32);
-    u8 pad_168[0x16C - 0x168];
-    void (*unk16C)(void *);
-} Unk_8005DA3C_Vtbl;
-typedef struct Unk_8005DA3C {
-    Unk_8005DA3C_Vtbl *unk0;
-    u8 pad_04[0xF0 - 0x04];
-    s32 unkF0;
-} Unk_8005DA3C;
 typedef struct Unk_80064AA4_Vtbl {
     u8 pad[0x48];
     void (*unk48)(void *, s32, void *);
@@ -462,9 +381,9 @@ typedef struct Unk_800660BC {
     u8 pad[0x78 - 0x4];
     s32 unk78;
 } Unk_800660BC;
-extern s8 D_80089AC4[];
-extern s16 *D_80089A8C[];
-s32 func_8005C930(s32 arg0, s32 arg1);
+extern s8 g_spawnSlotCounts[];
+extern s16 *g_spawnSlots[];
+s32 Sym_PickSlotVariant(s32 arg0, s32 arg1);
 typedef struct Unk_80065A5C_Vt { u8 pad[0x60]; void (*unk60)(void *, s32); } Unk_80065A5C_Vt;
 typedef struct Unk_80065A5C_Obj { Unk_80065A5C_Vt *vt; } Unk_80065A5C_Obj;
 typedef struct Unk_80065A5C { u8 p0[0x6C]; s32 u6C; Unk_80065A5C_Obj **u70; } Unk_80065A5C;
@@ -475,47 +394,14 @@ typedef struct Unk_800662BC_Vtbl {
 typedef struct Unk_800662BC {
     Unk_800662BC_Vtbl *vt;
 } Unk_800662BC;
-s32 func_8005CFDC(s32 arg0, s32 arg1, s32 arg2);
-extern void func_8005C6D8(s32);
+s32 Entity_Create(s32 arg0, s32 arg1, s32 arg2);
+extern void Sym_InitExtraList(s32);
 s32 D_8008ABFC;
 s32 D_8008AC04;
 s32 D_8008AC08;
-typedef struct Unk_8005D1EC_Obj_Vtbl {
-    u8 pad[0x4];
-    void (*unk4)(void *);
-} Unk_8005D1EC_Obj_Vtbl;
-typedef struct Unk_8005D1EC_Obj {
-    Unk_8005D1EC_Obj_Vtbl *vt;
-} Unk_8005D1EC_Obj;
-typedef struct Unk_8005D1EC {
-    u8 pad[0x100];
-    Unk_8005D1EC_Obj *unk100;
-    Unk_8005D1EC_Obj *unk104;
-} Unk_8005D1EC;
 extern s32 func_8002CC34(s32, void *, s32, void *, s32);
 extern s32 D_80089EB0[];
-typedef struct Unk_8005DAFC_Vtbl {
-    u8 pad_00[0x110];
-    void (*unk110)(void *);
-    u8 pad_114[0x12C - 0x114];
-    void (*unk12C)(void *);
-} Unk_8005DAFC_Vtbl;
-typedef struct Unk_8005DAFC {
-    Unk_8005DAFC_Vtbl *unk0;
-    u8 pad_04[0x58 - 0x04];
-    s32 unk58;
-    u8 pad_5C[0x98 - 0x5C];
-    s32 unk98;
-    u8 unk9C[0xF8 - 0x9C];
-    s32 unkF8;
-    s32 unkFC;
-} Unk_8005DAFC;
-s32 func_8005E02C();
-typedef struct Unk_8005DF9C {
-    Unk_8005DAAC_Vtbl *unk0;
-    u8 pad[0x98 - 0x4];
-    s32 unk98;
-} Unk_8005DF9C;
+s32 Entity_IsDreamerNear();
 typedef struct Unk_80060CF0 {
     Unk_8005D418_Vtbl *unk0;
     u8 pad4[0x44 - 0x4];
@@ -540,19 +426,6 @@ typedef struct Unk_80064450 {
     u8 pad2[0xFC - 0x84];
     s32 unkFC;
 } Unk_80064450;
-typedef struct Unk_8005D278_Vtbl {
-    u8 pad_00[0x70];
-    void (*unk70)(void *, s32);
-    u8 pad_74[0x10C - 0x74];
-    void (*unk10C)(void *, s32);
-    u8 pad_110[0x160 - 0x110];
-    void (*unk160)(void *);
-} Unk_8005D278_Vtbl;
-typedef struct Unk_8005D278 {
-    Unk_8005D278_Vtbl *unk0;
-    u8 pad[0x98 - 0x4];
-    s32 unk98;
-} Unk_8005D278;
 typedef struct Unk_800628D4_Vtbl {
     u8 pad[0x30];
     void (*unk30)(void *, s32);
@@ -568,13 +441,9 @@ typedef struct Unk_800628D4 {
     u8 pad3[0xFC - 0x98];
     s32 unkFC;
 } Unk_800628D4;
-typedef struct Unk_8005CFDC_Vtbl {
-    u8 pad_00[0x8];
-    s32 (*unk8)(s32, s32, s32, s32);
-} Unk_8005CFDC_Vtbl;
-Unk_8005CFDC_Vtbl *func_8005E150(void);
-s32 func_80017B34(s32);
-void *func_80017CFC();
+EntityVtbl *Entity_GetVtbl(void);
+s32 Heap_Alloc(s32);
+void *Heap_Free();
 typedef struct Unk_80066818_Vtbl_800659D0 {
     u8 pad[0x50];
     void (*unk50)(void *);
@@ -605,35 +474,7 @@ typedef struct Unk_80065C5C {
     Unk_80065CEC_Obj *unkC;
 } Unk_80065C5C;
 extern Unk_80065CEC_Obj *func_8004468C(Unk_80065C5C *arg0);
-typedef struct Unk_8005D068_Vtbl {
-    u8 pad_00[0x40];
-    void (*unk40)(void *);
-} Unk_8005D068_Vtbl;
-typedef struct Unk_8005D068 {
-    void *unk0;
-    u8 pad_04[0x98 - 0x04];
-    s32 unk98;
-    s32 unk9C;
-    u8 pad_A0[0x100 - 0xA0];
-    s32 unk100;
-    s32 unk104;
-} Unk_8005D068;
-s32 func_8005D714(void *arg0, u8 *arg1, s32 arg2, s32 arg3);
-typedef struct Unk_8005E0B0_Vtbl {
-    u8 pad_00[0x16C];
-    void (*unk16C)(void *);
-} Unk_8005E0B0_Vtbl;
-typedef struct Unk_8005E0B0 {
-    Unk_8005E0B0_Vtbl *unk0;
-    u8 pad_04[0x14 - 0x04];
-    u8 *unk14;
-    u8 pad_18[0x98 - 0x18];
-    s32 unk98;
-    u8 pad_9C[0xF0 - 0x9C];
-    s32 unkF0;
-    u8 pad_F4[0xF8 - 0xF4];
-    s32 unkF8;
-} Unk_8005E0B0;
+s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 typedef struct Unk_800636E4_Vtbl {
     u8 pad[0x16C];
     void (*unk16C)(void *);
@@ -664,19 +505,6 @@ typedef struct Unk_80065AE0_Vt { u8 pad[0x70]; void (*unk70)(void *, s32); } Unk
 typedef struct Unk_80065AE0_Obj { Unk_80065AE0_Vt *unk0; } Unk_80065AE0_Obj;
 typedef struct Unk_80065AE0 { u8 pad_00[0x6C]; s32 unk6C; Unk_80065AE0_Obj **unk70; } Unk_80065AE0;
 extern void func_8001E600(void *arg0, void *arg1, void *arg2, s32 arg3);
-typedef struct Unk_8005CF34_Vtbl {
-    u8 pad[0x4C];
-    void (*unk4C)(void *self, void *arg1, s32 arg2, s32 arg3, void *arg4);
-    void (*unk50)(void *self);
-} Unk_8005CF34_Vtbl;
-typedef struct Unk_8005CF34_Obj {
-    Unk_8005CF34_Vtbl *vt;
-} Unk_8005CF34_Obj;
-typedef struct Unk_8005CF34 {
-    u8 pad[0x4];
-    Unk_8005CF34_Obj *unk4;
-    s32 unk8;
-} Unk_8005CF34;
 extern s16 D_80089C64[];
 extern s16 D_80089C70[];
 typedef struct Unk_func_800650F4_Obj {
@@ -739,23 +567,6 @@ typedef struct Unk_80065918 {
     u8 pad2[0x50 - 0x10];
     s32 unk50;
 } Unk_80065918;
-typedef struct Unk_8005DEE0_Vtbl {
-    u8 pad[0x168];
-    void (*unk168)(void *);
-} Unk_8005DEE0_Vtbl;
-typedef struct Unk_8005DEE0 {
-    Unk_8005DEE0_Vtbl *unk0;
-    u8 pad_04[0x14 - 0x04];
-    u8 *unk14;
-    u8 pad_18[0x44 - 0x18];
-    s32 unk44;
-    u8 pad_48[0x98 - 0x48];
-    s32 unk98;
-    u8 pad_9C[0xF0 - 0x9C];
-    s32 unkF0;
-    u8 pad_F4[0xF8 - 0xF4];
-    s32 unkF8;
-} Unk_8005DEE0;
 typedef struct Unk_8005E3C4_Vtbl {
     u8 pad[0x30];
     void (*unk30)(void *, s32);
@@ -807,7 +618,7 @@ typedef struct Unk_80064618 {
     u8 padF8[0x100 - 0xF8];
     Unk_80064618_Obj100 *unk100;
 } Unk_80064618;
-extern s32 func_8005D108();
+extern s32 Entity_StartEffect();
 typedef struct Unk_80065514_Vtbl {
     u8 pad_00[0xD0];
     void (*unkD0)(void *, s32, s32);
@@ -854,21 +665,6 @@ typedef struct Unk_80063BC0 {
     u8 pad_88[0xFC - 0x88];
     s32 unkFC;
 } Unk_80063BC0;
-typedef struct Unk_8005DE18_Vtbl {
-    u8 pad[0x164];
-    void (*unk164)(void *, s32);
-} Unk_8005DE18_Vtbl;
-typedef struct Unk_8005DE18 {
-    Unk_8005DE18_Vtbl *unk0;
-    u8 pad_04[0x14 - 0x04];
-    u8 *unk14;
-    u8 pad_18[0x94 - 0x18];
-    void *unk94;
-    s32 unk98;
-    u8 pad_9C[0xF0 - 0x9C];
-    s32 unkF0;
-    s32 unkF4;
-} Unk_8005DE18;
 typedef struct Unk_8005F608_Vtbl {
     u8 pad_00[0xC4];
     void (*unkC4)(void *, s32, s32);
@@ -992,58 +788,18 @@ typedef struct Unk_800641C0 {
     u8 pad2[0xFC - 0x84];
     s32 unkFC;
 } Unk_800641C0;
-typedef struct Unk_8005D714_Vtbl {
-    u8 pad_00[0x120];
-    s32 (*unk120)(void *, s32, s32, void *, s32);
-} Unk_8005D714_Vtbl;
-typedef struct Unk_8005D714_Obj {
-    Unk_8005D714_Vtbl *vt;
-} Unk_8005D714_Obj;
-typedef struct Unk_8005D714_Arg0 {
-    u8 pad_00[0x94];
-    Unk_8005D714_Obj *unk94;
-    s32 unk98;
-} Unk_8005D714_Arg0;
-typedef struct Unk_8005D714_Arg1 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-} Unk_8005D714_Arg1;
-s32 func_8005C8AC(s16 *arg0);
-s32 Sym_CheckDayParity(s32 arg0, Unk_8005C9A4 *arg1);
-s32 func_8005C9DC(s32 arg0, Unk_8005C9A4 *arg1, s32 arg2);
-void Sym_SpawnSpy(Unk_8005CF34 *arg0);
+s32 Sym_FindSlot(s16 *arg0);
+s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot);
+s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square);
+void Sym_SpawnSpy(SpyModel *spyModel);
 extern s32 func_80044A0C(s32 arg0);
-extern s32 func_8005CAB4();
-extern void *D_80089A44[];
+extern s32 Sym_SpawnGroup();
+extern void *g_spawnGroups[];
 typedef struct Unk_8005D480_Fn {
     u8 pad[0x98];
     void (*unk98)(void *, void *, s32);
 } Unk_8005D480_Fn;
-typedef struct Unk_8005D480_Vtbl {
-    u8 pad[0x170];
-    s32 (*unk170)(void *);
-    void (*unk174)(void *);
-    void (*unk178)(void *);
-    s32 (*unk17C)(void *);
-    void (*unk180)(void *);
-} Unk_8005D480_Vtbl;
-typedef struct Unk_8005D480 {
-    Unk_8005D480_Vtbl *vt;
-} Unk_8005D480;
 extern s8 D_80089EAE[];
-typedef struct Unk_8005D864_Vt {
-    u8 pad0[0x144];
-    s32 (*unk144)(void *, void *);
-} Unk_8005D864_Vt;
-typedef struct Unk_8005D864 {
-    Unk_8005D864_Vt *vt;
-    u8 pad4[0x94 - 0x4];
-    void *unk94;
-    s32 unk98;
-    u8 pad9C[0xB0 - 0x9C];
-    s32 unkB0;
-} Unk_8005D864;
 typedef struct Unk_8005EBB4_Vtbl {
     u8 pad[0x30];
     void (*unk30)(void *, s32);
@@ -1327,15 +1083,6 @@ typedef struct Unk_8005D560_Fn {
     u8 pad[0xDC];
     void (*unkDC)(void *, void *, s32);
 } Unk_8005D560_Fn;
-typedef struct Unk_8005D560_Vtbl {
-    u8 pad[0x30];
-    void (*unk30)(void *, s32);
-} Unk_8005D560_Vtbl;
-typedef struct Unk_8005D560 {
-    Unk_8005D560_Vtbl *unk0;
-    u8 pad[0x98 - 0x4];
-    s32 unk98;
-} Unk_8005D560;
 extern s32 D_80089D18;
 extern s32 D_80089E74;
 typedef struct Unk_8005F708_Vtbl {
@@ -1382,21 +1129,7 @@ struct Unk_80026CE8 {
     s32 unk8;
 };
 struct Unk_80026CE8 *func_80026CE8(struct Unk_80026CE8 *arg0, s32 arg1, char *arg2, s32 arg3);
-extern s8 D_80089A7C[];
-typedef struct Unk_8005D108_Vtbl {
-    u8 pad_00[0x4C];
-    void (*unk4C)(void *self, void *arg1, void *arg2);
-    void (*unk50)(void *self);
-    u8 pad_54[0xD0 - 0x54];
-    void (*unkD0)(void *self, s32 arg1);
-} Unk_8005D108_Vtbl;
-typedef struct Unk_8005D108_Obj {
-    Unk_8005D108_Vtbl *vt;
-} Unk_8005D108_Obj;
-typedef struct Unk_8005D108 {
-    u8 pad_00[0x100];
-    Unk_8005D108_Obj *unk100;
-} Unk_8005D108;
+extern s8 g_spawnGroupCounts[];
 void *func_8003FDB0(void *arg0, s32 arg1, s32 arg2);
 extern s32 D_8008AC0C[];
 extern s32 D_8008AC14[];
@@ -1465,21 +1198,6 @@ typedef struct Unk_80066214 {
 } Unk_80066214;
 extern s8 D_80089EA7[];
 extern s8 D_80089EAF[];
-typedef struct Unk_8005D314_Vt {
-    u8 pad[0x15C];
-    void (*unk15C)(void *);
-    u8 pad2[0x168 - 0x160];
-    void (*unk168)(void *);
-} Unk_8005D314_Vt;
-typedef struct Unk_8005D314 {
-    Unk_8005D314_Vt *unk0;
-    u8 pad4[0xC - 0x4];
-    s32 unkC;
-    u8 pad10[0x4C - 0x10];
-    s32 unk4C;
-    u8 pad50[0x98 - 0x50];
-    s32 unk98;
-} Unk_8005D314;
 typedef struct Unk_80060800_Vt94 {
     u8 pad[0x1A0];
     s32 (*fn1A0)(void *self, s32 arg);
@@ -1508,7 +1226,7 @@ typedef struct Unk_80060800_Arg1 {
 } Unk_80060800_Arg1;
 typedef struct Unk_80065E1C_vt { u8 pad[0x80]; s32 (*unk80)(void *self, void *buf, s32 *idx); } Unk_80065E1C_vt;
 typedef struct Unk_80065E1C_obj { Unk_80065E1C_vt *vt; } Unk_80065E1C_obj;
-extern s32 func_80017B34(s32);
+extern s32 Heap_Alloc(s32);
 extern void *func_80056FE4(void);
 extern void func_80065F2C(Unk_80059394 *arg0);
 typedef struct Unk_800603C4_Vtbl {
@@ -1612,21 +1330,6 @@ typedef struct Unk_80064B80 {
     u8 pad2[0xFC - 0x48];
     s32 unkFC;
 } Unk_80064B80;
-typedef struct Unk_8005DBF0_Vtbl {
-    u8 pad_00[0x15C];
-    void (*unk15C)(void *);
-} Unk_8005DBF0_Vtbl;
-typedef struct Unk_8005DBF0 {
-    Unk_8005DBF0_Vtbl *unk0;
-    u8 pad_04[0x14 - 0x04];
-    u8 *unk14;
-    u8 pad_18[0x44 - 0x18];
-    s32 unk44;
-    u8 pad_48[0x98 - 0x48];
-    s32 unk98;
-    u8 pad_9C[0xF0 - 0x9C];
-    s32 unkF0;
-} Unk_8005DBF0;
 typedef struct Unk_80065238_Vtbl {
     u8 pad_00[0xC4];
     void (*unkC4)(void *, s32, s32);
@@ -1768,30 +1471,9 @@ typedef struct Unk_8005CAB4_Vtbl {
 typedef struct Unk_8005CAB4_Obj {
     Unk_8005CAB4_Vtbl *vt;
 } Unk_8005CAB4_Obj;
-typedef struct Unk_8005CAB4 {
-    u8 pad[0x2];
-    s8 unk2;
-    u8 unk3;
-    s8 unk4[0x34];
-} Unk_8005CAB4;
-void func_8005C714(s32 arg0);
-s32 func_8005CBC8(s32 arg0, Unk_8005CAB4 *arg1);
-s32 func_8005CDF8(s32 arg0, s32 *arg1, Unk_8005C9A4 *arg2, s32 arg3);
-typedef struct Unk_8005E02C_Pos {
-    u8 pad[0x1C];
-    s32 unk1C;
-} Unk_8005E02C_Pos;
-typedef struct Unk_8005E02C_Vt {
-    u8 pad[0x144];
-    s32 (*unk144)(void *, void *, s32);
-} Unk_8005E02C_Vt;
-typedef struct Unk_8005E02C {
-    Unk_8005E02C_Vt *unk0;
-    u8 pad4[0x14 - 0x04];
-    Unk_8005E02C_Pos *unk14;
-    u8 pad18[0x94 - 0x18];
-    struct Unk_8005E02C *unk94;
-} Unk_8005E02C;
+void Sym_CheckExtraListType(s32 arg0);
+s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
+s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place);
 typedef struct Unk_80060148_Vtbl {
     u8 pad0[0x44];
     void (*fn44)(void *self, s32 a1, void *a2);
@@ -1900,27 +1582,12 @@ typedef struct Unk_8005F1D4 {
     u8 pad_F8[0xFC - 0xF8];
     s32 unkFC;
 } Unk_8005F1D4;
-void func_8005DF9C();
-extern s32 func_8005D714(void *arg0, u8 *arg1, s32 arg2, s32 arg3);
-typedef struct Unk_8005DD18 {
-    Unk_8005D418_Vtbl *unk0;
-    u8 pad_04[0x14 - 0x04];
-    u8 *unk14;
-    u8 pad_18[0x24 - 0x18];
-    u32 unk24;
-    u8 pad_28[0x98 - 0x28];
-    s32 unk98;
-    u8 pad_9C[0xF0 - 0x9C];
-    s32 unkF0;
-} Unk_8005DD18;
-typedef struct Unk_8005CBC8 {
-    s8 unk0;
-    s8 unk1;
-} Unk_8005CBC8;
+void Entity_CheckLinkRadius();
+extern s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param);
 s32 func_8005630C(void);
-s32 func_8005CD58(s32 arg0);
-s32 func_8005CDA8(s32 arg0, s32 arg1);
-extern u8 D_80089AD4[];
+s32 Sym_CheckColorRule(s32 arg0);
+s32 Sym_CheckMonthRule(s32 arg0, s32 arg1);
+extern u8 g_entityVtbl[];
 extern u8 D_8008A6C4[];
 typedef struct Unk_8005FC58_Vtbl {
     u8 pad[0xBC];
@@ -2461,7 +2128,7 @@ typedef struct Unk_80061778_Arg {
     s32 unk1C;
     s32 unk20;
 } Unk_80061778_Arg;
-s32 func_8005E02C(Unk_8005E02C *arg0, s32 arg1);
+s32 Entity_IsDreamerNear(Entity *entity, s32 radius);
 typedef struct Unk_80063874_Vtbl {
     u8 pad_00[0x30];
     void (*unk30)(void *, s32);
@@ -2499,7 +2166,7 @@ typedef struct Unk_80063874 {
 } Unk_80063874;
 extern s16 D_80089CD0[];
 extern s16 D_80089CDC[];
-s32 func_8005D108(Unk_8005D108 *arg0, void *arg1, void *arg2, s32 arg3, s32 arg4);
+s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg4);
 void func_80063C84(Unk_80063C84 *arg0);
 extern s32 D_80089D24[];
 typedef struct Unk_80061400_Vtbl {
@@ -2577,11 +2244,6 @@ typedef struct Unk_8005CDF8_Rec {
     Unk_8005CDF8_C c;
     s16 d;
 } Unk_8005CDF8_Rec;
-typedef struct Unk_8005CDF8_Idx {
-    u16 unk0;
-    s8 unk2;
-    s8 unk3;
-} Unk_8005CDF8_Idx;
 typedef struct Unk_8005CDF8 {
     u16 a;
     u16 b;
@@ -2598,7 +2260,7 @@ typedef struct Unk_8005CDF8_Vtbl {
 typedef struct Unk_8005CDF8_Obj {
     Unk_8005CDF8_Vtbl *vt;
 } Unk_8005CDF8_Obj;
-extern Unk_8005CDF8_Idx D_80088F48[];
+extern SpawnPlace g_spawnPlaces[];
 extern Unk_8005CDF8_Rec D_80088D3C[];
 extern u8 D_80088F18[];
 typedef struct { u8 p0[0x10]; s32 u10; u8 p1[0x08]; s32 u1C; s32 u20; u8 p2[0x44 - 0x24]; s32 u44; s32 u48; } Unk_80061198_Out;
@@ -2714,66 +2376,69 @@ typedef struct Unk_80063144 {
 } Unk_80063144;
 
 void Sym_LoadModels(void) {
-    struct Unk_80026CE8 sp10;
+    struct Unk_80026CE8 file;
     u32 i;
     s32 j;
 
+    /* clear the done flag of every spawn group of every stage */
     for (i = 0; i < 14; i++) {
-        for (j = 0; j < D_80089A7C[i]; j++) {
-            ((u8 *)D_80089A44[i])[j * 8] = 0;
+        for (j = 0; j < g_spawnGroupCounts[i]; j++) {
+            ((u8 *)g_spawnGroups[i])[j * 8] = 0;
         }
     }
-    func_80026CE8(&sp10, 0, "ETC\\SYMSPY.MOM", 1);
+    func_80026CE8(&file, 0, "ETC\\SYMSPY.MOM", 1);
+    /* one pass: SYMDOG.MOM would be the second model, the loop never reaches it */
     for (i = 0; i < 1; i++) {
-        g_spyModel[i].obj = (Unk_8005C5E8_Obj *)func_8004468C((Unk_80065C5C *)&sp10);
-        sp10.unk4 = "ETC\\SYMDOG.MOM";
+        g_spyModel[i].model = (Unk_8005C5E8_Obj *)func_8004468C((Unk_80065C5C *)&file);
+        file.unk4 = "ETC\\SYMDOG.MOM";
     }
 }
 
-void func_8005C5E8(void) {
-    Unk_8005C5E8 *var_s0;
+void Sym_FreeModels(void) {
+    SpyModel *entry;
     u32 i;
 
-    var_s0 = g_spyModel;
+    entry = g_spyModel;
     for (i = 0; i < 1; i++) {
-        if (var_s0->obj != NULL) {
-            var_s0->obj = var_s0->obj->vt->unk4(var_s0->obj);
+        if (entry->model != NULL) {
+            entry->model = entry->model->vt->unk4(entry->model);
         }
-        var_s0++;
+        entry++;
     }
 }
 
-void func_8005C650(s32 arg0, s32 arg1, Unk_8005CD58 *arg2, s32 arg3, s32 arg4) {
-    s32 sp10[4];
-    Unk_8005C5E8 *var_s1;
+void Sym_InitStage(s32 stage, s32 arg1, Unk_8005CD58 *dreamSys, s32 arg3, s32 arg4) {
+    s32 params[4];
+    SpyModel *entry;
     u32 i;
 
-    var_s1 = g_spyModel;
-    g_currentStage = arg0;
+    entry = g_spyModel;
+    g_currentStage = stage;
     D_8008ABFC = arg1;
-    D_8008AC00 = arg2;
+    D_8008AC00 = dreamSys;
     D_8008AC04 = arg3;
     D_8008AC08 = arg4;
+    /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
-        sp10[3] = (s32) var_s1->obj;
-        var_s1->unk4 = func_8005CFDC(i + 0x62, sp10, D_8008AC04);
-        var_s1++;
+        params[3] = (s32) entry->model;
+        entry->spy = Entity_Create(i + 0x62, params, D_8008AC04);
+        entry++;
     }
-    func_8005C6D8(arg0);
+    Sym_InitExtraList(stage);
 }
 
-void func_8005C6D8(s32 arg0) {
-    s32 var_v1;
+void Sym_InitExtraList(s32 stage) {
+    s32 extraList;
 
-    var_v1 = 0;
-    if ((arg0 == 0xB) || (arg0 == 3)) {
-        var_v1 = 1;
+    extraList = 0;
+    if ((stage == 0xB) || (stage == 3)) {
+        extraList = 1;
     }
-    func_8005BF68(var_v1);
+    func_8005BF68(extraList);
 }
 
-void func_8005C714(s32 arg0) {
-    switch (arg0) {
+void Sym_CheckExtraListType(s32 type) {
+    switch (type) {
         case 0xB:
         case 0x38:
         case 0x4E:
@@ -2784,525 +2449,537 @@ void func_8005C714(s32 arg0) {
 }
 
 void func_8005C76C(void) {
-    Unk_8005C76C_Entry *var_s0;
+    Unk_8005C76C_Entry *entry;
     u32 i;
 
-    for (i = 0, var_s0 = D_80088D2C; i < 1; i++) {
-        if (var_s0->obj != NULL) {
-            var_s0->obj = var_s0->obj->vt->fn4(var_s0->obj);
+    for (i = 0, entry = D_80088D2C; i < 1; i++) {
+        if (entry->obj != NULL) {
+            entry->obj = entry->obj->vt->fn4(entry->obj);
         }
-        var_s0++;
+        entry++;
     }
 }
 
-s32 Sym_SpawnOrSpy(s32 arg0, void *arg1, s32 arg2) {
-    s32 temp_s0;
+s32 Sym_SpawnOrSpy(s32 square, void *chunkKey, s32 dayNumber) {
+    s32 slot;
 
-    temp_s0 = func_8005C8AC((s16 *) arg1);
-    if (temp_s0 != 0) {
-        if (Sym_CheckDayParity(arg2, (Unk_8005C9A4 *) temp_s0) != 0) {
-            return func_8005C9DC(arg2, (Unk_8005C9A4 *) temp_s0, arg0);
+    slot = Sym_FindSlot((s16 *) chunkKey);
+    if (slot != 0) {
+        if (Sym_CheckDayParity(dayNumber, (SpawnSlot *) slot) != 0) {
+            return Sym_SpawnSlot(dayNumber, (SpawnSlot *) slot, square);
         }
         if (g_currentStage != 0) {
-            if (rand() % 12 == 0 && !(arg2 & 1)) {
-                Sym_SpawnSpy((Unk_8005CF34 *) g_spyModel);
+            if (rand() % 12 == 0 && !(dayNumber & 1)) {
+                Sym_SpawnSpy(g_spyModel);
             }
         }
     }
     return 0;
 }
 
-s32 func_8005C8AC(s16 *arg0) {
-    s16 *var_a0;
-    s32 var_a1;
-    s32 temp_a2;
+s32 Sym_FindSlot(s16 *chunkKey) {
+    s16 *slot;
+    s32 i;
+    s32 count;
     s32 pad[2];
 
-    temp_a2 = D_80089AC4[g_currentStage];
-    var_a0 = D_80089A8C[g_currentStage];
-    var_a1 = 0;
-    if (temp_a2 > 0) {
+    count = g_spawnSlotCounts[g_currentStage];
+    slot = g_spawnSlots[g_currentStage];
+    i = 0;
+    if (count > 0) {
         do {
-            if (*arg0 == *var_a0) {
-                return func_8005C930((s32) var_a0, var_a1);
+            if (*chunkKey == *slot) {
+                return Sym_PickSlotVariant((s32) slot, i);
             }
-            var_a1++;
-            var_a0 += 3;
-        } while (var_a1 < temp_a2);
+            i++;
+            slot += 3;
+        } while (i < count);
     }
     return 0;
 }
 
-s32 func_8005C930(s32 arg0, s32 arg1) {
-    s32 mode = g_currentStage;
+/* Stage 4, slot 16: on a red day (colour 4) use slot 21, 30 bytes further. */
+s32 Sym_PickSlotVariant(s32 slot, s32 index) {
+    s32 stage = g_currentStage;
 
-    if (mode == 4 && arg1 == 0x10) {
-        if (D_8008AC00->vt->unk200(D_8008AC00) == mode) {
-            arg0 += 30;
+    if (stage == 4 && index == 0x10) {
+        if (D_8008AC00->vt->unk200(D_8008AC00) == stage) {
+            slot += 30;
         }
     }
-    return arg0;
+    return slot;
 }
 
-s32 Sym_CheckDayParity(s32 arg0, Unk_8005C9A4 *arg1) {
-    s32 var_v0;
-    s8 temp_v1;
+s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
+    s32 pass;
+    s8 parity;
 
-    temp_v1 = arg1->unk2;
-    var_v0 = 1;
-    if (temp_v1 != 0) {
-        arg0 = (arg0 % 2) + 1;
-        var_v0 = temp_v1 != arg0;
+    parity = slot->dayParity;
+    pass = 1;
+    if (parity != 0) {
+        dayNumber = (dayNumber % 2) + 1;
+        pass = parity != dayNumber;
     }
-    return var_v0;
+    return pass;
 }
 
-s32 func_8005C9DC(s32 arg0, Unk_8005C9A4 *arg1, s32 arg2) {
-    s32 sp10[4];
-    s32 ret;
-    s8 *p;
+s32 Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, s32 square) {
+    s32 params[4];
+    s32 squareObj;
+    s8 *group;
     s8 *end;
-    u8 *table;
+    u8 *groups;
 
-    sp10[0] = arg2;
-    ret = func_80044A0C((s32)sp10);
-    if (ret != 0) {
-        p = arg1->unk3;
-        end = arg1->unk3 + 3;
-        table = D_80089A44[g_currentStage];
-        while (p < end && *p != -1) {
-            func_8005CAB4(arg0, arg1, table + *p * 8, ret);
-            p++;
+    params[0] = square;
+    squareObj = func_80044A0C((s32)params);
+    if (squareObj != 0) {
+        group = slot->groups;
+        end = slot->groups + 3;
+        groups = g_spawnGroups[g_currentStage];
+        while (group < end && *group != -1) {
+            Sym_SpawnGroup(dayNumber, slot, groups + *group * 8, squareObj);
+            group++;
         }
-        return ret;
+        return squareObj;
     }
     return 0;
 }
 
-s32 func_8005CAB4(s32 arg0, Unk_8005C9A4 *arg1, Unk_8005CAB4 *arg2, Unk_8005CAB4_Obj *arg3) {
-    s32 sp10[4];
-    s8 *s0;
-    s8 *s2;
-    s32 temp;
+s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Unk_8005CAB4_Obj *squareObj) {
+    s32 params[4];
+    s8 *place;
+    s8 *placesEnd;
+    s32 model;
 
-    if (func_8005CBC8(arg0, arg2) != 0) {
-        s0 = arg2->unk4;
-        func_8005C714(arg2->unk3);
-        temp = arg3->vt->unk88(arg3, arg2->unk2);
-        sp10[3] = temp;
-        s2 = arg2->unk4 + 4;
-        if (temp != 0) {
-            for (; s0 < s2 && *s0 != -1; s0++) {
-                if (func_8005CDF8(arg2->unk3, sp10, arg1, (u8)*s0) != 0) {
+    if (Sym_CheckRule(dayNumber, group) != 0) {
+        place = group->places;
+        Sym_CheckExtraListType(group->type);
+        model = squareObj->vt->unk88(squareObj, group->model);
+        params[3] = model;
+        placesEnd = group->places + 4;
+        if (model != 0) {
+            for (; place < placesEnd && *place != -1; place++) {
+                if (Sym_SpawnAtPlace(group->type, params, slot, (u8)*place) != 0) {
                     return 1;
                 }
             }
         }
-        if (arg2->unk3 == 2) {
-            return func_8005CAB4(arg0, arg1, arg2 + 1, arg3);
+        /* a type 2 group also tries the group seven entries further (0x38 bytes) */
+        if (group->type == 2) {
+            return Sym_SpawnGroup(dayNumber, slot, group + 7, squareObj);
         }
     }
     return 0;
 }
 
-s32 func_8005CBC8(s32 arg0, Unk_8005CAB4 *arg1) {
-    Unk_8005CBC8 *p;
-    s8 temp_a0;
+s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group) {
+    SpawnGroup *p;
+    s8 rule;
     s32 n;
-    s32 r;
+    s32 pass;
 
-    p = (Unk_8005CBC8 *)arg1;
-    temp_a0 = p->unk1;
-    if (temp_a0 == 1) {
-        p->unk0 = 1;
+    p = group;
+    rule = p->rule;
+    if (rule == 1) {
+        p->done = 1;
         return 1;
     }
-    if (temp_a0 < 0 && p->unk0 != 0) {
+    /* a negative rule passes once, until Sym_LoadModels clears the flag */
+    if (rule < 0 && p->done != 0) {
         return 0;
     }
-    n = temp_a0 < 0 ? ~temp_a0 + 1 : temp_a0;
+    n = rule < 0 ? ~rule + 1 : rule;
     switch (n) {
         case 2:
         case 3:
         case 4:
-            r = func_8005CDA8(arg0, n - 1);
+            pass = Sym_CheckMonthRule(dayNumber, n - 1);
             break;
         case 5:
-            if (arg0 == (arg0 / 3) * 3) {
-                p->unk0 = 1;
+            if (dayNumber == (dayNumber / 3) * 3) {
+                p->done = 1;
                 return 1;
             }
             return 0;
         case 6:
-            if (arg0 != (arg0 / 3) * 3) {
-                p->unk0 = 1;
+            if (dayNumber != (dayNumber / 3) * 3) {
+                p->done = 1;
                 return 1;
             }
             return 0;
         case 7:
-            r = func_8005630C();
+            pass = func_8005630C();
             break;
         case 8:
         case 9:
-            if (arg0 % 3 == n - 7) {
-                p->unk0 = 1;
+            if (dayNumber % 3 == n - 7) {
+                p->done = 1;
                 return 1;
             }
             return 0;
         case 20:
-            if ((arg0 & 1) == 0) {
-                p->unk0 = 1;
+            if ((dayNumber & 1) == 0) {
+                p->done = 1;
                 return 1;
             }
             return 0;
         case 21:
-            r = arg0 & 1;
+            pass = dayNumber & 1;
             break;
         default:
             if (n < 10) {
-                p->unk0 = 1;
+                p->done = 1;
                 return 1;
             }
-            r = func_8005CD58(n);
+            pass = Sym_CheckColorRule(n);
             break;
     }
-    if (r != 0) {
-        p->unk0 = 1;
+    if (pass != 0) {
+        p->done = 1;
         return 1;
     }
     return 0;
 }
 
-s32 func_8005CD58(s32 arg0) {
-    s32 temp_s0;
+/* Rules 10 to 17: g_ruleColors[rule] is the mood colour the day must have (DreamSys vtable 0x200). */
+s32 Sym_CheckColorRule(s32 rule) {
+    s32 colour;
 
-    temp_s0 = D_80088D16[arg0];
-    return temp_s0 == D_8008AC00->vt->unk200(D_8008AC00);
+    colour = g_ruleColors[rule];
+    return colour == D_8008AC00->vt->unk200(D_8008AC00);
 }
 
-s32 func_8005CDA8(s32 arg0, s32 arg1) {
+/* Rules 2 to 4: the 30-day month (day - 1) / 30 + 1 equals month, month + 3, + 6 or + 9. */
+s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
     s32 i;
     s32 n;
 
-    n = ((arg0 - 1) / 30) + 1;
+    n = ((dayNumber - 1) / 30) + 1;
     for (i = 0; i < 4; i++) {
-        if (n == arg1) {
+        if (n == month) {
             return 1;
         }
-        arg1 += 3;
+        month += 3;
     }
     return 0;
 }
 
-s32 func_8005CDF8(s32 arg0, s32 *arg1, Unk_8005C9A4 *arg2, s32 arg3) {
-    Unk_8005CDF8 sp18;
-    s32 sp28[4];
-    Unk_8005CDF8_Obj *temp_v0;
-    Unk_8005CDF8_Idx *temp_s0;
-    s32 temp_v1;
+s32 Sym_SpawnAtPlace(s32 type, s32 *params, SpawnSlot *slot, s32 place) {
+    Unk_8005CDF8 query;
+    s32 placement[4];
+    Entity *entity;
+    SpawnPlace *placeInfo;
+    s32 recIndex;
 
-    temp_v0 = (Unk_8005CDF8_Obj *) func_8005CFDC(arg0, (s32) arg1, D_8008AC04);
-    if (temp_v0 != NULL) {
-        sp18.a = *(u16 *) arg2;
-        temp_s0 = &D_80088F48[arg3];
-        sp18.b = temp_s0->unk0;
-        temp_v1 = temp_s0->unk3;
-        sp18.rec = D_80088D3C[temp_v1];
-        ((Unk_8005CDF8_Obj *) D_8008ABFC)->vt->unkE8((void *) D_8008ABFC, sp28, &sp18);
-        temp_v0->vt->unk44(temp_v0, 1, &D_80088F18[temp_s0->unk2 * 12]);
-        temp_v0->vt->unk4C(temp_v0, D_8008AC00, D_8008AC08, D_8008ABFC, sp28);
+    entity = (Entity *) Entity_Create(type, (s32) params, D_8008AC04);
+    if (entity != NULL) {
+        query.a = *(u16 *) slot;
+        placeInfo = &g_spawnPlaces[place];
+        query.b = placeInfo->unk0;
+        recIndex = placeInfo->unk3;
+        query.rec = D_80088D3C[recIndex];
+        ((Unk_8005CDF8_Obj *) D_8008ABFC)->vt->unkE8((void *) D_8008ABFC, placement, &query);
+        entity->vt->unk44(entity, 1, &D_80088F18[placeInfo->unk2 * 12]);
+        entity->vt->attach(entity, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
         return 0;
     }
     return 1;
 }
 
-void Sym_SpawnSpy(Unk_8005CF34 *arg0) {
-    s32 sp18[4];
-    Unk_8005CF34_Obj *temp_a0;
+void Sym_SpawnSpy(SpyModel *spyModel) {
+    s32 placement[4];
+    Entity *spy;
 
-    temp_a0 = arg0->unk4;
-    if (temp_a0 != NULL) {
-        temp_a0->vt->unk50(temp_a0);
-        func_8001E600(D_8008AC00, sp18, &arg0->unk8, 0);
-        arg0->unk4->vt->unk4C(arg0->unk4, D_8008AC00, D_8008AC08, D_8008ABFC, sp18);
-        func_8001EACC(arg0->unk4, D_8008AC00, 1, 0, 0);
+    spy = spyModel->spy;
+    if (spy != NULL) {
+        spy->vt->detach(spy);
+        func_8001E600(D_8008AC00, placement, &spyModel->unk8, 0);
+        spyModel->spy->vt->attach(spyModel->spy, D_8008AC00, D_8008AC08, D_8008ABFC, placement);
+        func_8001EACC(spyModel->spy, D_8008AC00, 1, 0, 0);
     }
 }
 
-s32 func_8005CFDC(s32 arg0, s32 arg1, s32 arg2) {
-    s32 temp_s0;
+s32 Entity_Create(s32 type, s32 params, s32 arg2) {
+    s32 mem;
 
-    temp_s0 = func_80017B34(0x108);
-    if (temp_s0 == 0) {
+    mem = Heap_Alloc(0x108);
+    if (mem == 0) {
         return 0;
     }
-    if (func_8005E150()->unk8(temp_s0, arg0, arg1, arg2) != 0) {
-        return temp_s0;
+    if (Entity_GetVtbl()->construct(mem, type, params, arg2) != 0) {
+        return mem;
     }
-    func_80017CFC(temp_s0);
+    Heap_Free(mem);
     return 0;
 }
 
-void *func_8005D068(Unk_8005D068 *arg0, s32 arg1, s32 arg2, s32 arg3) {
-    if (func_80066818()->unk8(arg0, arg2, arg3) != 0) {
-        arg0->unk0 = func_8005E150();
-        arg0->unk98 = arg1;
-        arg0->unk9C = 0;
-        arg0->unk100 = 0;
-        arg0->unk104 = 0;
-        ((Unk_8005D068_Vtbl *)arg0->unk0)->unk40(arg0);
-        return arg0;
+void *Entity_Construct(Entity *entity, s32 type, s32 arg2, s32 arg3) {
+    if (func_80066818()->unk8(entity, arg2, arg3) != 0) {
+        entity->vt = Entity_GetVtbl();
+        entity->type = type;
+        entity->handlerNode.unk0 = 0;
+        entity->effect = 0;
+        entity->unk104 = 0;
+        ((EntityVtbl *)entity->vt)->init(entity);
+        return entity;
     }
     return NULL;
 }
 
-s32 func_8005D108(Unk_8005D108 *arg0, void *arg1, void *arg2, s32 arg3, s32 arg4) {
-    Unk_8005D108_Obj *obj;
+s32 Entity_StartEffect(Entity *entity, void *arg1, void *arg2, s32 arg3, s32 arg4) {
+    EntityEffect *effect;
 
-    if (arg0->unk100 == NULL) {
+    if (entity->effect == NULL) {
         if (arg1 == NULL) {
             arg1 = D_8008AC14;
         }
-        obj = func_8003FDB0(arg1, 0, arg4);
-        if (obj == NULL) {
+        effect = func_8003FDB0(arg1, 0, arg4);
+        if (effect == NULL) {
             return 0;
         }
-        arg0->unk100 = obj;
+        entity->effect = effect;
     } else {
-        obj = arg0->unk100;
+        effect = entity->effect;
     }
-    obj->vt->unk50(obj);
-    obj->vt->unk4C(obj, arg0, arg2 ? arg2 : D_8008AC0C);
-    obj->vt->unkD0(obj, arg3);
-    return (s32)obj;
+    effect->vt->unk50(effect);
+    effect->vt->unk4C(effect, entity, arg2 ? arg2 : D_8008AC0C);
+    effect->vt->unkD0(effect, arg3);
+    return (s32)effect;
 }
 
-void func_8005D1EC(Unk_8005D1EC *arg0) {
-    Unk_8005D1EC_Obj *temp;
+void Entity_Destruct(Entity *entity) {
+    EntityEffect *effect;
 
-    temp = arg0->unk100;
-    if (temp != NULL) {
-        temp->vt->unk4(temp);
+    effect = entity->effect;
+    if (effect != NULL) {
+        effect->vt->unk4(effect);
     }
-    temp = arg0->unk104;
-    if (temp != NULL) {
-        temp->vt->unk4(temp);
+    effect = entity->unk104;
+    if (effect != NULL) {
+        effect->vt->unk4(effect);
     }
-    func_80066818()->unkC(arg0);
+    func_80066818()->unkC(entity);
 }
 
-void func_8005D278(Unk_8005D278 *arg0) {
-    if ((u8)D_80089EA6[arg0->unk98 * 16] - 1U < 9) {
-        arg0->unk0->unk70(arg0, 1);
+void Entity_Init(Entity *entity) {
+    /* record points byte (+2) of 1 to 9 */
+    if ((u8)D_80089EA6[entity->type * 16] - 1U < 9) {
+        entity->vt->unk70(entity, 1);
     }
-    arg0->unk0->unk10C(arg0, 0x42);
-    arg0->unk0->unk160(arg0);
+    entity->vt->unk10C(entity, 0x42);
+    entity->vt->sleep(entity);
 }
 
-void func_8005D314(Unk_8005D314 *arg0, void *arg1, void *arg2, s32 arg3, s32 arg4) {
-    if (arg0->unkC == 0) {
-        func_80066818()->unk4C(arg0, arg1, arg2, arg3, arg4);
-        arg0->unk4C = arg3;
-        if (D_80089EA7[arg0->unk98 * 16] == 0) {
-            arg0->unk0->unk15C(arg0);
-            if (D_80089EAF[arg0->unk98 * 16] == 0) {
-                arg0->unk0->unk168(arg0);
+void Entity_Attach(Entity *entity, void *dreamSys, void *arg2, s32 arg3, s32 arg4) {
+    if (entity->attached == 0) {
+        func_80066818()->unk4C(entity, dreamSys, arg2, arg3, arg4);
+        entity->unk4C = arg3;
+        /* record +3 wake mode 0: awake at spawn; +0xB handler range 0: handler from the start */
+        if (D_80089EA7[entity->type * 16] == 0) {
+            entity->vt->wake(entity);
+            if (D_80089EAF[entity->type * 16] == 0) {
+                entity->vt->startHandler(entity);
             }
         }
     }
 }
 
-void func_8005D418(Unk_8005D418 *arg0) {
-    if (arg0->unkC != 0) {
-        arg0->unk0->unk160(arg0);
-        func_80066818()->unk50(arg0);
-        arg0->unk4C = 0;
+void Entity_Detach(Entity *entity) {
+    if (entity->attached != 0) {
+        entity->vt->sleep(entity);
+        func_80066818()->unk50(entity);
+        entity->unk4C = 0;
     }
 }
 
-void func_8005D480(Unk_8005D480 *arg0, void *arg1, s32 arg2) {
-    if (arg0->vt->unk170(arg0) != 0) {
-        arg0->vt->unk174(arg0);
+void Entity_Update(Entity *entity, void *arg1, s32 arg2) {
+    if (entity->vt->checkWake(entity) != 0) {
+        entity->vt->checkSleep(entity);
     }
-    if (arg0->vt->unk17C(arg0) != 0) {
-        arg0->vt->unk180(arg0);
+    if (entity->vt->checkHandlerStart(entity) != 0) {
+        entity->vt->checkHandlerStop(entity);
     }
-    arg0->vt->unk178(arg0);
-    ((Unk_8005D480_Fn *)func_80066818())->unk98(arg0, arg1, arg2);
+    entity->vt->checkTouch(entity);
+    ((Unk_8005D480_Fn *)func_80066818())->unk98(entity, arg1, arg2);
 }
 
-void func_8005D560(Unk_8005D560 *arg0, void *arg1, s32 arg2) {
-    s32 temp_s1;
+void func_8005D560(Entity *entity, void *arg1, s32 message) {
+    s32 link;
 
-    temp_s1 = D_80089EAB[arg0->unk98 * 16];
-    if (arg2 < 2 || arg2 >= 9 || temp_s1 > 0) {
-        ((Unk_8005D560_Fn *)func_80066818())->unkDC(arg0, arg1, arg2);
-        if (arg2 == 4 && temp_s1 > 0) {
-            if (temp_s1 != 0x7F) {
-                arg2 = 0xA;
+    /* record +7 link */
+    link = D_80089EAB[entity->type * 16];
+    if (message < 2 || message >= 9 || link > 0) {
+        ((Unk_8005D560_Fn *)func_80066818())->unkDC(entity, arg1, message);
+        /* entity events: 10 link, 11 end with the record's video (+8), 12 end; link 0x7F ends the dream */
+        if (message == 4 && link > 0) {
+            if (link != 0x7F) {
+                message = 0xA;
             } else {
-                arg2 = 0xC;
-                if (D_80089EAC[arg0->unk98 * 16] != 0) {
-                    arg2 = 0xB;
+                message = 0xC;
+                if (D_80089EAC[entity->type * 16] != 0) {
+                    message = 0xB;
                 }
             }
-            arg0->unk0->unk30(arg0, arg2);
+            entity->vt->postEvent(entity, message);
         }
     }
 }
 
-void func_8005D658(Unk_8005D418 *arg0, void *arg1, s32 arg2) {
-    func_80066818()->unkE0(arg0, arg1, arg2);
-    if (arg2 == 4) {
-        arg0->unk0->unk160(arg0);
+void func_8005D658(Entity *entity, void *arg1, s32 message) {
+    func_80066818()->unkE0(entity, arg1, message);
+    if (message == 4) {
+        entity->vt->sleep(entity);
     }
 }
 
-void func_8005D6D4(Unk_8005D6D4 *arg0) {
-    func_8002CD08(arg0->u58, &arg0->u9C);
-    arg0->uFC++;
+void func_8005D6D4(Entity *entity) {
+    func_8002CD08(entity->unk58, &entity->handlerNode);
+    entity->handlerTicks++;
 }
 
-s32 func_8005D714(void *arg0, u8 *arg1, s32 arg2, s32 arg3) {
-    Unk_8005D714_Arg1 sp18;
-    u8 temp_v1;
+/* Is pos within range << 11 of the dreamer; the record's points byte (+2), when -9 to -1, raises the tested height by points * 1024. */
+s32 Entity_IsInRange(Entity *entity, u8 *pos, s32 range, s32 param) {
+    Vec3 point;
+    u8 points;
 
-    sp18 = *(Unk_8005D714_Arg1 *)arg1;
-    temp_v1 = *(u8 *)(D_80089EA6 + (((Unk_8005D714_Arg0 *)arg0)->unk98 * 0x10));
-    if ((u32)((temp_v1 + 9) & 0xFF) < 9U) {
-        sp18.unk4 += (s32)(temp_v1 << 0x18) >> 0xE;
+    point = *(Vec3 *)pos;
+    points = *(u8 *)(D_80089EA6 + (entity->type * 0x10));
+    if ((u32)((points + 9) & 0xFF) < 9U) {
+        point.y += (s32)(points << 0x18) >> 0xE;
     }
-    if (arg3 < 0) {
-        arg3 = 0x800 / (s32)(~arg3 + 1);
+    if (param < 0) {
+        param = 0x800 / (s32)(~param + 1);
     } else {
-        arg3 = arg3 << 0xB;
+        param = param << 0xB;
     }
-    return ((Unk_8005D714_Arg0 *)arg0)->unk94->vt->unk120(((Unk_8005D714_Arg0 *)arg0)->unk94, 0, arg2 << 0xB, &sp18, arg3);
+    return entity->dreamSys->vt->unk120(entity->dreamSys, 0, range << 0xB, &point, param);
 }
 
-s32 func_8005D7FC(Unk_8005D7FC_Arg0 *arg0, Unk_8005D7FC_Arg1 *arg1) {
-    Unk_8005D7FC_Pos *var_a2;
-    Unk_8005D7FC_Node *temp_a0;
-    s32 temp_v0;
-    s32 var_a1;
-    s32 var_v0;
+/* Ground distance |dx| + |dz| from this entity to the position copy of other. */
+s32 Entity_GroundDistance(Entity *entity, Entity *other) {
+    Vec3 *otherPos;
+    EntityPos *block;
+    s32 dz;
+    s32 dx;
+    s32 dist;
 
-    var_a2 = NULL;
-    if (arg1->unkC != 0) {
-        var_a2 = (Unk_8005D7FC_Pos *)(arg1->unk14 + 0x38);
+    otherPos = NULL;
+    if (other->attached != 0) {
+        otherPos = (Vec3 *)(other->pos.bytes + 0x38);
     }
-    temp_a0 = arg0->unk14;
-    var_a1 = temp_a0->unk18 - var_a2->unk0;
-    if (var_a1 < 0) {
-        var_a1 = ~var_a1 + 1;
+    block = entity->pos.block;
+    dx = block->pos.x - otherPos->x;
+    if (dx < 0) {
+        dx = ~dx + 1;
     }
-    temp_v0 = temp_a0->unk20 - var_a2->unk8;
-    if (temp_v0 >= 0) {
-        var_v0 = var_a1 + temp_v0;
+    dz = block->pos.z - otherPos->z;
+    if (dz >= 0) {
+        dist = dx + dz;
     } else {
-        var_v0 = var_a1 - temp_v0;
+        dist = dx - dz;
     }
-    return var_v0;
+    return dist;
 }
 
-s32 func_8005D864(Unk_8005D864 *arg0) {
-    s32 temp_v0;
-    s32 temp_v1;
+s32 func_8005D864(Entity *entity) {
+    s32 dist;
+    s32 range;
 
-    if (arg0->unk94 != NULL) {
-        temp_v0 = arg0->vt->unk144(arg0, arg0->unk94);
-        temp_v1 = D_80089EAE[arg0->unk98 * 16] << 11;
-        if (temp_v1 >= temp_v0) {
-            return temp_v0 / (temp_v1 / arg0->unkB0);
+    if (entity->dreamSys != NULL) {
+        dist = entity->vt->distanceTo(entity, entity->dreamSys);
+        range = D_80089EAE[entity->type * 16] << 11;
+        if (range >= dist) {
+            return dist / (range / entity->unkB0);
         }
     }
     return -1;
 }
 
-Unk_80089EA4 *func_8005D944(Unk_8005D944 *arg0) {
-    return &D_80089EA4[arg0->unk98];
+EntityRecord *Entity_GetRecord(Entity *entity) {
+    return &g_entityRecords[entity->type];
 }
 
-s32 func_8005D95C(Unk_8005D95C *arg0) {
-    return D_80089EA6[arg0->unk98 * 16] * 1000;
+s32 Entity_GetPoints(Entity *entity) {
+    return D_80089EA6[entity->type * 16] * 1000;
 }
 
-s32 func_8005D994(Unk_8005D994 *arg0) {
-    s8 temp_v0;
+s32 Entity_GetLinkStage(Entity *entity) {
+    s8 link;
 
-    temp_v0 = D_80089EAB[arg0->unk98 * 16];
-    if (temp_v0 < 0) {
-        return ~temp_v0;
+    link = D_80089EAB[entity->type * 16];
+    if (link < 0) {
+        return ~link;
     }
-    return temp_v0 - 1;
+    return link - 1;
 }
 
-s32 func_8005D9D0(Unk_8005D9D0 *arg0) {
-    return D_80089EAC[arg0->unk98 * 16] - 1;
+s32 Entity_GetVideo(Entity *entity) {
+    return D_80089EAC[entity->type * 16] - 1;
 }
 
-void func_8005D9F4(Unk_8005D9F4 *arg0) {
-    arg0->unk0->unk60(arg0, 1);
-    arg0->unkF0 = 1;
-    arg0->unk24 = 0;
+void Entity_Wake(Entity *entity) {
+    entity->vt->unk60(entity, 1);
+    entity->awake = 1;
+    entity->timer = 0;
 }
 
-void func_8005DA3C(Unk_8005DA3C *arg0) {
-    arg0->unk0->unk60(arg0, 0);
-    arg0->unk0->unk16C(arg0);
-    arg0->unk0->unk164(arg0, 0);
-    arg0->unkF0 = 0;
+void Entity_Sleep(Entity *entity) {
+    entity->vt->unk60(entity, 0);
+    entity->vt->stopHandler(entity);
+    entity->vt->setTouched(entity, 0);
+    entity->awake = 0;
 }
 
-void func_8005DAAC(Unk_8005DAAC *arg0, s32 arg1) {
-    if (arg1 != 0) {
-        arg0->unk0->unk30(arg0, 9);
+void Entity_SetTouched(Entity *entity, s32 touched) {
+    if (touched != 0) {
+        entity->vt->postEvent(entity, 9);
     }
-    arg0->unkF4 = arg1;
+    entity->touched = touched;
 }
 
-void func_8005DAFC(Unk_8005DAFC *arg0) {
-    func_8002CC34(arg0->unk58, &arg0->unk9C, arg0->unk98 + 1, arg0, D_80089EB0[arg0->unk98 * 4]);
-    arg0->unk0->unk12C(arg0);
-    arg0->unk0->unk110(arg0);
-    arg0->unkFC = 0;
-    arg0->unkF8 = 1;
+void Entity_StartHandler(Entity *entity) {
+    /* register the record's handler (+0xC) */
+    func_8002CC34(entity->unk58, &entity->handlerNode, entity->type + 1, entity, D_80089EB0[entity->type * 4]);
+    entity->vt->unk12C(entity);
+    entity->vt->unk110(entity);
+    entity->handlerTicks = 0;
+    entity->handlerActive = 1;
 }
 
-void func_8005DB8C(Unk_8005DB8C *arg0) {
-    func_8002CC84(arg0->unk58, &arg0->unk9C);
-    arg0->unk0->unk130(arg0);
-    arg0->unk0->unk114(arg0);
-    arg0->unkF8 = 0;
+void Entity_StopHandler(Entity *entity) {
+    func_8002CC84(entity->unk58, &entity->handlerNode);
+    entity->vt->unk130(entity);
+    entity->vt->unk114(entity);
+    entity->handlerActive = 0;
 }
 
-s32 func_8005DBF0(Unk_8005DBF0 *arg0) {
-    Unk_80089EA4 *ent;
-    s32 s2;
+s32 Entity_CheckWake(Entity *entity) {
+    EntityRecord *record;
+    s32 wake;
 
-    if (arg0->unkF0 == 0 && arg0->unk44 != 1) {
-        s2 = 0;
-        ent = &D_80089EA4[arg0->unk98];
-        if (ent->unk3 == 0) {
+    if (entity->awake == 0 && entity->unk44 != 1) {
+        wake = 0;
+        record = &g_entityRecords[entity->type];
+        if (record->wakeMode == 0) {
             goto done;
         }
-        if (ent->unk3 == 4) {
+        if (record->wakeMode == 4) {
             goto rnd;
         }
-        if (ent->unk5 == 0) {
+        if (record->wakeRange == 0) {
             goto done;
         }
-        if (func_8005D714(arg0, arg0->unk14 + 0x18, ent->unk5, ent->unk9) != 0) {
-            if (ent->unk3 == 1) {
+        if (Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->unk9) != 0) {
+            if (record->wakeMode == 1) {
                 goto set1;
             }
-            if (ent->unk3 == 3) {
+            if (record->wakeMode == 3) {
                 goto rnd;
             }
             goto done;
         }
-        if (ent->unk3 == 2) {
-            s2 = 1;
+        if (record->wakeMode == 2) {
+            wake = 1;
         }
         goto done;
 rnd:
@@ -3310,139 +2987,141 @@ rnd:
             goto done;
         }
 set1:
-        s2 = 1;
+        wake = 1;
 done:
-        if (s2 != 0) {
-            arg0->unk0->unk15C(arg0);
+        if (wake != 0) {
+            entity->vt->wake(entity);
         }
     }
-    return arg0->unkF0;
+    return entity->awake;
 }
 
-s32 func_8005DD18(Unk_8005DD18 *arg0) {
-    Unk_80089EA4 *temp_s1;
-    s32 flag;
-    s32 v;
+s32 Entity_CheckSleep(Entity *entity) {
+    EntityRecord *record;
+    s32 sleep;
+    s32 inRange;
     u8 mode;
 
-    if (arg0->unkF0 != 0) {
-        temp_s1 = &D_80089EA4[arg0->unk98];
-        func_8005DF9C(arg0, 0);
-        mode = temp_s1->unk4;
-        flag = 0;
+    if (entity->awake != 0) {
+        record = &g_entityRecords[entity->type];
+        Entity_CheckLinkRadius(entity, 0);
+        mode = record->sleepMode;
+        sleep = 0;
         if (mode != 0 && mode != 3) {
             if (mode >= 10) {
-                flag = arg0->unk24 == (u32)(mode * 15);
-            } else if (temp_s1->unk5 != 0) {
-                v = func_8005D714(arg0, arg0->unk14 + 0x18, temp_s1->unk5, temp_s1->unk9);
-                if (v != 0) {
-                    if (temp_s1->unk4 == 1) {
-                        flag = 1;
+                sleep = entity->timer == (u32)(mode * 15);
+            } else if (record->wakeRange != 0) {
+                inRange = Entity_IsInRange(entity, entity->pos.bytes + 0x18, record->wakeRange, record->unk9);
+                if (inRange != 0) {
+                    if (record->sleepMode == 1) {
+                        sleep = 1;
                     }
-                } else if (temp_s1->unk4 == 2) {
-                    flag = 1;
+                } else if (record->sleepMode == 2) {
+                    sleep = 1;
                 }
             }
         }
-        if (flag != 0) {
-            arg0->unk0->unk160(arg0);
+        if (sleep != 0) {
+            entity->vt->sleep(entity);
         }
     }
-    return arg0->unkF0;
+    return entity->awake;
 }
 
-s32 func_8005DE18(Unk_8005DE18 *arg0) {
-    s32 var_a2;
-    u8 *temp_a1;
-    Unk_80089EA4 *temp_s1;
+s32 Entity_CheckTouch(Entity *entity) {
+    s32 range;
+    u8 *pos;
+    EntityRecord *record;
 
-    temp_s1 = &D_80089EA4[arg0->unk98];
-    if (arg0->unkF0 != 0) {
-        if (arg0->unkF4 == 0) {
-            temp_a1 = arg0->unk14 + 0x18;
-            var_a2 = temp_s1->unk6;
-            if (var_a2 < 0) {
-                var_a2 = ~var_a2 + 1;
+    record = &g_entityRecords[entity->type];
+    if (entity->awake != 0) {
+        if (entity->touched == 0) {
+            pos = entity->pos.bytes + 0x18;
+            range = record->touchRange;
+            if (range < 0) {
+                range = ~range + 1;
             }
-            if (func_8005D714(arg0, temp_a1, var_a2, temp_s1->unk9) != 0) {
-                arg0->unk0->unk164(arg0, 1);
+            if (Entity_IsInRange(entity, pos, range, record->unk9) != 0) {
+                entity->vt->setTouched(entity, 1);
             }
         }
-        if (temp_s1->unk6 < 0) {
-            func_8001EACC(arg0, arg0->unk94, 1, 0, 0);
+        if (record->touchRange < 0) {
+            func_8001EACC(entity, entity->dreamSys, 1, 0, 0);
         }
     }
-    return arg0->unkF4;
+    return entity->touched;
 }
 
-s32 func_8005DEE0(Unk_8005DEE0 *arg0) {
-    Unk_80089EA4 *ent;
-    s32 temp_a2;
-    u8 *temp_a1;
+s32 Entity_CheckHandlerStart(Entity *entity) {
+    EntityRecord *record;
+    s32 range;
+    u8 *pos;
 
-    if (arg0->unkF0 != 0) {
-        if (arg0->unkF8 == 0) {
-            if (arg0->unk44 != 1) {
-                ent = &D_80089EA4[arg0->unk98];
-                temp_a2 = ent->unkB;
-                if (temp_a2 != 0) {
-                    temp_a1 = arg0->unk14 + 0x18;
-                    if (temp_a2 < 0) {
-                        temp_a2 = ~temp_a2 + 1;
+    if (entity->awake != 0) {
+        if (entity->handlerActive == 0) {
+            if (entity->unk44 != 1) {
+                record = &g_entityRecords[entity->type];
+                range = record->handlerRange;
+                if (range != 0) {
+                    pos = entity->pos.bytes + 0x18;
+                    if (range < 0) {
+                        range = ~range + 1;
                     }
-                    if (func_8005D714(arg0, temp_a1, temp_a2, ent->unk9) != 0) {
-                        arg0->unk0->unk168(arg0);
+                    if (Entity_IsInRange(entity, pos, range, record->unk9) != 0) {
+                        entity->vt->startHandler(entity);
                     }
                 }
             }
         }
     }
-    return arg0->unkF8;
+    return entity->handlerActive;
 }
 
-void func_8005DF9C(Unk_8005DF9C *arg0, s32 arg1) {
-    s8 temp_v0;
+/* With a negative link (+7), link as soon as the dreamer is within the record's +8 << 9. */
+void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
+    s8 radius;
 
-    if (D_80089EAB[arg0->unk98 * 16] < 0) {
-        temp_v0 = D_80089EAC[arg0->unk98 * 16];
-        if ((temp_v0 != 0) && (func_8005E02C(arg0, temp_v0 << 9) != 0)) {
-            arg0->unk0->unk30(arg0, 0xA);
+    if (D_80089EAB[entity->type * 16] < 0) {
+        radius = D_80089EAC[entity->type * 16];
+        if ((radius != 0) && (Entity_IsDreamerNear(entity, radius << 9) != 0)) {
+            entity->vt->postEvent(entity, 0xA);
         }
     }
 }
 
-s32 func_8005E02C(Unk_8005E02C *arg0, s32 arg1) {
-    Unk_8005E02C *other;
+/* The dreamer is within 0x200 in height and closer than radius on the ground. */
+s32 Entity_IsDreamerNear(Entity *entity, s32 radius) {
+    Entity *other;
     s32 y;
     s32 my;
 
-    other = arg0->unk94;
-    y = other->unk14->unk1C;
-    my = arg0->unk14->unk1C;
-    if (y + 0x200 >= my && my >= y - 0x200 && arg0->unk0->unk144(arg0, other, y) < arg1) {
+    other = entity->dreamSys;
+    y = other->pos.block->pos.y;
+    my = entity->pos.block->pos.y;
+    if (y + 0x200 >= my && my >= y - 0x200 && entity->vt->distanceTo(entity, other, y) < radius) {
         return 1;
     }
     return 0;
 }
 
-s32 func_8005E0B0(Unk_8005E0B0 *arg0) {
-    Unk_80089EA4 *ent;
-    s8 temp_a2;
+s32 Entity_CheckHandlerStop(Entity *entity) {
+    EntityRecord *record;
+    s8 range;
 
-    if (arg0->unkF0 != 0) {
-        if (arg0->unkF8 != 0) {
-            ent = &D_80089EA4[arg0->unk98];
-            temp_a2 = ent->unkB;
-            if ((temp_a2 < 0) && (func_8005D714(arg0, arg0->unk14 + 0x18, ~temp_a2 + 1, ent->unk9) == 0)) {
-                arg0->unk0->unk16C(arg0);
+    if (entity->awake != 0) {
+        if (entity->handlerActive != 0) {
+            record = &g_entityRecords[entity->type];
+            range = record->handlerRange;
+            if ((range < 0) && (Entity_IsInRange(entity, entity->pos.bytes + 0x18, ~range + 1, record->unk9) == 0)) {
+                entity->vt->stopHandler(entity);
             }
         }
     }
-    return arg0->unkF8;
+    return entity->handlerActive;
 }
 
-Unk_8005CFDC_Vtbl *func_8005E150(void) {
-    return (Unk_8005CFDC_Vtbl *)D_80089AD4;
+EntityVtbl *Entity_GetVtbl(void) {
+    return (EntityVtbl *)g_entityVtbl;
 }
 
 void func_8005E160(Unk_8005E160 *arg0, Unk_8005E7A8 *arg1) {
@@ -3537,7 +3216,7 @@ void func_8005E4D0(Unk_8005E4D0 *arg0, Unk_800623E8 *arg1) {
         arg0->unk0->unkC4(arg0, -0x140, 0);
         return;
     }
-    if (arg0->unkFC >= 0x38 || func_8005D714(arg0, arg0->unk14 + 0x18, 1, 1) != 0) {
+    if (arg0->unkFC >= 0x38 || Entity_IsInRange(arg0, arg0->unk14 + 0x18, 1, 1) != 0) {
         arg0->unk0->unkBC(arg0, D_80089D78);
         return;
     }
@@ -4389,8 +4068,8 @@ void func_80061198(Unk_80061198 *arg0, Unk_80061198_Out *arg1) {
             return;
         }
         if (v == 0x30) {
-            if (func_8005D714(arg0, arg0->unk14 + 0x18, 0xF, 0xA) != 0) {
-                if (func_8005D108((Unk_8005D108 *)arg0, 0, 0, 0xA, 0) != 0) {
+            if (Entity_IsInRange(arg0, arg0->unk14 + 0x18, 0xF, 0xA) != 0) {
+                if (Entity_StartEffect((Entity *)arg0, 0, 0, 0xA, 0) != 0) {
                     sub = arg0->unk100;
                     sub->vt->unkD4(sub, arg0->unk50, 4, 0);
                 }
@@ -4484,7 +4163,7 @@ void func_80061778(Unk_80061778 *arg0, Unk_80061778_Arg *arg1) {
     Unk_80061778 *child;
     s32 fx;
 
-    if (arg0->unk44 == 0 && func_8005E02C((Unk_8005E02C *)arg0, 0x800) != 0) {
+    if (arg0->unk44 == 0 && Entity_IsDreamerNear((Entity *)arg0, 0x800) != 0) {
         arg0->unk44 = 0xB;
         func_8001EACC(arg0, arg0->unk94, 1, 0, 0);
         func_8001EACC(arg0->unk94, arg0, 1, 1, 0);
@@ -5149,7 +4828,7 @@ void func_80063874(Unk_80063874 *arg0, void *arg1) {
             arg0->vt->unkC4(arg0, -10, 0);
         } else {
             func_80063C84((Unk_80063C84 *)arg1);
-            if (func_8005D108((Unk_8005D108 *)arg0, 0, 0, 0x1E, 0) != 0) {
+            if (Entity_StartEffect((Entity *)arg0, 0, 0, 0x1E, 0) != 0) {
                 arg0->unk100->vt->unkD4(arg0->unk100, arg0->unk50, 7, 0);
             }
             arg0->unk44 = 0xD;
@@ -5158,7 +4837,7 @@ void func_80063874(Unk_80063874 *arg0, void *arg1) {
     } else if (arg0->unk44 == 0xD) {
         if (arg0->unkFC < 0x5A) {
             if (arg0->unkFC == 0x1E) {
-                if (func_8005D108((Unk_8005D108 *)arg0, 0, 0, 0xA, 0) != 0) {
+                if (Entity_StartEffect((Entity *)arg0, 0, 0, 0xA, 0) != 0) {
                     arg0->unk100->vt->unkD8(arg0->unk100, arg0->unk50, 0, 0);
                 }
             }
@@ -5268,7 +4947,7 @@ void func_80063E68(Unk_80063CC8_Obj *arg0, Unk_80063E68 *arg1) {
 
 void func_80063ED4(Unk_80063ED4 *arg0, Unk_80064078_Arg1 *arg1) {
     if (arg0->unkFC == 0) {
-        if (func_8005D108(arg0, 0, 0, 5, 0)) {
+        if (Entity_StartEffect(arg0, 0, 0, 5, 0)) {
             if (rand() & 1) {
                 arg0->vt->unkBC(arg0, D_80089D90);
             }
@@ -5391,7 +5070,7 @@ void func_800644E8(Unk_800641C0 *arg0, Unk_8005E7A8 *arg1) {
 }
 
 void Behavior_EraseFlashbacks(Unk_80064618 *arg0) {
-    if (arg0->unkF4 != 0 && func_8005D108(arg0, 0, 0, 0xA, 0)) {
+    if (arg0->unkF4 != 0 && Entity_StartEffect(arg0, 0, 0, 0xA, 0)) {
         arg0->unk100->vt->unkD4(arg0->unk100, arg0->unk50, 7, 0);
         arg0->unk0->unk160(arg0);
         arg0->unk94->vt->unk21C(arg0->unk94);
@@ -5683,10 +5362,10 @@ void func_80065514(Unk_80065514 *arg0) {
 void *func_800655D4(s32 arg0, s32 arg1) {
     void *temp_s0;
 
-    temp_s0 = ((void *)func_80017B34(0x98));
+    temp_s0 = ((void *)Heap_Alloc(0x98));
     if (temp_s0 != NULL) {
         if (((Unk_80066818_Vtbl_800655D4 *)func_80066818())->unk8(temp_s0, arg0, arg1) == 0) {
-            func_80017CFC((s32)temp_s0);
+            Heap_Free((s32)temp_s0);
             return NULL;
         }
         return temp_s0;
@@ -5876,9 +5555,9 @@ s32 func_80065E1C(Unk_80059394 *arg0) {
 
     obj = arg0->u5C;
     n = obj->vt->unk80(obj, 0, &sp10) & 0xFF;
-    arg0->u70 = (void *)func_80017B34(n * 4);
+    arg0->u70 = (void *)Heap_Alloc(n * 4);
     if (arg0->u70 != NULL) {
-        arg0->u74 = (void *)func_80017B34(n);
+        arg0->u74 = (void *)Heap_Alloc(n);
         if (arg0->u74 != NULL) {
             obj = arg0->u5C;
             obj->vt->unk80(obj, arg0->u74, &sp10);
@@ -5914,8 +5593,8 @@ void func_80065F2C(Unk_80059394 *arg0) {
         }
         arg0->u68 = 0;
     }
-    arg0->u74 = func_80017CFC(arg0->u74);
-    arg0->u70 = func_80017CFC(arg0->u70);
+    arg0->u74 = Heap_Free(arg0->u74);
+    arg0->u70 = Heap_Free(arg0->u70);
 }
 
 void func_80065FD8(Unk_80065FD8 *arg0) {

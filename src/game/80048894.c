@@ -9,7 +9,7 @@ s32 *func_80048DF8(void);
 extern void srand(u32 seed);
 extern s32 rand(void);
 void *func_80048D48(s32 *arg0);
-s32 func_80017CFC(s32);
+s32 Heap_Free(s32);
 typedef struct Unk_80048C98 {
     u8 pad_00[0x2E];
     s16 unk2E;
@@ -47,7 +47,7 @@ typedef struct Unk_80048894 {
     void (*unk8)(s32);
 } Unk_80048894;
 Unk_80048894 *func_80048CE0(void);
-s32 func_80017B34(s32 arg0);
+s32 Heap_Alloc(s32 arg0);
 extern s16 D_800819E8[];
 typedef struct { s16 unk_0; s16 unk_2; s32 unk_4; } Unk_800861D4;
 Unk_800861D4 *func_800494D8(s32 arg0);
@@ -162,7 +162,7 @@ extern s32 D_8008A96C[];
 s32 func_80048894(void) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x3C);
+    temp_v0 = Heap_Alloc(0x3C);
     if (temp_v0 != 0) {
         func_80048CE0()->unk8(temp_v0);
         return temp_v0;
@@ -179,7 +179,7 @@ void func_800488E4(Unk_800488E4 *arg0) {
     arg0->unk32 = 0;
     arg0->unk34 = 0;
     arg0->unk38 = 1;
-    arg0->unk10 = ((void *)func_80017B34(0xB358));
+    arg0->unk10 = ((void *)Heap_Alloc(0xB358));
     if (arg0->unk10 != NULL) {
         arg0->unk14 = 0xB358;
     }
@@ -247,7 +247,7 @@ s32 func_80048BC0(Unk_80048BC0 *arg0) {
     if ((arg0->unk10->unk2 != 0) && (arg0->unk2A == 0)) {
         arg0->unk0->unk84(arg0);
         temp_s1 = arg0->unk10->unk14;
-        temp_v0 = func_80017B34(temp_s1);
+        temp_v0 = Heap_Alloc(temp_s1);
         arg0->unk34 = temp_v0;
         if (temp_v0 != 0) {
             arg0->unk2A = 10;
@@ -265,7 +265,7 @@ void func_80048C98(Unk_80048C98 *arg0) {
     temp_a0 = arg0->unk34;
     arg0->unk2E = 0;
     if (temp_a0 != 0) {
-        arg0->unk34 = func_80017CFC(temp_a0);
+        arg0->unk34 = Heap_Free(temp_a0);
     }
 }
 
@@ -290,7 +290,7 @@ s32 Rand_SeedAndNext(seed)
     return rand();
 }
 
-void func_80048D28(s32 arg0, s32 arg1) {
+void Music_SetOverride(s32 arg0, s32 arg1) {
     if (arg0 >= 0) {
         D_8008A964 = arg0;
     }
@@ -310,7 +310,7 @@ u8 *func_80048D64(void) {
     return D_800819CC;
 }
 
-s32 func_80048D74(s32 arg0) {
+s32 Music_PickBank(s32 arg0) {
     s32 r;
     u8 *p;
     s32 ofs;
@@ -354,7 +354,7 @@ u8 *func_80048F60(s32 arg0) {
     return Stage_GetPathBase(arg0) + 0x70;
 }
 
-u8 *func_80048F84(s32 arg0) {
+u8 *Music_PickTrack(s32 arg0) {
     u32 var_s0;
     u8 *temp_a0;
     s32 var_v0;

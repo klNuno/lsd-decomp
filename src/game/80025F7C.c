@@ -50,7 +50,7 @@ typedef struct Unk_80026A50 {
     /* 0x28 */ s16 unk28;
     /* 0x2A */ s16 unk2A;
 } Unk_80026A50;
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 s32 func_80026C9C(void);
 typedef struct Unk_80026108 {
     u8 pad_00[0x18];
@@ -70,7 +70,7 @@ typedef struct Unk_800269F0 {
     u8 pad_04[0x20 - 0x4];
     s16 unk20;
 } Unk_800269F0;
-void func_80017CFC(void *);
+void Heap_Free(void *);
 typedef struct Unk_80026C20 {
     u8 pad_00[0x10];
     void *unk10;
@@ -93,7 +93,7 @@ typedef struct Unk_80025F7C {
     void (*unk4)(void);
     void (*unk8)(s32, s32);
 } Unk_80025F7C;
-s32 func_80017B34(s32);
+s32 Heap_Alloc(s32);
 Unk_80025F7C *func_800269E0(void);
 s32 func_8002C468(s32, s32, s32);
 s32 func_80027F18(s32, s32, s32);
@@ -147,7 +147,7 @@ typedef struct Unk_80025FDC {
 void *func_80048CF0(void);
 void func_800270AC(void *arg0);
 s32 func_80043840(s32 arg0);
-void *func_80058774(s32 arg0, s32 arg1, s32 arg2);
+void *DreamSys_New(s32 arg0, s32 arg1, s32 arg2);
 typedef struct Unk_80026348_Sub {
     u8 pad_00[0x8];
     s32 unk8;
@@ -284,7 +284,7 @@ s8 *func_800270B8(void);
 s32 func_80025F7C(s32 arg0) {
     s32 p;
 
-    p = func_80017B34(0x2C);
+    p = Heap_Alloc(0x2C);
     /* No return on the NULL path: v0 still holds p (0) from the allocator. */
     if (p != 0) {
         func_800269E0()->unk8(p, arg0);
@@ -301,7 +301,7 @@ void func_80025FDC(Unk_80025FDC *arg0, Unk_80025FDC_Arg1 *arg1) {
     func_800270AC(func_80048CF0());
     sp10.unk0 = 0;
     sp10.unk4 = (s32)"ETC\\DREAME5.TMD";
-    arg0->unk28 = (Unk_80025FDC_VObj *)func_80058774(func_80043840((s32)&sp10), 0, 0);
+    arg0->unk28 = (Unk_80025FDC_VObj *)DreamSys_New(func_80043840((s32)&sp10), 0, 0);
     arg0->unk24 = 0;
     arg0->unk28->vt->unk228(arg0->unk28, arg1->unk14);
     ((Unk_80025FDC_Obj *)arg0->unk0)->unk40(arg0);
@@ -488,13 +488,13 @@ Unk_80025F7C *func_800269E0(void) {
 s32 func_800269F0(Unk_800269F0 *arg0) {
     arg0->unk20 = 0;
     arg0->vt->unkC(arg0);
-    ((Unk_800269F0_Vtbl *)func_80018390())->unkC(arg0);
-    func_80017CFC(arg0);
+    ((Unk_800269F0_Vtbl *)Object_GetBaseVtbl())->unkC(arg0);
+    Heap_Free(arg0);
     return 0;
 }
 
 void func_80026A50(Unk_80026A50 *arg0) {
-    ((Unk_80026A50_Vtbl *)func_80018390())->unk8(arg0);
+    ((Unk_80026A50_Vtbl *)Object_GetBaseVtbl())->unk8(arg0);
     arg0->unk0 = func_80026C9C();
     arg0->unkC = 0;
     arg0->unk10 = 0;
@@ -521,7 +521,7 @@ void func_80026B08(Unk_80026B08 *arg0, s32 arg1) {
         arg0->unkC = 0;
         arg0->vt->unk44(arg0, arg1, 1, 0);
         temp_v0 = arg0->vt->unk4C(arg0, 0, 2);
-        temp_v0_2 = func_80017B34(temp_v0);
+        temp_v0_2 = Heap_Alloc(temp_v0);
         if (temp_v0_2 != 0) {
             arg0->vt->unk4C(arg0, 0, 0);
             arg0->vt->unk54(arg0, temp_v0_2, temp_v0);
@@ -531,14 +531,14 @@ void func_80026B08(Unk_80026B08 *arg0, s32 arg1) {
             arg0->unkC = temp_s3;
             return;
         }
-        func_80017CFC(0);
+        Heap_Free(0);
         arg0->vt->unk48(arg0);
     }
 }
 
 void func_80026C20(Unk_80026C20 *arg0) {
     if (arg0->unk10 != 0 && arg0->unk14 != 0 && arg0->unk20 == 0) {
-        func_80017CFC(arg0->unk10);
+        Heap_Free(arg0->unk10);
         arg0->unk10 = 0;
     }
 }

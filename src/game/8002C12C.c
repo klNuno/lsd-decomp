@@ -41,7 +41,7 @@ typedef struct Unk_8002C12C {
     /* 0x0C */ u8 pad_0C[0x60];
     /* 0x6C */ void (*unk6C)(void *, s32);
 } Unk_8002C12C;
-void *func_80017B34(s32 size);
+void *Heap_Alloc(s32 size);
 Unk_8002C12C *func_8002C3A8(void);
 typedef struct Unk_8002C480_vt {
     u8 pad_00[0x8];
@@ -100,7 +100,7 @@ void SsVabClose(s16 arg0);
 s32 func_8003A05C(void);
 void func_800329D8(void);
 void func_80032A7C(void);
-void func_80017CFC(s32 arg0);
+void Heap_Free(s32 arg0);
 typedef struct Unk_8002F2A4 {
     u8 pad_00[0x194];
     s16 unk194;
@@ -270,7 +270,7 @@ s16 SsUtAutoVol(s16 vc, s16 start_vol, s16 end_vol, s16 delta_time);
 s32 func_8002C12C(s32 arg0) {
     s32 temp_v0;
 
-    temp_v0 = (s32)func_80017B34(0x34);
+    temp_v0 = (s32)Heap_Alloc(0x34);
     if (temp_v0 != 0) {
         func_8002C3A8()->unk8((void *)temp_v0, arg0);
         return temp_v0;
@@ -406,7 +406,7 @@ s32 func_8002C478(void) {
 void *func_8002C480(s32 arg0) {
     void *temp;
 
-    temp = func_80017B34(0x64);
+    temp = Heap_Alloc(0x64);
     if (temp != 0) {
         func_8002CC0C()->unk8(temp, arg0);
         return temp;
@@ -440,7 +440,7 @@ void func_8002C4E0(Unk_8002C4E0 *arg0, s8 *arg1) {
     }
     D_8008A8C4 += 1;
     if (arg1 != 0) {
-        temp = func_80017B34(strlen((u8 *)arg1) + 1);
+        temp = Heap_Alloc(strlen((u8 *)arg1) + 1);
         if (temp != NULL) {
             arg0->unk5C = (s32)temp;
             strcpy(temp, arg1);
@@ -463,9 +463,9 @@ void func_8002C638(Unk_8002C638 *arg0) {
         func_800329D8();
         func_80032A7C();
     }
-    func_80017CFC(arg0->unk4C);
-    func_80017CFC(arg0->unk50);
-    func_80017CFC(arg0->unk5C);
+    Heap_Free(arg0->unk4C);
+    Heap_Free(arg0->unk50);
+    Heap_Free(arg0->unk5C);
     ((Unk_8002C200 *)func_80026CAC())->unkC((s32)arg0);
 }
 
@@ -487,7 +487,7 @@ void func_8002C6FC(Unk_8002C6FC *arg0) {
                 D_8008A8C8 = old;
                 arg0->unk0->unk58(arg0, sp10, old);
                 if (arg0->unk5C != 0) {
-                    func_80017CFC(arg0->unk5C);
+                    Heap_Free(arg0->unk5C);
                     arg0->unk5C = 0;
                 }
             }
@@ -534,11 +534,11 @@ void func_8002C890(Unk_8002C890 *arg0) {
     if (SsUtGetVabHdr(arg0->unk54, &arg0->unk2C) == -1) {
         return;
     }
-    arg0->unk4C = func_80017B34(arg0->unk40 << 5);
+    arg0->unk4C = Heap_Alloc(arg0->unk40 << 5);
     if (arg0->unk4C == NULL) {
         return;
     }
-    arg0->unk50 = (u8 **)func_80017B34(arg0->unk3E << 2);
+    arg0->unk50 = (u8 **)Heap_Alloc(arg0->unk3E << 2);
     if (arg0->unk50 == NULL) {
         return;
     }

@@ -8,7 +8,7 @@ typedef struct Unk_80054850_Pair {
 extern Unk_80054850_Pair D_8008AB68;
 extern Unk_80054850_Pair D_8008AB70;
 s32 D_8008AC80;
-extern void func_800183DC(void *, s32);
+extern void Object_DeleteArray(void *, s32);
 typedef struct { u8 p0[0x24]; u32 u24; u8 p1[0x70 - 0x28]; s32 u70; s32 u74; u8 p2[0x120 - 0x78]; u32 u120; s32 u124; } Unk_80059394;
 void func_800573CC(void *arg0, s32 arg1, s32 *arg2);
 void func_80056D18(u8 *arg0, s32 arg1, s32 arg2, s32 arg3);
@@ -159,8 +159,8 @@ typedef struct Unk_80057F68 {
     u8 pad[8];
     void (*unk8)(void *, s32);
 } Unk_80057F68;
-void *func_80017B34(s32 size);
-Unk_80057F68 *func_80058764(void);
+void *Heap_Alloc(s32 size);
+Unk_80057F68 *Graph_GetVtable(void);
 void func_80053EB4(void *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
 typedef struct Unk_80053D9C_Obj Unk_80053D9C_Obj;
 typedef struct Unk_80053D9C_Vtbl {
@@ -354,7 +354,7 @@ typedef struct Unk_80052EBC {
     void *unk3C;
 } Unk_80052EBC;
 extern Unk_800557DC *D_8008AC9C[];
-void func_80017CFC(void *);
+void Heap_Free(void *);
 typedef struct Unk_80057044 {
     Unk_80056464_Vtbl *unk0;
     u8 pad_04[0x40];
@@ -1343,7 +1343,7 @@ typedef struct Unk_800534C8 {
     u8 pad_4C[0x50 - 0x4C];
     Unk_800534C8_Sub *unk50;
 } Unk_800534C8;
-extern void func_8005C650(s32, s32, struct Unk_8005CD58 *, s32, s32);
+extern void Sym_InitStage(s32, s32, struct Unk_8005CD58 *, s32, s32);
 extern struct Unk_800861D4 *func_800494D8(s32);
 extern s32 D_8008715C[];
 extern s32 D_80087168[];
@@ -1381,7 +1381,7 @@ extern s32 D_80087118[];
 extern s32 D_80087150[];
 s32 func_800544E4(s32 arg0, s32 arg1, s32 *arg2, s32 arg3, s32 arg4);
 s32 Stage_PickTexturePath(s32, s32, s32);
-s32 func_80048F84(s32, s32);
+s32 Music_PickTrack(s32, s32);
 s32 func_80043008(s32);
 s32 func_8001EF60(s32);
 typedef struct Unk_80052F10_Vt {
@@ -1827,7 +1827,7 @@ Unk_80051A5C *func_80052B60(void) {
 void *func_80052B70(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     void *temp;
 
-    temp = func_80017B34(0x88);
+    temp = Heap_Alloc(0x88);
     if (temp != NULL) {
         func_800544D4()->unk8(temp, arg0, arg1, arg2, arg3, arg4);
         return temp;
@@ -1902,7 +1902,7 @@ void func_80052F10(Unk_80052F10 *arg0, s32 arg1, s32 arg2, s32 arg3) {
     temp_s0 = arg0->u18;
     temp_s0->vt->f74(temp_s0);
     arg0->u60 = 1;
-    arg0->u54->vt->f5C(arg0->u54, func_80048F84(arg0->u38, 0));
+    arg0->u54->vt->f5C(arg0->u54, Music_PickTrack(arg0->u38, 0));
     arg0->u58 = func_80043008(Stage_PickTexturePath(arg0->u38, 0, arg0->u3C->vt->f1A0(arg0->u3C, 0)));
     temp_s0->vt->f70(temp_s0, arg0->u3C, D_8008715C, D_80087168, 0);
     arg0->u78 = temp_s0;
@@ -2054,7 +2054,7 @@ void func_800534C8(Unk_800534C8 *arg0) {
     temp_a0 = *arg0->unkC;
     temp_s0->vt->f54(temp_s0, ((((s32) *temp_a0->vt->f7C(temp_a0, 0) / 2) * 5) / 3) + D_8008AB34);
     temp_s0->vt->f70(temp_s0, arg0->unk3C, D_8008715C, D_80087168, 0);
-    func_8005C650(arg0->unk38, (s32) arg0->unk14, (struct Unk_8005CD58 *) arg0->unk3C, arg0->unk34, arg0->unk10);
+    Sym_InitStage(arg0->unk38, (s32) arg0->unk14, (struct Unk_8005CD58 *) arg0->unk3C, arg0->unk34, arg0->unk10);
     temp_s0_2 = arg0->unk14;
     arg0->vt->f10(arg0, temp_s0_2);
     temp_s0_2->vt->fBC(temp_s0_2, temp_s2->u8, 0);
@@ -2529,7 +2529,7 @@ void func_80054B1C(u8 *arg0, u8 *arg1, s32 arg2) {
 
 void func_80054B50(void) {
     if (D_8008AB50 != 0) {
-        func_800183DC(D_8008E10C, 0x12);
+        Object_DeleteArray(D_8008E10C, 0x12);
         D_8008AB50 = 0;
     }
 }
@@ -2570,7 +2570,7 @@ void func_80054C74(s32 arg0) {
 
 void func_80054CFC(void) {
     if (D_8008AC80 >= 0) {
-        func_800183DC(D_8008E0C8, D_8008AC88);
+        Object_DeleteArray(D_8008E0C8, D_8008AC88);
     }
 }
 
@@ -3066,14 +3066,14 @@ s32 func_8005630C(void) {
 void *func_80056320(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     void *temp;
 
-    temp = func_80017B34(0x98);
+    temp = Heap_Alloc(0x98);
     if (temp == 0) {
         return 0;
     }
     if (func_80056F4C()->unk8(temp, arg0, arg1, arg2, arg3) != 0) {
         return temp;
     }
-    func_80017CFC(temp);
+    Heap_Free(temp);
     return 0;
 }
 
@@ -3254,7 +3254,7 @@ void func_800569A8(void *arg0, Unk_80056794 *arg1) {
 
 void func_80056B8C(u8 *arg0) {
     if (*(s32 *)(arg0 + 0x6C) != 0) {
-        func_800183DC(arg0 + 0x7C, 2);
+        Object_DeleteArray(arg0 + 0x7C, 2);
     }
 }
 
@@ -3320,7 +3320,7 @@ void func_80056DF0(void *arg0, Unk_80056794 *arg1) {
 }
 
 void func_80056DF8(u8 *arg0) {
-    func_800183DC(arg0 + 0x84, 5);
+    Object_DeleteArray(arg0 + 0x84, 5);
 }
 
 void func_80056E1C(u8 *arg0, s32 arg1) {
@@ -3340,7 +3340,7 @@ void func_80056E44(Unk_80056E44_Parent *arg0, Unk_80056794 *arg1) {
 }
 
 void func_80056F28(u8 *arg0) {
-    func_800183DC(arg0 + 0x84, 5);
+    Object_DeleteArray(arg0 + 0x84, 5);
 }
 
 Unk_80056320_Vt *func_80056F4C(void) {
@@ -3361,14 +3361,14 @@ void func_80056F5C(void *a0, Unk_80056F5C_Obj *obj, void *a2, void *a3) {
 void *func_80056FE4(void) {
     void *temp;
 
-    temp = func_80017B34(0x58);
+    temp = Heap_Alloc(0x58);
     if (temp == 0) {
         return 0;
     }
     if (func_80057C84()->unk8(temp) != 0) {
         return temp;
     }
-    func_80017CFC(temp);
+    Heap_Free(temp);
     return 0;
 }
 
@@ -3715,7 +3715,7 @@ Unk_80056464_Vtbl *func_80057C84(void) {
 void *func_80057C94(s32 arg0, s32 arg1, s32 arg2) {
     void *temp;
 
-    temp = func_80017B34(0xA8);
+    temp = Heap_Alloc(0xA8);
     if (temp != NULL) {
         func_80057F58()->unk8(temp, arg0, arg1, arg2);
         return temp;
@@ -3770,9 +3770,9 @@ Unk_80057C94_vt *func_80057F58(void) {
 void *func_80057F68(s32 arg0) {
     void *temp;
 
-    temp = func_80017B34(0x244);
+    temp = Heap_Alloc(0x244);
     if (temp != 0) {
-        func_80058764()->unk8(temp, arg0);
+        Graph_GetVtable()->unk8(temp, arg0);
         return temp;
     }
     return 0;

@@ -45,7 +45,7 @@ typedef struct Unk_800271D8 {
     u8 pad[0x8];
     void (*unk8)(s32);
 } Unk_800271D8;
-s32 func_80017B34(s32);
+s32 Heap_Alloc(s32);
 s32 D_8008A858;
 void CdSetDebug(s32 level);
 s32 CdControlB(s32 com, u8 *param, s32 result);
@@ -122,7 +122,7 @@ struct Unk_800283C4 {
     Unk_800283C4 *unk1C;
     Unk_800283C4 *unk20;
 };
-void func_80017CFC(void *);
+void Heap_Free(void *);
 typedef struct Unk_80027480 {
     u8 pad[0xC];
     s32 unkC;
@@ -157,7 +157,7 @@ typedef struct Unk_800280EC {
     void (*unk68)(void);
 } Unk_800280EC;
 s32 D_8008A88C;
-s32 func_80018458(void);
+s32 Heap_IsBusy(void);
 void func_8002858C(void);
 void func_800286E4(void);
 typedef struct Unk_80028A84_Vt {
@@ -279,7 +279,7 @@ void func_80026B08();
 s32 func_800271D8(void) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x2C);
+    temp_v0 = Heap_Alloc(0x2C);
     if (temp_v0 != 0) {
         ((Unk_800271D8 *)func_80027E68())->unk8(temp_v0);
         return temp_v0;
@@ -481,7 +481,7 @@ void func_80027800(Unk_80027800 *arg0, char *arg1) {
             cur = arg0->unk10;
             size = D_8008A880 << 11;
             if (cur == 0) {
-                buf = func_80017B34(size);
+                buf = Heap_Alloc(size);
                 if (buf == 0) {
                     arg0->unk0->unk48(arg0);
                     return;
@@ -745,7 +745,7 @@ void func_800280E0(void) {
 
 s32 func_800280EC(void) {
     if (D_8008A88C == 0) {
-        if (func_80018458() == 0) {
+        if (Heap_IsBusy() == 0) {
             if (D_8008A8A4 != 0) {
                 VSyncCallback(0);
             }
@@ -814,7 +814,7 @@ Unk_800282AC *func_8002832C(void) {
     Unk_800283C4 *var_v1;
 
     func_800280D0();
-    temp_v0 = (Unk_800283C4 *)func_80017B34(0x24);
+    temp_v0 = (Unk_800283C4 *)Heap_Alloc(0x24);
     if (temp_v0 != NULL) {
         temp_v0->unk1C = NULL;
         temp_v0->unk20 = NULL;
@@ -846,7 +846,7 @@ void func_800283C4(Unk_800283C4 *arg0) {
         if (arg0->unk20 != NULL) {
             arg0->unk20->unk1C = arg0->unk1C;
         }
-        func_80017CFC(arg0);
+        Heap_Free(arg0);
     }
     func_800280E0();
 }

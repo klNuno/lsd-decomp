@@ -16,7 +16,7 @@ typedef struct Unk_8001CD20 {
 } Unk_8001CD20;
 void func_8001E770();
 void func_8001E7B0(s32 arg0);
-Unk_8001CD20 *func_80018390(void);
+Unk_8001CD20 *Object_GetBaseVtbl(void);
 extern void GsLinkObject4(u32 *src, void *dst, s32 id);
 struct Unk_8001E770_Data {
     u8 pad_00[0xC];
@@ -35,8 +35,8 @@ typedef struct Unk_8001CA94_vt {
     s32 (*unk8)(s32);
 } Unk_8001CA94_vt;
 Unk_8001CA94_vt *func_8001E57C(void);
-s32 func_80017B34(s32);
-void func_80017CFC(s32);
+s32 Heap_Alloc(s32);
+void Heap_Free(s32);
 typedef struct Unk_8001D1A4_Sub {
     s32 unk0;
     u8 pad_04[0x14];
@@ -228,7 +228,7 @@ struct Unk_8001D280_Obj {
     u8 pad_04[0x8];
     struct Unk_8001D280 *unkC;
 };
-void func_800183A0(s32 *arg0, struct Unk_800183A0 **arg1);
+void List_Next(s32 *arg0, struct Unk_800183A0 **arg1);
 typedef struct Unk_8001CD60_Vt {
     u8 pad_00[0x94];
     void (*unk94)(void *, s32 **, s32);
@@ -368,7 +368,7 @@ typedef struct Unk_8001816C {
     s32 unk4;
     s32 unk8;
 } Unk_8001816C;
-void func_8001816C(Unk_8001816C *arg1, s32 *arg2, s32 *arg3);
+void Object_NextWatcher(Unk_8001816C *arg1, s32 *arg2, s32 *arg3);
 typedef struct Unk_8001E4A4 {
     u8 unk0;
     u8 pad_01[0xF];
@@ -426,14 +426,14 @@ void func_8001EA8C(s32 *arg0, s16 *arg1, s16 *arg2);
 s32 func_8001CA94(void) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0x44);
+    temp_s0 = Heap_Alloc(0x44);
     if (temp_s0 == 0) {
         return 0;
     }
     if (func_8001E57C()->unk8(temp_s0) != 0) {
         return temp_s0;
     }
-    func_80017CFC(temp_s0);
+    Heap_Free(temp_s0);
     return 0;
 }
 
@@ -441,13 +441,13 @@ Unk_8001CAF4 *func_8001CAF4(Unk_8001CAF4 *arg0) {
     Unk_8001CAF4_Obj *obj;
     void *buf;
 
-    obj = ((void *)func_80017B34(0x50));
+    obj = ((void *)Heap_Alloc(0x50));
     arg0->unk14 = obj;
     if (obj != NULL) {
-        buf = ((void *)func_80017B34(0x28));
+        buf = ((void *)Heap_Alloc(0x28));
         arg0->unk14->unk44 = buf;
         if (buf != NULL) {
-            ((Unk_8001CA94_vt_8001CAF4 *)func_80018390())->unk8(arg0);
+            ((Unk_8001CA94_vt_8001CAF4 *)Object_GetBaseVtbl())->unk8(arg0);
             arg0->unk0 = ((Unk_8001CAF4_Vt *)func_8001E57C());
             arg0->unk20 = 0;
             arg0->unk18 = 0;
@@ -456,7 +456,7 @@ Unk_8001CAF4 *func_8001CAF4(Unk_8001CAF4 *arg0) {
             arg0->unk0->unk40(arg0);
             return arg0;
         }
-        func_80017CFC((s32)arg0->unk14);
+        Heap_Free((s32)arg0->unk14);
     }
     return NULL;
 }
@@ -465,13 +465,13 @@ void func_8001CBA4(Unk_8001CBA4 *arg0) {
     arg0->unk0->unk50(arg0);
     arg0->unk0->unk54(arg0);
     arg0->unk0->unk5C(arg0, 0);
-    func_80017CFC(arg0->unk14->unk44);
-    func_80017CFC((s32)arg0->unk14);
-    ((Unk_8001CBA4_Ret *)func_80018390())->unkC(arg0);
+    Heap_Free(arg0->unk14->unk44);
+    Heap_Free((s32)arg0->unk14);
+    ((Unk_8001CBA4_Ret *)Object_GetBaseVtbl())->unkC(arg0);
 }
 
 void func_8001CC48(s32 arg0, s32 **arg1) {
-    func_80018390()->unk10(arg0, arg1);
+    Object_GetBaseVtbl()->unk10(arg0, arg1);
     if ((**arg1 & 0xF) == 9) {
         func_8001E770(arg0, arg1);
     }
@@ -481,18 +481,18 @@ void func_8001CCB4(s32 arg0, s32 **arg1) {
     if ((**arg1 & 0xF) == 9) {
         func_8001E7B0(arg0);
     }
-    func_80018390()->unk14(arg0, arg1);
+    Object_GetBaseVtbl()->unk14(arg0, arg1);
 }
 
 void func_8001CD20(s32 arg0) {
     func_8001E7B0(arg0);
-    func_80018390()->unk18(arg0);
+    Object_GetBaseVtbl()->unk18(arg0);
 }
 
 void func_8001CD60(Unk_8001CD60 *arg0, s32 **arg1, s32 arg2) {
     s32 v;
 
-    func_80018390()->unk38(arg0, arg1, arg2);
+    Object_GetBaseVtbl()->unk38(arg0, arg1, arg2);
     v = **arg1 & 0xF;
     if (v == 2) {
         arg0->vt->unk94(arg0, arg1, arg2);
@@ -617,7 +617,7 @@ void func_8001D280(struct Unk_8001D280 *arg0, struct Unk_8001D280_Obj **arg1, st
         if (*arg1 == NULL) {
             *arg2 = arg0->unk4;
         }
-        func_800183A0((s32 *)arg1, arg2);
+        List_Next((s32 *)arg1, arg2);
         obj = *arg1;
         if (obj != NULL && (*obj->unk0 & 0xF) == 4 && obj->unkC == arg0) {
             return;
@@ -1000,7 +1000,7 @@ void func_8001E4A4(s32 arg0, Unk_8001816C *arg1) {
     p = NULL;
     do {
         for (;;) {
-            func_8001816C(arg1, (s32 *)&p, &more);
+            Object_NextWatcher(arg1, (s32 *)&p, &more);
             if (p != NULL && (**p & 0xF) == 4) {
                 break;
             }

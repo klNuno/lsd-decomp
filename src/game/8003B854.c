@@ -178,7 +178,7 @@ typedef struct Unk_8003E874_Vtbl {
     u8 pad_14[0x4];
     void (*unk18)(void *);
 } Unk_8003E874_Vtbl;
-Unk_8003E874_Vtbl *func_80018390(void);
+Unk_8003E874_Vtbl *Object_GetBaseVtbl(void);
 struct Unk_8003EE40;
 typedef struct Unk_8003EE40_Vtbl {
     u8 pad_00[0x9C];
@@ -190,7 +190,7 @@ struct Unk_8003EE40 {
     s32 unk90;
 };
 extern s32 DrawSync(s32);
-extern void func_80017CFC(s32);
+extern void Heap_Free(s32);
 struct Unk_8003EDF4 {
     u8 pad_00[0x70];
     s32 unk70;
@@ -211,7 +211,7 @@ struct Unk_8003E5D8 {
     u8 pad_00[0x8];
     void (*unk8)(s32);
 };
-s32 func_80017B34(s32);
+s32 Heap_Alloc(s32);
 struct Unk_8003E5D8 *func_8003F24C(void);
 typedef struct Unk_8003CA94_Vtbl {
     u8 pad_00[0x60];
@@ -301,7 +301,7 @@ struct Unk_8003D6D4 {
     s32 *unk60;
     void ***unk64;
 };
-extern void func_800183DC(void *, s32);
+extern void Object_DeleteArray(void *, s32);
 typedef struct Unk_8003DDC8_Vtbl {
     u8 pad_00[0x11C];
     void (*unk11C)(void *, s32, s32);
@@ -1445,7 +1445,7 @@ extern Unk_8003E968_Rgb D_8008A8F8;
 s32 func_8003B854(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 temp_s0;
 
-    temp_s0 = func_80017B34(0xDC);
+    temp_s0 = Heap_Alloc(0xDC);
     if (temp_s0 != 0) {
         func_8003BE84()->unk8(temp_s0, arg0, arg1, arg2, arg3);
         return temp_s0;
@@ -1598,7 +1598,7 @@ Unk_8003B854_Obj *func_8003BE84(void) {
 s32 func_8003BE94(s32 arg0, s32 arg1, s32 arg2) {
     s32 obj;
 
-    obj = func_80017B34(0xA4);
+    obj = Heap_Alloc(0xA4);
     if (obj != 0) {
         ((struct Unk_8003BE94 *)func_8003DFBC())->unk8(obj, arg0, arg1, arg2);
         return obj;
@@ -2029,11 +2029,11 @@ void func_8003CE98(struct Unk_8003CE98 *arg0, Unk_8003CE98_Sub *arg1) {
             var_s1++;
         }
         temp_s0 = var_s1 * 4;
-        var_s5 = (s32 *)func_80017B34(temp_s0);
+        var_s5 = (s32 *)Heap_Alloc(temp_s0);
         arg0->unk54 = var_s5;
-        arg0->unk5C = (s32 *)func_80017B34(temp_s0);
-        arg0->unk60 = (s32 *)func_80017B34(temp_s0);
-        arg0->unk64 = (s32 *)func_80017B34(temp_s0);
+        arg0->unk5C = (s32 *)Heap_Alloc(temp_s0);
+        arg0->unk60 = (s32 *)Heap_Alloc(temp_s0);
+        arg0->unk64 = (s32 *)Heap_Alloc(temp_s0);
         arg0->unk50 = var_s1;
         if (arg1->unk0 != 0) {
             var_s3 = (struct Unk_8003CDE0_Obj *)func_8003B39C(arg1->unk0);
@@ -2092,10 +2092,10 @@ void func_8003D050(struct Unk_8003D050 *arg0) {
                 p++;
             } while (i < arg0->unk50);
         }
-        func_80017CFC(arg0->unk64);
-        func_80017CFC(arg0->unk60);
-        func_80017CFC(arg0->unk5C);
-        func_80017CFC(arg0->unk54);
+        Heap_Free(arg0->unk64);
+        Heap_Free(arg0->unk60);
+        Heap_Free(arg0->unk5C);
+        Heap_Free(arg0->unk54);
     }
 }
 
@@ -2208,7 +2208,7 @@ void func_8003D5CC(struct Unk_8003D6D4 *arg0, struct Unk_8003D5CC *arg1, s32 arg
     while (*p++ != 0) {
         cnt++;
     }
-    buf = (s32 *)func_80017B34(cnt * 4);
+    buf = (s32 *)Heap_Alloc(cnt * 4);
     arg0->unk64[idx] = (void **)buf;
     arg0->unk60[idx] = arg1->unk4;
     arg0->unk5C[idx] = cnt;
@@ -2221,8 +2221,8 @@ void func_8003D5CC(struct Unk_8003D6D4 *arg0, struct Unk_8003D5CC *arg1, s32 arg
 }
 
 void func_8003D6D4(struct Unk_8003D6D4 *arg0) {
-    func_800183DC(arg0->unk64[arg0->unk58], arg0->unk5C[arg0->unk58]);
-    func_80017CFC(arg0->unk64[arg0->unk58]);
+    Object_DeleteArray(arg0->unk64[arg0->unk58], arg0->unk5C[arg0->unk58]);
+    Heap_Free(arg0->unk64[arg0->unk58]);
 }
 
 void func_8003D73C(struct Unk_8003D73C *arg0, s32 arg1, s32 arg2) {
@@ -2427,7 +2427,7 @@ void *func_8003DFCC(void) {
 void func_8003DFDC(void **arg0) {
     Unk_8003DFDC_Obj *temp_v0;
 
-    func_80018390()->unk8(arg0);
+    Object_GetBaseVtbl()->unk8(arg0);
     temp_v0 = func_8003E5C8();
     *arg0 = temp_v0;
     temp_v0->unk40(arg0);
@@ -2436,7 +2436,7 @@ void func_8003DFDC(void **arg0) {
 void func_8003E030(Unk_8003E030 *arg0, s32 **arg1, s32 arg2) {
     s32 temp_v1;
 
-    ((Unk_8003E030_Ret *)func_80018390())->unk38(arg0, arg1, arg2);
+    ((Unk_8003E030_Ret *)Object_GetBaseVtbl())->unk38(arg0, arg1, arg2);
     temp_v1 = **arg1 & 0xF;
     if (temp_v1 == 1) {
         arg0->vt->unk54(arg0, arg1, arg2);
@@ -2572,7 +2572,7 @@ void *func_8003E5C8(void) {
 s32 func_8003E5D8(void) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0xBC);
+    temp_v0 = Heap_Alloc(0xBC);
     if (temp_v0 != 0) {
         func_8003F24C()->unk8(temp_v0);
         return temp_v0;
@@ -2583,7 +2583,7 @@ s32 func_8003E5D8(void) {
 void func_8003E628(struct Unk_8003E628 *arg0) {
     Unk_8003E628_Obj *temp;
 
-    func_80018390()->unk8(arg0);
+    Object_GetBaseVtbl()->unk8(arg0);
     arg0->unk0 = (Unk_8003E628_Vtbl *)func_8003F24C();
     arg0->unkC = 0;
     arg0->unk10 = 0;
@@ -2602,13 +2602,13 @@ void func_8003E6CC(struct Unk_8003E6CC *arg0) {
     temp_a0 = arg0->unkAC;
     temp_a0->unk0->unk4(temp_a0);
     arg0->unk0->unkA8(arg0, 0);
-    func_80018390()->unkC(arg0);
+    Object_GetBaseVtbl()->unkC(arg0);
 }
 
 void func_8003E770(struct Unk_8003E874 *arg0, struct Unk_8003E770 *arg1) {
     s32 temp;
 
-    func_80018390()->unk10(arg0, arg1);
+    Object_GetBaseVtbl()->unk10(arg0, arg1);
     temp = *arg1->unk0 & 0xF;
     if (temp == 4) {
         arg0->unk10 = arg1;
@@ -2628,20 +2628,20 @@ void func_8003E7F4(struct Unk_8003E7F4 *arg0, s32 **arg1) {
     } else if (temp_v1 == 1) {
         arg0->unkC = 0;
     }
-    ((Unk_8003E7F4_vt *)func_80018390())->unk14(arg0, arg1);
+    ((Unk_8003E7F4_vt *)Object_GetBaseVtbl())->unk14(arg0, arg1);
 }
 
 void func_8003E874(struct Unk_8003E874 *arg0) {
     arg0->unk30 = 0;
     arg0->unk10 = 0;
     arg0->unkC = 0;
-    func_80018390()->unk18(arg0);
+    Object_GetBaseVtbl()->unk18(arg0);
 }
 
 void func_8003E8B8(Unk_8003E8B8 *arg0, s32 **arg1, s32 arg2) {
     s32 type;
 
-    ((Unk_8003E8B8_Ret *)func_80018390())->unk38(arg0, arg1, arg2);
+    ((Unk_8003E8B8_Ret *)Object_GetBaseVtbl())->unk38(arg0, arg1, arg2);
     type = **arg1 & 0xF;
     if (type == 5) {
         arg0->unk0->unk94(arg0, arg1, arg2);
@@ -2774,7 +2774,7 @@ void func_8003ECD0(struct Unk_8003ECD0 *arg0) {
 
     if (arg0->unk70 == 0) {
         temp_s1 = 0x14 + (4 << arg0->unk3C) + arg0->unk48 * arg0->unk44;
-        temp_v1 = (u8 *) func_80017B34(temp_s1 * 2);
+        temp_v1 = (u8 *) Heap_Alloc(temp_s1 * 2);
         if (temp_v1 != NULL) {
             arg0->unk78 = (Unk_8003ECD0_Ot *) temp_v1;
             temp_v1 = temp_v1 + 0x14;
@@ -2798,7 +2798,7 @@ void func_8003ECD0(struct Unk_8003ECD0 *arg0) {
 void func_8003EDF4(struct Unk_8003EDF4 *arg0) {
     if (arg0->unk70 != 0) {
         DrawSync(0);
-        func_80017CFC(arg0->unk78);
+        Heap_Free(arg0->unk78);
         arg0->unk70 = 0;
     }
 }

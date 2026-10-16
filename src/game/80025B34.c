@@ -21,13 +21,13 @@ typedef struct Unk_80025C30 {
     void (*unkC)(s32);
 } Unk_80025C30;
 void PadStop(void);
-void *func_80018390(void);
+void *Object_GetBaseVtbl(void);
 s32 D_8008A848;
 typedef struct Unk_80025B34 {
     u8 pad0[0x8];
     void (*unk8)(s32, s32, s32);
 } Unk_80025B34;
-s32 func_80017B34(s32);
+s32 Heap_Alloc(s32);
 Unk_80025B34 *func_80025E9C(void);
 extern s32 D_8008B388[16];
 typedef struct Unk_80025BA0_Base {
@@ -44,7 +44,7 @@ extern Unk_80025B34 D_8006D370;
 s32 func_80025B34(s32 arg0, s32 arg1) {
     s32 temp_v0;
 
-    temp_v0 = func_80017B34(0x20);
+    temp_v0 = Heap_Alloc(0x20);
     if (temp_v0 != 0) {
         func_80025E9C()->unk8(temp_v0, arg0, arg1);
         return temp_v0;
@@ -56,7 +56,7 @@ void func_80025BA0(Unk_80025BA0_Vtbl **arg0, s32 arg1, s32 arg2) {
     Unk_80025BA0_Vtbl *vt;
     s32 count;
 
-    ((Unk_80025BA0_Base *)func_80018390())->unk8(arg0);
+    ((Unk_80025BA0_Base *)Object_GetBaseVtbl())->unk8(arg0);
     vt = (Unk_80025BA0_Vtbl *)func_80025E9C();
     count = D_8008A848;
     *arg0 = vt;
@@ -71,7 +71,7 @@ void func_80025C30(s32 arg0) {
     if (--D_8008A848 == 0) {
         PadStop();
     }
-    ((Unk_80025C30 *)func_80018390())->unkC(arg0);
+    ((Unk_80025C30 *)Object_GetBaseVtbl())->unkC(arg0);
 }
 
 void func_80025C84(Unk_80025C84 *arg0, s32 arg1) {
