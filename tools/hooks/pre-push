@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Refuses a push unless the tree builds the retail executable byte for byte.
+# Refuses a push unless the tree builds the retail executable byte for byte and stays shiftable
+# (no address the linker cannot move: tools/rawscan.py, docs/layout.md rule 7).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 if [ ! -f extract/SLPS_015.56 ]; then echo "pre-push: no extract/, skipping make check (run make check-disk)"; exit 0; fi
 [ -f linker/lsd.ld ] || make -s split >/dev/null
 make -s check
+python3 tools/rawscan.py --max 0 >/dev/null || { python3 tools/rawscan.py | tail -20; echo "pre-push: raw addresses in the build, see docs/layout.md rule 7"; exit 1; }
