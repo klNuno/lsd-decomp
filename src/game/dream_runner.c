@@ -34,7 +34,7 @@ typedef struct RunnerCine {
 } RunnerCine;
 
 /*
- * DreamRunner_OnStageMessage calls the dream stage (slots 0x4, 0x48) and DreamSys (0x1B8 endDay, 0x1BC
+ * DreamRunner_OnPlaceMessage calls the dream stage (slots 0x4, 0x48) and DreamSys (0x1B8 endDay, 0x1BC
  * getCinematic) through one pointer variable; typing them apart changes its registers.
  */
 struct RunnerPeer;
@@ -60,7 +60,7 @@ s32 g_pathTableFirstHalf;
 TaskVtbl *Task_GetVtbl(void);
 static DreamRunnerVtbl *DreamRunner_GetVtbl(void);
 
-void DreamRunner_CreateStage(DreamRunner *runner, s32 stage);
+void DreamRunner_CreatePlace(DreamRunner *runner, s32 stage);
 
 /* Called by Scene_RunDream for each dream with the scene's context and its DreamSys. */
 DreamRunner *DreamRunner_New(ScreenEnv *context, DreamSys *dreamSys, s32 useCdSearch) {
@@ -84,7 +84,7 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     bankName = Music_GetEffectsBank(0);
     Task_GetVtbl()->init(runner, bankName, 0);
     runner->vtbl = DreamRunner_GetVtbl();
-    Sym_LoadModels();
+    Sym_ResetGroupsAndLoadSpy();
     tim = Tim_New("ETC\\ETC.TIM");
     runner->etcTim = tim;
     tim->vtbl->upload(tim);
@@ -131,7 +131,7 @@ void DreamRunner_OnNotify(DreamRunner *runner, s32 **sender, s32 message) {
     if ((classId & 0xFFFF) == 0x1F34) {
         runner->vtbl->onDreamSysMessage(runner, sender, message);
     } else if ((classId & 0xFFFFF) == 0x2F230) {
-        runner->vtbl->onStageMessage(runner, sender, message);
+        runner->vtbl->onPlaceMessage(runner, sender, message);
     }
 }
 
@@ -208,23 +208,23 @@ void DreamRunner_Update(DreamRunner *runner, s32 **sender, s32 message) {
         }
         break;
     case RUNNER_RELINK:
-        runner->stage->vtbl->stop(runner->stage);
-        runner->stage->vtbl->delete_(runner->stage);
+        runner->place->vtbl->detach(runner->place);
+        runner->place->vtbl->delete_(runner->place);
         stage = runner->dreamSys->vtbl->getStage(runner->dreamSys);
         break;
     default:
         return;
     }
-    DreamRunner_CreateStage(runner, stage);
+    DreamRunner_CreatePlace(runner, stage);
 }
 
-void DreamRunner_CreateStage(DreamRunner *runner, s32 stage) {
+void DreamRunner_CreatePlace(DreamRunner *runner, s32 stage) {
     void *dreamStage;
 
     dreamStage = Place_New(runner->sound, runner->music, runner->etcTim, runner->dreamerModel, stage);
-    runner->stage = dreamStage;
+    runner->place = dreamStage;
     runner->vtbl->watch(runner, dreamStage);
-    runner->stage->vtbl->start(runner->stage, runner->context, runner->dreamSys);
+    runner->place->vtbl->attach(runner->place, runner->context, runner->dreamSys);
     runner->phase = RUNNER_IN_STAGE;
 }
 
@@ -238,7 +238,7 @@ void DreamRunner_OnDreamSysMessage(void) {
  * Messages of the dream stage: 4 the day ran out (normal end, result 2 when a cinematic is due),
  * 5 to 8 and 10 a link (rebuild on the next update), 12 an end, 13 the SELECT + TRIANGLE erase.
  */
-void DreamRunner_OnStageMessage(DreamRunner *runner, s32 sender, s32 message) {
+void DreamRunner_OnPlaceMessage(DreamRunner *runner, s32 sender, s32 message) {
     RunnerPeer *peer;
     RunnerPeer *dreamSys;
     RunnerPeerVtbl *vt;
@@ -248,9 +248,9 @@ void DreamRunner_OnStageMessage(DreamRunner *runner, s32 sender, s32 message) {
 
     switch (message) {
     case 4:
-        peer = (RunnerPeer *)runner->stage;
+        peer = (RunnerPeer *)runner->place;
         peer->vtbl->stop(peer);
-        peer = (RunnerPeer *)runner->stage;
+        peer = (RunnerPeer *)runner->place;
         peer->vtbl->delete_(peer);
         peer = (RunnerPeer *)runner->dreamSys;
         if (peer->vtbl->endDay(peer, 0) == 0) {
@@ -275,9 +275,9 @@ void DreamRunner_OnStageMessage(DreamRunner *runner, s32 sender, s32 message) {
         return;
     case 12:
     case 13:
-        peer = (RunnerPeer *)runner->stage;
+        peer = (RunnerPeer *)runner->place;
         peer->vtbl->stop(peer);
-        peer = (RunnerPeer *)runner->stage;
+        peer = (RunnerPeer *)runner->place;
         peer->vtbl->delete_(peer);
         peer = (RunnerPeer *)runner->dreamSys;
         vt = peer->vtbl;

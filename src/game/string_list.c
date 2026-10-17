@@ -212,7 +212,7 @@ typedef struct CardTextVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*attach)();      /* 0x4C (obj, parent, position) */
     u8 pad_50[0x78 - 0x50];
-    void (*upload)();      /* 0x78 called on a file right after Tim_New */
+    void (*setZSort)();      /* 0x78 called on a file right after Tim_New */
     u8 pad_7C[0xB8 - 0x7C];
     void (*setColor)();   /* 0xB8 g_stringListCursorColor or g_stringListRowColor */
     u8 pad_BC[0xCC - 0xBC];

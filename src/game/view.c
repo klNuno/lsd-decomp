@@ -23,8 +23,6 @@ typedef struct ViewRatio {
     s16 den;
 } ViewRatio;
 
-void func_8003FB0C(s32);
-void func_8003FBE4(void *packets);
 /* not in game/view.h: each file that calls it reads the vtable through its own view of the slots */
 ViewVtbl *View_GetVtbl(void);
 static SceneNode *SceneNode_GetRoot(SceneNode *node);
@@ -302,7 +300,7 @@ void View_Render(View *view) {
             view->vtbl->drawNode(view, view->node);
         }
         View_SetGeomScreen(view->projection);
-        func_8003FB0C(view->nearZ);
+        GsSetNearClip(view->nearZ);
         GsSetLightMode(view->lightMode);
         if (view->lightMode == 1 || view->lightMode == 3) {
             SetFarColor(view->fogColor.r, view->fogColor.g, view->fogColor.b);
@@ -311,7 +309,7 @@ void View_Render(View *view) {
         GsSetRefView2(&view->viewpoint);
         view->super->flg = 0;
         view->otZStep = ((u32)(view->farZ - view->nearZ) / (u32)(1 << view->otBits)) + 1;
-        func_8003FBE4(view->packets[view->buffer]);
+        GsSetWorkBase(view->packets[view->buffer]);
         GsClearOt(0, 0, view->ot[view->buffer]);
         view->vtbl->drawNode(view, view->root);
         if (view->node != NULL) {

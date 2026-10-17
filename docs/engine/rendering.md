@@ -44,10 +44,10 @@ watched.
 ## One frame of drawing
 
 - **Clock tick, `View_OnClock`:** on message 2 (tick) or 3 (paused) it calls `View_Render`, which
-  sets `SetGeomScreen`, passes `nearZ` to a Sony routine (`func_8003FB0C`), sets the light mode and, for modes 1 and 3, the fog colour and
+  sets `SetGeomScreen`, passes `nearZ` to a Sony routine (`GsSetNearClip`), sets the light mode and, for modes 1 and 3, the fog colour and
   distance, calls `GsSetRefView2`, computes the sprite step `otZStep = (farZ - nearZ) / 2^otBits
   + 1`, resets the packet cursor to this buffer's area and clears its table, then sorts two trees
-  with slot 0xA0 (`Scene_DrawNode`): the view's own root, and the whole tree above the watched
+  with slot 0xA0 (`View_DrawNode`): the view's own root, and the whole tree above the watched
   node (`SceneNode_GetRoot`). It first sorts the watched node alone when it has a parent; since
   the table is cleared right after, our reading is that this pass only refreshes its matrices.
 - **Display message 2, `View_OnDisplay`:** `View_Present` reads the active buffer, calls
@@ -74,7 +74,7 @@ TMD object (`SceneNode_LinkModel`). Slots 0x60 to 0x80 set attribute bits with l
 | 6 | 0x6C `SetLit` | unlit: packet code bit 0 set (texture drawn raw) |
 | 3-5 | 0x70 `SetLightFlags` | read by the fog test below |
 
-[`Scene_DrawNode`](../../src/game/scene_draw.c) is recursive. When a node's coordinate is dirty
+[`View_DrawNode`](../../src/game/scene_draw.c) is recursive. When a node's coordinate is dirty
 (`flg` 0) it rebuilds the matrix with `RotMatrix` and the node's scale and marks every child dirty;
 then it draws the children (watched type-4 objects whose parent is this node), then the node
 itself, chosen by the low byte of its class word:
@@ -91,7 +91,7 @@ itself, chosen by the low byte of its class word:
 
 [`Render_SortModel`](../../src/game/render.c) replaces libgs's own TMD sorters. It walks the
 model's primitive groups (`u16 count`, `u16 type`), and for each type it supports writes one
-packet per face at `g_packetCursor`:
+packet per face at `GsOUT_PACKET_P`:
 
 | Group type (`& 0xFD07`) | Packet | Colour |
 | --- | --- | --- |
@@ -128,7 +128,7 @@ cue toward the far colour. Textured faces also move their CLUT down `depth >> de
 palette that `Tix_BuildFade` filled, blended toward the place's colour
 ([files and CD](files-and-cd.md#formats-as-the-loaders-read-them)). With 16 the row never moves.
 Shift 9 applies when attribute bits 3-4 are non-zero, or when bit 5 is set and the view's light
-mode (`g_gsLightMode`, written by `GsSetLightMode`) is non-zero. A place sets light mode 1, its
+mode (`GsLIGHT_MODE`, written by `GsSetLightMode`) is non-zero. A place sets light mode 1, its
 ambience's colours as clear and fog colours and its fog distance (`Place_Start`); which models
 skip fog is in [the unused switches](../discoveries.md#-switches-and-features-the-game-never-uses).
 

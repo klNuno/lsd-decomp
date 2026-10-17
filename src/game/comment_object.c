@@ -26,7 +26,7 @@ struct CommentWidgetVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*attach)(CommentWidget *, s32, void *); /* 0x4C SceneNode_Attach and its overrides (ScreenSprite_Attach, Label_Show): parent, position */
     u8 pad_50[0x78 - 0x50];
-    void (*upload)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
+    void (*setZSort)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
     u8 pad_7C[0x80 - 0x7C];
     void (*playTone)(CommentWidget *, s32, s32, s32);  /* 0x80 called on the box object at CommentObject 0x3C */
     u8 pad_84[0xB8 - 0x84];
@@ -54,8 +54,8 @@ struct CommentVtbl {
     void (*onNotify)(CommentObject *, s32 **, s32);           /* 0x38 CommentObject_OnNotify */
     u8 pad_3C[0x40 - 0x3C];                  /* 0x3C not used by this unit */
     void (*setText)(CommentObject *, u8 *, s32);              /* 0x40 CommentObject_SetText */
-    void (*buildWidgets)(CommentObject *, s32);               /* 0x44 CommentObject_BuildWidgets */
-    void (*freeWidgets)(CommentObject *);                      /* 0x48 CommentObject_FreeWidgets, deletes the three widgets */
+    void (*open)(CommentObject *, s32);               /* 0x44 CommentObject_Open */
+    void (*close)(CommentObject *);                      /* 0x48 CommentObject_Close, deletes the three widgets */
     void (*watchPair)(CommentObject *, s32 **, s32 **, CommentWidget *);  /* 0x4C CommentObject_WatchPair */
     void (*unwatchPair)(CommentObject *);                      /* 0x50 CommentObject_UnwatchPair */
     void (*setState)(CommentObject *, s32);                    /* 0x54 CommentObject_SetState */
@@ -69,7 +69,7 @@ struct CommentVtbl {
     void (*charPrev)(CommentObject *);                         /* 0x94 CommentObject_CharPrev */
     void (*toggleFlag)(CommentObject *);                       /* 0x98 CommentObject_ToggleFlag */
     void (*resetChar)(CommentObject *);                        /* 0x9C CommentObject_ResetChar */
-    void (*refreshAll)(CommentObject *);                       /* 0xA0 CommentObject_RefreshAll */
+    void (*clearText)(CommentObject *);                       /* 0xA0 CommentObject_ClearText */
     void (*setCaretPos)(CommentObject *, s32, s32);            /* 0xA4 CommentObject_SetCaretPos, caret index and refresh flag */
     void (*setChar)(CommentObject *, s32, s32, s32);           /* 0xA8 CommentObject_SetChar, caret, charIndex and refresh flag */
 };
@@ -105,8 +105,8 @@ extern CommentVtbl g_commentVtbl;
 extern s8 g_widgetPrefix[];
 extern s8 g_widgetSuffix[];
 extern s32 g_glyphColor[];
-extern s32 g_inputShowArg[];
-extern s32 g_fontShowArg[];
+extern s32 g_inputBoxPos[];
+extern s32 g_commentTextPos[];
 extern SpriteRect g_inputBoxRect;
 
 void *CommentObject_New(u8 *text, s32 mode) {
@@ -218,7 +218,7 @@ void CommentObject_SetText(CommentObject *obj, u8 *text, s32 mode) {
 
 INCLUDE_RODATA("asm/nonmatchings/game/comment_object", g_alphabetText);
 
-void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
+void CommentObject_Open(CommentObject *obj, s32 enable) {
     s8 nameBuf[0x20];
     Tim *inputWidget;
     CommentWidget *widget;
@@ -230,14 +230,14 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
         obj->inputBox = (CommentWidget *)ScreenSprite_Create(inputWidget, &g_inputBoxRect, 0);
         inputWidget->vtbl->base.delete_(inputWidget);
         widget = obj->inputBox;
-        widget->vtbl->attach(widget, enable, g_inputShowArg);
+        widget->vtbl->attach(widget, enable, g_inputBoxPos);
         fontWidget = Tim_New(File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->upload(fontWidget);
         obj->textLabel = (CommentWidget *)Label_Create(fontWidget, obj->textLength, obj->textBuf);
         obj->caretGlyph = (CommentWidget *)Glyph_Create(fontWidget, 0x5F);
         fontWidget->vtbl->base.delete_(fontWidget);
         widget = obj->textLabel;
-        widget->vtbl->attach(widget, enable, g_fontShowArg);
+        widget->vtbl->attach(widget, enable, g_commentTextPos);
         widget = obj->textLabel;
         widget->vtbl->setColor(widget, g_glyphColor);
         widget = obj->caretGlyph;
@@ -245,7 +245,7 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
     }
 }
 
-void CommentObject_FreeWidgets(CommentObject *obj) {
+void CommentObject_Close(CommentObject *obj) {
     CommentWidget *widget;
 
     widget = obj->inputBox;
@@ -278,7 +278,7 @@ void CommentObject_SetState(CommentObject *obj, s32 newState) {
     case 2:
     case 3:
         obj->vtbl->unwatch(obj, obj->pad);
-        obj->vtbl->freeWidgets(obj);
+        obj->vtbl->close(obj);
         obj->state = newState;
         break;
     case 4:
@@ -321,7 +321,7 @@ void CommentObject_OnKey(CommentObject *obj, s32 sender, s32 keyCode) {
         obj->vtbl->setState(obj, 3);
         break;
     case 32:
-        obj->vtbl->refreshAll(obj);
+        obj->vtbl->clearText(obj);
         break;
     case 31:
         obj->vtbl->resetChar(obj);
@@ -454,7 +454,7 @@ void CommentObject_ResetChar(CommentObject *obj) {
     }
 }
 
-void CommentObject_RefreshAll(CommentObject *obj) {
+void CommentObject_ClearText(CommentObject *obj) {
     s32 index;
 
     if (obj->inputBox != 0) {

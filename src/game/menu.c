@@ -38,7 +38,7 @@ char *g_cardBlankComment;
 extern char *g_cardFileSuffixes[];
 char *g_cardFilePrefix;
 static MenuVtbl *Menu_GetVtbl(void);
-static void SaveMenu_SetTitleDay(s32 dayNumber);
+static void Menu_SetTitleDay(s32 dayNumber);
 extern MenuDef g_mainMenuDesc;
 u8 g_titleBlinkChannel;
 s32 g_titleBlinkTick;
@@ -65,7 +65,7 @@ void Menu_Init(Menu *menu, DreamSys *dreamSys) {
     menu->dreamSys = dreamSys;
     menu->card = 0;
     menu->saveBlock = dreamSys->vtbl->getSaveBlock(dreamSys, &menu->saveSize);
-    SaveMenu_SetTitleDay(dreamSys->vtbl->getDayNumber(dreamSys, 0));
+    Menu_SetTitleDay(dreamSys->vtbl->getDayNumber(dreamSys, 0));
     menu->vtbl->setMenu(menu, &g_mainMenuDesc);
     menu->vtbl->reset(menu, dreamSys);
 }
@@ -81,7 +81,7 @@ static void Menu_UpdateFlashbackItem(Menu *menu, MenuDef *desc, DreamSys *dreamS
 }
 
 /* Writes the day number as three full-width digits into the card title. */
-static void SaveMenu_SetTitleDay(s32 dayNumber) {
+static void Menu_SetTitleDay(s32 dayNumber) {
     Text_FormatNumber(g_titleDayDigits, dayNumber, 3, 0);
     ((CardTitle *)g_cardTitle)->day = *(SjisChar3 *)g_titleDayDigits;
 }
@@ -306,7 +306,7 @@ void Menu_CloseCard(Menu *menu) {
 }
 
 /* Menu slot 0x130: SHAKE into DreamSys, then saves the block; a game never saved gets a new file. */
-void SaveMenu_Save(Menu *menu) {
+void Menu_Save(Menu *menu) {
     s32 shake;
 
     shake = menu->optionSelected[MENU_ITEM_SHAKE];
@@ -319,7 +319,7 @@ void SaveMenu_Save(Menu *menu) {
 }
 
 /* Menu slot 0x134 */
-void SaveMenu_Load(Menu *menu) {
+void Menu_Load(Menu *menu) {
     menu->vtbl->openCard(menu);
     menu->card->vtbl->load(menu->card, g_cardFileName, g_cardTitle, menu->saveBlock, menu->saveSize);
 }

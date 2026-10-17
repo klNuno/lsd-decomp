@@ -229,7 +229,7 @@ void DreamSys_OnPad(DreamSys *dreamSys, s32 sender, s32 code) {
     }
 }
 
-void DreamSys_TickTimer(DreamSys *dreamSys, s32 sender, s32 message) {
+void DreamSys_OnClock(DreamSys *dreamSys, s32 sender, s32 message) {
     u32 ticks;
 
     if (message == 2) {
@@ -1049,7 +1049,7 @@ s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
         if (Link_FindScripted(&dreamSys->place, target, dreamSys->stage) >= 0) {
             SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
             if (Link_CheckScripted(&dreamSys->arrivalHeading, &dreamSys->linkHeading, (RotationYaw *)rotation) != 0 && dreamSys->walkingForward != 0) {
-                dreamSys->linkTarget = *target;
+                dreamSys->linkStartPlace = *target;
                 dreamSys->ignorePad = 1;
                 dreamSys->skipMoveBoxes = 1;
                 dreamSys->linkStepTick = 0;
@@ -1066,7 +1066,7 @@ s32 DreamSys_LinkStep0(DreamSys *dreamSys) {
     s32 tick;
 
     if (dreamSys->linkStepTick == 0) {
-        DreamSys_MoveToTileOffset(dreamSys, g_linkStep0Start, &dreamSys->linkTarget.x);
+        DreamSys_MoveToTileOffset(dreamSys, g_linkStep0Start, &dreamSys->linkStartPlace.x);
     }
     if (dreamSys->speed != 4) {
         tick = dreamSys->linkStepTick;
@@ -1094,7 +1094,7 @@ s32 DreamSys_LinkStep1(DreamSys *dreamSys) {
     s32 lookDown;
 
     if (dreamSys->linkStepTick == 0) {
-        DreamSys_MoveToTileOffset(dreamSys, g_linkStep1Start, &dreamSys->linkTarget.x);
+        DreamSys_MoveToTileOffset(dreamSys, g_linkStep1Start, &dreamSys->linkStartPlace.x);
     }
     if (dreamSys->speed != 4) {
         if (dreamSys->linkStepTick >= 0x95) {
@@ -1123,7 +1123,7 @@ s32 DreamSys_LinkStep1(DreamSys *dreamSys) {
 
 s32 DreamSys_LinkStep2(DreamSys *dreamSys) {
     if (dreamSys->linkStepTick == 0) {
-        DreamSys_MoveToTileOffset(dreamSys, g_linkStep2Start, &dreamSys->linkTarget.x);
+        DreamSys_MoveToTileOffset(dreamSys, g_linkStep2Start, &dreamSys->linkStartPlace.x);
     }
     if (dreamSys->speed != 4) {
         if (dreamSys->linkStepTick > 100) {
@@ -1150,7 +1150,7 @@ s32 DreamSys_LinkStep3(DreamSys *dreamSys) {
     s32 lookDown;
 
     if (dreamSys->linkStepTick == 0) {
-        DreamSys_MoveToTileOffset(dreamSys, g_linkStep3Start, &dreamSys->linkTarget.x);
+        DreamSys_MoveToTileOffset(dreamSys, g_linkStep3Start, &dreamSys->linkStartPlace.x);
     }
     if (dreamSys->speed != 4) {
         tick = dreamSys->linkStepTick;

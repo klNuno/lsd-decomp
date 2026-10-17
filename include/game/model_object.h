@@ -120,7 +120,7 @@ typedef struct ModelObject {
 /* types defined in src/game/model_object.c */
 struct ClutPos;
 ModelObject *ModelObject_Create(ModelEntry *tmdObject);
-s32 ModelObject_IsReady(ModelObject *modelObject);
+s32 ModelObject_GetBoxCount(ModelObject *modelObject);
 void ModelObject_UpdateBox(ModelObject *modelObject);
 void *ModelObject_GetBox(); /* unprototyped: scene_node.c passes the model and a box index */
 void ModelObject_GetBoxList(ModelObject *modelObject, NodeBoxList *out);

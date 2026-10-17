@@ -79,7 +79,7 @@ typedef struct NeighborUse {
 /* What the map follows (+0x6C) and the senders of its messages: objects with a GsCOORDINATE2 at +0x14. */
 typedef struct MapActor {
     u8 pad_00[0x0C];
-    s32 attached;           /* 0x0C */
+    s32 parent;           /* 0x0C */
     u8 pad_10[0x14 - 0x10];
     Coord2 *coord;          /* 0x14 */
 } MapActor;
@@ -127,13 +127,13 @@ typedef struct StageMapVtbl {
     void (*hideSlot)();     /* 0x108 StageMap_HideSlot */
     void *(*getLocation)(); /* 0x10C StageMap_GetLocation */
     s32 (*locate)();        /* 0x110 StageMap_Locate */
-    MapSlot *(*currentSlot)(); /* 0x114 StageMap_GetCurrentSlot (map, &place): the current slot, its chunk (col, row) into place */
+    MapSlot *(*notifiedSlot)(); /* 0x114 StageMap_GetNotifiedSlot (map, &place): the current slot, its chunk (col, row) into place */
     MapSlot *(*slotById)(); /* 0x118 StageMap_SlotById */
     MapSlot *(*slotAt)();   /* 0x11C StageMap_SlotAt */
     s32 (*slotIndexById)(); /* 0x120 StageMap_SlotIndexById */
     s32 (*slotIndexByChunk)(); /* 0x124 StageMap_SlotIndexByChunk */
     void (*updateView)();   /* 0x128 StageMap_UpdateView */
-    s32 (*tellView)();      /* 0x12C StageMap_TellNearTiles */
+    s32 (*tellNearTiles)();      /* 0x12C StageMap_TellNearTiles */
     void (*unk130)();       /* 0x130 func_8004CFA8 */
     void (*setBounds)();       /* 0x134 StageMap_SetBounds */
     void (*startTileStretch)();       /* 0x138 StageMap_StartTileStretch */
@@ -169,7 +169,7 @@ typedef struct StageMap {
     u16 pendingSlots;       /* 0x1B4 slots still loading */
     u8 pad_1B6[0x1B8 - 0x1B6];
     s32 ready;              /* 0x1B8 set once they all loaded; the view is drawn only then */
-    MapSlot *currentSlot;   /* 0x1BC */
+    MapSlot *notifiedSlot;   /* 0x1BC */
     s16 tellKey;            /* 0x1C0 chunk key of the tile being told (StageMap_TellViewTiles) */
     u8 tellX;               /* 0x1C2 */
     u8 tellY;               /* 0x1C3 */

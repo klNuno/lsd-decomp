@@ -177,6 +177,16 @@ def main():
         restore()
         print("dry run: tree restored")
     else:
+        levels = ROOT / "config" / "name_levels.tsv"  # the audit levels follow the rename
+        if levels.exists():
+            moved = {(st, old): new for _, st, old, new in ((r[0], r[1], r[2], r[3]) for r in rows)}
+            out = []
+            for line in levels.read_text(encoding="utf-8").split("\n"):
+                c = line.split("\t")
+                if len(c) > 2 and c[1] == "field" and (c[2].rsplit(":", 1)[-1], c[0]) in moved:
+                    c[0] = moved[(c[2].rsplit(":", 1)[-1], c[0])]
+                out.append("\t".join(c))
+            levels.write_text("\n".join(out), encoding="utf-8")
         print("now run tools/unit_check.sh on every unit, then make check")
     shutil.rmtree(backup, ignore_errors=True)
 

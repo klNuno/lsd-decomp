@@ -71,10 +71,10 @@ picture, a timeout (20 ticks per second), fades, and a menu of items described b
 | --- | --- |
 | START | the base closes it (it is `closeItem`); result 0, a dream starts |
 | FLASHBACK | flashback mode on (`setFlashbackMode`), result 0, close; hidden unless the unlock score is above 9,999,999 and a memory is kept ([what unlocks it](../discoveries.md#-what-unlocks-flashback-in-the-menu)) |
-| SAVE | slot 0x130 `SaveMenu_Save` |
-| LOAD | slot 0x134 `SaveMenu_Load` |
+| SAVE | slot 0x130 `Menu_Save` |
+| LOAD | slot 0x134 `Menu_Load` |
 | GRAPH | result 2, close |
-| SHAKE | an option list; `Menu_Close` and `SaveMenu_Save` store the choice in `DreamSys` (`swapShake`) |
+| SHAKE | an option list; `Menu_Close` and `Menu_Save` store the choice in `DreamSys` (`swapShake`) |
 
 Pressing START anywhere (state 10) cancels an open option list, selects the menu's initial item
 and confirms it.
@@ -119,7 +119,7 @@ changed or unformatted card into its state. CIRCLE (`Card_OnConfirm`) retries or
 
 The title is a Shift-JIS string: the game name, the file's letter (a for `-01` up to o for `-15`,
 `Card_SetTitleLetter`), the day number in three digits, then the comment. The keyboard edits the
-comment 13 characters in (`commentStart`, passed as 13 by `SaveMenu_Save`)
+comment 13 characters in (`commentStart`, passed as 13 by `Menu_Save`)
 ([how the save works](../discoveries.md#-how-the-memory-card-save-works)).
 
 ### Comment keyboard and file chooser

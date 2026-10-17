@@ -63,7 +63,7 @@ typedef struct ViewVtbl {
     void (*onClock)();          /* 0x94 sender type 5 */
     void (*onDisplay)();        /* 0x98 sender type 1 */
     void (*render)();           /* 0x9C */
-    void (*drawNode)();         /* 0xA0 Scene_DrawNode */
+    void (*drawNode)();         /* 0xA0 View_DrawNode */
     void (*present)();          /* 0xA4 */
     void (*setOverlay)();       /* 0xA8 */
     struct Fade *(*getOverlay)(); /* 0xAC View_GetOverlay */
@@ -82,12 +82,12 @@ typedef struct View {
     ScreenVec refPoint;     /* 0x20 */
     s32 twist;              /* 0x2C rz, 4.12 */
     Coord2 *super;          /* 0x30 node's coordinate; render clears its flg */
-    ScreenPoint screenSize; /* 0x34 (0x100, 0xF0): Scene_DrawNode (src/game/scene_draw.c) sizes boxes and sprites by its half */
+    ScreenPoint screenSize; /* 0x34 (0x100, 0xF0): View_DrawNode (src/game/scene_draw.c) sizes boxes and sprites by its half */
     s32 otBits;             /* 0x3C 13 */
     s32 projection;         /* 0x40 h of SetGeomScreen, 0x100 */
     s32 packetCount;        /* 0x44 2000 */
     s32 packetSize;         /* 0x48 0x40 */
-    s32 nearZ;              /* 0x4C 10, func_8003FB0C */
+    s32 nearZ;              /* 0x4C 10, GsSetNearClip */
     s32 farZ;              /* 0x50 0x10000; (unk50 - unk4C) / OT length + 1 is unk98 */
     s32 lightMode;          /* 0x54 GsSetLightMode; 1 and 3 turn the fog on */
     Color3 clearColor;      /* 0x58 GsSortClear */

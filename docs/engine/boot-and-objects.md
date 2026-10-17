@@ -15,7 +15,7 @@ the first screen.
 2. `Heap_Create(0x166C00, 0)`: one pool of about 1.4 MB from Sony's `malloc`, kept in
    `g_mainHeap` and made current with `Heap_SetCurrent`.
 3. `Scene_New(&g_sceneSettings)`: the [scene](../../src/game/scene.c), kept in `g_scene`.
-4. `Display_New()` and `Pad_New(0, 0)`, passed to the scene's slot 0x44 (`Scene_Setup`).
+4. `Display_New()` and `Pad_New(0, 0)`, passed to the scene's slot 0x44 (`Scene_Start`).
 5. The scene's slot 0x4C, `App_Run`, which loops forever.
 
 `Scene_Init` first runs the base init `App_Init` ([app.c](../../src/game/app.c)): `CdInit` once,
@@ -26,7 +26,7 @@ screen size. Then it sets the disc prefix `CDI\` (`File_SetPathPrefix(File_GetRo
 of the game: a scratchpad word modulo 365 ([randomness](randomness.md),
 [the dice of the game](../discoveries.md#-the-dice-of-the-game)).
 
-`App_Start` (reached from `Scene_Setup`) makes the display current, calls `GsInitGraph` through
+`App_Start` (reached from `Scene_Start`) makes the display current, calls `GsInitGraph` through
 `Display_InitGraph`, resets the SPU (LIBSND `SsInit`), runs `GsInit3D` and builds the `ScreenEnv`
 every screen runs with: the display and the pad, with clock, root and view left at 0.
 
@@ -92,7 +92,7 @@ more above them. From the vtables in the data:
 The inheritance in this table matches the init chains in the code: each `X_Init` calls slot 0x08
 of the class whose word its own extends (`Fade_Construct` calls `Box_GetVtbl()->init`,
 `DreamSys_Init` the `Actor` one). What the digit 0xF means in 0x1F34 or 0x4F03 is not known.
-`Scene_DrawNode` reads the low byte to pick how to draw a node (0x54 background, 0x64 box, 0x44
+`View_DrawNode` reads the low byte to pick how to draw a node (0x54 background, 0x64 box, 0x44
 sprite, any other kind a model; a hidden 0x24 map tile is skipped).
 
 ## Screens and the frame

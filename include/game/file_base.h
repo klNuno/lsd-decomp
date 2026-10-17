@@ -22,7 +22,7 @@
 typedef struct FileSource {
     u8 *data;   /* address inside a parent file, or NULL */
     char *path; /* used when data is NULL */
-    s32 unk_08; /* 1 from every creator here and in Sym_LoadModels */
+    s32 unk_08; /* 1 from every creator here and in Sym_ResetGroupsAndLoadSpy */
 } FileSource;
 
 /* Slots 0x00 to 0x74 of every file class vtable */
@@ -34,18 +34,18 @@ typedef struct FileVtbl {
     u8 pad_10[0x3C - 0x10];    /* Object methods, see ObjectVtbl */
     s32 unk_3C;                /* 0 */
     void (*unk_40)();          /* CD: File_EmptySlot40, empty */
-    void (*open)();            /* 0x44 (self, path, 1, 0), CD: File_LoadByName (CdSearchFile) */
-    void (*close)();           /* 0x48 CD: File_Unload */
+    void (*open)();            /* 0x44 (self, path, 1, 0), CD: File_OpenByName (CdSearchFile) */
+    void (*close)();           /* 0x48 CD: File_Close */
     s32 (*seek)();             /* 0x4C (self, offset, whence); whence 2 returns the size (File_LoadWhole) */
     void (*unk_50)();          /* CD: File_EmptySlot50, empty */
     s32 (*read)();             /* 0x54 (self, buffer, size), CD: File_Read (CdRead) */
-    void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_Open) */
+    void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_LoadWholeCd) */
     void (*freeData)();        /* 0x5C File_FreeData: frees +0x10 when +0x14 != 0 */
     void (*unk_60)();          /* File_EmptySlot60, empty */
     s32 (*onLoaded)();         /* 0x64 run after each queued request (File_ServiceQueue) and by creators of
                                   borrowed data; classes parse their data here; base File_MarkLoaded: flags |= 1 */
     void (*runQueue)();        /* 0x68 CD: File_ServiceQueue, runs the queued requests */
-    void (*loadAsync)();       /* 0x6C (self, path), CD: File_RequestOpen queues slot 0x58 */
+    void (*loadAsync)();       /* 0x6C (self, path), CD: File_RequestLoad queues slot 0x58 */
     void (*stop)();          /* CD: File_Stop */
     void (*cancel)();          /* 0x74 CD: File_CancelRequests, drops the object's queued requests */
 } FileVtbl;
@@ -58,7 +58,7 @@ typedef struct File {
     FileVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
-    s32 isOpen;      /* 0x0C set by open (File_LoadByName), cleared by close (File_Unload) */
+    s32 isOpen;      /* 0x0C set by open (File_OpenByName), cleared by close (File_Close) */
     u8 *data;        /* 0x10 the whole file, or a parent's bytes */
     s32 size;        /* 0x14 0 when the data is borrowed */
     s32 cdPos;       /* 0x18 CdlLOC of the file, copied whole from its directory entry */

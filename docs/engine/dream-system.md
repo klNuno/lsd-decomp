@@ -42,7 +42,7 @@ DreamSys never polls. It watches objects and reacts to their notifications. `Sce
 | Sender | Class word | DreamSys slot | Function |
 | --- | --- | --- | --- |
 | Pad | low nibble 2 | 0x94 | `DreamSys_OnPad`: walk, turn, look, run, CIRCLE |
-| Clock | low nibble 5 | 0x98 | `DreamSys_TickTimer`, on message 2 (one tick) |
+| Clock | low nibble 5 | 0x98 | `DreamSys_OnClock`, on message 2 (one tick) |
 | StageMap | 0x114 | 0x9C, then 0x1E4 | `DreamSys_RouteMapMessage`, then `DreamSys_OnMapMessage` |
 | A map tile | class byte 0x24 | 0x9C, then 0xE0 | `DreamSys_OnWallTouch` ([links](links.md)) |
 | An entity | 0x1F234 | 0x9C, 0xDC, then 0x1E8 | `DreamSys_RouteEntityMessage`, then `DreamSys_OnEntityEvent` |
@@ -51,7 +51,7 @@ DreamRunner makes DreamSys watch the pad and the clock (`DreamRunner_Run`); `Dre
 
 ## One tick
 
-`DreamSys_TickTimer` runs on each clock message 2:
+`DreamSys_OnClock` runs on each clock message 2:
 
 1. `timer` goes up by one. If the value before the increment reached `timeLimit`, the dream is over: out of flashback mode, `DreamSys_MaybeSaveFlashback` may keep a memory, then DreamSys notifies 0xA (time up) and the timer goes back to 0. In flashback mode the next memory is loaded instead (`DreamSys_LoadNextFlashback`), and only when none is left does it notify 0xA.
 2. Otherwise `DreamSys_TickBegin` clears the CIRCLE flag and sets `dynamicLinkOn = (timer % linkPeriod == 0)`; the place gives a period of 16 ([walls](../discoveries.md#-falling-off-an-edge-walls-and-the-cottages-walking-squares)).
@@ -76,16 +76,16 @@ Every link or event goes through `DreamSys_ExecuteLink(stage, transition, playSo
 
 | Code | Source | Place reaction | Place state | End |
 | --- | --- | --- | --- | --- |
-| 0xA | time up (`DreamSys_TickTimer`) | `Place_OnTimeUp`: `(ticks + stage) & 3` picks no fade or a fade to colour 0, 4 or 7; in flashback mode a 5-tick fade to colour 0 | 4 | end of day |
+| 0xA | time up (`DreamSys_OnClock`) | `Place_OnTimeUp`: `(ticks + stage) & 3` picks no fade or a fade to colour 0, 4 or 7; in flashback mode a 5-tick fade to colour 0 | 4 | end of day |
 | 0xB | start chosen (`DreamSys_ChooseStart`, stored, not notified) | none | | |
 | 0xC | random link (`DreamSys_LinkDynamic`) | `Place_OnLinkDynamic`: 10-tick fade to the dream colour; a negative stage goes to the 0xD handler | 5 | new place |
 | 0xD | fixed link (`DreamSys_LinkStatic`) | `Place_OnLinkStatic`: 30-tick fade to the dream colour | 6 | new place |
 | 0xE | next flashback (`DreamSys_LoadNextFlashback`) | `Place_OnNextFlashback`: fade to the day's colour | 7 | new place |
-| 0xF | facing link (`DreamSys_LinkFacing`) | `Place_OnLink15`: black fade, auto walk | 8 | new place |
-| 0x10 | fall (`DreamSys_LinkFall`) | `Place_OnLink16`: black fade, fall mode, auto walk 2 | 10, then 4 | end of day |
-| 0x11 | extra link (`DreamSys_LinkExtra`) | `Place_OnLink17`: notifies 0xB, which the runner ignores | | same place |
+| 0xF | facing link (`DreamSys_LinkFacing`) | `Place_OnLinkFacing`: black fade, auto walk | 8 | new place |
+| 0x10 | fall (`DreamSys_LinkFall`) | `Place_OnLinkFall`: black fade, fall mode, auto walk 2 | 10, then 4 | end of day |
+| 0x11 | extra link (`DreamSys_LinkExtra`) | `Place_OnLinkExtra`: notifies 0xB, which the runner ignores | | same place |
 
-When the fade ends, `Place_OnFaderNotify` notifies the place's state to its watcher, the DreamRunner. State 10 becomes 4 first, which is why a fall ends the day. `DreamRunner_OnStageMessage` rebuilds the place for states 5 to 8 (and 10, never reached), and ends the day for 4.
+When the fade ends, `Place_OnFaderNotify` notifies the place's state to its watcher, the DreamRunner. State 10 becomes 4 first, which is why a fall ends the day. `DreamRunner_OnPlaceMessage` rebuilds the place for states 5 to 8 (and 10, never reached), and ends the day for 4.
 
 Note the order inside `DreamSys_ExecuteLink`: the notify runs before the new stage is stored. An entity link sets `stage` to minus its target before calling `DreamSys_LinkDynamic` (`DreamSys_OnEntityEvent`, message 10), so the place sees a negative stage and takes the 30-tick fade of a fixed link.
 

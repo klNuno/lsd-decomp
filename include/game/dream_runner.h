@@ -66,8 +66,8 @@ typedef struct RunnerStageVtbl {
     u8 pad_00[0x04];
     void *(*delete_)();     /* 0x04 */
     u8 pad_08[0x44 - 0x08];
-    void (*start)();        /* 0x44 (stage, context, DreamSys) */
-    void (*stop)();         /* 0x48 */
+    void (*attach)();        /* 0x44 (stage, context, DreamSys) */
+    void (*detach)();         /* 0x48 */
 } RunnerStageVtbl;
 
 typedef struct RunnerStage {
@@ -94,7 +94,7 @@ typedef struct DreamRunnerVtbl {
     void (*setState)();     /* 0x60 Task_SetState */
     u8 pad_64[0x80 - 0x64];
     void (*onDreamSysMessage)(); /* 0x80 DreamRunner_OnDreamSysMessage, empty */
-    void (*onStageMessage)();    /* 0x84 DreamRunner_OnStageMessage */
+    void (*onPlaceMessage)();    /* 0x84 DreamRunner_OnPlaceMessage */
 } DreamRunnerVtbl;
 
 /* Phases of DreamRunner +0x3C. */
@@ -120,7 +120,7 @@ typedef struct DreamRunner {
     Object *music;          /* 0x40 Bgm_New(Music_PickBank(0), 0, 1) */
     struct Tim *etcTim;     /* 0x44 ETC\ETC.TIM (tim.h) */
     struct Tmd *dreamerModel; /* 0x48 ETC\DREAMER.TMD (tmd.h) */
-    RunnerStage *stage;     /* 0x4C the dream stage, Place_New */
+    RunnerStage *place;     /* 0x4C the dream stage, Place_New */
 } DreamRunner;
 
 /* Functions of src/game/dream_runner.c that other files call or reference (docs/naming.md, Prototypes) */

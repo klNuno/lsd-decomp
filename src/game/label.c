@@ -25,7 +25,7 @@ typedef struct GlyphVtbl {
     void (*setColor)(void *glyph, s32 color); /* 0xB8 */
     void (*setPosition)(void *glyph, void *position); /* 0xBC */
     u8 pad_C0[0xC4 - 0xC0];
-    void (*setChar)(Glyph *glyph, u8 c, Glyph **slot); /* 0xC4 */
+    void (*setCode)(Glyph *glyph, u8 c, Glyph **slot); /* 0xC4 */
 } GlyphVtbl;
 
 struct Glyph {
@@ -171,7 +171,7 @@ void Label_SetChar(Label *label, s32 c, s32 index) {
     Glyph **slot = &label->glyphs[index];
     Glyph *glyph = *slot;
 
-    glyph->vtbl->setChar(glyph, c, slot);
+    glyph->vtbl->setCode(glyph, c, slot);
 }
 
 void Label_EmptySlotC8(void) {
@@ -185,7 +185,7 @@ void Label_SetText(Label *label, u8 *text) {
         while (*text != 0) {
             Glyph *glyph = *p;
 
-            ((void (*)(Glyph *, u8))glyph->vtbl->setChar)(glyph, *text++);
+            ((void (*)(Glyph *, u8))glyph->vtbl->setCode)(glyph, *text++);
             p++;
         }
     }

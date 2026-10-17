@@ -61,13 +61,13 @@ typedef struct ModelVtbl {
     void (*onWallTouch)(void *self, void *sender, s32 message);  /* 0xE0 Actor_OnNode24, Entity_OnWallTouch in the entity class */
     void (*setSpeed)(void *self, s32 speed);               /* 0xE4 Actor_SetSpeed */
     u8 pad_E8[0xF0 - 0xE8];
-    void (*setAnim6Flag)(void *self, s32 value);           /* 0xF0 Model_SetAnim6Flag */
+    void (*setForwardContact)(void *self, s32 value);           /* 0xF0 Model_SetForwardContact */
     s32 (*load)(void *self, ModelSource *source);   /* 0xF4 Model_Load */
     void (*unload)(void *self);                            /* 0xF8 Model_Unload */
     u8 pad_FC[0x100 - 0xFC];
     s32 (*createParts)(void *self);                        /* 0x100 Model_CreateParts */
     void (*freeParts)(void *self);                         /* 0x104 Model_FreeParts */
-    void (*tickAnimation)(void *self);                     /* 0x108 Model_TickAnimation */
+    void (*tick)(void *self);                     /* 0x108 Model_Tick */
     void (*setTickMode)(void *self, s32 mode);             /* 0x10C Model_SetTickMode: 0x41, 0x42 or 0x43 */
     void (*startTick)(void *self);                         /* 0x110 Model_StartTick */
     void (*stopTick)(void *self);                          /* 0x114 Model_StopTick */
@@ -98,7 +98,7 @@ typedef struct Model {
     struct SoundBank *soundBank; /* 0x58 */
     Mom *file;                 /* 0x5C */
     s32 ownsFile;              /* 0x60 1 when the file was loaded here, 0 when borrowed */
-    s32 anim6Flag;             /* 0x64 setAnim6Flag; 1 makes tickA play part animation 6 */
+    s32 forwardContact;             /* 0x64 setAnim6Flag; 1 makes tickA play part animation 6 */
     SceneNode *part;           /* 0x68 the part the file names as current */
     s32 partCount;             /* 0x6C */
     SceneNode **parts;         /* 0x70 one actor (Actor_New) per object of the file's TMD */
@@ -185,7 +185,7 @@ void Model_Init(Model *model) {
     SceneNode *part;
 
     Actor_GetVtbl()->setVisible(model, 0);
-    model->vt->setAnim6Flag(model, 1);
+    model->vt->setForwardContact(model, 1);
     model->vt->setSpeed(model, 0x12C);
     model->vt->stopTick(model);
     model->vt->setTickMode(model, 0x41);
@@ -244,15 +244,15 @@ void Model_SetLightFlags(Model *model, s32 flags) {
 /* Slot 0x98, the update: phase 2 runs the animation tick, phase 4 deletes the model. */
 void Model_Update(Model *model, s32 sender, s32 phase) {
     if (phase == 2) {
-        model->vt->tickAnimation(model);
+        model->vt->tick(model);
     }
     if (phase == 4) {
         model->vt->delete_(model);
     }
 }
 
-void Model_SetAnim6Flag(Model *model, s32 value) {
-    model->anim6Flag = value;
+void Model_SetForwardContact(Model *model, s32 value) {
+    model->forwardContact = value;
 }
 
 s32 Model_Load(Model *model) {
@@ -378,7 +378,7 @@ static void Model_ReleaseParts(Model *model) {
 }
 
 /* Slot 0x108: counts the tick, runs the tick function, then plays one frame of the animation. */
-void Model_TickAnimation(Model *model) {
+void Model_Tick(Model *model) {
     model->timer = model->timer + 1;
     if (model->tickEnabled != 0) {
         model->tickFn(model);
@@ -419,7 +419,7 @@ void Model_TickForward(Model *model) {
     SceneNode *part;
 
     model->vt->moveZ(model, -0x1E, 0);
-    if (model->anim6Flag == 1) {
+    if (model->forwardContact == 1) {
         part = model->part;
         if (part != NULL) {
             part->vtbl->sendBoxes(part, 6);

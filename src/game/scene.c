@@ -84,7 +84,7 @@ void Scene_SeedRandom(void) {
 }
 
 /* Slot 0x44, called once by main with the display and a new pad. */
-void Scene_Setup(Scene *scene, Display *display, Pad *pad) {
+void Scene_Start(Scene *scene, Display *display, Pad *pad) {
     if (scene->started == 0) {
         App_GetVtbl()->start(scene, display, pad, 0);
     }

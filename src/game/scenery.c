@@ -51,25 +51,25 @@ typedef struct AmbienceBand {
  * g_soundSpotHandlers[range] runs (SoundSpot_Acquire); the range is negated while it is held.
  */
 typedef struct SpotTile {
-    u8 b0, b1, b2, b3;    /* handed to map slot 0xE8 with the g_soundSpotTileExtras entry */
+    u8 b0, b1, b2, b3;    /* handed to map slot 0xE8 with the g_soundSpotOffsets entry */
 } SpotTile;
 
-typedef struct SpotTileExtra {
-    SpotTile tile;
-    s16 v;
-} SpotTileExtra;
+typedef struct SpotOffset {
+    SpotTile xy;
+    s16 z;
+} SpotOffset;
 
 typedef struct SpotRecord {
     SpotTile tile;        /* 0x0 */
-    u8 idx;               /* 0x4 index of g_soundSpotTileExtras */
+    u8 offsetIndex;               /* 0x4 index of g_soundSpotOffsets */
     u8 unk5;
-    s8 range;             /* 0x6 > 0 free, < 0 held by a slot */
+    s8 type;             /* 0x6 > 0 free, < 0 held by a slot */
     u8 unk7;
 } SpotRecord;
 
 typedef struct SpotQuery {
     SpotTile a;
-    SpotTileExtra b;
+    SpotOffset b;
 } SpotQuery;
 
 /* The two slots (g_soundSpotSlots points into g_soundSpotSlotData, 0x68 bytes each). */
@@ -145,12 +145,12 @@ extern SpotSlot g_soundSpotSlotData[];
 static void Ambience_CreateBands(void);
 static void Ambience_UpdateBands(void);
 void Stage_CyclePalettes(void);
-extern SpotTileExtra g_soundSpotTileExtras[];
+extern SpotOffset g_soundSpotOffsets[];
 extern SpotRecord *g_stageSoundSpots[];
 extern u8 g_stageSoundSpotCounts[];
 extern u8 g_sceneryKind3Colors[];
 static void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift);
-extern s32 g_sceneryDayMark;
+extern s32 g_sceneryKind2AltColor;
 extern u8 g_sceneryKind2Colors[];
 
 /*
@@ -348,7 +348,7 @@ void Scenery_CreateAll(void *origin) {
     s32 count;
 
     if (g_ambienceFamily >= 0) {
-        Scenery_SetPlaceRefs(g_ambienceFamily, g_placeRefs->models, g_placeRefs->font, g_placeRefs->view);
+        Scenery_SetPlaceRefs(g_ambienceFamily, g_placeRefs->models, g_placeRefs->etcTim, g_placeRefs->view);
         count = g_sceneryKind0Counts[rand() & 3];
         extra = (g_ambienceFamily == 2) ? (0x10 - count) : 0;
         g_sceneryCount = count + extra;
@@ -460,7 +460,7 @@ static Scenery **Scenery_CreateKind3(Scenery **out, void *origin) {
     return out;
 }
 
-/* Kind 2, one object: a colour of g_sceneryKind2Colors, and dayMark g_sceneryDayMark (0 on day numbers divisible by 20). */
+/* Kind 2, one object: a colour of g_sceneryKind2Colors, and dayMark g_sceneryKind2AltColor (0 on day numbers divisible by 20). */
 static Scenery **Scenery_CreateKind2(Scenery **out, void *origin) {
     ParamWord *p;
     u8 **q;
@@ -472,7 +472,7 @@ static Scenery **Scenery_CreateKind2(Scenery **out, void *origin) {
     p->v = v;
     p++;
     if (g_placeDayNumber % 20) {
-        x = g_sceneryDayMark;
+        x = g_sceneryKind2AltColor;
     } else {
         x = g_placeDayNumber % 20;
     }
@@ -530,11 +530,11 @@ static SpotSlot *SoundSpot_Acquire(SpotSlot *slot, s32 *found, void *origin, s32
     record = SoundSpot_FindInRange(slot->pos, &slot->distance, origin);
     if (record != NULL) {
         slot->record = record;
-        HandlerNode_Start(g_placeRefs->handlerList, &slot->node, record->range, slot, g_soundSpotHandlers[record->range]);
-        if (record->range == *found) {
-            *found = -record->range;
+        HandlerNode_Start(g_placeRefs->soundBank, &slot->node, record->type, slot, g_soundSpotHandlers[record->type]);
+        if (record->type == *found) {
+            *found = -record->type;
         }
-        record->range = -record->range;
+        record->type = -record->type;
         return slot;
     }
     return NULL;
@@ -557,9 +557,9 @@ static SpotRecord *SoundSpot_FindInRange(s32 *pos, s32 *distance, s32 *origin) {
         record = g_stageSoundSpots[g_placeStage] + g_soundSpotNext;
         for (i = 0; i < n; i++, record++) {
             g_soundSpotNext++;
-            if (record->range > 0) {
+            if (record->type > 0) {
                 query.a = record->tile;
-                query.b = g_soundSpotTileExtras[record->idx];
+                query.b = g_soundSpotOffsets[record->offsetIndex];
                 g_sceneryMap->vtbl->placeToWorld(g_sceneryMap, pos, &query);
                 dx = pos[0] - from[0];
                 if (dx < 0) {
@@ -568,7 +568,7 @@ static SpotRecord *SoundSpot_FindInRange(s32 *pos, s32 *distance, s32 *origin) {
                 dz = pos[2] - from[2];
                 dist = dx + (dz < 0 ? ~dz + 1 : dz);
                 *distance = dist;
-                if (dist < g_soundSpotRanges[record->range]) {
+                if (dist < g_soundSpotRanges[record->type]) {
                     return record;
                 }
             }
@@ -579,14 +579,14 @@ static SpotRecord *SoundSpot_FindInRange(s32 *pos, s32 *distance, s32 *origin) {
 
 /* Release a slot: unregister its handler and free its spot. */
 static SpotSlot *SoundSpot_Release(SpotSlot *slot) {
-    HandlerNode_Stop(g_placeRefs->handlerList, &slot->node);
-    slot->record->range = -slot->record->range;
+    HandlerNode_Stop(g_placeRefs->soundBank, &slot->node);
+    slot->record->type = -slot->record->type;
     return NULL;
 }
 
 static s32 SoundSpot_Update(SpotSlot *slot, void *origin, s32 unused) {
     if (SoundSpot_IsInRange(slot, origin) != 0) {
-        HandlerNode_Run(g_placeRefs->handlerList, &slot->node);
+        HandlerNode_Run(g_placeRefs->soundBank, &slot->node);
         return 1;
     }
     return 0;
@@ -599,7 +599,7 @@ static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (o
     dz = slot->pos[2] - origin[2];
     d = dx + (dz < 0 ? ~dz + 1 : dz);
     slot->distance = d;
-    if (d < g_soundSpotRanges[-slot->record->range]) return 1; } return 0; }
+    if (d < g_soundSpotRanges[-slot->record->type]) return 1; } return 0; }
 
 /*
  * The scenery tick (Place slot 0x8C), with the map position of the dreamer. On the first tick
@@ -885,7 +885,7 @@ void SoundSpot_Type14(SpotSlot *slot, HandlerNode *node) {
 
 /* distance / (range / node.fadeSteps): grows with the distance to the spot. */
 static s32 SoundSpot_CalcFade(SpotSlot *slot) {
-    return slot->distance / (g_soundSpotRanges[-slot->record->range] / slot->node.fadeSteps);
+    return slot->distance / (g_soundSpotRanges[-slot->record->type] / slot->node.fadeSteps);
 }
 
 /* Spawn rule 7 (Sym_CheckRule): 1 when the ambience family is even, 0 for odd ones and none (-1). */

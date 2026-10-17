@@ -79,7 +79,7 @@ mode (the dream passes 1) or from the display's frame callback otherwise. It ret
 
 1. steps the current operation: `File_PollIo` (`g_fileAsyncMode` 1: seek with `CdControlF`,
    `CdSync`, then `CdRead` and `CdReadSync`) or `File_StepIo` (mode 2: the whole-file read of
-   `File_Open`), with a retry after 600 polls or a CD error;
+   `File_LoadWholeCd`), with a retry after 600 polls or a CD error;
 2. calls `runQueue`, `File_ServiceQueue`: if the head request has not started, it sets `direct`,
    calls the matching I/O slot (which now starts the operation) and clears `direct`; if it has
    finished, it sets the `flags` bits, decrements `pending`, calls the file's `onLoaded`, frees
@@ -88,7 +88,7 @@ mode (the dream passes 1) or from the display's frame callback otherwise. It ret
 So a loader written as "open, seek, read" in its constructor gets three queued requests and its
 `onLoaded` called after each; it checks `flags & 0x80` to know its read is done. `File_Lock` and
 `File_Unlock` only raise and clear `g_fileLock` so the callback skips a frame while the main code
-edits the queue. `File_RequestOpen`, the CD `loadAsync`, writes a flag through an uninitialized
+edits the queue. `File_RequestLoad`, the CD `loadAsync`, writes a flag through an uninitialized
 request pointer before queueing, as the original code does.
 
 ## Formats as the loaders read them
@@ -111,7 +111,7 @@ An LBD chunk holds three things the code reads: at header +0x04 the tile list th
 walks (a 20 x 20 grid of 0xC-byte records), right after it a TMD (`StageMap_BuildTiles` makes a
 `Tmd` borrowing it), and at +0x10 the entity part, which is an MML that `Sym_SpawnOrSpy` opens
 with `Mml_Create` ([characters](characters.md), [stages and places](stages-and-places.md)).
-`ETC\SYMSPY.MOM` (the Grey Man's model, loaded by `Sym_LoadModels`) and `ETC\DREAMER.TMD` (loaded
+`ETC\SYMSPY.MOM` (the Grey Man's model, loaded by `Sym_ResetGroupsAndLoadSpy`) and `ETC\DREAMER.TMD` (loaded
 by `DreamRunner_Init`) are the other model files; `ETC\SYMDOG.MOM` is named but never loaded
 ([the dog that never loads](../discoveries.md#-the-dog-that-never-loads)).
 

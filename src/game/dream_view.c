@@ -11,7 +11,7 @@
 
 extern struct RenderObjVtbl g_dreamViewVtbl;
 
-/* The 0xDC object of class 0x800869D8 (DreamView_New); slot 0xA0 is Scene_DrawNode, which draws scene nodes. */
+/* The 0xDC object of class 0x800869D8 (DreamView_New); slot 0xA0 is View_DrawNode, which draws scene nodes. */
 typedef struct RenderObjVtbl {
     u8 pad_00[0x08];
     void (*init)();             /* 0x08 */

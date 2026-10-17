@@ -123,7 +123,7 @@ void Graph_OnCircle(Graph *graph) {
 }
 
 /* Slot 0xD8: the 100 day boxes, red for the newest, then from white down by 20 per step for the next 6 and by 1 after. */
-void Graph_CreateSprites(Graph *graph) {
+void Graph_CreateBoxes(Graph *graph) {
     GraphColor color;
     s32 i;
     s32 step;
@@ -143,7 +143,7 @@ void Graph_CreateSprites(Graph *graph) {
 }
 
 /* Slot 0xDC */
-void Graph_FreeSprites(Graph *graph) {
+void Graph_FreeBoxes(Graph *graph) {
     s32 i;
     Widget *box;
 

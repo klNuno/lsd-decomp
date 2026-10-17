@@ -338,7 +338,7 @@ void SceneNode_SendBoxes(SceneNode *node, s32 message) {
     if (message < 4) {
         if (message >= 2) {
             model = node->model;
-            if ((model != NULL) && (ModelObject_IsReady(model) != 0)) {
+            if ((model != NULL) && (ModelObject_GetBoxCount(model) != 0)) {
                 node->vtbl->getBoxList(node, &boxList);
                 node->vtbl->sendShape(node, &boxList, message);
             }
@@ -394,7 +394,7 @@ void SceneNode_CheckContact(SceneNode *node, SceneNode *sender) {
     Vec3 *pos;
     ModelVec *corners;
 
-    if (node->model != NULL && ModelObject_IsReady(node->model) != 0) {
+    if (node->model != NULL && ModelObject_GetBoxCount(node->model) != 0) {
         senderPos = NULL;
         if (sender->parent != NULL) {
             senderPos = &sender->coord->workm.t;
@@ -481,7 +481,7 @@ s32 SceneNode_BoxesOverlap(SceneNode *node, NodeBoxList *boxList, ModelVec *offs
 
     ModelObject_UpdateBox(node->model);
     b = ModelObject_GetBox(node->model, 0);
-    n = ModelObject_IsReady(node->model);
+    n = ModelObject_GetBoxCount(node->model);
     other = *b;
     bend = b + n;
     for (b++; b < bend; b++) {
@@ -533,7 +533,7 @@ s32 SceneNode_RayTestBoxes(SceneNode *node, s32 *senderHits, ModelVec *hitPos, N
     }
 
     node->hitMask = 0;
-    count = ModelObject_IsReady(node->model);
+    count = ModelObject_GetBoxCount(node->model);
     ret = 0;
     for (i = 0; i < count; i++) {
         box = ModelObject_GetBox(node->model, i);
@@ -826,7 +826,7 @@ static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to) {
  * Behavior_Type115 and Behavior_Type81 swap the two (the dreamer turns to the entity) through casts:
  * both classes are scene nodes, with the parent at 0x0C, the coordinate at 0x14 and slot 0x44.
  */
-void Entity_FaceDreamer(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra) {
+void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra) {
     Fraction rot[3];
     Vec3 *targetPos;
     Vec3 *pos;

@@ -14,7 +14,7 @@ struct Tix;
 /*
  * Place: the object that runs one stage while the dreamer is in it (the "dream stage class"
  * of docs/discoveries.md, vtable 0x80087034 returned by Place_GetVtbl, 0x88 bytes made by
- * Place_New from the dream runner DreamRunner_CreateStage). Its methods are in src/game/place.c:
+ * Place_New from the dream runner DreamRunner_CreatePlace). Its methods are in src/game/place.c:
  * load (slot 0x4C, music track and texture set), the pad handler (0x58, pause and the hidden
  * exit), the per-tick update (0x5C) and the place's scenery and ambience.
  * The base class is the one Task_GetVtbl returns (src/game/task.c).
@@ -81,13 +81,13 @@ typedef struct PlaceVtbl {
     void (*start)();                  /* 0x88 Place_Start */
     void (*update)();                 /* 0x8C Place_Update */
     void (*onDreamSysNotify)();       /* 0x90 Place_OnDreamSysNotify: DreamSys messages */
-    void (*onEvent10)();              /* 0x94 Place_OnTimeUp, DreamSys message 10 */
-    void (*onEvent12)();              /* 0x98 Place_OnLinkDynamic */
-    void (*onEvent13)();              /* 0x9C Place_OnLinkStatic */
-    void (*onEvent14)();              /* 0xA0 Place_OnNextFlashback */
-    void (*onEvent15)();              /* 0xA4 Place_OnLink15 */
-    void (*onEvent16)();              /* 0xA8 Place_OnLink16 */
-    void (*onEvent17)();              /* 0xAC Place_OnLink17 */
+    void (*onTimeUp)();              /* 0x94 Place_OnTimeUp, DreamSys message 10 */
+    void (*onLinkDynamic)();              /* 0x98 Place_OnLinkDynamic */
+    void (*onLinkStatic)();              /* 0x9C Place_OnLinkStatic */
+    void (*onNextFlashback)();              /* 0xA0 Place_OnNextFlashback */
+    void (*onLinkFacing)();              /* 0xA4 Place_OnLinkFacing */
+    void (*onLinkFall)();              /* 0xA8 Place_OnLinkFall */
+    void (*onLinkExtra)();              /* 0xAC Place_OnLinkExtra */
     void (*onFaderNotify)();          /* 0xB0 Place_OnFaderNotify */
     void (*onMapNotify)();            /* 0xB4 Place_OnMapNotify: map messages */
     s32 (*spawnCell)();               /* 0xB8 Place_SpawnCell */
@@ -102,9 +102,9 @@ typedef struct PlaceVtbl {
 
 /* Place +0x6C to +0x7C, the four words the scenery code keeps a pointer to (g_placeRefs). */
 typedef struct PlaceRefs {
-    SoundBank *handlerList; /* +0x0 list the spot handlers are registered in (HandlerNode_Start) */
+    SoundBank *soundBank; /* +0x0 list the spot handlers are registered in (HandlerNode_Start) */
     PlaceObj *models;     /* +0x4 slot 0x80 returns a model by index (Scenery_Build, Scenery_SetPlaceRefs) */
-    void *font;           /* +0x8 font of the "Pause" text and of the kind 2 and 3 scenery parts */
+    void *etcTim;           /* +0x8 font of the "Pause" text and of the kind 2 and 3 scenery parts */
     View *view;           /* +0xC the view again, set by load */
 } PlaceRefs;
 

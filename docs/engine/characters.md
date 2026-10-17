@@ -28,7 +28,7 @@ Dumps of these tables: `work/hunt3/spawns.py`.
 
 ### Rules
 
-`Sym_CheckRule(day number, group)`; a passing rule sets the group's done flag. A negative rule is "once": it uses the same test on its absolute value but fails while the done flag is set. `Sym_LoadModels` clears every done flag when a DreamRunner is made, so "once" means once per dream (likely, from that call site).
+`Sym_CheckRule(day number, group)`; a passing rule sets the group's done flag. A negative rule is "once": it uses the same test on its absolute value but fails while the done flag is set. `Sym_ResetGroupsAndLoadSpy` clears every done flag when a DreamRunner is made, so "once" means once per dream (likely, from that call site).
 
 | Rule | Passes when |
 | --- | --- |
@@ -43,7 +43,7 @@ Dumps of these tables: `work/hunt3/spawns.py`.
 | 21 | odd day |
 | others below 10 | always |
 
-The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). `Sym_CheckExtraListType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
+The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). `Sym_EnableExtraListForType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
 
 ## The entity class
 
@@ -53,7 +53,7 @@ The colour is the running day point at the moment the chunk loads ([moods](dream
 | Model, an Actor | `model.c` | 0x98 | 0x8008A6C4 | `Model_Construct` |
 | Entity, a Model | `entity.c` | 0x108 | 0x80089AD4, class word 0x1F234 | `Entity_Construct` |
 
-Model splits a model file into parts (one per TMD object), plays one animation frame by frame (`Model_TickAnimation`, `Model_ApplyFrame`) and keeps a target: `Model_SetTarget` makes the entity and DreamSys watch each other, which is how entity events reach DreamSys. Actor gives the moves (`Actor_MoveZ`, `Actor_MoveX`, `Actor_MoveY` along the model's own axes, `Actor_MoveZOnGround` with the ground test) and sends the box list after each move ([walls](links.md#walls-and-tile-flags)).
+Model splits a model file into parts (one per TMD object), plays one animation frame by frame (`Model_Tick`, `Model_ApplyFrame`) and keeps a target: `Model_SetTarget` makes the entity and DreamSys watch each other, which is how entity events reach DreamSys. Actor gives the moves (`Actor_MoveZ`, `Actor_MoveX`, `Actor_MoveY` along the model's own axes, `Actor_MoveZOnGround` with the ground test) and sends the box list after each move ([walls](links.md#walls-and-tile-flags)).
 
 `Entity_Create(type, source, soundBank)` allocates 0x108 bytes and constructs: the Model part, the type, no effects, then `Entity_Init` (light flags 1 when the record's points byte is 1 to 9, tick mode 0x42, asleep). `Entity_Attach` attaches the model; a record with wake mode 0 wakes at once, and with handler range 0 also starts its handler at once.
 
@@ -75,9 +75,9 @@ The entity slots that matter:
 
 ### One tick
 
-`Entity_Update` runs on each clock tick: `Entity_CheckWake`, and `Entity_CheckSleep` while awake (which also runs `Entity_CheckLinkRadius`); `Entity_CheckHandlerStart`, and `Entity_CheckHandlerStop` while the handler runs; `Entity_CheckTouch`; then the model's update (`Model_TickAnimation`). Tick mode 0x42 makes the model's per-tick function slot 0x11C, `Entity_RunHandler`, which runs the handler (`HandlerNode_Run`) while `Entity_StartHandler` has the tick on; then the animation steps one frame.
+`Entity_Update` runs on each clock tick: `Entity_CheckWake`, and `Entity_CheckSleep` while awake (which also runs `Entity_CheckLinkRadius`); `Entity_CheckHandlerStart`, and `Entity_CheckHandlerStop` while the handler runs; `Entity_CheckTouch`; then the model's update (`Model_Tick`). Tick mode 0x42 makes the model's per-tick function slot 0x11C, `Entity_RunHandler`, which runs the handler (`HandlerNode_Run`) while `Entity_StartHandler` has the tick on; then the animation steps one frame.
 
-Every range test goes through `Entity_IsInRange`, which calls `DreamSys_TestPointAhead`: the point `range << 11` units ahead of the dreamer along the camera's sight line must fall within `boxSize << 11` of the entity on each axis (`0x800 / -boxSize` when negative; `Entity_IsWithinBox`). So "in range" means "looked at from that distance", not a circle around the dreamer. A record with a points byte of -1 to -9 raises the tested point by `points * 1024`.
+Every range test goes through `Entity_IsAtPointAhead`, which calls `DreamSys_TestPointAhead`: the point `range << 11` units ahead of the dreamer along the camera's sight line must fall within `boxSize << 11` of the entity on each axis (`0x800 / -boxSize` when negative; `Entity_IsWithinBox`). So "in range" means "looked at from that distance", not a circle around the dreamer. A record with a points byte of -1 to -9 raises the tested point by `points * 1024`.
 
 ### The record
 
@@ -90,7 +90,7 @@ Every range test goes through `Entity_IsInRange`, which calls `DreamSys_TestPoin
 | 0x3 | wake mode | 0 at spawn, 1 in range, 2 out of range, 3 in range and `(rand() & 0x7F) == 0`, 4 that die anywhere |
 | 0x4 | sleep mode | 1 in range, 2 out of range, 10 and up after `mode * 15` ticks awake |
 | 0x5 | wake range | range of the wake and sleep tests |
-| 0x6 | touch range | negative: the entity also turns to face the dreamer (`Entity_FaceDreamer`) |
+| 0x6 | touch range | negative: the entity also turns to face the dreamer (`SceneNode_TurnToward`) |
 | 0x7 | link | above 0 stage link - 1, below 0 stage `~link`; 0x7F ends the dream |
 | 0x8 | video | event video + 1; with a negative link, the link radius `<< 9` |
 | 0x9 | box size | last parameter of every range test |
@@ -116,7 +116,7 @@ All are ignored while a transition runs; 9, 11 and 12 do nothing in flashback mo
 
 A handler has the form `handler(entity, node)`. `Entity_StartHandler` registers the record's handler in the entity's HandlerNode (`HandlerNode_Start`, node id type + 1), plays the animation and starts the tick. Each tick `HandlerNode_Run` resets the node's 3 voices, calls the handler, then plays the sounds the handler put in `node->voices[i].sound` and `octave`, at a volume lowered by `node->fade` (the handler usually sets it from `Entity_GetSoundFade`). A sound of -2 stops the voice.
 
-Handlers count their own ticks in `entity->handlerTicks` (0 on the first tick, so first-tick draws happen once per wake) and keep a state in `entity->state` (1 stops `Entity_CheckWake` for good). What they do with them: move (`moveZ`, `moveZOnGround`), turn (`rotate`, `Entity_FaceDreamer`), resize (`scale`), read the CIRCLE flag (`DreamSys_WasCirclePressed`), stop or give back the controls (`DreamSys_SetControls`), flash the screen (`Entity_StartEffect`, a Fade), post events, and call DreamSys or the map.
+Handlers count their own ticks in `entity->handlerTicks` (0 on the first tick, so first-tick draws happen once per wake) and keep a state in `entity->state` (1 stops `Entity_CheckWake` for good). What they do with them: move (`moveZ`, `moveZOnGround`), turn (`rotate`, `SceneNode_TurnToward`), resize (`scale`), read the CIRCLE flag (`DreamSys_WasCirclePressed`), stop or give back the controls (`DreamSys_SetControls`), flash the screen (`Entity_StartEffect`, a Fade), post events, and call DreamSys or the map.
 
 Handlers are named `Behavior_TypeNNN` after their entity type until their character is known (`Behavior_Astronaut`, `Behavior_FlyingTrain`, `Behavior_MazePenguin`). Some characters are now known while their handler keeps its type name: `Behavior_Type85` is the Violence District gunman; `Behavior_Type81` runs the Natural World lions, types 81 and 120 on one model, and draws a temper at the first tick (`rand() & 1`, then `state = rand() % 3`: calm 2 times in 3, a charge or a stare that posts event 12, 1 in 6 each); `Behavior_Type31` is the Abyss Demon, which holds the controls until its animation has played once, then posts event 10. Record 81 is the only one with link 0x7F, so walking into a savannah lion ends the dream, while record 120 links to stage 7. Player view of many of them: [Rare sights](../discoveries.md#rare-sights), [characters that answer to CIRCLE](../discoveries.md#-characters-that-answer-to-circle).
 
@@ -126,7 +126,7 @@ The Grey Man is entity type 98, built on the only Sym model the game loads.
 
 | Step | Function |
 | --- | --- |
-| Model | `Sym_LoadModels` (DreamRunner init) loads `ETC\SYMSPY.MOM` into `g_spyModel`; the loop stops before `ETC\SYMDOG.MOM` |
+| Model | `Sym_ResetGroupsAndLoadSpy` (DreamRunner init) loads `ETC\SYMSPY.MOM` into `g_spyModel`; the loop stops before `ETC\SYMDOG.MOM` |
 | Entity | `Sym_InitStage` (each `Place_Setup`) creates `Entity_Create(0x62, ...)` on it, not attached |
 | Spawn | `Sym_SpawnOrSpy`: when a slot's day flag blocks it, the stage is not 0, `rand() % 12 == 0` and the day number is even, so only flag-1 slots can hold him |
 | Placement | `Sym_SpawnSpy`: detach, then attach at `SceneNode_LocalToWorld(dreamer, (0, -200, 8000))`, facing the dreamer |

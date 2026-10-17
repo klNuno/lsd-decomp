@@ -557,7 +557,9 @@ scale_view_param = 0x8003F674; // type:func size:0xF0
 select_max_param = 0x8003F764; // type:func size:0xC8
 len_param = 0x8003F82C; // type:func size:0x1C
 GsGetLw = 0x8003F848; // type:func size:0x2C4
+GsSetNearClip = 0x8003FB0C; // type:func
 Gssub_make_matrix = 0x8003FB1C; // type:func
+GsSetWorkBase = 0x8003FBE4; // type:func
 GsDrawOt = 0x8003FBF4; // type:func size:0x24
 GsClearOt = 0x8003FC18; // type:func size:0x58
 GsSetLightMode = 0x8003FC70; // type:func size:0x8C
@@ -681,3 +683,9 @@ D_8006D61A = 0x8006D61A; // defined:True // libcd state byte
 D_8006D8D9 = 0x8006D8D9; // defined:True // libcd state byte
 D_8006D8DA = 0x8006D8DA; // defined:True // libcd state byte
 D_8006DD3E = 0x8006DD3E; // defined:True // libspu state halfword
+
+// LIBGS commons the game reads, named by the Sony code that writes them (names audit review, 2026-10-17).
+GsOUT_PACKET_P = 0x8008E794; // libgs GLOBAL.OBJ common, GsSortSprite and GsSortBg load it, write packets and store it back advanced, GsSetWorkBase stores the frame packets there, Render_SortModel reads and advances it
+GsLIGHT_MODE = 0x800902E0; // libgs common of GS_101 to GS_127, GsInit3D clears it, GsSetLightMode (GS_108.OBJ) writes its mode, Render_SortModel reads it to pick the depth cue shift
+GsCLIP3near = 0x800902E4; // libgs common, GsInit3D stores 10, GsSetNearClip stores its argument (View_Render passes View.nearZ)
+GsCLIP3far = 0x8008E9D8; // libgs common (likely), GsInit3D stores 0x3FFF, the libgs far default, no setter is linked

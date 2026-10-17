@@ -117,7 +117,7 @@ void Sound_DestroyBank(SoundBank *bank) {
     File_GetBackendVtbl()->destroy(bank);
 }
 
-void Sound_UpdateBank(SoundBank *bank) {
+void Sound_OnBankLoaded(SoundBank *bank) {
     s8 fullPath[0x20];
     u8 *oldVabBuffer;
     s16 ret;

@@ -3,6 +3,7 @@
 #include "game/gs.h"
 #include "game/render.h"
 #include "psyq/libgte.h"
+#include "psyq/libgs.h"
 
 /*
  * File boundaries: likely (docs/layout.md)
@@ -12,7 +13,7 @@ s32 g_clipDivisionForced; /* Render_ForceClipDivision: when set, g_clipForcedDiv
 s32 g_clipForcedDivision;
 
 /*
- * The model renderer (Render_SortModel to the end): Scene_DrawNode calls Render_SortModel for each
+ * The model renderer (Render_SortModel to the end): View_DrawNode calls Render_SortModel for each
  * scene node with its ordering table, an OT shift and the scratchpad at 0x1F800000 as work
  * area (TmdCtx). It walks the model's primitive groups (u16 count, u16 type), projects each
  * face with the GTE, culls it, writes one GPU packet per face and links it into the ordering
@@ -416,12 +417,10 @@ static void *Render_AddPolyGT4(PolyGT4 *prim, TmdCtx *ctx);
 static void Render_InitClipSlots(u8 **slots, u8 *area, s32 count);
 extern s32 g_renderUseLightMode; /* attribute bit 5 */
 extern s32 g_renderObjLightMode; /* attribute bits 3-4 */
-extern s32 g_gsLightMode;
-extern u8 *g_packetCursor; /* next free byte of the packet buffer, set by the psyq func_8003FBE4 */
 extern TmdRgb g_texturedRgb; /* {0x80, 0x80, 0x80} in .sdata */
 
-/* Sorts one model into the ordering table (called by Scene_DrawNode for each scene node) */
-void Render_SortModel(TmdObject *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
+/* Sorts one model into the ordering table (called by View_DrawNode for each scene node) */
+void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     TmdCtx *ctx;
     GpuPacket prim;
     TmdFace packet;
@@ -436,10 +435,10 @@ void Render_SortModel(TmdObject *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     ctx->shift = shift;
     Render_InitClipSlots(ctx->triClip.b, g_clipTriWork.b, 3);
     Render_InitClipSlots(ctx->quadClip.b, g_clipQuadWork.b, 4);
-    remaining = object->model->primitiveCount;
-    packet.b = object->model->primitives;
-    ctx->vertices = object->model->vertices;
-    ctx->normals = object->model->normals;
+    remaining = object->tmd->primitiveCount;
+    packet.b = object->tmd->primitives;
+    ctx->vertices = object->tmd->vertices;
+    ctx->normals = object->tmd->normals;
     if (object->coord->super != NULL) {
         gte_ReadRotMatrix(&ctx->savedRot);
         gte_MulMatrix0(&object->coord->super->workm, &object->coord->workm, &object->coord->workm);
@@ -451,13 +450,13 @@ void Render_SortModel(TmdObject *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     g_renderObjLightMode = (object->attribute >> 3) & 3;
     ctx->unk_08 = 10;
     ctx->baseRgb = g_texturedRgb;
-    if ((g_renderUseLightMode != 0 && g_gsLightMode != 0) || g_renderObjLightMode != 0) {
+    if ((g_renderUseLightMode != 0 && GsLIGHT_MODE != 0) || g_renderObjLightMode != 0) {
         ctx->depthShift = 9;
     } else {
         ctx->depthShift = 16;
     }
     while (remaining != 0) {
-        prim.b = g_packetCursor;
+        prim.b = GsOUT_PACKET_P;
         ctx->type = packet.head->type & 0xFD07;
         count = packet.head->count;
         ctx->semiTrans = (*(u32 *)packet.head >> 25) & 1;
@@ -718,7 +717,7 @@ void Render_SortModel(TmdObject *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
         default:
             return;
         }
-        g_packetCursor = prim.b;
+        GsOUT_PACKET_P = prim.b;
     }
 }
 

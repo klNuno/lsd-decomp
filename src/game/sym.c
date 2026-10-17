@@ -54,7 +54,7 @@ static s32 Sym_SpawnGroup();
 extern SpawnGroup *g_spawnGroups[];
 extern s8 g_spawnGroupCounts[];
 
-static void Sym_CheckExtraListType(s32 type);
+static void Sym_EnableExtraListForType(s32 type);
 s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
 static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 place);
 static s32 Sym_CheckColorRule(s32 rule);
@@ -75,7 +75,7 @@ extern SpawnPlace g_spawnPlaces[];
 extern SpawnPlaceOffset g_spawnPlaceOffsets[];
 extern u8 g_spawnPlaceRotations[];
 
-void Sym_LoadModels(void) {
+void Sym_ResetGroupsAndLoadSpy(void) {
     FileSource file;
     u32 i;
     s32 j;
@@ -137,7 +137,7 @@ static void Sym_InitExtraList(s32 stage) {
     Link_SetExtraListOn(extraList);
 }
 
-static void Sym_CheckExtraListType(s32 type) {
+static void Sym_EnableExtraListForType(s32 type) {
     switch (type) {
         case 0xB:
         case 0x38:
@@ -253,7 +253,7 @@ static s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml
 
     if (Sym_CheckRule(dayNumber, group) != 0) {
         place = group->places;
-        Sym_CheckExtraListType(group->type);
+        Sym_EnableExtraListForType(group->type);
         model = squareObj->vtbl->getMom(squareObj, group->model);
         source.model = model;
         placesEnd = group->places + 4;
@@ -284,7 +284,7 @@ s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group) {
         p->done = 1;
         return 1;
     }
-    /* a negative rule passes once, until Sym_LoadModels clears the flag */
+    /* a negative rule passes once, until Sym_ResetGroupsAndLoadSpy clears the flag */
     if (rule < 0 && p->done != 0) {
         return 0;
     }
@@ -395,6 +395,6 @@ static void Sym_SpawnSpy(SpyModel *spyModel) {
         spy->vt->detach(spy);
         SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->spawnOffset, 0);
         spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, g_symClock, g_symMap, placement);
-        Entity_FaceDreamer(spyModel->spy, g_symDreamSys, 1, 0, 0);
+        SceneNode_TurnToward(spyModel->spy, g_symDreamSys, 1, 0, 0);
     }
 }

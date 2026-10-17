@@ -19,7 +19,7 @@ another cut (each guess says which).
 | --- | --- | --- | --- |
 | [`main.c`](../src/game/main.c) | `main` @0x800118DC | proven | first game code, then psyq/80011994 (2MBYTE, LIBAPI, MALLOC) |
 | *psyq/80011994* | Sony: 2MBYTE,LIBAPI,MALLOC | | |
-| [`scene_draw.c`](../src/game/scene_draw.c) | `Scene_DrawNode` @0x80012064 | proven | one function between psyq/80011994 and psyq/80012768 |
+| [`scene_draw.c`](../src/game/scene_draw.c) | `View_DrawNode` @0x80012064 | proven | one function between psyq/80011994 and psyq/80012768 |
 | *psyq/80012768* | Sony: LIBAPI,LIBC2,LIBGS,LIBGTE | | |
 | [`heap.c`](../src/game/heap.c) | `Heap_Create..Heap_IsBusy` @0x80017A20 | guess | start proven (psyq/80012768 before); Heap, Object and List with Heap_SetBusy/IsBusy after Object (gp g_heapBusy, sdata right after g_currentHeap) read as one file; heap.c plus object.c is the alternative; types already grouped in heap.h |
 | [`render.c`](../src/game/render.c) | `Render_SortModel..Render_ForceClipDivision` @0x80018464 | likely | end proven (psyq/8001A564 LIBGTE after); gp g_clip*/g_texturedRgb and an sdata inversion bind all 27 functions; nothing ties them to Heap/Object; reload carry Render_ProjectTri -> Render_ProjectQuad (TRAPS) inside |
@@ -111,7 +111,7 @@ another cut (each guess says which).
 | [`stage_map.c`](../src/game/stage_map.c) | `StageMap_New..StageMap_GetVtbl` @0x8004A4C8 | likely | data inversions bind 34..94 (MapTile_Tell, Stage_PlaceToWorld inside) |
 | [`dream_view.c`](../src/game/dream_view.c) | `DreamView_New..DreamView_GetVtbl` @0x8004D254 | likely | class ends with GetVtbl, vtable in class order |
 | [`map_tile.c`](../src/game/map_tile.c) | `MapTile_New..MapTile_GetVtbl` @0x8004D38C | likely | class ends with GetVtbl, last data of the unit |
-| [`menu.c`](../src/game/menu.c) | `Menu_New..Menu_GetVtbl` @0x8004D518 | likely | rodata object B (string after DreamRunner_OnStageMessage jtbl) proves a boundary in (0x80049EB4, 0x8004D578]; Menu_New opens the class; gp g_cardTitle etc. bind Menu_Init..Menu_GetVtbl |
+| [`menu.c`](../src/game/menu.c) | `Menu_New..Menu_GetVtbl` @0x8004D518 | likely | rodata object B (string after DreamRunner_OnPlaceMessage jtbl) proves a boundary in (0x80049EB4, 0x8004D578]; Menu_New opens the class; gp g_cardTitle etc. bind Menu_Init..Menu_GetVtbl |
 | [`card.c`](../src/game/card.c) | `Card_New..Card_SetTitleLetter` @0x8004E2E0 | likely | end proven (psyq/800508E8 LIBCARD after); data and sdata inversions bind 41..76 |
 | *psyq/800508E8* | Sony: LIBAPI,LIBC2,LIBCARD | | |
 | [`comment_object.c`](../src/game/comment_object.c) | `CommentObject_New..CommentObject_GetVtbl` @0x80050BA8 | likely | start proven (psyq/800508E8 before); end proven to lie in (CommentObject_SetChar, StringList_Open]: FONTICON is stored twice (cc1 merges equal literals per file) and gp g_alphabet binds 1..25; exact cut at the class end likely |
@@ -124,7 +124,7 @@ another cut (each guess says which).
 | [`graph.c`](../src/game/graph.c) | `Graph_New..Graph_GetVtable` @0x80057F68 | likely | ETC\ETCSE (Graph_Init) after the Place jtbl proves a boundary before Graph_Init; [ETCSE][ETC\HGRAPH.TIM] is 0x1C bytes so the DreamSys jtbl at 0x80011788 is 8-aligned in its own object: the 0x80058078 cut is not forced; one class |
 | [`dream_sys.c`](../src/game/dream_sys.c) | `DreamSys_New..DreamSys_GetVtable` @0x80058774 | likely | data inversions bind DreamSys_Reset..DreamSys_GetVtable (Mood_* inside); jtbls of DreamSys_OnPad and DreamSys_OnEntityEvent |
 | [`dream_link.c`](../src/game/dream_link.c) | `Nav_InitFlags..Day_FindSpecial` @0x8005BA50 | guess | gp g_navFlags binds 112..128; Sym strings after the DreamSys jtbl prove a boundary after DreamSys_GetVtable, Link_Find, Spawn_PickFromMood or Day_FindSpecial; could close dream_sys.c |
-| [`sym.c`](../src/game/sym.c) | `Sym_LoadModels..Sym_SpawnSpy` @0x8005C508 | likely | rodata object F starts with its strings (proven boundary in (0x8005B03C, 0x8005C508]); gp g_sym* and data inversions bind 0..16 |
+| [`sym.c`](../src/game/sym.c) | `Sym_ResetGroupsAndLoadSpy..Sym_SpawnSpy` @0x8005C508 | likely | rodata object F starts with its strings (proven boundary in (0x8005B03C, 0x8005C508]); gp g_sym* and data inversions bind 0..16 |
 | [`entity.c`](../src/game/entity.c) | `Entity_Create..Behavior_Type129` @0x8005CFDC | likely | proven one file for Entity_Attach..Behavior_TinyLips: 670+ data inversions between entity records and behaviour tables; Entity_Create..Init and Behavior_Type129 by adjacency |
 | [`model.c`](../src/game/model.c) | `Model_New..Model_GetVtbl` @0x800655D4 | likely | end proven (end of .text); class ends with GetVtbl, g_modelVtbl last |
 

@@ -98,8 +98,8 @@ typedef struct MenuVtbl {
     void (*refreshFromSave)(struct Menu *, s32);         /* 0x124 Menu_RefreshFromSave */
     void (*openCard)(struct Menu *);                     /* 0x128 Menu_OpenCard */
     void (*closeCard)(struct Menu *);                    /* 0x12C Menu_CloseCard */
-    void (*save)(struct Menu *);                         /* 0x130 SaveMenu_Save */
-    void (*load)(struct Menu *);                         /* 0x134 SaveMenu_Load */
+    void (*save)(struct Menu *);                         /* 0x130 Menu_Save */
+    void (*load)(struct Menu *);                         /* 0x134 Menu_Load */
     void (*onCardNotify)(struct Menu *, s32 **, s32);    /* 0x138 Menu_OnCardNotify */
 } MenuVtbl;
 

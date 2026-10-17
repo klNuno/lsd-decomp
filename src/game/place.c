@@ -22,14 +22,14 @@
 /* The dream runner's object at +0xC (src/game/dream_runner.c): slot 0xC8 registers a callback with an argument. */
 typedef struct PlaceOwnerObjVtbl {
     u8 pad_00[0xC8];
-    void (*setCallback)(void *, void (*)(Place *, s32, s32, s32), void *);
+    void (*setChunkLoader)(void *, void (*)(Place *, s32, s32, s32), void *);
 } PlaceOwnerObjVtbl;
 typedef struct PlaceOwnerObj {
     PlaceOwnerObjVtbl *vt;
 } PlaceOwnerObj;
 typedef struct PlaceOwner {
     u8 pad_00[0xC];
-    PlaceOwnerObj *callbackObj;
+    PlaceOwnerObj *root;
 } PlaceOwner;
 static void Place_CheckTextureLoad(Place *place, Tix *loader);
 /* the vtable of task.c through this file's view of its slots, so not from game/task.h */
@@ -48,7 +48,7 @@ s32 g_placeProjectionOffset;
 extern s32 g_stageBoxMargins[];
 extern s32 g_stage0Bounds[];
 
-/* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreateStage. */
+/* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreatePlace. */
 void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s32 stage) {
     void *place;
 
@@ -69,8 +69,8 @@ void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void
     place->texLoading = 1;
     place->music = music;
     place->stage = stage;
-    place->refs.handlerList = handlerList;
-    place->refs.font = font;
+    place->refs.soundBank = handlerList;
+    place->refs.etcTim = font;
     place->refs.models = models;
     place->pauseOpen = 0;
     place->exitArmed = 0;
@@ -108,8 +108,8 @@ void Place_EmptySlot40(void) {
 void Place_Attach(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
     PlaceOwnerObj *obj;
 
-    obj = owner->callbackObj;
-    obj->vt->setCallback(obj, &Place_GetChunkPath, place);
+    obj = owner->root;
+    obj->vt->setChunkLoader(obj, &Place_GetChunkPath, place);
     place->dreamSys = dreamSys;
     Task_GetVtbl()->attach(place, owner, 1);
     place->vt->watch(place, dreamSys);
@@ -367,27 +367,27 @@ void Place_OnDreamSysNotify(Place *place, s32 sender, s32 message) {
         event = message - 10;
         switch (event) {
             case 0:
-                place->vt->onEvent10(place, sender, event);
+                place->vt->onTimeUp(place, sender, event);
                 break;
             case 1:
                 break;
             case 2:
-                place->vt->onEvent12(place, sender, event);
+                place->vt->onLinkDynamic(place, sender, event);
                 break;
             case 3:
-                place->vt->onEvent13(place, sender, event);
+                place->vt->onLinkStatic(place, sender, event);
                 break;
             case 4:
-                place->vt->onEvent14(place, sender, event);
+                place->vt->onNextFlashback(place, sender, event);
                 break;
             case 5:
-                place->vt->onEvent15(place, sender, event);
+                place->vt->onLinkFacing(place, sender, event);
                 break;
             case 6:
-                place->vt->onEvent16(place, sender, event);
+                place->vt->onLinkFall(place, sender, event);
                 break;
             case 7:
-                place->vt->onEvent17(place, sender, event);
+                place->vt->onLinkExtra(place, sender, event);
                 break;
         }
     } else if (message >= 9) {
@@ -438,7 +438,7 @@ void Place_OnLinkDynamic(Place *place) {
     DreamSys *dreamSys;
 
     if (place->dreamSys->stage < 0) {
-        place->vt->onEvent13(place);
+        place->vt->onLinkStatic(place);
     } else {
         place->state = 5;
         dreamSys = place->dreamSys;
@@ -473,14 +473,14 @@ void Place_OnNextFlashback(Place *place) {
 }
 
 /* Slot 0xA4 */
-void Place_OnLink15(Place *place) {
+void Place_OnLinkFacing(Place *place) {
     place->state = 8;
     Place_StartFade(place, 0, 0, 6, 1);
     place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 1);
 }
 
 /* Slot 0xA8 */
-void Place_OnLink16(Place *place) {
+void Place_OnLinkFall(Place *place) {
     place->state = 10;
     Place_StartFade(place, 0, 0, 6, 1);
     place->dreamSys->vtbl->setMoveMode(place->dreamSys, 2);
@@ -488,7 +488,7 @@ void Place_OnLink16(Place *place) {
 }
 
 /* Slot 0xAC */
-void Place_OnLink17(Place *place) {
+void Place_OnLinkExtra(Place *place) {
     place->vt->notify(place, 0xB);
 }
 
@@ -551,7 +551,7 @@ s32 Place_SpawnCell(Place *place) {
     struct Mml *spawned;
 
     map = place->map;
-    slot = map->vtbl->currentSlot(map, &chunkKey);
+    slot = map->vtbl->notifiedSlot(map, &chunkKey);
     dreamSys = place->dreamSys;
     dayNumber = dreamSys->vtbl->getDayNumber(dreamSys, 0);
     spawned = Sym_SpawnOrSpy(slot->chunk->entities, &chunkKey, dayNumber);
@@ -600,7 +600,7 @@ void Place_UpdatePause(Place *place) {
     s32 ticks = place->pauseOpen;
 
     if (ticks == 0) {
-        place->pauseText = (Widget *)Label_Create(place->refs.font, 5, g_pauseText);
+        place->pauseText = (Widget *)Label_Create(place->refs.etcTim, 5, g_pauseText);
         place->pauseText->vtbl->show(place->pauseText, place->map, g_pauseTextPos);
         place->pauseText->vtbl->setColor(place->pauseText, g_pauseTextColor);
         place->pauseOpen = 1;

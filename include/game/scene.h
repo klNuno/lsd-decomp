@@ -29,7 +29,7 @@ typedef struct SceneVtbl {
     void (*destroy)();     /* 0x0C App_Destroy, empty */
     u8 pad_10[0x40 - 0x10];
     void (*seedRandom)();  /* 0x40 Scene_SeedRandom */
-    void (*setup)();       /* 0x44 Scene_Setup (scene, display, pad) */
+    void (*start)();       /* 0x44 Scene_Start (scene, display, pad) */
     void (*unk48)();       /* 0x48 func_8003B108, empty */
     void (*run)();         /* 0x4C App_Run, the scene loop */
     void (*showLogos)();   /* 0x50 Scene_ShowLogos */

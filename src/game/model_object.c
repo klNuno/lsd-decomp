@@ -29,7 +29,7 @@ typedef struct ClutPos {
 } ClutPos;
 
 static ObjectVtbl *ModelObject_GetVtbl(void);
-static void ModelObject_SetReady(void *modelObject);
+static void ModelObject_InitBoxCount(void *modelObject);
 
 /* Scratch buffer of ModelObject_GetBoxList: min x, y, z then max x, y, z */
 typedef struct ModelBoxBuf {
@@ -38,7 +38,7 @@ typedef struct ModelBoxBuf {
 } ModelBoxBuf;
 
 extern ObjectVtbl g_modelObjectVtbl;
-s32 g_modelObjectReady;
+s32 g_modelBoxCount;
 
 static void *ModelObject_NextPrim(ModelObject *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
 
@@ -67,7 +67,7 @@ void ModelObject_Init(ModelObject *modelObject, ModelEntry *tmdObject) {
     modelObject->entry = tmdObject;
     modelObject->vtbl = vtbl;
     modelObject->tmdObjectBase = (s32)tmdObject - 0xC;
-    ModelObject_SetReady(modelObject);
+    ModelObject_InitBoxCount(modelObject);
 }
 
 void ModelObject_SetValue(ModelObject *modelObject, ModelObjectValue *value) {
@@ -90,12 +90,12 @@ static ObjectVtbl *ModelObject_GetVtbl(void) {
     return &g_modelObjectVtbl;
 }
 
-static void ModelObject_SetReady(void *modelObject) {
-    g_modelObjectReady = 1;
+static void ModelObject_InitBoxCount(void *modelObject) {
+    g_modelBoxCount = 1;
 }
 
-s32 ModelObject_IsReady(ModelObject *modelObject) {
-    return g_modelObjectReady;
+s32 ModelObject_GetBoxCount(ModelObject *modelObject) {
+    return g_modelBoxCount;
 }
 
 static void ModelObject_ComputeBox(ModelObject *modelObject, u8 *out) {

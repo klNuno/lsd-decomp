@@ -66,7 +66,7 @@ typedef struct DreamSysObj28 {
 } DreamSysObj28;
 
 /* The 0x700-byte block the memory card saves and loads: DreamSys +0x178 to +0x878 (DreamSys_GetSaveBlock,
-   SaveMenu_Save, menu.h Menu +0xBC). Offsets below are from the block; add 0x178 for DreamSys. */
+   Menu_Save, menu.h Menu +0xBC). Offsets below are from the block; add 0x178 for DreamSys. */
 typedef struct SaveBlock {
     s32 magic;              /* 0x000 "J01" (g_saveMagic) */
     s32 year;               /* 0x004 */
@@ -130,7 +130,7 @@ typedef struct DreamSysVtbl {
     void (*getBoxList)();                                                 /* 0x08C SceneNode_GetBoxList */
     void (*sendShape)();                                                 /* 0x090 SceneNode_SendShape */
     void (*onPad)();                                                 /* 0x094 DreamSys_OnPad */
-    void (*tickTimer)(struct DreamSys *, s32, s32);                  /* 0x098 DreamSys_TickTimer */
+    void (*onClock)(struct DreamSys *, s32, s32);                  /* 0x098 DreamSys_OnClock */
     void (*routeMapMessage)();                                                 /* 0x09C DreamSys_RouteMapMessage */
     void (*checkContact)();                                                 /* 0x0A0 SceneNode_CheckContact */
     void (*worldToLocal)();                                                 /* 0x0A4 SceneNode_WorldToLocal */
@@ -243,7 +243,7 @@ typedef struct DreamSys {
         u8 *bytes;
     } pos;                  /* 0x14 its GsCOORDINATE2 (gs.h), as for entities */
     u8 pad_18[0x24 - 0x18];
-    u32 timer;              /* ticks of the dream, 15 per second (DreamSys_TickTimer) */
+    u32 timer;              /* ticks of the dream, 15 per second (DreamSys_OnClock) */
     DreamSysObj28 *contact;
     u8 pad_2C[0x44 - 0x2C];
     s32 transition;         /* link or event code while one runs, 0 when idle */
@@ -317,7 +317,7 @@ typedef struct DreamSys {
     s32 skipMoveBoxes;
     s32 (*linkStep)(struct DreamSys *); /* one of g_linkSteps, run until it returns 1 */
     s32 linkStepTick;
-    StagePlace linkTarget;
+    StagePlace linkStartPlace;
     u8 pad_922[0x924 - 0x922];
     s32 unk924;
 } DreamSys;

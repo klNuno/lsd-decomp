@@ -48,11 +48,11 @@ The disc paths of a stage come from the path table ([files and CD](files-and-cd.
 
 Task is the base of DreamRunner and Place ([`src/game/task.c`](../../src/game/task.c)); it derives from Screen, so both run through `Screen_Run` like the menu screens ([boot and objects](boot-and-objects.md)).
 
-`DreamRunner_Init` loads what lasts the whole dream: the effects bank `SND\SE` (the Task's own sound bank), the Grey Man model (`Sym_LoadModels`, [characters](characters.md)), `ETC\ETC.TIM`, `ETC\DREAMER.TMD`, the music bank (`Bgm_New(Music_PickBank(0))`), and in the runner context the DreamView, a Clock and the StageMap.
+`DreamRunner_Init` loads what lasts the whole dream: the effects bank `SND\SE` (the Task's own sound bank), the Grey Man model (`Sym_ResetGroupsAndLoadSpy`, [characters](characters.md)), `ETC\ETC.TIM`, `ETC\DREAMER.TMD`, the music bank (`Bgm_New(Music_PickBank(0))`), and in the runner context the DreamView, a Clock and the StageMap.
 
 ## The life of a place
 
-1. `DreamRunner_CreateStage` makes the place with `Place_New(sound, music, etcTim, dreamerModel, stage)` and calls its slot 0x44, `Place_Attach`. That registers `Place_GetChunkPath` as the map's chunk loader (StageMap slot 0xC8), keeps DreamSys, watches it and runs the Task inside the runner's loop.
+1. `DreamRunner_CreatePlace` makes the place with `Place_New(sound, music, etcTim, dreamerModel, stage)` and calls its slot 0x44, `Place_Attach`. That registers `Place_GetChunkPath` as the map's chunk loader (StageMap slot 0xC8), keeps DreamSys, watches it and runs the Task inside the runner's loop.
 2. `Screen_Run` calls slot 0x4C, `Place_Load`: it picks the music track and starts the texture-set loader (`Tix_Create`), points the view at DreamSys, calls `Scenery_Begin` for the ambience, sets the link period (16), the walking speed (3, or 2 in stage 0), the map bounds (stage 0 only, `g_stage0Bounds`), the view distance (0xA000), the ray height rule for stages 0, 3, 5 and 6 (`SceneNode_SetRayHeightCheck`) and the stage's box margin (`g_stageBoxMargins`), then state 5.
 3. On each display event 2, `Place_CheckTextureLoad` checks the loader. Done: the palette fades towards the ambience colour, then `Place_Setup`. Failed: the set is dropped, `Place_Setup` runs anyway and the time limit becomes elapsed + 30 s.
 4. `Place_Setup` sets the projection, hands the stage to the spawn code (`Sym_InitStage`), watches the map, gives it the ambience's ambient colour and lights and the stage's grid, and calls `DreamSys_EnterMap`, which puts the dreamer at its place and loads the chunks around it.

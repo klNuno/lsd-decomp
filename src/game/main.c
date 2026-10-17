@@ -22,6 +22,6 @@ void main(void) {
     Heap_SetCurrent(g_mainHeap);
     g_scene = Scene_New(&g_sceneSettings);
     display = Display_New();
-    g_scene->vtbl->setup(g_scene, display, Pad_New(0, 0));
+    g_scene->vtbl->start(g_scene, display, Pad_New(0, 0));
     g_scene->vtbl->run(g_scene);
 }

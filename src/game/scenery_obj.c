@@ -54,7 +54,7 @@ ActorVtbl *Actor_GetVtbl(void);
 extern s32 g_sceneryModelIndexes[];
 extern struct ClutPos g_sceneryModelClut;
 PlaceObj *g_sceneryModels;
-void *g_sceneryFont;
+void *g_sceneryEtcTim;
 View *g_sceneryView;
 SceneryVtbl *Scenery_GetVtbl(void);
 static void Scenery_Build(void *self, StageMap *map, Vec3 *origin);
@@ -257,7 +257,7 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
                 do {
                     pos = g_sceneryKind0SpinOrigin;
                     pos.z += off + *speed;
-                    (*part)->vt->setPosition(*part, &pos);
+                    (*part)->vt->movePos(*part, &pos);
                     i++;
                     off += 3;
                     (*part)->vt->setRotation(*part, 0, &g_sceneryKind0Spin);
@@ -277,7 +277,7 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
             }
         }
     }
-    *scenery->posBlock = 0;
+    *scenery->coord = 0;
 }
 
 static void Scenery_DeleteKind0Parts(Scenery *scenery) {
@@ -307,7 +307,7 @@ static void Scenery_BuildKind2(Scenery *scenery, s32 unused) {
         part = scenery->u.many.parts[1];
         value->x = g_sceneryKind2Offsets[scenery->variant];
         Actor_MovePos(part, value);
-        arg = scenery->dayMark;
+        arg = scenery->altColor;
         vt = part->vt;
         if (arg == 0) {
             arg = scenery->color;
@@ -334,7 +334,7 @@ static void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s
 
     part = scenery->u.many.parts;
     for (i = 0; i < 5; i++) {
-        *part = SceneryPart_New(index, 0, g_sceneryFont);
+        *part = SceneryPart_New(index, 0, g_sceneryEtcTim);
         (*part)->vt->attach(*part, scenery, 0);
         (*part)->vt->setColor(*part, scenery->color);
         if (scale != 0) {
@@ -381,7 +381,7 @@ void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view) 
     s32 i;
 
     g_sceneryModels = models;
-    g_sceneryFont = font;
+    g_sceneryEtcTim = font;
     g_sceneryView = view;
     for (i = 0; i < 2; i++) {
         ModelObject_SetClut(models->vt->getModel(models, g_sceneryModelIndexes[i]), &g_sceneryModelClut);

@@ -80,6 +80,10 @@ FALSE_HITS = {
 # strings): .agents/research/sony-suspects.md and work/sony/. Each address must
 # start a function and must not be named by the scan; main() stops otherwise.
 NEAR_MATCHES = {
+    # LIBGS GS_101, GS_102 and GS_124 share one 16-byte body (store a0 into a common), so the scan
+    # rejects them as ambiguous; named by the common they store to (2026-10-17, names audit review)
+    0x8003FB0C: "GsSetNearClip",
+    0x8003FBE4: "GsSetWorkBase",
     # LIBSND SSINIT.OBJ (3.3), units psyq/8003221C and psyq/80032588 (once game/spu.c and
     # game/seq_timer.c): the 11 functions follow the OBJ's labels one to one, _SsInit at 88 % of its
     # words, the other ten word for word (2026-10-17, names audit lane A2)

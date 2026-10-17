@@ -16,7 +16,7 @@ typedef struct Fraction {
 } Fraction;
 
 /* A scene node (vtable g_sceneNodeVtbl, class word 4, 0x44 bytes, src/game/scene_node.c; sender type 4):
-   a GsDOBJ2 with a parent; Scene_DrawNode draws a tree of them. Slots are left unprototyped. */
+   a GsDOBJ2 with a parent; View_DrawNode draws a tree of them. Slots are left unprototyped. */
 typedef struct SceneNodeVtbl {
     s32 classWord;             /* 0x00 4: sender type scene node */
     void *(*delete_)();       /* 0x04 Object_Delete */
@@ -125,7 +125,7 @@ void SceneNode_LocalToWorld(); /* unprototyped: dream_sys.c and sym.c pass a fou
 void SceneNode_GetRotation(SceneNode *node, Fraction *degrees);
 void SceneNode_LinkModel(SceneNode *node, ModelObject *model);
 s32 SceneNode_ProbeHeight(); /* unprototyped: actor.c calls it with no arguments */
-void Entity_FaceDreamer(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra);
+void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra);
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
 void Render_TransformLongVectors(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix);
 s32 Entity_IsWithinBox(s32 *center, s32 range, s32 *pos);

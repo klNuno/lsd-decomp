@@ -36,32 +36,32 @@ typedef struct Sprite {
     u8 pad_1C[0x8];
 } Sprite;
 
-/* Any scene node as Scene_DrawNode reads it (scene_node.h SceneNode, then the fields of the kind it draws:
+/* Any scene node as View_DrawNode reads it (scene_node.h SceneNode, then the fields of the kind it draws:
    Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
 typedef struct DrawNode {
     u32 *vtbl;              /* 0x00 vtable; its first word is the tag: low 4 bits the sender type, low byte the kind */
     ListNode *watched;      /* 0x04 the watched objects, its children among them (List_Next) */
     u8 pad_08[0x4];
     ParentNode *parent;     /* 0x0C */
-    TmdObject object;       /* 0x10 the GsDOBJ2 given to Render_SortModel: attribute bit 31 skips kind 0x24,
+    DObj2 object;       /* 0x10 the GsDOBJ2 given to Render_SortModel: attribute bit 31 skips kind 0x24,
                                the model is sorted only when set */
     u8 pad_1C[0x28];
     u16 priority;           /* 0x44 box priority; for kind 0x54 its address is the bg data */
     u8 pad_46[0x2];
     s32 percent;            /* 0x48 when set, the box size is a percent of half the screen */
     u8 pad_4C[0x4];
-    s32 boxW;               /* 0x50 box width, or its percent */
-    s32 boxH;               /* 0x54 box height, or its percent */
+    s32 boxX;               /* 0x50 box width, or its percent */
+    s32 boxY;               /* 0x54 box height, or its percent */
     BoxFill boxFill;        /* 0x58 */
     u8 pad_60[0x4];
     Sprite sprite;          /* 0x64 */
     u8 pad_88[0x18];
-    s32 scaleX;             /* 0xA0 sprite x scale, used with half the screen width */
-    s32 scaleY;             /* 0xA4 sprite y scale, used with half the screen height */
+    s32 spriteX;             /* 0xA0 sprite x scale, used with half the screen width */
+    s32 spriteY;             /* 0xA4 sprite y scale, used with half the screen height */
 } DrawNode;
 
 
-void Scene_DrawNode(View *view, DrawNode *node) {
+void View_DrawNode(View *view, DrawNode *node) {
     Matrix lsbuf;
     Matrix lwbuf;
     DrawNode *child;
@@ -120,7 +120,7 @@ void Scene_DrawNode(View *view, DrawNode *node) {
             if (scaled) {
                 child->object.coord->flg = 0;
             }
-            Scene_DrawNode(view, child);
+            View_DrawNode(view, child);
         }
     } while (iter != NULL);
 
@@ -131,18 +131,18 @@ void Scene_DrawNode(View *view, DrawNode *node) {
     } else if (kind == 0x64) {
         boxNode = node;
         if (boxNode->percent != 0) {
-            boxNode->boxFill.x = (view->screenSize.x >> 1) * boxNode->boxW / 100;
-            boxNode->boxFill.y = (view->screenSize.y >> 1) * boxNode->boxH / 100;
+            boxNode->boxFill.x = (view->screenSize.x >> 1) * boxNode->boxX / 100;
+            boxNode->boxFill.y = (view->screenSize.y >> 1) * boxNode->boxY / 100;
         } else {
-            boxNode->boxFill.x = boxNode->boxW;
-            boxNode->boxFill.y = boxNode->boxH;
+            boxNode->boxFill.x = boxNode->boxX;
+            boxNode->boxFill.y = boxNode->boxY;
         }
         GsSortBoxFill(&boxNode->boxFill, view->ot[view->buffer], boxNode->priority);
     } else if (kind != 0x44) {
         GsGetLws(node->object.coord, lw, ls);
         GsSetLightMatrix(lw);
         GsSetLsMatrix(ls);
-        if (node->object.model != NULL) {
+        if (node->object.tmd != NULL) {
             Render_SortModel(&node->object, view->ot[view->buffer], 14 - view->otBits, (struct TmdCtx *)0x1F800000);
         }
     } else {
@@ -154,8 +154,8 @@ void Scene_DrawNode(View *view, DrawNode *node) {
 
             sp = &spr->sprite;
             dim = &view->screenSize.x;
-            sp->x = spr->scaleX != 0 ? (dim[0] >> 1) * 100 / (10000 / spr->scaleX) : 0;
-            sp->y = spr->scaleY != 0 ? (dim[1] >> 1) * 100 / (10000 / spr->scaleY) : 0;
+            sp->x = spr->spriteX != 0 ? (dim[0] >> 1) * 100 / (10000 / spr->spriteX) : 0;
+            sp->y = spr->spriteY != 0 ? (dim[1] >> 1) * 100 / (10000 / spr->spriteY) : 0;
             sp->x += sp->mx;
             sp->y += sp->my;
             GsSortSprite(sp, view->ot[view->buffer], 0);

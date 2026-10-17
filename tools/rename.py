@@ -8,7 +8,7 @@ starting with # are skipped. OLD is a splat name (func_8005B03C, D_8008AC70) or 
 names; NEW follows docs/naming.md (Subsystem_VerbNoun for functions, g_name for globals).
 
 What it does:
-- rewrites OLD as a whole word in src/, include/ and docs/*.md;
+- rewrites OLD as a whole word in src/, include/, docs/ (every .md) and config/name_levels.tsv;
 - in config/symbol_addrs.txt, replaces OLD's line (keeping its attributes) or adds
   `NEW = 0xADDR; // type:func size:0xNN // evidence` under the names block, with the address and
   size read from build/lsd.elf;
@@ -36,8 +36,10 @@ def text_files():
         for p in (ROOT / sub).rglob("*"):
             if p.suffix in (".c", ".h", ".inc") and p.is_file():
                 yield p
-    for p in (ROOT / "docs").glob("*.md"):
+    for p in (ROOT / "docs").rglob("*.md"):
         yield p
+    if (ROOT / "config" / "name_levels.tsv").exists():
+        yield ROOT / "config" / "name_levels.tsv"  # the audit levels follow the rename
 
 
 def elf_symbols():

@@ -120,13 +120,13 @@ typedef struct ModelBaseVtbl {
     void (*onWallTouch)(void *self, void *sender, s32 message);  /* 0xE0 Actor_OnNode24, Entity_OnWallTouch in the entity class */
     void (*setSpeed)(void *self, s32 speed);               /* 0xE4 Actor_SetSpeed */
     u8 pad_E8[0xF0 - 0xE8];
-    void (*setAnim6Flag)(void *self, s32 value);           /* 0xF0 Model_SetAnim6Flag */
+    void (*setForwardContact)(void *self, s32 value);           /* 0xF0 Model_SetForwardContact */
     s32 (*load)(void *self, s32 source);                   /* 0xF4 Model_Load */
     void (*unload)(void *self);                            /* 0xF8 Model_Unload */
     u8 pad_FC[0x100 - 0xFC];
     s32 (*createParts)(void *self);                        /* 0x100 Model_CreateParts */
     void (*freeParts)(void *self);                         /* 0x104 Model_FreeParts */
-    void (*tickAnimation)(void *self);                     /* 0x108 Model_TickAnimation */
+    void (*tick)(void *self);                     /* 0x108 Model_Tick */
     void (*setTickMode)(void *self, s32 mode);             /* 0x10C Model_SetTickMode: 0x41, 0x42 or 0x43 */
     void (*startTick)(void *self);                         /* 0x110 Model_StartTick */
     void (*stopTick)(void *self);                          /* 0x114 Model_StopTick */
@@ -154,7 +154,7 @@ extern s32 g_moveYNeg64[];
 extern s32 g_scaleTiny;
 static s32 Entity_IsDreamerNear();
 static EntityVtbl *Entity_GetVtbl(void);
-static s32 Entity_IsInRange(Entity *entity, Vec3 *pos, s32 range, s32 param);
+static s32 Entity_IsAtPointAhead(Entity *entity, Vec3 *pos, s32 range, s32 param);
 extern s16 g_rotY9[];
 extern s16 g_rotYNeg9[];
 extern s32 g_moveYNeg512[];
@@ -179,7 +179,7 @@ extern s32 g_effectDefaultPos[];
 extern s32 g_effectDefaultSize[];
 extern s32 g_rotYNeg90;
 extern s32 g_scaleThinTall[];
-extern s16 g_scaleSquash[];
+extern s16 g_scaleNarrowTall[];
 extern s32 g_moveYNeg1500Z1024[];
 extern s16 g_rotYNegHalf[];
 static void Behavior_TrainRun(Entity *entity, HandlerNode *node, s32 turnTick, s32 leaveTick, s32 speed);
@@ -187,7 +187,7 @@ extern s32 g_moveYNeg4096[];
 extern s32 g_moveY64[];
 extern s32 g_moveXNeg64[];
 static void Entity_CheckLinkRadius();
-static s32 Entity_IsInRange(Entity *entity, Vec3 *pos, s32 range, s32 param);
+static s32 Entity_IsAtPointAhead(Entity *entity, Vec3 *pos, s32 range, s32 param);
 extern EntityVtbl g_entityVtbl;
 extern s8 g_type74ClearColor[];
 extern s32 g_moveYNeg256[];
@@ -333,7 +333,7 @@ void Entity_OnActorTouch(Entity *entity, void *sender, s32 message) {
                     message = 0xB;
                 }
             }
-            entity->vt->postEvent(entity, message);
+            entity->vt->notify(entity, message);
         }
     }
 }
@@ -351,7 +351,7 @@ void Entity_RunHandler(Entity *entity) {
 }
 
 /* Is pos within range << 11 of the dreamer; the record's points byte (+2), when -9 to -1, raises the tested height by points * 1024. */
-static s32 Entity_IsInRange(Entity *entity, Vec3 *pos, s32 range, s32 param) {
+static s32 Entity_IsAtPointAhead(Entity *entity, Vec3 *pos, s32 range, s32 param) {
     Vec3 point;
     u8 points;
 
@@ -445,7 +445,7 @@ void Entity_Sleep(Entity *entity) {
 
 void Entity_SetTouched(Entity *entity, s32 touched) {
     if (touched != 0) {
-        entity->vt->postEvent(entity, 9);
+        entity->vt->notify(entity, 9);
     }
     entity->touched = touched;
 }
@@ -482,7 +482,7 @@ s32 Entity_CheckWake(Entity *entity) {
         if (record->wakeRange == 0) {
             goto done;
         }
-        if (Entity_IsInRange(entity, &entity->pos.coord->coord.t, record->wakeRange, record->boxSize) != 0) {
+        if (Entity_IsAtPointAhead(entity, &entity->pos.coord->coord.t, record->wakeRange, record->boxSize) != 0) {
             if (record->wakeMode == 1) {
                 goto set1;
             }
@@ -524,7 +524,7 @@ s32 Entity_CheckSleep(Entity *entity) {
             if (mode >= 10) {
                 sleep = entity->timer == (u32)(mode * 15);
             } else if (record->wakeRange != 0) {
-                inRange = Entity_IsInRange(entity, &entity->pos.coord->coord.t, record->wakeRange, record->boxSize);
+                inRange = Entity_IsAtPointAhead(entity, &entity->pos.coord->coord.t, record->wakeRange, record->boxSize);
                 if (inRange != 0) {
                     if (record->sleepMode == 1) {
                         sleep = 1;
@@ -554,12 +554,12 @@ s32 Entity_CheckTouch(Entity *entity) {
             if (range < 0) {
                 range = ~range + 1;
             }
-            if (Entity_IsInRange(entity, pos, range, record->boxSize) != 0) {
+            if (Entity_IsAtPointAhead(entity, pos, range, record->boxSize) != 0) {
                 entity->vt->setTouched(entity, 1);
             }
         }
         if (record->touchRange < 0) {
-            Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+            SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         }
     }
     return entity->touched;
@@ -580,7 +580,7 @@ s32 Entity_CheckHandlerStart(Entity *entity) {
                     if (range < 0) {
                         range = ~range + 1;
                     }
-                    if (Entity_IsInRange(entity, pos, range, record->boxSize) != 0) {
+                    if (Entity_IsAtPointAhead(entity, pos, range, record->boxSize) != 0) {
                         entity->vt->startHandler(entity);
                     }
                 }
@@ -597,7 +597,7 @@ static void Entity_CheckLinkRadius(Entity *entity, s32 arg1) {
     if (g_entityRecords[entity->type].link < 0) {
         radius = g_entityRecords[entity->type].video;
         if ((radius != 0) && (Entity_IsDreamerNear(entity, radius << 9) != 0)) {
-            entity->vt->postEvent(entity, 0xA);
+            entity->vt->notify(entity, 0xA);
         }
     }
 }
@@ -625,7 +625,7 @@ s32 Entity_CheckHandlerStop(Entity *entity) {
         if (entity->handlerActive != 0) {
             record = &g_entityRecords[entity->type];
             range = record->handlerRange;
-            if ((range < 0) && (Entity_IsInRange(entity, &entity->pos.coord->coord.t, ~range + 1, record->boxSize) == 0)) {
+            if ((range < 0) && (Entity_IsAtPointAhead(entity, &entity->pos.coord->coord.t, ~range + 1, record->boxSize) == 0)) {
                 entity->vt->stopHandler(entity);
             }
         }
@@ -698,10 +698,10 @@ void Behavior_Type1(Entity *entity, HandlerNode *node) {
         node->voices[2].sound = 0x14;
         entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     entity->vt->moveZ(entity, -0x5A, 0);
     if (entity->handlerTicks == 0x1E) {
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     }
 }
 
@@ -729,16 +729,16 @@ void Behavior_Type7(Entity *entity, HandlerNode *node) {
         entity->vt->moveZ(entity, -0x140, 0);
         return;
     }
-    if (entity->handlerTicks >= 0x38 || Entity_IsInRange(entity, &entity->pos.coord->coord.t, 1, 1) != 0) {
+    if (entity->handlerTicks >= 0x38 || Entity_IsAtPointAhead(entity, &entity->pos.coord->coord.t, 1, 1) != 0) {
         entity->vt->move(entity, g_moveYNeg64);
         return;
     }
     if (entity->handlerTicks >= 0xA) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         entity->vt->moveZ(entity, -0x100, 0);
         return;
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
 }
 
 void Behavior_PurpleBeast(Entity *entity) {
@@ -798,10 +798,10 @@ void Behavior_WalkingGeisha(Entity *entity, HandlerNode *node) {
         }
     } else if (entity->state == 13) {
         entity->speed = -0x78;
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         entity->vt->scale(entity, 1, &g_scaleHalf);
         if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x400) {
-            entity->vt->postEvent(entity, 0xB);
+            entity->vt->notify(entity, 0xB);
         }
     }
     if (entity->handlerTicks == 0x618) {
@@ -828,7 +828,7 @@ void Behavior_Type12(Entity *entity) {
         entity->state = 0xB;
     }
     if (entity->pos.coord->coord.t.y < 0x7D0) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     }
     if (entity->state == 11) {
         if (entity->vt->distanceTo(entity, entity->dreamSys) < 0xA00) {
@@ -838,7 +838,7 @@ void Behavior_Type12(Entity *entity) {
         }
     } else if (entity->state == 12) {
         if (entity->handlerTicks++ == 300) {
-            entity->vt->postEvent(entity, 0xC);
+            entity->vt->notify(entity, 0xC);
         }
     }
 }
@@ -853,7 +853,7 @@ void Behavior_Type13(Entity *entity, HandlerNode *node) {
     }
     if (entity->state == 0x24) {
         if (rand() % 3 == 0) {
-            entity->vt->postEvent(entity, 0xB);
+            entity->vt->notify(entity, 0xB);
         }
     }
 }
@@ -938,7 +938,7 @@ void Behavior_MinotaurRickshaw(Entity *entity, HandlerNode *node) {
 }
 
 void Behavior_Type22(Entity *entity) {
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
 }
 
 void Behavior_Type23(Entity *entity) {
@@ -946,7 +946,7 @@ void Behavior_Type23(Entity *entity) {
     s32 ticks;
     s32 speed;
 
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     if (entity->touched != 0) {
         if (entity->handlerTicks >= 0x41) {
             entity->handlerTicks = 0;
@@ -1074,7 +1074,7 @@ void Behavior_Type30(Entity *entity) {
         entity->vt->moveY(entity, -0x1E, 0);
         return;
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     if (entity->state == 0xB) {
         entity->vt->moveZ(entity, -0x64, 0);
         if ((u32)(entity->handlerTicks - 0x55) < 0x1E) {
@@ -1093,7 +1093,7 @@ void Behavior_Type30(Entity *entity) {
 }
 
 void Behavior_Type31(Entity *entity, HandlerNode *node) {
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
     if ((node->tick % 10) < 3) {
         node->fade = 0;
@@ -1103,7 +1103,7 @@ void Behavior_Type31(Entity *entity, HandlerNode *node) {
     }
     if (entity->handlerTicks == entity->animLength) {
         entity->vt->stopAnimation(entity);
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     }
 }
 
@@ -1157,7 +1157,7 @@ void Behavior_Type36(Entity *entity) {
         entity->vt->scale(entity, 1, (rand() & 1) ? g_scaleDouble : &g_scaleSix);
         entity->state = 0xB;
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x7000) {
         entity->vt->moveZ(entity, 0x100, 0);
     }
@@ -1361,7 +1361,7 @@ void Behavior_Flower(Entity *entity, HandlerNode *node) {
         node->fade = 0;
         node->voices[0].sound = 0x12;
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
 }
 
 void Behavior_Type47(Entity *entity) {
@@ -1379,13 +1379,13 @@ void Behavior_Type47(Entity *entity) {
                     return;
                 }
             } else {
-                entity->vt->postEvent(entity, 0xB);
+                entity->vt->notify(entity, 0xB);
                 entity->state = 0xA;
                 return;
             }
         } else if (entity->state == 0xB) {
             if (entity->handlerTicks == 0x64) {
-                entity->vt->postEvent(entity, 0xC);
+                entity->vt->notify(entity, 0xC);
                 return;
             }
             entity->dreamSys->vtbl->moveY(entity->dreamSys, -0x64, 0);
@@ -1398,7 +1398,7 @@ void Behavior_FloatingLips(Entity *entity, HandlerNode *node) {
     EntityVtbl *vt;
 
     if (entity->animFrame == 0x26) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         node->fade = entity->vt->getSoundFade(entity);
         node->voices[0].sound = 6;
     }
@@ -1429,7 +1429,7 @@ void Behavior_Type49(Entity *entity, HandlerNode *node) {
             entity->handlerTicks = 0;
         } else if (state == 0xA) {
             if (entity->handlerTicks == 0xA) {
-                entity->vt->postEvent(entity, 0xA);
+                entity->vt->notify(entity, 0xA);
             } else if (entity->dreamSys->vtbl->wasCirclePressed(entity->dreamSys) != 0) {
                 dreamSysVtbl = entity->dreamSys->vtbl;
                 if (entity->attached != 0) {
@@ -1447,7 +1447,7 @@ void Behavior_Type49(Entity *entity, HandlerNode *node) {
             dreamSysVtbl = entity->dreamSys->vtbl;
             dreamSysVtbl->setPosition(entity->dreamSys, entity->attached ? &entity->pos.coord->workm.t : 0);
             if (entity->handlerTicks == 0x64) {
-                entity->vt->postEvent(entity, 0xA);
+                entity->vt->notify(entity, 0xA);
             }
         }
     }
@@ -1581,13 +1581,13 @@ void Behavior_Type57(Entity *entity, HandlerNode *node) {
             return;
         }
         if (frame == 0x30) {
-            if (Entity_IsInRange(entity, &entity->pos.coord->coord.t, 0xF, 0xA) != 0) {
+            if (Entity_IsAtPointAhead(entity, &entity->pos.coord->coord.t, 0xF, 0xA) != 0) {
                 if (Entity_StartEffect(entity, 0, 0, 0xA, 0) != 0) {
                     effect = entity->effect;
                     effect->vtbl->startIn(effect, entity->clock, 4, 0);
                 }
                 if (rand() & 1) {
-                    entity->vt->postEvent(entity, 0xB);
+                    entity->vt->notify(entity, 0xB);
                     return;
                 }
             }
@@ -1650,7 +1650,7 @@ void Behavior_Type58(Entity *entity, HandlerNode *node) {
             dreamSys = entity->dreamSys;
             dreamSys->vtbl->moveX(dreamSys, liftedTicks % 40 < 0x14 ? -5 : 5, 0);
         } else if (liftedTicks == 0x1F4) {
-            entity->vt->postEvent(entity, 0xC);
+            entity->vt->notify(entity, 0xC);
         }
     }
     if (entity->state == 0xE) {
@@ -1678,8 +1678,8 @@ void Behavior_Type115(Entity *entity, HandlerNode *node) {
 
     if (entity->state == 0 && Entity_IsDreamerNear(entity, 0x800) != 0) {
         entity->state = 0xB;
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
-        Entity_FaceDreamer((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
         entity->vt->wake(entity);
         entity->vt->startHandler(entity);
         dreamSys = entity->dreamSys;
@@ -1718,14 +1718,14 @@ void Behavior_Type115(Entity *entity, HandlerNode *node) {
             } else if (ticks < 0xA0) {
                 entity->vt->moveZ(entity, -0x1E, 0);
             } else if (ticks >= 0x12D) {
-                Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+                SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
                 entity->vt->moveZ(entity, -0x1E, 0);
             }
         }
     }
     if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x200) {
         entity->vt->sleep(entity);
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     }
 }
 
@@ -1775,7 +1775,7 @@ void Behavior_Type62(Entity *entity, HandlerNode *node) {
         node->voices[0].octave = -2;
     }
     if (entity->handlerTicks >= 0x65) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     }
     entity->vt->moveZ(entity, -5, 0);
     if (entity->handlerTicks == 0x12C && entity->vt->distanceTo(entity, entity->dreamSys) < 0x1000) {
@@ -1802,7 +1802,7 @@ void Behavior_Type62(Entity *entity, HandlerNode *node) {
         entity->state = state;
     }
     if (entity->state == 0xA && entity->handlerTicks == 0x46) {
-        entity->vt->postEvent(entity, (rand() & 1) ? 0xC : 0xB);
+        entity->vt->notify(entity, (rand() & 1) ? 0xC : 0xB);
     }
 }
 
@@ -1856,7 +1856,7 @@ void Behavior_Type67(Entity *entity) {
     if (entity->state == 0xB) {
         if (entity->handlerTicks == 0x1F6) {
             entity->vt->moveY(entity, 0x800, 0);
-            Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+            SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         }
         if (entity->handlerTicks >= 0x1F5) {
             entity->vt->moveZ(entity, -0x200, 0);
@@ -1893,7 +1893,7 @@ void Behavior_Type68(Entity *entity, HandlerNode *node) {
                 node->voices[0].sound = 0x12;
             }
         }
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         entity->vt->moveZ(entity, entity->speed, 1);
         return;
     } else if (entity->state == 10) {
@@ -1957,7 +1957,7 @@ void Behavior_Type71(Entity *entity, HandlerNode *node) {
         entity->vt->moveX(entity, roll * 0xC800, 0, roll);
     }
     if (entity->handlerTicks >= 0x961) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     }
     entity->vt->moveZ(entity, -0x1E, 0);
 }
@@ -1996,7 +1996,7 @@ void Behavior_Type74(Entity *entity) {
             entity->dreamSys->vtbl->moveZ(entity->dreamSys, 0x80, 0);
         }
         if (entity->handlerTicks == entity->animLength - 0x1E) {
-            entity->vt->postEvent(entity, 0xA);
+            entity->vt->notify(entity, 0xA);
         }
     } else {
         ticks = entity->handlerTicks;
@@ -2015,11 +2015,11 @@ void Behavior_Type75(Entity *entity, HandlerNode *node) {
         node->voices[0].sound = 0x19;
         node->voices[1].sound = 0x19;
         node->voices[2].sound = 0x19;
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     }
     if (entity->handlerTicks == entity->animLength) {
         entity->vt->stopAnimation(entity);
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     }
 }
 
@@ -2148,7 +2148,7 @@ void Behavior_Type79(Entity *entity, HandlerNode *node) {
     }
     entity->vt->rotate(entity, 0, g_rotY2);
     if ((entity->state == 0) && (entity->touched != 0)) {
-        entity->vt->postEvent(entity, 0xB);
+        entity->vt->notify(entity, 0xB);
         entity->state = 0xB;
     }
 }
@@ -2167,7 +2167,7 @@ void Behavior_Type80(Entity *entity, HandlerNode *node) {
         entity->vt->stopAnimation(entity);
         entity->vt->move(entity, g_moveYNeg512);
     }
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
 }
 
 void Behavior_Type81(Entity *entity, HandlerNode *node) {
@@ -2194,7 +2194,7 @@ void Behavior_Type81(Entity *entity, HandlerNode *node) {
             node->voices[1].sound = -2;
             node->voices[2].sound = -2;
         }
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         mode = entity->state;
         if (mode == 1) {
             entity->vt->scale(entity, 0, g_scaleGrowStep);
@@ -2205,11 +2205,11 @@ void Behavior_Type81(Entity *entity, HandlerNode *node) {
             }
         } else {
             entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
-            Entity_FaceDreamer((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
+            SceneNode_TurnToward((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
             if (entity->state == 2) {
                 if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x960) {
                     entity->state = 0xB;
-                    entity->vt->postEvent(entity, 0xC);
+                    entity->vt->notify(entity, 0xC);
                 }
                 speed = -0x60;
             } else {
@@ -2222,7 +2222,7 @@ void Behavior_Type81(Entity *entity, HandlerNode *node) {
             node->voices[0].sound = 0x1C;
         }
         if (entity->handlerTicks >= 0x1F5) {
-            Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+            SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         }
         if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x800) {
             entity->dreamSys->vtbl->moveZ(entity->dreamSys, -0x800, 0);
@@ -2250,7 +2250,7 @@ void Behavior_Type82(Entity *entity, HandlerNode *node) {
         }
     }
     if (entity->state == 0xC) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         if (entity->handlerTicks == 0x14) {
             node->voices[0].sound = 0x12;
             node->fade = 0;
@@ -2262,7 +2262,7 @@ void Behavior_Type82(Entity *entity, HandlerNode *node) {
             entity->vt->moveZ(entity, -0x28, 0);
         }
         if (entity->handlerTicks == 0x28) {
-            entity->vt->postEvent(entity, 0xA);
+            entity->vt->notify(entity, 0xA);
         }
     } else if (entity->state == 0xB) {
         entity->vt->stopAnimation(entity);
@@ -2337,7 +2337,7 @@ void Behavior_Type85(Entity *entity, HandlerNode *node) {
             entity->handlerTicks = -1;
         }
     } else if (entity->state == 0xB) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         if (entity->handlerTicks < 0x1E) {
             entity->vt->moveZ(entity, -10, 0);
         } else {
@@ -2359,7 +2359,7 @@ void Behavior_Type85(Entity *entity, HandlerNode *node) {
         } else {
             Behavior_QueueSound18And3(node);
             entity->dreamSys->vtbl->setRotation(entity->dreamSys, 1, g_rotY180);
-            entity->vt->postEvent(entity, rand() % 5 ? 0xA : 0xC);
+            entity->vt->notify(entity, rand() % 5 ? 0xA : 0xC);
             entity->state = 0xE;
         }
     } else if (entity->state == 0xC) {
@@ -2439,7 +2439,7 @@ void Behavior_Type89(Entity *entity, HandlerNode *node) {
         entity->vt->stopHandler(entity);
         entity->state = 1;
         if (rand() & 1) {
-            entity->vt->postEvent(entity, 0xB);
+            entity->vt->notify(entity, 0xB);
         }
     }
 }
@@ -2478,12 +2478,12 @@ void Behavior_Type91(Entity *entity, HandlerNode *node) {
         entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
     }
     if (entity->handlerTicks == 0x32) {
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     } else if (entity->handlerTicks == 0xC) {
         node->fade = 0;
         node->voices[0].sound = 0x15;
     }
-    entity->vt->scale(entity, 1, g_scaleSquash);
+    entity->vt->scale(entity, 1, g_scaleNarrowTall);
 }
 
 void Behavior_Type92(Entity *entity, HandlerNode *node) {
@@ -2491,7 +2491,7 @@ void Behavior_Type92(Entity *entity, HandlerNode *node) {
 
     if (entity->animation == 0) {
         if (entity->touched != 0) {
-            Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+            SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
             entity->vt->setAnimation(entity, 1);
             entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
         } else if (entity->animFrame == 0) {
@@ -2508,10 +2508,10 @@ void Behavior_Type92(Entity *entity, HandlerNode *node) {
         } else if (entity->animFrame == entity->animLength - 1) {
             node->fade = 0;
             node->voices[1].sound = 0x12;
-            entity->vt->postEvent(entity, 0xA);
+            entity->vt->notify(entity, 0xA);
         }
     }
-    entity->vt->scale(entity, 1, g_scaleSquash);
+    entity->vt->scale(entity, 1, g_scaleNarrowTall);
 }
 
 void Behavior_Type93(Entity *entity, HandlerNode *node) {
@@ -2613,12 +2613,12 @@ void Behavior_Type102(Entity *entity, HandlerNode *node) {
         entity->vt->rotate(entity, 0, &g_rotYNegThird);
     }
     if (entity->handlerTicks >= 0x30D) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         ticks = entity->handlerTicks;
         if (ticks >= 0x790) {
             factors = &g_scaleOne;
         } else if (ticks >= 0x78B) {
-            factors = g_scaleSquash;
+            factors = g_scaleNarrowTall;
         } else if (ticks >= 0x786) {
             factors = &g_scaleHalf;
         } else {
@@ -2640,7 +2640,7 @@ void Behavior_Type102(Entity *entity, HandlerNode *node) {
         dreamSys = entity->dreamSys;
         entity->state = 0xC;
         dreamSys->vtbl->stopControls(dreamSys, 1);
-        entity->vt->postEvent(entity, 0xA);
+        entity->vt->notify(entity, 0xA);
     }
     if (entity->state == 0xC) {
         dreamSys = entity->dreamSys;
@@ -2664,7 +2664,7 @@ void Behavior_Type103(Entity *entity) {
             entity->vt->moveY(entity, 0x1E, 0);
         }
         if (entity->handlerTicks == 0x3A2) {
-            entity->vt->postEvent(entity, 0xA);
+            entity->vt->notify(entity, 0xA);
         }
     } else if (entity->handlerTicks == 0x64 || entity->handlerTicks == 0x320) {
         if (rand() % 5 == 0) {
@@ -2855,7 +2855,7 @@ void Behavior_OddDayGeisha(Entity *entity, HandlerNode *node) {
 }
 
 void Behavior_TinyLips(Entity *entity) {
-    Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+    SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
     entity->vt->scale(entity, 1, &g_scaleTiny);
     entity->vt->moveZ(entity, -0x1E, 1);
 }
@@ -2866,7 +2866,7 @@ void Behavior_Type129(Entity *entity) {
     }
     entity->vt->stopAnimation(entity);
     if (entity->handlerTicks >= 0xC9) {
-        Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
+        SceneNode_TurnToward(entity, entity->dreamSys, 1, 0, 0);
         if (entity->state == 0xA) {
             entity->vt->moveZOnGround(entity, -0x200, 0);
         }

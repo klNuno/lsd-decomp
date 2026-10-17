@@ -20,10 +20,10 @@ typedef struct EntityRecord {
     s8 wakeMode;     /* 0x03 0 at spawn, 1 in range, 2 out of range, 3 in range and 1/128, 4 1/128 anywhere */
     u8 sleepMode;    /* 0x04 1 in range, 2 out of range, >= 10 after sleepMode * 15 ticks */
     s8 wakeRange;    /* 0x05 range of the wake and sleep tests, << 11 */
-    s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (Entity_FaceDreamer) */
+    s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (SceneNode_TurnToward) */
     s8 link;         /* 0x07 > 0 stage link - 1, < 0 stage ~link (slot 0x154) */
     s8 video;        /* 0x08 event video + 1 (slot 0x158); with link < 0, link radius << 9 */
-    s8 boxSize;         /* 0x09 last parameter of every range test (Entity_IsInRange) */
+    s8 boxSize;         /* 0x09 last parameter of every range test (Entity_IsAtPointAhead) */
     s8 soundRange;   /* 0x0A range Entity_GetSoundFade (slot 0x148) fades the handler sounds over, << 11 */
     s8 handlerRange; /* 0x0B range that starts the handler (slot 0x17C); negative also stops it out of range */
     void *handler;   /* 0x0C per-tick handler, registered by slot 0x168 */
@@ -31,7 +31,7 @@ typedef struct EntityRecord {
 
 /* A character group of a stage, 8 bytes, tables g_spawnGroups[stage] (count g_spawnGroupCounts[stage]). */
 typedef struct SpawnGroup {
-    s8 done;      /* 0x00 set when the rule passed; a negative rule then fails until Sym_LoadModels clears it */
+    s8 done;      /* 0x00 set when the rule passed; a negative rule then fails until Sym_ResetGroupsAndLoadSpy clears it */
     s8 rule;      /* 0x01 day, month or mood-colour rule, Sym_CheckRule */
     s8 model;     /* 0x02 model index in the map square's file */
     u8 type;      /* 0x03 entity type, index of EntityRecord */
@@ -69,7 +69,7 @@ typedef struct EntityVtbl {
     s32 (*construct)(void *self, s32 type, void *source, SoundBank *soundBank); /* 0x08 Entity_Construct */
     void (*destruct)(void *self);                             /* 0x0C Entity_Destruct */
     u8 pad_10[0x30 - 0x10];
-    void (*postEvent)(void *self, s32 event);                 /* 0x30 entity event: 9 touch, 10 link, 11 video end, 12 end */
+    void (*notify)(void *self, s32 event);                 /* 0x30 entity event: 9 touch, 10 link, 11 video end, 12 end */
     u8 pad_34[0x38 - 0x34];
     void (*onNotify)(void *self, void *sender, s32 message);  /* 0x38 Model_OnNotify */
     u8 pad_3C[0x40 - 0x3C];

@@ -7,6 +7,6 @@
 /* Functions of src/game/scene_draw.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/scene_draw.c */
 struct DrawNode;
-void Scene_DrawNode(View *view, struct DrawNode *node);
+void View_DrawNode(View *view, struct DrawNode *node);
 
 #endif

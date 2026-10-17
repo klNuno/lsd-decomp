@@ -54,7 +54,7 @@ typedef struct CardTitleMark {
 typedef struct CardTitle {
     SjisChar3 game;      /* 0x00 "ＬＳＤ" */
     CardTitleMark mark;  /* 0x06 */
-    SjisChar3 day;       /* 0x12 day number, three digits (SaveMenu_SetTitleDay) */
+    SjisChar3 day;       /* 0x12 day number, three digits (Menu_SetTitleDay) */
     SjisChar comment[19]; /* 0x18 typed on the comment keyboard, blank for a new game */
 } CardTitle;
 
@@ -86,7 +86,7 @@ typedef struct CardMessageVtbl {
     u8 pad_08[0x4C - 0x08];
     void (*attach)(struct CardMessage *, s32, s32 *); /* 0x4C ScreenSprite_Attach (sprite, parent, 2D position) */
     u8 pad_50[0x78 - 0x50];
-    void (*upload)(struct CardMessage *);
+    void (*setZSort)(struct CardMessage *);
 } CardMessageVtbl;
 
 typedef struct CardMessage {
@@ -155,7 +155,7 @@ typedef struct Card {
     char **foundSuffixes;   /* 0x3C the suffix of each file found */
     char *fileName;         /* 0x40 */
     char *title;            /* 0x44 */
-    s32 commentStart;              /* 0x48 0xD from SaveMenu_Save; the keyboard gets title + 2 x this */
+    s32 commentStart;              /* 0x48 0xD from Menu_Save; the keyboard gets title + 2 x this */
     u8 iconFrames;          /* 0x4C 3 */
     MenuPicture *icon;      /* 0x50 the file icon, CARD\FILEICN1.TIM */
     void *data;             /* 0x54 */

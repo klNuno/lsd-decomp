@@ -16,6 +16,7 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 - Subsystems in use: see the glossary. Add a subsystem to the glossary before using it.
 - A field keeps its offset in its name (`unk_14`) until two independent uses agree on its meaning.
 - Every rename goes in `config/symbol_addrs.txt` with a comment pointing to its row in `docs/discoveries.md`.
+- Every name of ours has a level in `config/name_levels.tsv` (columns NAME KIND FILE LEVEL EVIDENCE): `game` when an emulator run showed what the name claims, `code` when the code proves it and nothing else fits, `guess` when it is plausible but unproven (the evidence says what is missing), `wrong` when the code contradicts it (only types waiting for a merge). `tools/rename.py` and `tools/field_rename.py` keep it in step; a new name gets its row with its evidence. The 2026-10-17 audit wrote it (work/names/), and `tools/name_levels.py comments` copies its evidence into the comments of `config/symbol_addrs.txt`.
 
 ## Readable C
 
@@ -65,7 +66,7 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Cine | Special-day and entity-event cinematics: the {category, variant} to path and video id tables | code: discoveries 2026-10-15 (`Cine_GetPath` @0x80049334) |
 | Scene | The scene class that `Scene_Init` builds with `ETC\DREAME5.TMD` and a new DreamSys, and the code of its file `src/game/scene.c` (random seed, special-day cinematic) | code: discoveries 2026-10-15 (`Scene_PlayCinematic` @0x8002677C) |
 | Menu | The main menu object, the screen with the day number and the Flashback item, and its items | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678) |
-| SaveMenu | The memory card menu object: card file name, title with the day number, save and load of the 0x700-byte block | code: discoveries 2026-10-15 (`SaveMenu_Save` @0x8004E0E4) |
+| SaveMenu | The memory card menu object: card file name, title with the day number, save and load of the 0x700-byte block | code: discoveries 2026-10-15 (`Menu_Save` @0x8004E0E4) |
 | Rand | The game's wrapper around PSY-Q `srand` and `rand` | code: discoveries 2026-10-15 (`Rand_SeedAndNext` @0x80048CFC) |
 | Music | The dream's sound bank (one of 7, `g_musicBanks`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
 | Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: work/hunt6/F-findings.md, `include/game/heap.h` |

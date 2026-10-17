@@ -15,7 +15,7 @@ A [`SoundBank`](../../include/game/sound_bank.h) (class word 0xA03, 0x64 bytes,
 | --- | --- | --- |
 | 0x08 | `Sound_InitBank` | starts the sound system on the first bank, then queues `<path>.VH` |
 | 0x0C | `Sound_DestroyBank` | `SsVabClose`; the last bank, with no music object alive, stops the timer and the SPU |
-| 0x64 | `Sound_UpdateBank` | `onLoaded`: state 1 opens the header (`SsVabOpenHead`) and loads `<path>.VB`; state 6 sends the body (`SsVabTransBody`) |
+| 0x64 | `Sound_OnBankLoaded` | `onLoaded`: state 1 opens the header (`SsVabOpenHead`) and loads `<path>.VB`; state 6 sends the body (`SsVabTransBody`) |
 | 0x78 | `Sound_PollTransfer` | `SsVabTransCompleted(1)`, then slot 0x7C |
 | 0x7C | `Sound_LoadProgramTable` | reads every program and tone attribute into heap tables, starts the sequencer timer the first time |
 | 0x80 | `Sound_PlayTone` | `SsUtKeyOn` then `SsUtAutoVol`; returns the voice |

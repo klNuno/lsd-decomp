@@ -30,6 +30,8 @@ LEVELS = [  # key, label, fill (one-hue ordinal ramp, validated on the dark surf
 ]
 SONY = ("sony", "Sony library, linked as is", "#5c5b57")
 SURFACE, INK, INK2, INK3 = "#1a1a19", "#f0efec", "#c3c2b7", "#8f8d84"
+NAME_LEVELS = {"game": "checked in game", "code": "proven by the code", "guess": "a guess",
+               "wrong": "contradicted by the code"}
 UNKNOWN = {
     "unk_fields": re.compile(r"(?:->|\.)\s*unk_?[0-9A-Fa-f]+\b"),
     "m2c_names": re.compile(r"\b(?:arg[0-9]+|temp_[a-z0-9_]+|var_[a-z0-9_]+|sp[0-9A-F]+)\b"),
@@ -183,6 +185,15 @@ def main():
         for name, body in c_functions(p).items():
             bodies[name] = (str(p.relative_to(ROOT)), body)
     cited = set(re.findall(r"\b[A-Za-z_]\w+\b", (ROOT / "docs/discoveries.md").read_text()))
+    name_levels, level_counts = {}, {}
+    levels_tsv = ROOT / "config/name_levels.tsv"  # the name audit: game, code, guess or wrong per name
+    if levels_tsv.exists():
+        for line in levels_tsv.read_text(encoding="utf-8").splitlines()[1:]:
+            name, kind, _, level = line.split("\t")[:4]
+            level_counts.setdefault(kind, {}).setdefault(level, 0)
+            level_counts[kind][level] += 1
+            if kind == "func":
+                name_levels[name] = level
 
     libs = sony_libraries()
     units = []
@@ -203,6 +214,8 @@ def main():
                 unknowns = sum(f[key] for key in UNKNOWN)
                 f["level"] = "address" if name.startswith("func_") else ("named" if unknowns else "read")
                 f["in_findings"] = name in cited
+                if name in name_levels:
+                    f["name_level"] = name_levels[name]
             else:
                 f["level"] = "sony"
             funcs.append(f)
@@ -226,6 +239,7 @@ def main():
         "levels": by_level,
         "unknowns": {k: sum(f[k] for f in gfuncs) for k in UNKNOWN},
         "functions_in_findings": sum(1 for f in gfuncs if f["in_findings"]),
+        "name_levels": level_counts,
         "sony_symbols": sony_funcs, "sony_bytes": sony_bytes,
     }
     report = {
@@ -298,6 +312,7 @@ def svg(r):
                 tip += (f' · {dict((k, l) for k, l, _ in LEVELS)[f["level"]]}'
                         f' · unknown fields {f["unk_fields"]}, m2c names {f["m2c_names"]},'
                         f' Unk_ types {f["unk_types"]}, D_ globals {f["d_globals"]}'
+                        + (f' · name {NAME_LEVELS[f["name_level"]]}' if "name_level" in f else "")
                         + (" · cited in docs/discoveries.md" if f["in_findings"] else ""))
             parts.append(f'<rect x="{fx:.2f}" y="{fy:.2f}" width="{fw:.2f}" height="{fh:.2f}" fill="{c}" '
                          f'stroke="{SURFACE}" stroke-width="0.6"><title>{e(tip)}</title></rect>')

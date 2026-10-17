@@ -237,7 +237,7 @@ void StageMap_OnSlotMessage(StageMap *map, s32 message, MapSlot *slot) {
         }
         /* fallthrough */
     case 7:
-        map->currentSlot = slot;
+        map->notifiedSlot = slot;
         map->vtbl->notify(map, message);
         return;
     }
@@ -317,7 +317,7 @@ void StageMap_FilterMessage(StageMap *map, s32 **sender, s32 message) {
         if ((code != NULL) && (*code != 0)) {
             do {
                 if (*code == **sender) {
-                    map->vtbl->tellView(map, sender, message);
+                    map->vtbl->tellNearTiles(map, sender, message);
                 }
                 code++;
             } while (*code != 0);
@@ -336,7 +336,7 @@ s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
     s32 ret;
     Vec3 *pos;
 
-    if (sender->attached != 0) {
+    if (sender->parent != 0) {
         pos = &sender->coord->workm.t;
     } else {
         pos = NULL;
@@ -896,9 +896,9 @@ static void StageMap_ChunkColRow(StageMap *map, StagePlace *place, s32 chunkInde
     place->row = chunkIndex / map->grid->cols;
 }
 
-MapSlot *StageMap_GetCurrentSlot(StageMap *map, StagePlace *place) {
-    StageMap_ChunkColRow(map, place, map->currentSlot->chunk->index);
-    return map->currentSlot;
+MapSlot *StageMap_GetNotifiedSlot(StageMap *map, StagePlace *place) {
+    StageMap_ChunkColRow(map, place, map->notifiedSlot->chunk->index);
+    return map->notifiedSlot;
 }
 
 MapSlot *StageMap_SlotById(StageMap *map, s32 id) {

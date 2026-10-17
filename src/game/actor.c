@@ -58,9 +58,9 @@ typedef struct ActorBaseVtbl {
 typedef struct Actor {
     ActorVtbl *vt;
     u8 pad_04[0x14 - 0x04];
-    Coord2 *posBlock;     /* 0x14 its GsCOORDINATE2 (gs.h): flg cleared after each move */
+    Coord2 *coord;     /* 0x14 its GsCOORDINATE2 (gs.h): flg cleared after each move */
     u8 pad_18[0x20 - 0x18];
-    ModelObject *model;   /* 0x20 tested by ModelObject_IsReady */
+    ModelObject *model;   /* 0x20 tested by ModelObject_GetBoxCount */
     u8 pad_24[0x28 - 0x24];
     struct Actor *contact; /* 0x28 the object found by Actor_SnapToGround, 0 when none */
     u8 pad_2C[0x44 - 0x2C];
@@ -96,7 +96,7 @@ typedef struct GridActorVtbl {
 struct GridActor {
     GridActorVtbl *vt;
     u8 pad_04[0x14 - 0x04];
-    u8 *posBlock;
+    u8 *coord;
     u8 pad_18[0x28 - 0x18];
     MapTile *contact;     /* 0x28 */
     u8 pad_2C[0x4C - 0x2C];
@@ -187,7 +187,7 @@ void Actor_Init(Actor *actor) {
     actor->boxMargin = 0;
 }
 
-/* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_IsReady. */
+/* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_GetBoxCount. */
 void Actor_SendBoxes(Actor *actor, s32 message) {
     union {
         NodeBoxList node;
@@ -198,7 +198,7 @@ void Actor_SendBoxes(Actor *actor, s32 message) {
     SceneNode_GetVtbl()->sendBoxes(actor, message);
     if (message < 9) {
         if (message >= 5) {
-            if ((actor->model != 0) && (ModelObject_IsReady(actor->model) != 0)) {
+            if ((actor->model != 0) && (ModelObject_GetBoxCount(actor->model) != 0)) {
                 actor->vt->getBoxList(actor, &buf.node);
                 if (message != 5) {
                     ModelBox_ShiftList(&buf.shift, message == 7, actor->speed >= 0,
@@ -239,7 +239,7 @@ void Actor_MovePos(void *actor, Vec3 *delta) {
 
 static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec) {
     Actor *actor = self;
-    Coord2 *block = actor->posBlock;
+    Coord2 *block = actor->coord;
     if (set != 0) {
         block->coord.t = *vec;
     } else {
@@ -247,7 +247,7 @@ static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec) {
         block->coord.t.y += vec->y;
         block->coord.t.z += vec->z;
     }
-    actor->posBlock->flg = 0;
+    actor->coord->flg = 0;
 }
 
 /* Slot 0xC0 */
@@ -315,7 +315,7 @@ s32 Actor_SnapToGround(GridActor *actor) {
     MapTile *found;
 
     if (actor->map != NULL) {
-        pos = actor->posBlock + 0x18;
+        pos = actor->coord + 0x18;
         if (actor->map->vtbl->locate(actor->map, &cell, pos) == 0) {
             count = Actor_GetGroundRects(actor, rects, cells, &cell, 1);
             found = Actor_FindGroundInCells(actor, delta, pos, count, rects, cells);

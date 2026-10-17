@@ -13,7 +13,7 @@
 
 /*
  * Box (vtable g_boxVtbl at 0x8006EAC0, class word 0x64, 0x6C bytes): a scene node holding a PSY-Q
- * GsBOXF at +0x58. The scene draw (Scene_DrawNode, kind 0x64) places it at +0x50, in percent of the
+ * GsBOXF at +0x58. The scene draw (View_DrawNode, kind 0x64) places it at +0x50, in percent of the
  * half screen when +0x48 is set, and sorts it with GsSortBoxFill at the priority +0x44.
  */
 typedef struct BoxVtbl {
