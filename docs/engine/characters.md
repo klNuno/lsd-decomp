@@ -118,7 +118,7 @@ A handler has the form `handler(entity, node)`. `Entity_StartHandler` registers 
 
 Handlers count their own ticks in `entity->handlerTicks` (0 on the first tick, so first-tick draws happen once per wake) and keep a state in `entity->state` (1 stops `Entity_CheckWake` for good). What they do with them: move (`moveZ`, `moveZOnGround`), turn (`rotate`, `Entity_FaceDreamer`), resize (`scale`), read the CIRCLE flag (`DreamSys_WasCirclePressed`), stop or give back the controls (`DreamSys_SetControls`), flash the screen (`Entity_StartEffect`, a Fade), post events, and call DreamSys or the map.
 
-Handlers are named `Behavior_TypeNNN` after their entity type until their character is known (`Behavior_Astronaut`, `Behavior_FlyingTrain`, `Behavior_MazePenguin`). Player view of many of them: [Rare sights](../discoveries.md#rare-sights), [characters that answer to CIRCLE](../discoveries.md#-characters-that-answer-to-circle).
+Handlers are named `Behavior_TypeNNN` after their entity type until their character is known (`Behavior_Astronaut`, `Behavior_FlyingTrain`, `Behavior_MazePenguin`). Some characters are now known while their handler keeps its type name: `Behavior_Type85` is the Violence District gunman; `Behavior_Type81` runs the Natural World lions, types 81 and 120 on one model, and draws a temper at the first tick (`rand() & 1`, then `state = rand() % 3`: calm 2 times in 3, a charge or a stare that posts event 12, 1 in 6 each); `Behavior_Type31` is the Abyss Demon, which holds the controls until its animation has played once, then posts event 10. Record 81 is the only one with link 0x7F, so walking into a savannah lion ends the dream, while record 120 links to stage 7. Player view of many of them: [Rare sights](../discoveries.md#rare-sights), [characters that answer to CIRCLE](../discoveries.md#-characters-that-answer-to-circle).
 
 ## The Grey Man
 
@@ -128,12 +128,12 @@ The Grey Man is entity type 98, built on the only Sym model the game loads.
 | --- | --- |
 | Model | `Sym_LoadModels` (DreamRunner init) loads `ETC\SYMSPY.MOM` into `g_spyModel`; the loop stops before `ETC\SYMDOG.MOM` |
 | Entity | `Sym_InitStage` (each `Place_Setup`) creates `Entity_Create(0x62, ...)` on it, not attached |
-| Spawn | `Sym_SpawnOrSpy`: when a slot's day flag blocks it, the stage is not 0, `rand() % 12 == 0` and the day number is even |
+| Spawn | `Sym_SpawnOrSpy`: when a slot's day flag blocks it, the stage is not 0, `rand() % 12 == 0` and the day number is even, so only flag-1 slots can hold him |
 | Placement | `Sym_SpawnSpy`: detach, then attach at `SceneNode_LocalToWorld(dreamer, (0, -200, 8000))`, facing the dreamer |
 | Erase | `Behavior_EraseFlashbacks`: once touched, a Fade flash (colour 7), sleep, `DreamSys_ClearFlashbacks`; each tick it moves 30 units along its own z axis |
 | Free | `Sym_FreeSpy` (`Place_Unload`) |
 
-There is one Grey Man per place, so a second roll moves the same one. Record 98 has mood (-10, -10), past the edge of the graph. Player view: [the Grey Man flips your graph](../discoveries.md#-the-grey-man-flips-your-graph-and-wipes-your-memories), [when he can appear](../discoveries.md#-when-the-grey-man-can-appear), [who can meet him](../discoveries.md#-who-can-meet-the-grey-man-and-where).
+There is one Grey Man per place, so a second roll moves the same one. The stages with a flag-1 slot are 2, 4, 5, 6, 7, 9 and 13; stages 1, 3, 8, 10 and 12 have only flag 0 and stage 11 only flag 2, so he never appears there (stage 11 checked in the emulator with the die forced). Record 98 has mood (-10, -10), past the edge of the graph. Player view: [the Grey Man flips your graph](../discoveries.md#-the-grey-man-flips-your-graph-and-wipes-your-memories), [when he can appear](../discoveries.md#-when-the-grey-man-can-appear), [who can meet him](../discoveries.md#-who-can-meet-the-grey-man-and-where).
 
 ## The type 74 room
 
