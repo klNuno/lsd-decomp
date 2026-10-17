@@ -9,6 +9,11 @@
  */
 
 void SpuVmInit(s32 mode);
+void SsInit(void);
+void SsSetTickMode(s32 tickMode);
+void SsStart(void);
+void SsEnd(void);
+void SsQuit(void);
 void SsSetTableSize(s8 *table, s16 sMax, s16 tMax);
 void SsSeqCalledTbyT(void);
 void SsSetMVol(s16 voll, s16 volr);

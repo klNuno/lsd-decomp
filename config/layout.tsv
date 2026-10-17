@@ -14,8 +14,6 @@ UNIT	FIRST_FUNC	LAST_FUNC	FILE	CONFIDENCE	evidence
 8002C12C	File_NullInit	File_NullGetVSyncMode	file_null.c	likely	null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data
 8002C12C	Sound_CreateBank	Sound_GetTickRate	sound_bank.c	likely	gp/sdata block 25..40 (g_bankCount, g_soundTickRate...); vtable g_soundBankVtbl after g_fileNullVtbl
 8002C12C	HandlerNode_Start	HandlerNode_Run	handler_node.c	guess	end proven (psyq/8002CF18 LIBSND after); three functions with no data; could close sound_bank.c
-8003221C	Spu_Reset	Spu_ResetHot	spu.c	proven	psyq/80032148 before, psyq/800323A8 after
-80032588	Seq_SetRate	Seq_OnTickHalf	seq_timer.c	proven	psyq/800323A8 before, psyq/80032B18 after; data inversion binds 1..7
 800398E0	Bgm_New	Bgm_GetSeqTable	bgm.c	proven	psyq/80038D74 before, psyq/8003A078 after; gp binds 1..15
 8003AF8C	App_Init	App_GetVtbl	app.c	proven	psyq/8003AA68 before, psyq/8003B21C after
 8003B39C	Tim_New	Display_RotateRect	tim.c	proven	psyq/8003B21C before, psyq/8003B770 after; Display_RotateRect is a helper after Tim_GetVtbl

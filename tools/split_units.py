@@ -620,10 +620,11 @@ def cmd_cite(args):
 
 DOC_HEAD = """# Source file layout
 
-The game code is split into the 70 source files the original programmers most likely had. Each file
+The game code is split into the %d source files the original programmers most likely had. Each file
 holds its functions in address order; the files sit in link order between the Sony library objects.
 The plan is `config/layout.tsv`; `tools/split_units.py docs` writes this page from it, and
-`tools/split_units.py apply` replays the split from the address units of commit %s.
+`tools/split_units.py apply` replays the split from the address units of commit %s (it still
+makes `spu.c` and `seq_timer.c`, which turned out to be Sony's LIBSND afterwards: see below).
 
 Confidence: **proven** means a Sony object sits on both sides of the file in .text, or the binary
 rules out every other cut; **likely** means one end is proven and the other follows a class that ends
@@ -670,6 +671,15 @@ The study corrected one older claim: the cut at 0x80058078 is not forced. `ETC\\
 `ETC\\HGRAPH.TIM` form one rodata object of 0x1C bytes, so DreamSys's first jump table at
 0x80011788 is 8-aligned in its own object either way, and Graph_New, Graph_Init and
 Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
+
+A later check corrected the study itself (2026-10-17): `spu.c` and `seq_timer.c`, two files it
+rated proven because a Sony object sits on each side, are Sony code too. Their 11 functions line up
+one to one with the labels of LIBSND's `SSINIT.OBJ` in PSY-Q 3.3 (`_SsInit`, `SsInit`,
+`SsInitHot`, `SsSetTickMode`, `_SsStart`, `SsStart`, `SsStart2`, `SsEnd`, `SsQuit`,
+`_SsTrapIntrVSync`, `_SsSeqCalledTbyT_1per2`), ten of them word for word and `_SsInit` at 88 %
+of its words; the game links a LIBSND build the signature database lacks. They are the Sony units
+`psyq/8003221C` and `psyq/80032588` now (names in `tools/psyq/match.py`, `NEAR_MATCHES`); the 46 and
+23 boundaries counted above are the study's and include those two files.
 
 ## Rules for contributors
 
@@ -734,7 +744,7 @@ def write_docs(rows):
             order.append((int(m.group(1), 16), m.group(3), (m.group(5) or '').strip()))
     byfile = {r['FILE'][:-2]: r for r in rows}
     conf = [r['CONFIDENCE'] for r in rows]
-    out = DOC_HEAD % (DEFAULT_REV, len(rows), conf.count('proven'), conf.count('likely'), conf.count('guess'))
+    out = DOC_HEAD % (len(rows), DEFAULT_REV, len(rows), conf.count('proven'), conf.count('likely'), conf.count('guess'))
     for off, name, com in order:
         kind, base = name.split('/')
         if kind == 'psyq':
@@ -746,7 +756,8 @@ def write_docs(rows):
             r['FILE'], r['FILE'], funcs, faddr[r['FIRST_FUNC']], r['CONFIDENCE'], r['evidence'])
     out += DOC_RODATA
     for off, name in RODATA.items():
-        out += '| 0x%X | 0x%08X | `%s.c` |\n' % (off, off + ROM_BASE, name)
+        if name + '.c' in [r['FILE'] for r in rows]:  # seq_timer.c turned out to be LIBSND (2026-10-17)
+            out += '| 0x%X | 0x%08X | `%s.c` |\n' % (off, off + ROM_BASE, name)
     out += DOC_TAIL
     open(os.path.join(ROOT, 'docs/layout.md'), 'w', encoding='utf-8').write(out)
     print('wrote docs/layout.md')

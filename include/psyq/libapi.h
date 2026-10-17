@@ -5,7 +5,7 @@
 
 /*
  * LIBAPI functions the game calls (BIOS calls and the heap), declared from the game's own call
- * sites: memory card files and events in card.c, root counters in seq_timer.c, the heap in heap.c.
+ * sites: memory card files and events in card.c, the heap in heap.c.
  */
 
 /* Heap */
@@ -21,11 +21,6 @@ s32 CloseEvent(s32 event);
 s32 EnableEvent(s32 event);
 s32 DisableEvent(s32 event);
 s32 TestEvent(s32 event);
-
-/* Root counters */
-void SetRCnt(s32 spec, u16 target, s32 mode);
-void StartRCnt(s32 spec);
-void ResetRCnt(s32 spec);
 
 /* Memory card BIOS */
 void InitCARD(s32 padEnable);

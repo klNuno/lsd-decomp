@@ -71,7 +71,7 @@ segments:
       - [0xFA4, .rodata, game/scene]
       - [0xFD8, .rodata, game/file_cd]  # strings of File_ResolveEntries, File_Locate, then jtbls of File_ServiceQueue
       - [0x1040, rodata, psyq/80028B78]   # LIBCD
-      - [0x14D8, .rodata, game/seq_timer]
+      - [0x14D8, rodata, psyq/80032588]   # LIBSND SsSetTickMode jtbl (game/seq_timer until 2026-10-17)
       - [0x14F0, rodata, psyq/8003410C]   # LIBSND SEQREAD jtbls (moved to psyq 2026-10-15, sony-suspects.md)
       - [0x1764, rodata, psyq/80036AC8]   # LIBSPU
       - [0x17EC, .rodata, game/bgm]
@@ -123,9 +123,9 @@ segments:
       - [0x221B4, asm, psyq/800319B4]  # LIBSND
       - [0x22244, asm, psyq/80031A44]  # LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match
       - [0x22948, asm, psyq/80032148]  # LIBSND
-      - [0x22A1C, c, game/spu]  # proven
+      - [0x22A1C, asm, psyq/8003221C]  # LIBSND SSINIT (_SsInit, SsInit, SsInitHot), near match (game/spu until 2026-10-17)
       - [0x22BA8, asm, psyq/800323A8]  # LIBSND
-      - [0x22D88, c, game/seq_timer]  # proven
+      - [0x22D88, asm, psyq/80032588]  # LIBSND SSINIT (SsSetTickMode.._SsSeqCalledTbyT_1per2), near match (game/seq_timer until 2026-10-17)
       - [0x23318, asm, psyq/80032B18]  # LIBAPI,LIBSND
       - [0x24490, asm, psyq/80033C90]  # LIBSND DECRE, near match
       - [0x247B8, asm, psyq/80033FB8]  # LIBSND

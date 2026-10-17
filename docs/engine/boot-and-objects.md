@@ -27,7 +27,7 @@ of the game: a scratchpad word modulo 365 ([randomness](randomness.md),
 [the dice of the game](../discoveries.md#-the-dice-of-the-game)).
 
 `App_Start` (reached from `Scene_Setup`) makes the display current, calls `GsInitGraph` through
-`Display_InitGraph`, resets the SPU (`Spu_ResetCold`), runs `GsInit3D` and builds the `ScreenEnv`
+`Display_InitGraph`, resets the SPU (LIBSND `SsInit`), runs `GsInit3D` and builds the `ScreenEnv`
 every screen runs with: the display and the pad, with clock, root and view left at 0.
 
 `App_Run` then calls these scene slots:

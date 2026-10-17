@@ -4,10 +4,10 @@
 #include "game/display.h"
 #include "game/pad.h"
 #include "game/file_base.h"
-#include "game/spu.h"
 #include "game/screen.h"
 #include "psyq/libgs.h"
 #include "psyq/libcd.h"
+#include "psyq/libsnd.h"
 
 /*
  * File boundaries: proven (docs/layout.md)
@@ -45,7 +45,7 @@ void App_Start(App *app, Display *display, Pad *pad) {
     if (app->started == 0) {
         Display_SetCurrent(display);
         display->vtbl->initGraph(display, &app->screenSize, app->vramMode);
-        Spu_ResetCold();
+        SsInit();
         GsInit3D();
         env = Heap_Alloc(0x14);
         app->env = env;

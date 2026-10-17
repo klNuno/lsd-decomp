@@ -26,9 +26,9 @@ A [`SoundBank`](../../include/game/sound_bank.h) (class word 0xA03, 0x64 bytes,
 A sound number packs the program in its high bits and the tone in its low 4 bits
 (`program = sound >> 4`); the note is the tone's centre note from the VAB plus the octave shift.
 
-The first bank ever made runs `Spu_ResetCold` ([spu.c](../../src/game/spu.c): `SpuInit`, the
-SPU voice and control registers loaded from tables, `SpuVmInit(24)`, sound state cleared),
-`SsSetTableSize` on the SEQ table of [bgm.c](../../src/game/bgm.c), and `Seq_SetRate(1)`.
+The first bank ever made runs LIBSND's `SsInit` (`SpuInit`, the SPU voice and control registers
+loaded from tables, `SpuVmInit(24)`, sound state cleared), `SsSetTableSize` on the SEQ table of
+[bgm.c](../../src/game/bgm.c), and `SsSetTickMode(1)`.
 
 Who owns a bank: a `MenuScreen` can (the main menu and the graph load `ETC\ETCSE`), the dream runner (the effects
 bank `SND\SE`, `Music_GetEffectsBank`), and every model at +0x58. Characters and scenery play
@@ -41,19 +41,20 @@ slot ([characters](characters.md)). The fixed sound spots of a place use the sam
 
 ## The sequencer timer
 
-[seq_timer.c](../../src/game/seq_timer.c) is the game's copy of Sony's `SsSetTickMode` and
-`SsStart` logic. `Seq_SetRate(1)` asks for 60 ticks per second; on an NTSC console (`g_videoMode`
-0, read by `GetVideoMode` in `Spu_Reset`) that becomes rate 5, the vertical blank.
-`Seq_ArmTimer` then picks a root counter:
+The sequencer timer is Sony's own LIBSND code (`SsSetTickMode`, `SsStart`, `SsEnd`, `SsQuit`,
+linked as is in psyq/80032588; the C once kept in `seq_timer.c` is in work/sony/c/).
+`SsSetTickMode(1)` asks for 60 ticks per second; on an NTSC console (`g_videoMode` 0, read by
+`GetVideoMode` in `_SsInit`) that becomes rate 5, the vertical blank. `_SsStart` then picks a
+root counter:
 
 | Rate | Counter | Handler |
 | --- | --- | --- |
-| 5, started at once | root counter 3 (vblank), interrupt 0 | `Seq_OnTick`: the previous interrupt-0 handler, then `SsSeqCalledTbyT` |
+| 5, started at once | root counter 3 (vblank), interrupt 0 | `_SsTrapIntrVSync`: the previous interrupt-0 handler, then `SsSeqCalledTbyT` |
 | 5, deferred | none | `VSyncCallback(SsSeqCalledTbyT)` |
 | 2, 3 | root counter 2, fixed targets | `SsSeqCalledTbyT` |
-| other, below 70 | root counter 2 | `Seq_OnTickHalf`: every second interrupt |
+| other, below 70 | root counter 2 | `_SsSeqCalledTbyT_1per2`: every second interrupt |
 
-`Sound_LoadProgramTable` calls `Seq_StartTimer` (at once) and `SsSetMVol(0x78, 0x78)` the first
+`Sound_LoadProgramTable` calls `SsStart` (at once) and `SsSetMVol(0x78, 0x78)` the first
 time a bank is ready. `Sound_GetTickRate` returns 60, which `Bgm_FadeVolume` uses to turn seconds
 into sequencer ticks.
 

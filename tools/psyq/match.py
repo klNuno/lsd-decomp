@@ -80,6 +80,20 @@ FALSE_HITS = {
 # strings): .agents/research/sony-suspects.md and work/sony/. Each address must
 # start a function and must not be named by the scan; main() stops otherwise.
 NEAR_MATCHES = {
+    # LIBSND SSINIT.OBJ (3.3), units psyq/8003221C and psyq/80032588 (once game/spu.c and
+    # game/seq_timer.c): the 11 functions follow the OBJ's labels one to one, _SsInit at 88 % of its
+    # words, the other ten word for word (2026-10-17, names audit lane A2)
+    0x8003221C: "_SsInit",
+    0x80032368: "SsInit",
+    0x80032388: "SsInitHot",
+    0x80032588: "SsSetTickMode",
+    0x80032708: "_SsStart",
+    0x80032998: "SsStart",
+    0x800329B8: "SsStart2",
+    0x800329D8: "SsEnd",
+    0x80032A7C: "SsQuit",
+    0x80032A9C: "_SsTrapIntrVSync",
+    0x80032AD0: "_SsSeqCalledTbyT_1per2",
     # LIBSND VMANAGER.OBJ (3.3), unit psyq/8002CF18: the 31 functions follow the OBJ's 31 named
     # labels one to one (range cover 89 % vs 3.3, work/sony/fuzzy-8002C12C.txt)
     0x8002CF18: "SpuVmAlloc",

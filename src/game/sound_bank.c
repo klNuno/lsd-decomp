@@ -2,8 +2,6 @@
 #include "game/sound_bank.h"
 #include "game/heap.h"
 #include "game/file_base.h"
-#include "game/spu.h"
-#include "game/seq_timer.h"
 #include "game/bgm.h"
 #include "psyq/libsnd.h"
 #include "psyq/libc.h"
@@ -79,13 +77,13 @@ void Sound_InitBank(SoundBank *bank, s8 *path) {
     bank->transferring = 0;
     bank->path = 0;
     if (g_spuReady == 0) {
-        Spu_ResetCold();
+        SsInit();
         g_spuReady = 1;
         SsSetTableSize(Bgm_GetSeqTable(), 2, 1);
     }
     if (g_soundRateSet == 0) {
         g_soundTickRate = 0x3C;
-        Seq_SetRate(1);
+        SsSetTickMode(1);
         g_soundRateSet = 1;
     }
     g_bankCount += 1;
@@ -110,8 +108,8 @@ void Sound_DestroyBank(SoundBank *bank) {
         g_spuReady = 0;
         g_seqTimerStarted = 0;
         g_soundRateSet = 0;
-        Seq_StopTimer();
-        Spu_Quit();
+        SsEnd();
+        SsQuit();
     }
     Heap_Free(bank->toneData);
     Heap_Free(bank->programTones);
@@ -206,7 +204,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
         }
     }
     if (g_seqTimerStarted == 0) {
-        Seq_StartTimer();
+        SsStart();
         SsSetMVol(0x78, 0x78);
         g_seqTimerStarted = 1;
     }

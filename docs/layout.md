@@ -1,16 +1,17 @@
 # Source file layout
 
-The game code is split into the 70 source files the original programmers most likely had. Each file
+The game code is split into the 68 source files the original programmers most likely had. Each file
 holds its functions in address order; the files sit in link order between the Sony library objects.
 The plan is `config/layout.tsv`; `tools/split_units.py docs` writes this page from it, and
-`tools/split_units.py apply` replays the split from the address units of commit 6c028b9.
+`tools/split_units.py apply` replays the split from the address units of commit 6c028b9 (it still
+makes `spu.c` and `seq_timer.c`, which turned out to be Sony's LIBSND afterwards: see below).
 
 Confidence: **proven** means a Sony object sits on both sides of the file in .text, or the binary
 rules out every other cut; **likely** means one end is proven and the other follows a class that ends
 with its `X_GetVtbl`, with its vtable and data in class order; **guess** means the binary allows
 another cut (each guess says which).
 
-70 files: 14 proven, 50 likely, 6 guess.
+68 files: 12 proven, 50 likely, 6 guess.
 
 ## Files in link order
 
@@ -46,9 +47,9 @@ another cut (each guess says which).
 | *psyq/800319B4* | Sony: LIBSND | | |
 | *psyq/80031A44* | Sony: LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match | | |
 | *psyq/80032148* | Sony: LIBSND | | |
-| [`spu.c`](../src/game/spu.c) | `Spu_Reset..Spu_ResetHot` @0x8003221C | proven | psyq/80032148 before, psyq/800323A8 after |
+| *psyq/8003221C* | Sony: LIBSND SSINIT (_SsInit, SsInit, SsInitHot), near match (game/spu until 2026-10-17) | | |
 | *psyq/800323A8* | Sony: LIBSND | | |
-| [`seq_timer.c`](../src/game/seq_timer.c) | `Seq_SetRate..Seq_OnTickHalf` @0x80032588 | proven | psyq/800323A8 before, psyq/80032B18 after; data inversion binds 1..7 |
+| *psyq/80032588* | Sony: LIBSND SSINIT (SsSetTickMode.._SsSeqCalledTbyT_1per2), near match (game/seq_timer until 2026-10-17) | | |
 | *psyq/80032B18* | Sony: LIBAPI,LIBSND | | |
 | *psyq/80033C90* | Sony: LIBSND DECRE, near match | | |
 | *psyq/80033FB8* | Sony: LIBSND | | |
@@ -140,7 +141,6 @@ bodies; `INCLUDE_RODATA` lines place the symbols that are not migrated. Each `.r
 | 0xF64 | 0x80010764 | `pad.c` |
 | 0xFA4 | 0x800107A4 | `scene.c` |
 | 0xFD8 | 0x800107D8 | `file_cd.c` |
-| 0x14D8 | 0x80010CD8 | `seq_timer.c` |
 | 0x17EC | 0x80010FEC | `bgm.c` |
 | 0x1890 | 0x80011090 | `menu_screen.c` |
 | 0x1A90 | 0x80011290 | `screen_sprite.c` |
@@ -175,6 +175,15 @@ The study corrected one older claim: the cut at 0x80058078 is not forced. `ETC\E
 `ETC\HGRAPH.TIM` form one rodata object of 0x1C bytes, so DreamSys's first jump table at
 0x80011788 is 8-aligned in its own object either way, and Graph_New, Graph_Init and
 Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
+
+A later check corrected the study itself (2026-10-17): `spu.c` and `seq_timer.c`, two files it
+rated proven because a Sony object sits on each side, are Sony code too. Their 11 functions line up
+one to one with the labels of LIBSND's `SSINIT.OBJ` in PSY-Q 3.3 (`_SsInit`, `SsInit`,
+`SsInitHot`, `SsSetTickMode`, `_SsStart`, `SsStart`, `SsStart2`, `SsEnd`, `SsQuit`,
+`_SsTrapIntrVSync`, `_SsSeqCalledTbyT_1per2`), ten of them word for word and `_SsInit` at 88 %
+of its words; the game links a LIBSND build the signature database lacks. They are the Sony units
+`psyq/8003221C` and `psyq/80032588` now (names in `tools/psyq/match.py`, `NEAR_MATCHES`); the 46 and
+23 boundaries counted above are the study's and include those two files.
 
 ## Rules for contributors
 

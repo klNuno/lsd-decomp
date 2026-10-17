@@ -126,8 +126,6 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | FlatLight | The flat light helpers of RootNode | code: src/game/flat_light.c |
 | Box | A filled 2D rectangle widget, a GsBOXF at +0x58 (vtable 0x8006EAC0) | code: src/game/box.c |
 | Label | A row of glyphs that shows a text (vtable 0x8006EB90) | code: src/game/label.c |
-| Spu | SPU hardware init and reset | code: src/game/spu.c |
-| Seq | The root counter timer that drives the sequencer | code: src/game/seq_timer.c |
 | Fraction | A {numerator, denominator} pair used for scales | code: src/game/scene_node.c |
 | Bits | Bit flag helpers of the scene nodes (GsDOBJ2 attribute bits) | code: src/game/scene_node.c |
 | DreamView | The dream camera, a View subclass of 0xDC bytes (vtable 0x800869D8) | code: src/game/dream_view.c |
