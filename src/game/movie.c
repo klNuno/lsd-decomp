@@ -16,7 +16,7 @@
 /* Movie as Movie_OnSlice reads it: the two rects by u16 halves */
 typedef struct MovieSliceView {
     u8 pad_00[0x1C];
-    s32 slice;                 /* 0x1C */
+    u32 *slice;                /* 0x1C */
     s16 frameX;                /* 0x20 */
     u16 frameY;
     s32 frameW;
@@ -98,7 +98,7 @@ void Movie_Destroy(Movie *movie) {
 /* The buffers (unless skipAlloc) and the frame and slice rects; 1 (buffers freed) on failure */
 static s32 Movie_AllocBuffers(Movie *movie, MovieRect *rect, s32 skipAlloc) {
     s32 size;
-    s32 buffer;
+    u32 *buffer;
     s32 unused[2];
 
     movie->skipAlloc = skipAlloc;
@@ -253,7 +253,7 @@ void Movie_EmptySlot54(void) {
 
 /* Slot 0x58: VLC-decodes the stream's next frame into the other run-level buffer; 1 when none */
 s32 Movie_ReadFrame(Movie *movie) {
-    s32 frame;
+    u32 *frame;
     s32 fresh;
     s32 status;
     s32 index;

@@ -9,7 +9,7 @@
  */
 
 extern StageGrid g_stageGrids[];  /* g_stageGrids, 14 entries (Stage_GetGrids) */
-extern s16 *g_stageChunkMoods[];       /* per stage: the s16 mood of each chunk, row-major */
+extern MoodWord *g_stageChunkMoods[];  /* per stage: the mood of each chunk, row-major */
 
 /* The number of stages (STG00 to STG13). */
 static s32 Stage_GetCount(void) {
@@ -28,13 +28,13 @@ StageGrid *Stage_GetGrid(s32 stage) {
 }
 
 /* First stage, scanning stages then rows, with a chunk whose mood equals *mood; writes its (col, row), -1 when none. */
-u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood) {
+u32 Stage_FindChunkByMood(StageChunkPos *chunk, MoodWord *mood) {
     u32 stage;
     s32 col;
     s32 row;
     s32 rows;
     s32 cols;
-    s16 *chunkMood;
+    MoodWord *chunkMood;
 
     for (stage = 0; stage < 0xE; stage++) {
         chunkMood = g_stageChunkMoods[stage];
@@ -42,9 +42,9 @@ u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood) {
         cols = g_stageGrids[stage].cols;
         for (row = 0; row < rows; row++) {
             for (col = 0; col < cols; col++) {
-                if (*mood == *chunkMood) {
-                    place->col = col;
-                    place->row = row;
+                if (mood->word == chunkMood->word) {
+                    chunk->col = col;
+                    chunk->row = row;
                     return stage;
                 }
                 chunkMood++;
@@ -54,6 +54,6 @@ u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood) {
     return -1;
 }
 
-s16 *Stage_GetChunkMood(s32 stage, StagePlace *place) {
-    return g_stageChunkMoods[stage] + place->row * g_stageGrids[stage].cols + place->col;
+MoodPoint *Stage_GetChunkMood(s32 stage, StagePlace *place) {
+    return &(g_stageChunkMoods[stage] + place->row * g_stageGrids[stage].cols + place->col)->point;
 }

@@ -86,6 +86,22 @@ typedef struct NodeBoxList {
     s32 pad_34;
 } NodeBoxList;
 
+/* The same box list as ModelBox_ShiftList reads it: u16 corners, one 0x30-byte record per box */
+typedef struct ModelBoxCorner {
+    u16 x;
+    u16 y;
+    u16 z;
+} ModelBoxCorner;
+
+typedef struct ModelBoxRecord {
+    ModelBoxCorner v[8];
+} ModelBoxRecord;
+
+typedef struct ModelBoxList {
+    s32 count;
+    ModelBoxRecord recs[1];
+} ModelBoxList;
+
 /*
  * One model object (src/game/model_object.c, sender type 9): the 0x24-byte Object subclass made by
  * ModelObject_Create, one per TMD object; a scene node links one at +0x20.
@@ -103,13 +119,12 @@ typedef struct ModelObject {
 /* Functions of src/game/model_object.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/model_object.c */
 struct ClutPos;
-struct ModelBoxList;
 ModelObject *ModelObject_Create(ModelEntry *tmdObject);
 s32 ModelObject_IsReady(ModelObject *modelObject);
 void ModelObject_UpdateBox(ModelObject *modelObject);
 void *ModelObject_GetBox(); /* unprototyped: scene_node.c passes the model and a box index */
 void ModelObject_GetBoxList(ModelObject *modelObject, NodeBoxList *out);
-void ModelBox_ShiftList(struct ModelBoxList *list, s32 alongX, s32 side, s32 delta);
+void ModelBox_ShiftList(ModelBoxList *list, s32 alongX, s32 side, s32 delta);
 s32 ModelObject_RayTest(ModelObject *modelObject, s32 *hitDist, ModelVec *hitPos, s32 *hitHeight, ModelVec *from, ModelVec *to);
 void ModelObject_SetClut(ModelObject *modelObject, struct ClutPos *pos);
 

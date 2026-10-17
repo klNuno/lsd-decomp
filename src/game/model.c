@@ -193,7 +193,7 @@ void Model_Init(Model *model) {
     model->vt->setAnimation(model, 0);
     part = model->part;
     if (part != NULL) {
-        SceneNode_LinkModel(model, part->model);
+        SceneNode_LinkModel((SceneNode *)model, part->model);
     }
 }
 

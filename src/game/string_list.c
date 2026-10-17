@@ -261,7 +261,7 @@ extern s8 g_selectTimName[];
 extern s8 g_cardDirName[];
 extern s8 g_timExtension[];
 extern s32 g_stringListBgPos[];
-extern s32 g_stringListBgRect[];
+extern SpriteRect g_stringListBgRect;
 extern StringListVtbl g_stringListVtbl;
 
 INCLUDE_RODATA("asm/nonmatchings/game/string_list", g_stringListAlphabetText);
@@ -276,7 +276,7 @@ void StringList_Open(CardList *list, s32 parent) {
     if ((parent != 0) && (list->background == NULL)) {
         file = Tim_New(File_JoinPath(path, g_selectTimName, g_cardDirName, g_timExtension));
         file->vtbl->upload(file);
-        list->background = (CardText *)ScreenSprite_Create(file, g_stringListBgRect, 0);
+        list->background = (CardText *)ScreenSprite_Create(file, &g_stringListBgRect, 0);
         file->vtbl->base.delete_(file);
         background = list->background;
         background->vt->attach(background, parent, g_stringListBgPos);

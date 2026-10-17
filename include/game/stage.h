@@ -35,15 +35,27 @@ typedef struct StagePlace {
     s16 z;        /* 0x08 */
 } StagePlace;
 
+/* A chunk of a stage, (col, row) as in StagePlace: Stage_FindChunkByMood writes one. */
+typedef struct StageChunkPos {
+    s8 col;
+    s8 row;
+} StageChunkPos;
+
 /* A graph point: two mood axes in -9..9 (a day of the graph, a chunk, an entity record). */
 typedef struct MoodPoint {
     s8 x;
     s8 y;
 } MoodPoint;
 
+/* A MoodPoint copied or compared as one halfword (the chunk mood tables, DreamSys_ComputeDayPoint). */
+typedef union MoodWord {
+    MoodPoint point;
+    s16 word;
+} MoodWord;
+
 /* Functions of src/game/stage.c that other files call or reference (docs/naming.md, Prototypes) */
 StageGrid *Stage_GetGrid(s32 stage);
-u32 Stage_FindChunkByMood(StagePlace *place, s16 *mood);
-s16 *Stage_GetChunkMood(s32 stage, StagePlace *place);
+u32 Stage_FindChunkByMood(StageChunkPos *chunk, MoodWord *mood);
+MoodPoint *Stage_GetChunkMood(s32 stage, StagePlace *place);
 
 #endif

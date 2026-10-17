@@ -31,7 +31,7 @@ typedef struct PlaceOwner {
     u8 pad_00[0xC];
     PlaceOwnerObj *callbackObj;
 } PlaceOwner;
-static void Place_CheckTextureLoad(Place *place, PlaceTexLoader *loader);
+static void Place_CheckTextureLoad(Place *place, Tix *loader);
 /* the vtable of task.c through this file's view of its slots, so not from game/task.h */
 PlaceBaseVtbl *Task_GetVtbl();
 void Place_StartFade(Place *place, s32 color, s32 holdMode, s32 duration, s32 watch);
@@ -199,27 +199,27 @@ void Place_OnDisplay(Place *place, s32 sender, s32 event) {
  * is dropped and the time limit becomes elapsed + 30 s (discoveries "the 30-second dreams");
  * when it is done the ambience colour goes to it. Then, once the map is ready, start the place.
  */
-static void Place_CheckTextureLoad(Place *place, PlaceTexLoader *loader) {
-    PlaceTexLoaderVtbl *vt;
+static void Place_CheckTextureLoad(Place *place, Tix *loader) {
+    TixVtbl *vt;
     Ambience *ambience;
     u8 *color;
 
     if (place->texLoading != 0) {
         if (loader->failed != 0) {
-            loader->vt->delete_(loader);
+            loader->vtbl->base.delete_(loader);
             place->texLoading = 0;
             place->vt->setup(place);
             place->dreamSys->vtbl->swapTimeLimit(place->dreamSys, place->dreamSys->vtbl->getElapsedSeconds(place->dreamSys) + 0x1E);
-        } else if (loader->done != 0) {
+        } else if (loader->loaded != 0) {
             ambience = place->ambience;
-            vt = loader->vt;
+            vt = loader->vtbl;
             if (ambience->mode != 2) {
                 color = ambience->colorB;
             } else {
                 color = ambience->colorA;
             }
-            vt->apply(loader, color);
-            loader->vt->delete_(loader);
+            vt->setFadeColorAll(loader, color);
+            loader->vtbl->base.delete_(loader);
             place->texLoading = 0;
             place->vt->setup(place);
         }

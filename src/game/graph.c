@@ -26,12 +26,14 @@ typedef struct Graph {
     s8 *reelDays;           /* 0x240 4 bytes: for each reel point, how many days back it was found */
 } Graph;
 
-/* g_graphVtbl: the MenuScreen slots (ScreenVtbl, slot 0x40 is Graph_LoadImage), plus one of its own. */
-typedef struct GraphVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *, DreamSys *); /* 0x008 Graph_Init */
-    u8 pad_0C[0x124 - 0x0C];
-    void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
+/* g_graphVtbl: the MenuScreen slots (ScreenVtbl, slot 0x08 is Graph_Init, 0x40 Graph_LoadImage), plus one
+   of its own at 0x124, where a VideoScreen keeps setMovieRepeat. */
+typedef union GraphVtbl {
+    ScreenVtbl screen;
+    struct {
+        u8 pad_00[0x124];
+        void (*blinkReel)(Graph *graph); /* 0x124 Graph_BlinkReel */
+    } graph;
 } GraphVtbl;
 
 static GraphVtbl *Graph_GetVtable(void);
@@ -43,7 +45,7 @@ Screen *Graph_New(DreamSys *dreamSys) {
 
     graph = Heap_Alloc(0x244);
     if (graph != NULL) {
-        Graph_GetVtable()->init(graph, dreamSys);
+        Graph_GetVtable()->screen.init(graph, dreamSys);
         return (Screen *)graph;
     }
     return NULL;
@@ -53,7 +55,7 @@ Screen *Graph_New(DreamSys *dreamSys) {
  * the graph vtable, then the graph's slots 0xD8 (setMenu) and 0x40 (Graph_LoadImage). */
 void Graph_Init(Graph *graph, DreamSys *dreamSys) {
     MenuScreen_GetVtbl()->init(graph, 0, "ETC\\ETCSE", 0);
-    graph->screen.vtbl = Graph_GetVtable();
+    graph->screen.vtbl = &Graph_GetVtable()->screen;
     graph->screen.sound->vtbl->setOctave(graph->screen.sound, -1);
     graph->dreamSys = dreamSys;
     graph->screen.vtbl->setMenu(graph, 0);
@@ -109,7 +111,7 @@ void Graph_OnClock(Graph *graph, void *sender, s32 message) {
             graph->boxes[0]->vtbl->setVisible(graph->boxes[0], graph->screen.ticks & 1);
         }
     }
-    ((GraphVtbl *)graph->screen.vtbl)->blinkReel(graph);
+    ((GraphVtbl *)graph->screen.vtbl)->graph.blinkReel(graph);
 }
 
 /* Slot 0x78: CIRCLE closes the graph, unless the reel was found. */
@@ -126,11 +128,11 @@ void Graph_CreateSprites(Graph *graph) {
     s32 i;
     s32 step;
 
-    graph->boxes[0] = Box_Create(g_graphBoxSize, g_graphNewestColor, 0);
+    graph->boxes[0] = (Widget *)Box_Create(g_graphBoxSize, g_graphNewestColor, 0);
     color = g_graphOldColor;
     i = 1;
     do {
-        graph->boxes[i] = Box_Create(g_graphBoxSize, (u8 *)&color, 0);
+        graph->boxes[i] = (Widget *)Box_Create(g_graphBoxSize, (u8 *)&color, 0);
         step = (i < 7) ? 0x14 : 1;
         i++;
         color.r -= step;

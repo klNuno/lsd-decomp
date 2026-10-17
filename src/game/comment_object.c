@@ -107,7 +107,7 @@ extern s8 g_widgetSuffix[];
 extern s32 g_glyphColor[];
 extern s32 g_inputShowArg[];
 extern s32 g_fontShowArg[];
-extern s32 g_inputBoxRect[];
+extern SpriteRect g_inputBoxRect;
 
 void *CommentObject_New(u8 *text, s32 mode) {
     void *obj;
@@ -227,7 +227,7 @@ void CommentObject_BuildWidgets(CommentObject *obj, s32 enable) {
     if ((enable != 0) && (obj->inputBox == NULL)) {
         inputWidget = Tim_New(File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
         inputWidget->vtbl->upload(inputWidget);
-        obj->inputBox = (CommentWidget *)ScreenSprite_Create(inputWidget, g_inputBoxRect, 0);
+        obj->inputBox = (CommentWidget *)ScreenSprite_Create(inputWidget, &g_inputBoxRect, 0);
         inputWidget->vtbl->base.delete_(inputWidget);
         widget = obj->inputBox;
         widget->vtbl->attach(widget, enable, g_inputShowArg);

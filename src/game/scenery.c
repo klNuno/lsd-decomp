@@ -332,7 +332,7 @@ static void Ambience_ShiftRgb(u8 *out, u8 *rgb, s32 shift) {
 
 static void Ambience_DeleteBands(void) {
     if (g_bandLayout != 0) {
-        Object_DeleteArray(g_ambienceBands, 0x12);
+        Object_DeleteArray((Object **)g_ambienceBands, 0x12);
         g_bandLayout = 0;
     }
 }
@@ -379,7 +379,7 @@ static void Scenery_UpdateAll(void *origin) {
 
 static void Scenery_DeleteAll(void) {
     if (g_ambienceFamily >= 0) {
-        Object_DeleteArray(g_scenery, g_sceneryCount);
+        Object_DeleteArray((Object **)g_scenery, g_sceneryCount);
     }
 }
 

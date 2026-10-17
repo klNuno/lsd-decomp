@@ -225,7 +225,7 @@ static void Scenery_PlaceKind0Parts(void *self, s32 move) {
                 obj->vt->setColor(obj, &pos);
             } else {
                 *part = Actor_New();
-                SceneNode_LinkModel(*part, scenery->model);
+                SceneNode_LinkModel((SceneNode *)*part, scenery->model);
                 Scenery_AttachPart(*part, scenery, &pos, scenery->rotation, scenery->scale);
             }
             part++;
@@ -282,7 +282,7 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
 
 static void Scenery_DeleteKind0Parts(Scenery *scenery) {
     if (scenery->direction != 0) {
-        Object_DeleteArray(scenery->u.pair, 2);
+        Object_DeleteArray((Object **)scenery->u.pair, 2);
     }
 }
 
@@ -348,7 +348,7 @@ static void Scenery_UpdateKind2(void *scenery, Vec3 *origin) {
 }
 
 static void Scenery_DeleteKind2Parts(Scenery *scenery) {
-    Object_DeleteArray(scenery->u.many.parts, 5);
+    Object_DeleteArray((Object **)scenery->u.many.parts, 5);
 }
 
 static void Scenery_BuildKind3(Scenery *scenery, s32 unused) {
@@ -369,7 +369,7 @@ static void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
 }
 
 static void Scenery_DeleteKind3Parts(Scenery *scenery) {
-    Object_DeleteArray(scenery->u.many.parts, 5);
+    Object_DeleteArray((Object **)scenery->u.many.parts, 5);
 }
 
 SceneryVtbl *Scenery_GetVtbl(void) {

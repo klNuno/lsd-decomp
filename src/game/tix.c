@@ -95,7 +95,7 @@ void Tix_Init(Tix *tix, char *path) {
 }
 
 void Tix_Destroy(Tix *tix) {
-    Object_DeleteArray(tix->parts, tix->partIndex);
+    Object_DeleteArray((Object **)tix->parts, tix->partIndex);
     Heap_Free(tix->parts);
     File_GetBackendVtbl()->destroy(tix);
 }

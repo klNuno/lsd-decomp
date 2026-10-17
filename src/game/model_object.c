@@ -40,28 +40,6 @@ typedef struct ModelBoxBuf {
 extern ObjectVtbl g_modelObjectVtbl;
 s32 g_modelObjectReady;
 
-
-
-
-
-
-/* One box corner, u16 coordinates */
-typedef struct ModelBoxCorner {
-    u16 x;
-    u16 y;
-    u16 z;
-} ModelBoxCorner;
-
-typedef struct ModelBoxRecord {
-    ModelBoxCorner v[8];
-} ModelBoxRecord;
-
-typedef struct ModelBoxList {
-    s32 count;
-    ModelBoxRecord recs[1];
-} ModelBoxList;
-
-
 static void *ModelObject_NextPrim(ModelObject *modelObject, ModelPrim *prim, s32 *count, ModelVec *out, u32 *primIndex);
 
 typedef struct HitLongVec { s32 x; s32 y; s32 z; s32 pad; } HitLongVec;

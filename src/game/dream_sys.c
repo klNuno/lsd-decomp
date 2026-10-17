@@ -18,7 +18,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-static s32 Mood_GetColor(s16 *point);
+static s32 Mood_GetColor(MoodPoint *point);
 static s32 DreamSys_ExecuteLink();
 extern u8 g_turnRotations[];
 /* g_actorVtbl (0x800878D4), the Actor base class (src/game/actor.c), as the DreamSys methods call it. */
@@ -256,7 +256,7 @@ void DreamSys_TickTimer(DreamSys *dreamSys, s32 sender, s32 message) {
 void DreamSys_RouteMapMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
     Actor_GetVtbl()->onNode(dreamSys, sender, message);
     if ((**sender & 0xFFF) == 0x114) {
-        dreamSys->vtbl->onMapMessage(dreamSys, sender, message);
+        dreamSys->vtbl->onMapMessage(dreamSys, (StageMap *)sender, message);
     }
 }
 
@@ -292,7 +292,7 @@ s32 DreamSys_SetFlashbackMode(DreamSys *dreamSys, s32 *colorOut, s32 mode) {
 
     oldMode = dreamSys->flashbackMode;
     if (mode < 0) {
-        *colorOut = Mood_GetColor((s16 *)&dreamSys->save.graph[dreamSys->save.day]);
+        *colorOut = Mood_GetColor(&dreamSys->save.graph[dreamSys->save.day]);
     } else {
         dreamSys->flashbackMode = mode;
     }
@@ -338,7 +338,7 @@ void DreamSys_StartPlace(DreamSys *dreamSys, s32 speed, s32 linkPeriod) {
     dreamSys->skipMoveBoxes = 0;
     dreamSys->linkStep = 0;
     dreamSys->unk78 = 0;
-    SceneNode_GetRotation(dreamSys, rotation);
+    SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
     rotation[2].num = 0;
     rotation[2].den = 1;
     dreamSys->vtbl->setRotation(dreamSys, 1, rotation);
@@ -955,7 +955,7 @@ s32 DreamSys_LoadNextFlashback(DreamSys *dreamSys, s32 quiet) {
 }
 
 s32 DreamSys_LinkFacing(DreamSys *dreamSys, StagePlace *location) {
-    s32 rotation[4];
+    Fraction rotation[3];
     s32 newStage;
 
     if (dreamSys->transition != 0) {
@@ -965,8 +965,8 @@ s32 DreamSys_LinkFacing(DreamSys *dreamSys, StagePlace *location) {
     if (newStage < 0) {
         return 0;
     }
-    SceneNode_GetRotation(dreamSys, rotation);
-    if (Link_CheckFacing(&dreamSys->arrivalHeading, &dreamSys->linkHeading, rotation) == 0) {
+    SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
+    if (Link_CheckFacing(&dreamSys->arrivalHeading, &dreamSys->linkHeading, (RotationYaw *)rotation) == 0) {
         return 0;
     }
     if (dreamSys->walkingForward == 0) {
@@ -1031,7 +1031,7 @@ static s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition
 }
 
 s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
-    s32 rotation[4];
+    Fraction rotation[3];
 
     if (dreamSys->transition == 0) {
         if (dreamSys->linkStep != 0) {
@@ -1047,7 +1047,7 @@ s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
             return 0;
         }
         if (Link_FindScripted(&dreamSys->place, target, dreamSys->stage) >= 0) {
-            SceneNode_GetRotation(dreamSys, rotation);
+            SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
             if (Link_CheckScripted(&dreamSys->arrivalHeading, &dreamSys->linkHeading, (RotationYaw *)rotation) != 0 && dreamSys->walkingForward != 0) {
                 dreamSys->linkTarget = *target;
                 dreamSys->ignorePad = 1;
@@ -1293,26 +1293,26 @@ void DreamSys_LogEntityMood(DreamSys *dreamSys, MoodPoint *point) {
 }
 
 void DreamSys_ComputeDayPoint(DreamSys *dreamSys, MoodPoint *out) {
-    s16 chunkPoint;
-    s16 entityPoint;
+    MoodWord chunkPoint;
+    MoodWord entityPoint;
 
-    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->chunkMood, &chunkPoint);
-    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->entityMood, &entityPoint);
+    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->chunkMood, &chunkPoint.point);
+    dreamSys->vtbl->moodResolve(dreamSys, &dreamSys->entityMood, &entityPoint.point);
     if (dreamSys->entityMood.count == 0) {
-        entityPoint = chunkPoint;
+        entityPoint.word = chunkPoint.word;
     }
-    out->x = ((s8)chunkPoint + (s8)entityPoint) / 2;
-    out->y = (((s8 *)&chunkPoint)[1] + ((s8 *)&entityPoint)[1]) / 2;
+    out->x = (chunkPoint.point.x + entityPoint.point.x) / 2;
+    out->y = (chunkPoint.point.y + entityPoint.point.y) / 2;
 }
 
 void DreamSys_GetDreamColor(DreamSys *dreamSys) {
-    s16 point;
+    MoodPoint point;
 
     dreamSys->vtbl->computeDayPoint(dreamSys, &point);
     Mood_GetColor(&point);
 }
 
-static s32 Mood_GetColor(s16 *point) {
+static s32 Mood_GetColor(MoodPoint *point) {
     s8 buf[2];
     s8 *p;
     s32 i;
@@ -1406,7 +1406,7 @@ void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, Dre
 }
 
 void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
-    s32 rotation[4];
+    Fraction rotation[3];
     StagePlace *location;
     StageMap *map;
 
@@ -1414,7 +1414,7 @@ void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
         if (rand() % 3 == 0) {
             map = dreamSys->map;
             location = map->vtbl->getLocation(map, 0, 0);
-            SceneNode_GetRotation(dreamSys, rotation);
+            SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
             dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, location, rotation, arg1, length, dreamSys->save.day);
         }
     }

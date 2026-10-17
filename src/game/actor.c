@@ -189,19 +189,22 @@ void Actor_Init(Actor *actor) {
 
 /* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_IsReady. */
 void Actor_SendBoxes(Actor *actor, s32 message) {
-    s32 *buf[14];
+    union {
+        NodeBoxList node;
+        ModelBoxList shift;
+    } buf;
     Actor *contact;
 
     SceneNode_GetVtbl()->sendBoxes(actor, message);
     if (message < 9) {
         if (message >= 5) {
             if ((actor->model != 0) && (ModelObject_IsReady(actor->model) != 0)) {
-                actor->vt->getBoxList(actor, buf);
+                actor->vt->getBoxList(actor, &buf.node);
                 if (message != 5) {
-                    ModelBox_ShiftList(buf, message == 7, actor->speed >= 0,
+                    ModelBox_ShiftList(&buf.shift, message == 7, actor->speed >= 0,
                                   actor->speed >= 0 ? actor->speed + actor->boxMargin : actor->speed - actor->boxMargin);
                 }
-                actor->vt->sendShape(actor, buf, message);
+                actor->vt->sendShape(actor, &buf.node, message);
                 contact = actor->contact;
                 if (contact != NULL) {
                     if (contact->vt->classByte == 0x34) {
@@ -248,10 +251,10 @@ static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec) {
 }
 
 /* Slot 0xC0 */
-void Actor_MoveLocal(Actor *actor, void *local) {
+void Actor_MoveLocal(Actor *actor, ModelVec *local) {
     Vec3 delta;
 
-    SceneNode_RotateVector(actor, &delta, local);
+    SceneNode_RotateVector((SceneNode *)actor, &delta, local);
     actor->vt->movePos(actor, &delta);
 }
 

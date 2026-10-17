@@ -52,7 +52,7 @@ void TimPack_Init(TimPack *timPack, char *path) {
 }
 
 void TimPack_Destroy(TimPack *timPack) {
-    Object_DeleteArray(timPack->tims, timPack->count);
+    Object_DeleteArray((Object **)timPack->tims, timPack->count);
     Heap_Free(timPack->tims);
     File_GetBackendVtbl()->destroy(timPack);
 }

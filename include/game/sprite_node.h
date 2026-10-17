@@ -4,6 +4,14 @@
 #include "common.h"
 #include "game/gs.h"
 
+/* The part of a TIM image cut into a sprite: copied whole. */
+typedef struct SpriteRect {
+    u16 u;
+    u16 v;
+    s32 w;
+    s32 h;
+} SpriteRect;
+
 /* Functions of src/game/sprite_node.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/sprite_node.c */
 struct NodeAngles;

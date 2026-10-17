@@ -47,7 +47,7 @@ typedef struct FileInitClassTable {
     u8 pad[8];
     void (*init)(FileInitObject *);  /* 0x08 Object_Init */
 } FileInitClassTable;
-s32 g_fileDirTable;
+DirEntry *g_fileDirTable;
 s32 g_fileCdReady;
 typedef struct FileInitRecord {
     void *vtbl;              /* File.vtbl */
@@ -116,11 +116,11 @@ struct FileRequestLink {
     u8 pad10[0x10];
     FileRequestLink *next; /* FileRequest.next */
 };
-s32 g_fileCurEntry;
-s32 g_filePrevEntry;
+DirEntry *g_fileCurEntry;
+DirEntry *g_filePrevEntry;
 static void File_SetState(s32 state);
 s32 g_fileReadSector;
-s32 g_fileReadBuf;
+u8 *g_fileReadBuf;
 static s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset);
 extern FileVtbl g_fileVtable;
 typedef struct FileEntryView {
@@ -155,20 +155,12 @@ typedef struct FileLoadState {
 static void File_Locate();
 static void File_ClearLoaded();
 static void File_FreeRequest();
-static s32 File_EntryAt(s32 index);
-typedef struct CdlLocDir {
-    u8 minute, second, sector, track;
-} CdlLocDir;
+static DirEntry *File_EntryAt(s32 index);
 typedef struct CdlFileDir {
     CdlLocDir pos;
     s32 size;
     s8 name[16];
 } CdlFileDir;
-typedef struct DirEntry {
-    s8 name[0x14];
-    CdlLocDir pos;
-    s32 size;
-} DirEntry;
 typedef struct CdlLocTail {
     u8 m;
     u8 s;
@@ -185,7 +177,7 @@ typedef struct CdlFileTail {
     s32 size;
     u8 name[0x10];
 } CdlFileTail;
-static s32 File_FindEntry(char *name);
+static DirEntry *File_FindEntry(char *name);
 typedef struct FileVtOpen {
     u8 pad[0x48];
     void (*close)(void *);   /* 0x48 File_Unload */
@@ -195,7 +187,7 @@ typedef struct FileVtOpen {
 typedef struct FileOpenObject {
     FileVtOpen *vtbl;    /* File.vtbl */
     u8 pad4[0xC];
-    s32 data;            /* File.data, the buffer the whole file is read into */
+    u8 *data;            /* File.data, the buffer the whole file is read into */
     s32 size;            /* File.size, the buffer size in bytes */
     u8 pad18[0x8];
     u16 keepData;        /* File.keepData, reuses the buffer when set */
@@ -319,7 +311,8 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
             CdIntToPos(base + sector, buf);
             if (mode == 0) {
                 if (g_fileEnabled != 0) {
-                    g_fileCurEntry = (s32)buf - 0x14;
+                    /* an entry whose pos is the seek target: File_PollIo seeks to g_fileCurEntry->pos */
+                    g_fileCurEntry = (DirEntry *)(buf - 0x14);
                     g_fileAsyncMode = 1;
                 } else {
                     do {
@@ -348,11 +341,11 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
 void File_EmptySlot50(void) {
 }
 
-s32 File_Read(File *obj, s32 buf, u32 offset) {
+s32 File_Read(File *obj, u8 *buf, u32 offset) {
     s32 status;
 
     if ((g_fileEnabled == 0) && (g_fileOption == 0)) {
-        File_ReadSync((FileSeekView *)obj, (void *)buf, offset);
+        File_ReadSync((FileSeekView *)obj, buf, offset);
         return 0;
     }
     File_Lock();
@@ -365,7 +358,7 @@ s32 File_Read(File *obj, s32 buf, u32 offset) {
                 g_fileAsyncMode = 1;
             } else {
             retry:
-                CdRead(offset >> 11, (void *)buf, 0x80);
+                CdRead(offset >> 11, buf, 0x80);
                 while ((status = CdReadSync(0, 0)) > 0) {
                 }
                 if (status == -1) {
@@ -375,7 +368,7 @@ s32 File_Read(File *obj, s32 buf, u32 offset) {
             }
         }
     } else {
-        File_QueueRequest(obj, 0, 5, buf, offset);
+        File_QueueRequest(obj, 0, 5, (s32)buf, offset);
     }
     File_Unlock();
     return 0;
@@ -383,10 +376,10 @@ s32 File_Read(File *obj, s32 buf, u32 offset) {
 
 void File_Open(FileOpenObject *obj, char *name) {
     s32 size;
-    s32 entry;
-    s32 buf;
+    DirEntry *entry;
+    u8 *buf;
     s32 r;
-    s32 cur;
+    u8 *cur;
     u32 sectors;
 
     if (g_fileEnabled == 0 && g_fileOption == 0) {
@@ -429,10 +422,10 @@ void File_Open(FileOpenObject *obj, char *name) {
             } else {
             retry:
                 do {
-                    CdControl(2, (u8 *)(g_fileCurEntry + 0x14), 0);
+                    CdControl(2, (u8 *)&g_fileCurEntry->pos, 0);
                     while ((r = CdSync(0, 0)) == 0) {}
                 } while (r == 5);
-                CdRead(g_fileReadSector, (void *)obj->data, 0x80);
+                CdRead(g_fileReadSector, obj->data, 0x80);
                 while ((r = CdReadSync(0, 0)) > 0) {}
                 if (r == -1) {
                     goto retry;
@@ -542,7 +535,7 @@ void File_CancelRequests(File *obj) {
     FileRequestLink *node;
     FileRequestLink *cur;
     FileRequestLink *next;
-    s32 tmp;
+    DirEntry *tmp;
 
     File_Lock();
     node = (FileRequestLink *)g_fileRequestHead;
@@ -631,7 +624,7 @@ s32 File_Enable(s32 enabled, s32 param1, s32 mode) {
     return 0;
 }
 
-void File_SetDirTable(s32 table) {
+void File_SetDirTable(DirEntry *table) {
     g_fileDirTable = table;
 }
 
@@ -783,48 +776,48 @@ static void File_FreeRequest(FileRequest *node) {
     File_Unlock();
 }
 
-static s32 File_FindEntry(char *name) {
-    s32 entry;
+static DirEntry *File_FindEntry(char *name) {
+    DirEntry *entry;
     s32 i;
 
     entry = g_fileDirTable;
     i = 0;
     File_Lock();
     do {
-        if (strstr((char *)entry, name) != NULL) {
+        if (strstr(entry->name, name) != NULL) {
             File_Unlock();
             return entry;
         }
         i++;
-        entry += 0x1C;
+        entry++;
     } while (i < g_fileDirCount);
-    return 0;
+    return NULL;
 }
 
 static s32 File_FindIndex(char *name) {
-    s32 entry;
+    DirEntry *entry;
     s32 i;
 
     entry = g_fileDirTable;
     i = 0;
     File_Lock();
     do {
-        if (strstr((char *)entry, name) != NULL) {
+        if (strstr(entry->name, name) != NULL) {
             File_Unlock();
             return i;
         }
-        entry += 0x1C;
+        entry++;
         i++;
     } while (i < g_fileDirCount);
     return -1;
 }
 
-static s32 File_EntryAt(s32 index) {
-    s32 entry;
+static DirEntry *File_EntryAt(s32 index) {
+    DirEntry *entry;
 
     entry = g_fileDirTable;
     File_Lock();
-    entry += index * 0x1C;
+    entry += index;
     File_Unlock();
     return entry;
 }
@@ -833,7 +826,7 @@ static void File_PollIo(void) {
     File_Lock();
     switch (g_fileState) {
     case 1:
-        if (CdControlF(2, (u8 *)(g_fileCurEntry + 0x14)) != 0) {
+        if (CdControlF(2, (u8 *)&g_fileCurEntry->pos) != 0) {
             File_SetState(2);
         }
         break;
@@ -853,7 +846,7 @@ static void File_PollIo(void) {
         }
         break;
     case 7:
-        if (CdRead(g_fileReadSector, (void *)g_fileReadBuf, 0x80) != 0) {
+        if (CdRead(g_fileReadSector, g_fileReadBuf, 0x80) != 0) {
             File_SetState(8);
         }
         break;
@@ -876,14 +869,14 @@ static void File_StepIo(void) {
     s32 nextState;
     s32 state;
     s32 retryCount;
-    s32 prevDir;
+    DirEntry *prevDir;
     s32 syncResult;
 
     File_Lock();
     state = g_fileState;
     switch (state) {
     case 1:
-        if (CdControlF(2, (u8 *)(g_fileCurEntry + 0x14)) != 0) {
+        if (CdControlF(2, (u8 *)&g_fileCurEntry->pos) != 0) {
             nextState = 2;
             goto tail;
         }
@@ -915,7 +908,7 @@ static void File_StepIo(void) {
         }
         break;
     case 7:
-        if (CdRead(g_fileReadSector, (void *)g_fileReadBuf, 0x80) != 0) {
+        if (CdRead(g_fileReadSector, g_fileReadBuf, 0x80) != 0) {
             nextState = 8;
             goto tail;
         }

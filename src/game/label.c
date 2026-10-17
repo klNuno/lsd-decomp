@@ -70,7 +70,7 @@ void Label_Construct(Label *label, Tim *font, s32 count, char *text) {
 
 /* Slot 0x0C */
 void Label_Destroy(Label *label) {
-    Object_DeleteArray(label->glyphs, label->count);
+    Object_DeleteArray((Object **)label->glyphs, label->count);
     label->glyphs = Heap_Free(label->glyphs);
     Glyph_GetVtbl()->destroy(label);
 }

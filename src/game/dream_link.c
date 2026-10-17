@@ -280,24 +280,27 @@ static s32 Link_Find(void *place, void *location, s32 stage, u8 *counts, LinkEnt
 }
 
 s32 Spawn_PickFromMood(void *place, s32 *secondsOut, void *point, s32 day) {
-    s16 key[4];
+    union {
+        StageChunkPos chunk;
+        s16 chunkKey; /* col | row << 8, as LinkEntry.chunkKey */
+    } key;
     s32 idx;
     s32 cnt;
     s32 i;
     SpawnPoint *rec;
     PlaceOut *out;
 
-    idx = Stage_FindChunkByMood(key, point);
+    idx = Stage_FindChunkByMood(&key.chunk, point);
     if (idx >= 0) {
         *secondsOut = g_stageTimeLimits[idx];
         cnt = g_spawnCounts[idx];
         rec = g_spawnPoints[idx];
         for (i = 0; i < cnt; i++, rec++) {
-            if (key[0] == *(s16 *)rec) {
+            if (key.chunkKey == *(s16 *)rec) {
                 goto found;
             }
         }
-        rec = g_spawnPoints[idx] + key[0] % cnt;
+        rec = g_spawnPoints[idx] + key.chunkKey % cnt;
 found:
         out = place;
         out->tile = rec->tile;

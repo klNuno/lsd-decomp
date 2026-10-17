@@ -1679,7 +1679,7 @@ void Behavior_Type115(Entity *entity, HandlerNode *node) {
     if (entity->state == 0 && Entity_IsDreamerNear(entity, 0x800) != 0) {
         entity->state = 0xB;
         Entity_FaceDreamer(entity, entity->dreamSys, 1, 0, 0);
-        Entity_FaceDreamer(entity->dreamSys, entity, 1, 1, 0);
+        Entity_FaceDreamer((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
         entity->vt->wake(entity);
         entity->vt->startHandler(entity);
         dreamSys = entity->dreamSys;
@@ -2205,7 +2205,7 @@ void Behavior_Type81(Entity *entity, HandlerNode *node) {
             }
         } else {
             entity->dreamSys->vtbl->stopControls(entity->dreamSys, 1);
-            Entity_FaceDreamer(entity->dreamSys, entity, 1, 1, 0);
+            Entity_FaceDreamer((Entity *)entity->dreamSys, (DreamSys *)entity, 1, 1, 0);
             if (entity->state == 2) {
                 if (entity->vt->distanceTo(entity, entity->dreamSys) < 0x960) {
                     entity->state = 0xB;

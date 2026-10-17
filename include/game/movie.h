@@ -44,9 +44,9 @@ typedef struct Movie {
     ListNode *watched;
     ListNode *watchers;
     s32 skipAlloc;            /* 0x0C nonzero: the buffers are neither allocated nor freed */
-    s32 streamBuffer;         /* 0x10 0x12000 bytes handed to the stream */
-    s32 runLevel[2];          /* 0x14 w * h * 2 + 0x1000 bytes each, used in turn */
-    s32 slice;                /* 0x1C one decoded 16-pixel column, h * 32 bytes */
+    u32 *streamBuffer;        /* 0x10 0x12000 bytes handed to the stream */
+    u32 *runLevel[2];         /* 0x14 w * h * 2 + 0x1000 bytes each, used in turn */
+    u32 *slice;               /* 0x1C one decoded 16-pixel column, h * 32 bytes */
     MovieRect frame;          /* 0x20 where the frame goes in VRAM */
     MovieRect sliceRect;      /* 0x2C the next slice, w = 16 */
     s32 sliceWords;           /* 0x38 DecDCTout size: 16 * h / 2 */

@@ -218,7 +218,7 @@ static s32 File_GetBackendVSyncMode(void) {
 }
 
 /* Appends count entries of 0x1C bytes to the CD directory and resolves the new ones. */
-s32 File_AddDirEntries(s32 table, s32 count) {
+s32 File_AddDirEntries(DirEntry *table, s32 count) {
     s32 oldCount;
 
     if (g_fileBackend == FILE_BACKEND_CD) {
@@ -226,7 +226,7 @@ s32 File_AddDirEntries(s32 table, s32 count) {
         File_SetDirTable(table);
         oldCount = File_GetDirCount();
         File_SetDirCount(oldCount + count);
-        return File_ResolveEntries(table + (oldCount * 0x1C), count);
+        return File_ResolveEntries(table + oldCount, count);
     }
     return 1;
 }

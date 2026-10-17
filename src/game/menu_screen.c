@@ -498,7 +498,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
         if (*text != 0) {
             do {
                 options = menu->options[i];
-                *items = Label_Create(font, strlen(*text), *text);
+                *items = (Widget *)Label_Create(font, strlen(*text), *text);
                 items++;
                 if (options != 0) {
                     screen->selected = i;
@@ -508,7 +508,7 @@ void MenuScreen_SetMenu(MenuScreen *screen, MenuDef *menu) {
                 i++;
             } while (*text != 0);
         }
-        screen->optionBox = Box_Create(g_optionBoxSize, g_optionBoxColor, 0);
+        screen->optionBox = (Widget *)Box_Create(g_optionBoxSize, g_optionBoxColor, 0);
         menu->font = font;
     }
 }
@@ -667,13 +667,13 @@ void MenuScreen_MakeOptions(MenuScreen *screen, OptionListDef *list, Tim *font) 
     text = list->texts;
     while (*text != 0) {
         length = strlen(*text);
-        *texts++ = Label_Create(font, length, *text);
+        *texts++ = (Widget *)Label_Create(font, length, *text);
         text++;
     }
 }
 
 void MenuScreen_FreeOptions(MenuScreen *screen) {
-    Object_DeleteArray(screen->options[screen->selected], screen->optionCounts[screen->selected]);
+    Object_DeleteArray((Object **)screen->options[screen->selected], screen->optionCounts[screen->selected]);
     Heap_Free(screen->options[screen->selected]);
 }
 

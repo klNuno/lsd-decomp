@@ -300,9 +300,9 @@ static DreamRunnerVtbl *DreamRunner_GetVtbl(void) {
 
 void File_ResolvePathTablePart(s32 wholeTable) {
     s32 count;
-    s32 files;
+    struct DirEntry *files;
 
-    files = (s32)File_GetPathTable(&count);
+    files = (struct DirEntry *)File_GetPathTable(&count);
     switch (++g_pathTablePartCount) {
     case 1:
         if (wholeTable != 0) {

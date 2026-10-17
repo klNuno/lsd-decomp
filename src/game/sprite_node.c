@@ -35,14 +35,6 @@ typedef struct Sprite {
     s32 rotate;     /* 0x20 degrees, 20.12 */
 } Sprite;
 
-/* The part of a TIM image cut into a sprite: copied whole. */
-typedef struct SpriteRect {
-    u16 u;
-    u16 v;
-    s32 w;
-    s32 h;
-} SpriteRect;
-
 /* SpriteRect as SpriteNode_FillSprite reads it: bytes for u and v, halves for w and h. */
 typedef struct SpriteRectBytes {
     u8 u;

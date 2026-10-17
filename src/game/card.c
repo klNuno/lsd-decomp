@@ -71,7 +71,7 @@ s32 g_cardCount;
 static void Card_ClearEvents(Card *card);
 static s32 Card_WaitEvent(Card *card);
 extern s8 *g_cardMessageNames[];
-extern s32 g_cardMessageRect[];
+extern SpriteRect g_cardMessageRect;
 extern s32 g_cardMessagePos[];
 extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
@@ -424,12 +424,12 @@ s32 Card_WriteFile(Card *card, char *name, char *title, u8 iconFrames, MenuPictu
     s32 tries;
 
     tries = 10;
-    Card_SetTitleLetter(title, name);
+    Card_SetTitleLetter((CardTitle *)title, name);
     do {
         ok = Card_WriteFileOnce(card, name, title, iconFrames, icon, data, size);
     } while (ok == 0 && tries-- != 0);
     if (ok == 0) {
-        Card_SetTitleLetter(title, 0);
+        Card_SetTitleLetter((CardTitle *)title, 0);
     }
     return ok;
 }
@@ -800,7 +800,7 @@ void Card_ShowMessage(Card *card, s32 state) {
         strcat(dst, g_timSuffix);
         picture = Tim_New(dst);
         picture->vtbl->upload(picture);
-        message = (CardMessage *)ScreenSprite_Create(picture, g_cardMessageRect, 0);
+        message = (CardMessage *)ScreenSprite_Create(picture, &g_cardMessageRect, 0);
         card->message = message;
         picture->vtbl->base.delete_(picture);
         message->vt->attach(message, card->root, g_cardMessagePos);

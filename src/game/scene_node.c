@@ -823,6 +823,8 @@ static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to) {
 /*
  * Turns entity toward target (docs/discoveries.md, touch range): yaw and pitch from ratan2 in
  * degrees; noPitch keeps it level, facing == 0 turns it away (yaw + 180), extra is added after.
+ * Behavior_Type115 and Behavior_Type81 swap the two (the dreamer turns to the entity) through casts:
+ * both classes are scene nodes, with the parent at 0x0C, the coordinate at 0x14 and slot 0x44.
  */
 void Entity_FaceDreamer(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra) {
     Fraction rot[3];
