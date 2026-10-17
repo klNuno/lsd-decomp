@@ -33,7 +33,7 @@ struct PlaceRefs;
 struct StageMap;
 Ambience *Scenery_Begin(struct StageMap *map, s32 stage, struct PlaceRefs *refs, s32 dayNumber, s32 unused);
 void Scenery_Teardown(void);
-s32 Scenery_Tick(void *mapPos, s32 ignored, s32 found);
+s32 Scenery_Tick(void *mapPos, s32 ignored, s32 spotType);
 s32 Ambience_IsEvenFamily(void);
 
 #endif

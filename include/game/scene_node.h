@@ -84,6 +84,7 @@ typedef struct SceneNode {
 } SceneNode;
 
 /* Functions of src/game/scene_node.c that other files call or reference (docs/naming.md, Prototypes) */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
 /* types defined in src/game/scene_node.c */
 SceneNode *SceneNode_New(void);
 void SceneNode_Destroy(SceneNode *node);
@@ -125,9 +126,9 @@ void SceneNode_LocalToWorld(); /* unprototyped: dream_sys.c and sym.c pass a fou
 void SceneNode_GetRotation(SceneNode *node, Fraction *degrees);
 void SceneNode_LinkModel(SceneNode *node, ModelObject *model);
 s32 SceneNode_ProbeHeight(); /* unprototyped: actor.c calls it with no arguments */
-void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra);
+void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 alongZ, Fraction *extra);
 s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value);
-void Render_TransformLongVectors(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix);
+void Vec_TransformLong(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix);
 s32 Entity_IsWithinBox(s32 *center, s32 range, s32 *pos);
 s32 SceneNode_SetRayHeightCheck(s32 enable);
 

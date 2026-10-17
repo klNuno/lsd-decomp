@@ -13,9 +13,9 @@
  */
 typedef struct SceneryPartVtbl {
     u8 pad_00[0x08];
-    void (*init)();           /* 0x08 SceneryPart_Construct (part, index, blendRate, font) */
+    void (*init)();           /* 0x08 SceneryPart_Init (part, index, blendRate, font) */
     u8 pad_0C[0x40 - 0x0C];
-    void (*reset)();          /* 0x40 SceneryPart_Init (part, index) */
+    void (*reset)();          /* 0x40 SceneryPart_Reset (part, index) */
     void (*setRotation)();    /* 0x44 SpriteNode_SetRotation */
     void (*setScale)();       /* 0x48 SceneryPart_SetScale */
     void (*attach)();         /* 0x4C SceneNode_Attach */

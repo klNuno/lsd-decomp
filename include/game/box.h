@@ -5,7 +5,7 @@
 #include "game/display.h"
 #include "game/gs.h"
 
-/* A box size as Box_Init and Box_SetSize read it: two words, of which only the low halves count */
+/* A box size as Box_Reset and Box_SetSize read it: two words, of which only the low halves count */
 typedef struct BoxSize {
     u16 width;
     u16 pad_02;
@@ -20,9 +20,9 @@ typedef struct BoxSize {
  */
 typedef struct BoxVtbl {
     u8 pad_00[0x8];
-    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Construct */
+    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Init */
     u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Init */
+    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Reset */
     u8 pad_44[0x4C - 0x44];
     void (*show)();                           /* 0x4C Box_Show (box, root, position) */
     u8 pad_50[0xB8 - 0x50];

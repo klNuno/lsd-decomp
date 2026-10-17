@@ -25,7 +25,7 @@ typedef struct TimPack {
         s32 *words;           /* count, then count offsets from the start */
     } data;                   /* 0x10 */
     s32 size;
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

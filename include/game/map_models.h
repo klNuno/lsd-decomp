@@ -12,12 +12,7 @@
  * Slot 0x78 hands out the chunk's models one by one.
  */
 typedef struct MapModelsVtbl {
-    s32 classWord;
-    void *(*delete_)();     /* 0x04 */
-    void (*init)(void *modelSet, s32 path); /* 0x08 MapModels_Init */
-    u8 pad_0C[0x6C - 0x0C]; /* the other FileVtbl slots (file_base.h) */
-    void (*loadAsync)(void *modelSet, s32 path); /* 0x6C */
-    u8 pad_70[0x78 - 0x70];
+    FileVtbl base;          /* 0x00 to 0x74: the file class slots, base.init MapModels_Init (modelSet, path) */
     void *(*nextModel)();   /* 0x78 MapModels_NextModel (models, out record, index): NULL at the end, -1 for an empty square */
 } MapModelsVtbl;
 
@@ -43,7 +38,7 @@ typedef struct MapModels {
     s32 isOpen;
     u8 *data;               /* 0x10 a 8-byte header, then 400 records of 0xC bytes, then the chained ones */
     s32 size;
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

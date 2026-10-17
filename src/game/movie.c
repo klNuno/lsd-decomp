@@ -254,14 +254,14 @@ void Movie_EmptySlot54(void) {
 /* Slot 0x58: VLC-decodes the stream's next frame into the other run-level buffer; 1 when none */
 s32 Movie_ReadFrame(Movie *movie) {
     u32 *frame;
-    s32 fresh;
+    s32 frameNumber;
     s32 status;
     s32 index;
 
     if (movie->streamEnded == 0) {
-        status = movie->stream->vtbl->getFrame(movie->stream, &frame, &fresh, 0x800000);
+        status = movie->stream->vtbl->getFrame(movie->stream, &frame, &frameNumber, 0x800000);
         if (status != 0) {
-            if (fresh != 0) {
+            if (frameNumber != 0) {
                 index = movie->runLevelIndex ^ 1;
                 movie->runLevelIndex = index;
                 DecDCTvlc(frame, movie->runLevel[index]);

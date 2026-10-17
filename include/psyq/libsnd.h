@@ -26,7 +26,7 @@ s16 SsVabTransCompleted(s16 immediateFlag);
 void SsVabClose(s16 vabId);
 
 /* Sequences */
-s16 SsSeqOpen(s32 addr, s16 vabId);
+s16 SsSeqOpen(u8 *addr, s16 vabId); /* Sony: u_long *; the game passes a file's u8 * data */
 void SsSeqClose(s16 seqId);
 void SsSeqPlay(s16 seqId, s16 playMode, s16 count);
 void SsSeqPause(s16 seqId);

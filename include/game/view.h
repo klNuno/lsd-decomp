@@ -81,7 +81,7 @@ typedef struct View {
     s32 packetCount;        /* 0x44 2000 */
     s32 packetSize;         /* 0x48 0x40 */
     s32 nearZ;              /* 0x4C 10, GsSetNearClip */
-    s32 farZ;              /* 0x50 0x10000; (unk50 - unk4C) / OT length + 1 is unk98 */
+    s32 farZ;               /* 0x50 0x10000; (farZ - nearZ) / OT length + 1 is otZStep */
     s32 lightMode;          /* 0x54 GsSetLightMode; 1 and 3 turn the fog on */
     Color3 clearColor;      /* 0x58 GsSortClear */
     Color3 fogColor;        /* 0x5B SetFarColor */
@@ -104,6 +104,7 @@ typedef struct View {
 } View;
 
 /* Functions of src/game/view.c that other files call or reference (docs/naming.md, Prototypes) */
+ViewVtbl *View_GetVtbl(void);
 View *View_New(void);
 void View_Destroy(View *view);
 void View_Watch(View *view, Object *other);

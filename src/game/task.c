@@ -52,9 +52,9 @@ void Task_ClearTimeout(Task *task) {
     task->vtbl->setTimeout(task, -1);
 }
 
-s32 Task_Run(Task *task, s32 context, s32 noLoop) {
+s32 Task_Run(Task *task, s32 env, s32 noLoop) {
     task->result = 0;
-    Screen_GetVtbl()->run(task, context, noLoop);
+    Screen_GetVtbl()->run(task, env, noLoop);
     return task->result;
 }
 

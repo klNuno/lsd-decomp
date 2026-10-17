@@ -19,7 +19,7 @@ typedef struct BgCells {
     s32 isOpen;
     u8 *data;
     s32 size;
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

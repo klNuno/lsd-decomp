@@ -2,23 +2,19 @@
 #define GAME_FILE_CD_H
 
 #include "common.h"
+#include "psyq/libcd.h"
 
 /* Functions of src/game/file_cd.c that other files call or reference (docs/naming.md, Prototypes) */
 /* types defined in src/game/file_cd.c */
-/* The CD position of a directory entry: minute, second, sector, track (a CdlLOC). */
-typedef struct CdlLocDir {
-    u8 minute, second, sector, track;
-} CdlLocDir;
-
 /* One entry of the CD directory table (g_fileDirTable) and of the path table, 0x1C bytes. */
 typedef struct DirEntry {
     s8 name[0x14];
-    CdlLocDir pos;
+    CdlLOC pos;
     u32 size;
 } DirEntry;
 
 struct FileVtbl;
-struct FileVtbl *File_GetVtable(void);
+struct FileVtbl *File_GetVtbl(void);
 s32 File_IsBusy(void);
 s32 File_IsDone(void);
 s32 File_GetOpKind(void);

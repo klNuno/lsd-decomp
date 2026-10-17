@@ -12,8 +12,6 @@
 
 extern MapTileVtbl g_mapTileVtbl;
 
-/* not from game/scene_node.h: other files read this vtable through their own views of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 static MapTileVtbl *MapTile_GetVtbl(void);
 
 MapTile *MapTile_New(void) {
@@ -38,8 +36,8 @@ void MapTile_Init(MapTile *tile) {
 void MapTile_Reset(void) {
 }
 
-void MapTile_OnNode(MapTile *tile, u8 **message) {
-    if (**message == 0x34) {
+void MapTile_OnNode(MapTile *tile, u8 **sender) {
+    if (**sender == 0x34) {
         tile->vtbl->onActorMessage(tile);
     }
 }

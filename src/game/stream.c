@@ -126,7 +126,7 @@ s32 Stream_Open(Stream *stream, s8 *name, s32 retries) {
     return 1;
 }
 
-/* Master volume half up, CD audio (the STR sound) on at full volume */
+/* Master volume and CD audio (the STR sound) at full volume, CD audio mixed in */
 static s32 Stream_EnableCdAudio(void) {
     StreamSpuAttr attr;
 
@@ -197,7 +197,7 @@ void Stream_Start(Stream *stream, s32 startFrame, s32 endFrame) {
         StSetStream(0, startFrame, -1, 0, 0);
         stream->vtbl->mute(stream);
         do {
-            while (CdControl(2, stream->file.pos, 0) == 0) {}
+            while (CdControl(2, &stream->file.pos, 0) == 0) {}
         } while (CdRead2(mode) == 0);
         stream->vtbl->demute(stream);
         stream->state = 2;
@@ -220,7 +220,7 @@ void Stream_Stop(Stream *stream) {
 void Stream_Rewind(Stream *stream) {
     if (stream->state == 4 && g_activeStream == stream) {
         g_activeStream->state = 0;
-        g_activeStream->vtbl->seek(g_activeStream, g_activeStream->file.pos);
+        g_activeStream->vtbl->seek(g_activeStream, &g_activeStream->file.pos);
     }
 }
 

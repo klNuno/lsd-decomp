@@ -28,7 +28,7 @@ MapModels *MapModels_New(s32 path) {
 
     modelSet = Heap_Alloc(0x34);
     if (modelSet != NULL) {
-        MapModels_GetVtbl()->init(modelSet, path);
+        MapModels_GetVtbl()->base.init(modelSet, path);
         return modelSet;
     }
     return NULL;
@@ -40,7 +40,7 @@ void MapModels_Init(MapModels *modelSet, s32 path) {
     modelSet->tmd = 0;
     modelSet->loaded = 0;
     if (path != 0) {
-        modelSet->vtbl->loadAsync(modelSet, path);
+        modelSet->vtbl->base.loadAsync(modelSet, path);
     }
 }
 

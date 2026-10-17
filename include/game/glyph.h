@@ -17,7 +17,7 @@ typedef struct GlyphVtbl {
     void (*init)(void *glyph, Tim *font, s32 code);   /* 0x08 Glyph_Init */
     void (*destroy)();                                /* 0x0C SceneNode_Destroy */
     u8 pad_10[0x40 - 0x10];
-    void (*setup)();                                  /* 0x40 Glyph_Setup (glyph, code) */
+    void (*reset)();                                  /* 0x40 Glyph_Reset (glyph, code) */
     u8 pad_44[0x4C - 0x44];
     void (*attach)();                                 /* 0x4C ScreenSprite_Attach (glyph, parent, 2D position) */
     void (*detach)();                                 /* 0x50 SceneNode_Detach */

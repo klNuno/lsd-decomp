@@ -14,10 +14,10 @@
 typedef struct RootNodeVtbl {
     u8 pad_00[0x08];
     void (*init)(void *);                     /* 0x08 RootNode_Init */
-    u8 pad_0C[0x10 - 0x0C];
+    void (*destroy)(void *);                  /* 0x0C RootNode_Destroy */
     void (*watch)(void *, void *);            /* 0x10 SceneNode_Watch */
     u8 pad_14[0x40 - 0x14];
-    void (*setup)(void *);                    /* 0x40 RootNode_Setup */
+    void (*reset)(void *);                    /* 0x40 RootNode_Reset */
     u8 pad_44[0xB8 - 0x44];
     FlatLight *(*getLight)(void *, s32);      /* 0xB8 RootNode_GetLight */
 } RootNodeVtbl;
@@ -36,6 +36,7 @@ typedef struct RootNode {
 } RootNode;
 
 /* Functions of src/game/root_node.c that other files call or reference (docs/naming.md, Prototypes) */
+RootNodeVtbl *RootNode_GetVtbl(void);
 RootNode *RootNode_Create(void);
 FlatLight *RootNode_GetLight(RootNode *root, s32 index);
 void RootNode_SetAmbient(RootNode *root, Color3 *color, s32 swap);

@@ -64,7 +64,7 @@ typedef struct File {
     s32 isOpen;      /* 0x0C set by open (File_OpenByName), cleared by close (File_Close) */
     u8 *data;        /* 0x10 the whole file, or a parent's bytes */
     s32 size;        /* 0x14 0 when the data is borrowed */
-    CdlLocDir cdPos; /* 0x18 CdlLOC of the file, copied whole from its directory entry */
+    CdlLOC cdPos; /* 0x18 CdlLOC of the file, copied whole from its directory entry */
     u32 cdSize;      /* 0x1C its size on the disc, from the same entry */
     u16 keepData;    /* 0x20 when set, freeData keeps the data */
     u16 pending;     /* 0x22 queued requests: File_QueueRequest adds one */

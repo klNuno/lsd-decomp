@@ -63,7 +63,7 @@ vtable, a list of the objects it watches and a list of the objects watching it. 
 A class is written in one file (see [layout](../layout.md)) as: a `X_New` or `X_Create` that calls
 `Heap_Alloc(size)` and then slot 0x08 of `X_GetVtbl()`; an `X_Init` that first calls its base
 class's slot 0x08 (for example `Screen_GetVtbl()->init` in `Task_Init`), then stores its own vtable
-and calls its reset slot; overrides that call the base slot and add to it; and `X_GetVtbl` last.
+and calls its reset slot (0x40, `X_Reset`); overrides that call the base slot and add to it; and `X_GetVtbl` last.
 The vtables live in the data, not in C: our headers describe them as structs of slots, and each
 file that calls another class's vtable declares its own view of the slots it uses.
 
@@ -90,10 +90,17 @@ more above them. From the vtables in the data:
 | others | 1 `Display`, 2 `Pad`, 5 `Clock`, 6 `FlatLight`, 7 `View`, 0x17 `DreamView`, 9 `ModelObject`, 0xB `Card` |
 
 The inheritance in this table matches the init chains in the code: each `X_Init` calls slot 0x08
-of the class whose word its own extends (`Fade_Construct` calls `Box_GetVtbl()->init`,
+of the class whose word its own extends (`Fade_Init` calls `Box_GetVtbl()->init`,
 `DreamSys_Init` the `Actor` one). What the digit 0xF means in 0x1F34 or 0x4F03 is not known.
 `View_DrawNode` reads the low byte to pick how to draw a node (0x54 background, 0x64 box, 0x44
 sprite, any other kind a model; a hidden 0x24 map tile is skipped).
+
+A receiver reads as many digits as it needs. The low 4 bits give the sender type (4 any scene
+node, 5 a clock), the low byte the family: `Actor_OnNode` reads the first byte of the sender's
+vtable and sends 0x34 (an Actor, so a Model, an Entity, DreamSys or Scenery) to slot 0xDC
+(`X_OnActorContact`) and 0x24 (a map tile) to slot 0xE0 (`X_OnTileContact`). Wider masks pick
+one class: `& 0xFFF` equal to 0x114 is the stage map (`DreamSys_RouteMapMessage`), `& 0xFFFFF`
+equal to 0x1F234 an entity (`DreamSys_OnActorContact`).
 
 ## Screens and the frame
 

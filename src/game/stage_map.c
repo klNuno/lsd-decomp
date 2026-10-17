@@ -57,10 +57,6 @@ typedef struct MapBox {
 s32 g_mapDefaultViewDistance; /* view distance StageMap_Reset sets */
 
 static StageMapVtbl *StageMap_GetVtbl(void);
-/* not from game/scene_node.h: other files read this vtable through their own views of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
-/* the vtable of root_node.c through this file's view of its slots, so not from game/root_node.h */
-SceneNodeVtbl *RootNode_GetVtbl(void);
 static s32 Stage_PlaceToWorld(Vec3 *pos, Vec3 *chunkCenter, StageGrid *grid, Vec3 *origin, StagePlace *place);
 static s32 StageMap_CountLoading(StageMap *map);
 static void MapTile_Tell(MapTile *tile, SceneNode *sender, s32 message);
@@ -177,7 +173,7 @@ void StageMap_Destroy(StageMap *map) {
             if (slot->models->tmd != NULL) {
                 slot->models->tmd->vtbl->base.delete_(slot->models->tmd);
             }
-            slot->models = slot->models->vtbl->delete_(slot->models);
+            slot->models = slot->models->vtbl->base.delete_(slot->models);
         }
         if (slot->root != NULL) {
             slot->root->vtbl->delete_(slot->root);
@@ -239,8 +235,8 @@ void StageMap_Tick(StageMap *map) {
 }
 
 /* Message 0x34 goes to slot 0xD0 with the same arguments still in a1 and a2. */
-void StageMap_OnNode(StageMap *map, u8 **message) {
-    if (**message == 0x34) {
+void StageMap_OnNode(StageMap *map, u8 **sender) {
+    if (**sender == 0x34) {
         map->vtbl->filterMessage(map);
     }
 }
@@ -314,7 +310,7 @@ void StageMap_FilterMessage(StageMap *map, s32 **sender, s32 message) {
     }
 }
 
-/* Tells the tiles around the sender (3 x 3 tiles, or its whole floor on a stacked stage), keeping the view. */
+/* Tells the tiles around the sender (3 x 3 tiles; on a stacked stage one 3 x 3 rectangle clipped at the chunk edge), keeping the view. */
 s32 StageMap_TellNearTiles(StageMap *map, SceneNode *sender, s32 message) {
     MapViewSave saved[3];
     MapViewSave location[3]; /* a MapLocation, in a 48-byte buffer */
@@ -1138,7 +1134,7 @@ static s32 StageMap_SplitViewRows(StageMap *map, MapView *view, s32 index, s32 n
     return index;
 }
 
-/* The view of a stacked stage: the target's whole floor, the one above when inside the bounds box, and the one below. */
+/* The view of a stacked stage: the target's whole floor, the one above when its tile is outside the bounds box, and the one below. */
 static void StageMap_ComputeStackedView(StageMap *map) {
     MapLocation location;
     s32 unset;

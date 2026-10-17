@@ -29,7 +29,7 @@ Fade *Fade_Create(BoxSize *size, s32 channels, s32 priority) {
 }
 
 /* Slot 0x08: builds the Box with the channels' color, then sets the Fade vtable and runs slot 0x40 */
-void Fade_Construct(void **fade, BoxSize *size, s32 channels, s32 priority) {
+void Fade_Init(void **fade, BoxSize *size, s32 channels, s32 priority) {
     BoxVtbl *boxVtbl;
     u8 *color;
     FadeVtbl *vtbl;
@@ -47,7 +47,7 @@ void Fade_Construct(void **fade, BoxSize *size, s32 channels, s32 priority) {
 }
 
 /* Slot 0x40: idle, step 10, hidden and opaque */
-void Fade_Init(Fade *fade, s32 channels) {
+void Fade_Reset(Fade *fade, s32 channels) {
     fade->defaultChannels = channels;
     fade->state = 0;
     fade->step.value = 0xA;

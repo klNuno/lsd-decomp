@@ -455,7 +455,7 @@ void StringList_DeleteRows(StringList *list) {
 }
 
 /* Slot 0x94: refill the row texts from top and column. */
-void StringList_RedrawRows(StringList *list, s32 top, s32 column, s32 cursor, s32 notify) {
+void StringList_RedrawRows(StringList *list, s32 top, s32 column, s32 cursor, s32 withTone) {
     u8 text[0x20];
     s32 i;
     s32 n;
@@ -475,7 +475,7 @@ void StringList_RedrawRows(StringList *list, s32 top, s32 column, s32 cursor, s3
             row++;
         }
         StringList_SetView(list, top, column, cursor, 0);
-        if (notify != 0) {
+        if (withTone != 0) {
             list->vtbl->playTone(list, 0);
         }
     }
@@ -514,7 +514,7 @@ static void StringList_SetView(StringList *list, s32 top, s32 column, s32 cursor
 }
 
 /* Slot 0x98: move the highlight one row down (down != 0) or up. */
-void StringList_MoveHighlight(StringList *list, s32 down, s32 notify) {
+void StringList_MoveHighlight(StringList *list, s32 down, s32 withTone) {
     Label **row;
     Label *obj;
 
@@ -531,7 +531,7 @@ void StringList_MoveHighlight(StringList *list, s32 down, s32 notify) {
         }
         obj = *row;
         obj->vtbl->setColor(obj, g_stringListCursorColor);
-        if (notify != 0) {
+        if (withTone != 0) {
             list->vtbl->playTone(list, 0);
         }
     }

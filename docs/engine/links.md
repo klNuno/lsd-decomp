@@ -23,9 +23,9 @@ How a wall touch reaches DreamSys:
 2. The StageMap passes these messages on only for the senders whose class word is in `g_placeMapMessageFilter`: DreamSys (0x1F34) and entities (0x1F234) (`StageMap_FilterMessage`).
 3. `StageMap_TellNearTiles` locates the sender and builds a 3 x 3 tile view around it (its whole floor on a stacked stage); `StageMap_TellViewTiles` walks those tiles and their stacked models and stores the chunk key and tile of each one in `tellKey`, `tellX`, `tellY`.
 4. `MapTile_Tell` passes the message to a tile only when `flags & 0x80`. The tile (`MapTile_OnActorMessage`) runs `SceneNode_CheckContact`: within 0x4000 units on each axis, the sender's boxes must overlap the tile model's boxes and pass the ray tests. Then the sender gets message 4 with the tile as sender.
-5. In DreamSys, a sender of class byte 0x24 (a map tile) reaches `DreamSys_OnWallTouch`.
+5. In DreamSys, a sender of class byte 0x24 (a map tile) reaches `DreamSys_OnTileContact`.
 
-`DreamSys_OnWallTouch` (message 4, no transition running) copies the told tile's place (`StageMap_GetTellKey`) into `place`, tries `DreamSys_LinkStatic`, then, if no fixed link matched and `dynamicLinkOn` is set, `DreamSys_LinkDynamic`. In every case it then puts the dreamer back where it was before the step (`DreamSys_RestorePosition`, saved by `DreamSys_Walk`). An entity that touches a wall falls asleep instead (`Entity_OnWallTouch`).
+`DreamSys_OnTileContact` (message 4, no transition running) copies the told tile's place (`StageMap_GetTellKey`) into `place`, tries `DreamSys_LinkStatic`, then, if no fixed link matched and `dynamicLinkOn` is set, `DreamSys_LinkDynamic`. In every case it then puts the dreamer back where it was before the step (`DreamSys_RestorePosition`, saved by `DreamSys_Walk`). An entity that touches a wall falls asleep instead (`Entity_OnTileContact`).
 
 The footstep sound: when the ground test finds a tile under the dreamer, `DreamSys_OnGroundProbe` (message -1) takes `contact->flags & 0x7F` as the step sound (0x18 and above give 0); `DreamSys_PlayStepSound` plays tone `g_stepSoundTones[sound]` at octave `g_stepSoundOctaves[sound]`.
 
@@ -67,7 +67,7 @@ The scripted walks: on one of the 8 tiles of stage 0, facing the heading and wal
 | 2 | `DreamSys_LinkStep2` | 101, 15 | one turn, forward steps |
 | 3 | `DreamSys_LinkStep3` | 0x71, 0x13 | two turns, looks down, forward steps |
 
-Each script first moves the dreamer to a start offset in the tile (`DreamSys_MoveToTileOffset`). None of them calls `DreamSys_ExecuteLink`: the walk only moves the dreamer and gives the pad back. Stage 0 also has a hard-coded wall touch in `DreamSys_Walk`: a y below -2000 with x of -499 or more calls `DreamSys_OnWallTouch` on the dreamer itself.
+Each script first moves the dreamer to a start offset in the tile (`DreamSys_MoveToTileOffset`). None of them calls `DreamSys_ExecuteLink`: the walk only moves the dreamer and gives the pad back. Stage 0 also has a hard-coded wall touch in `DreamSys_Walk`: a y below -2000 with x of -499 or more calls `DreamSys_OnTileContact` on the dreamer itself.
 
 ## Random links
 

@@ -15,7 +15,7 @@
  */
 
 /* The back end ids: the tag word of the back end's vtable. */
-#define FILE_BACKEND_CD 0x13   /* g_fileVtable, src/game/file_cd.c */
+#define FILE_BACKEND_CD 0x13   /* g_fileVtbl, src/game/file_cd.c */
 #define FILE_BACKEND_NULL 0x23 /* g_fileNullVtbl: every I/O slot is empty */
 s32 g_fileBackend;
 s32 g_fileDirTableSet;
@@ -104,7 +104,7 @@ FileVtbl *File_GetBackendVtbl(void) {
     if (g_fileBackend == FILE_BACKEND_NULL) {
         return File_GetNullVtbl();
     }
-    return File_GetVtable();
+    return File_GetVtbl();
 }
 
 FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unk_08) {
@@ -123,7 +123,7 @@ void File_SetBackend(s32 backend) {
     getter = g_fileClassGetters;
     g_fileBackend = backend;
     if (backend == FILE_BACKEND_CD) {
-        io = File_GetVtable();
+        io = File_GetVtbl();
     } else {
         io = File_GetNullVtbl();
     }
@@ -163,6 +163,8 @@ void File_UnlockBackend(void) {
     }
 }
 
+/* File_IsBackendBusy to File_GetBackendVSyncMode: the back-end dispatch of the CD status getters
+   (the empty back end answers idle); nothing in the executable calls it or holds its address. */
 static s32 File_IsBackendBusy(void) {
     if (g_fileBackend == FILE_BACKEND_CD) {
         return File_IsBusy();

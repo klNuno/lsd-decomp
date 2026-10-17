@@ -36,16 +36,16 @@ typedef union GraphVtbl {
     } graph;
 } GraphVtbl;
 
-static GraphVtbl *Graph_GetVtable(void);
+static GraphVtbl *Graph_GetVtbl(void);
 
-/* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtable's slot 0x08. */
+/* Allocate the graph object (0x244 bytes) and construct it with Graph_GetVtbl's slot 0x08. */
 /* Returns a Screen *, the type Scene_RunScreen's factories return (Menu_New too). */
 Screen *Graph_New(DreamSys *dreamSys) {
     Graph *graph;
 
     graph = Heap_Alloc(0x244);
     if (graph != NULL) {
-        Graph_GetVtable()->screen.init(graph, dreamSys);
+        Graph_GetVtbl()->screen.init(graph, dreamSys);
         return (Screen *)graph;
     }
     return NULL;
@@ -55,7 +55,7 @@ Screen *Graph_New(DreamSys *dreamSys) {
  * the graph vtable, then the graph's slots 0xD8 (setMenu) and 0x40 (Graph_LoadImage). */
 void Graph_Init(Graph *graph, DreamSys *dreamSys) {
     MenuScreen_GetVtbl()->init(graph, 0, "ETC\\ETCSE", 0);
-    graph->screen.vtbl = &Graph_GetVtable()->screen;
+    graph->screen.vtbl = &Graph_GetVtbl()->screen;
     graph->screen.sound->vtbl->setOctave(graph->screen.sound, -1);
     graph->dreamSys = dreamSys;
     graph->screen.vtbl->setMenu(graph, 0);
@@ -263,6 +263,6 @@ void Graph_BlinkReel(Graph *graph) {
     }
 }
 
-static GraphVtbl *Graph_GetVtable(void) {
+static GraphVtbl *Graph_GetVtbl(void) {
     return g_graphVtbl;
 }

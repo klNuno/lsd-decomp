@@ -9,7 +9,7 @@ Code: [`src/game/dream_sys.c`](../../src/game/dream_sys.c), types in [`include/g
 | Item | Value |
 | --- | --- |
 | Constructor | `DreamSys_New(tmd, soundBank, camera)`, 0x928 bytes, then slot 0x08 `DreamSys_Init` |
-| Vtable | `g_dreamSysVtbl` (0x80087BDC), class word 0x1F34, returned by `DreamSys_GetVtable` |
+| Vtable | `g_dreamSysVtbl` (0x80087BDC), class word 0x1F34, returned by `DreamSys_GetVtbl` |
 | Base class | Actor ([`src/game/actor.c`](../../src/game/actor.c)): `DreamSys_Init` first runs `Actor_GetVtbl()->init` |
 | Instance | one, made by `Scene_Init` ([`src/game/scene.c`](../../src/game/scene.c)) with the model `ETC\DREAME5.TMD`, kept until power-off |
 
@@ -44,8 +44,8 @@ DreamSys never polls. It watches objects and reacts to their notifications. `Sce
 | Pad | low nibble 2 | 0x94 | `DreamSys_OnPad`: walk, turn, look, run, CIRCLE |
 | Clock | low nibble 5 | 0x98 | `DreamSys_OnClock`, on message 2 (one tick) |
 | StageMap | 0x114 | 0x9C, then 0x1E4 | `DreamSys_RouteMapMessage`, then `DreamSys_OnMapMessage` |
-| A map tile | class byte 0x24 | 0x9C, then 0xE0 | `DreamSys_OnWallTouch` ([links](links.md)) |
-| An entity | 0x1F234 | 0x9C, 0xDC, then 0x1E8 | `DreamSys_RouteEntityMessage`, then `DreamSys_OnEntityEvent` |
+| A map tile | class byte 0x24 | 0x9C, then 0xE0 | `DreamSys_OnTileContact` ([links](links.md)) |
+| An entity | 0x1F234 | 0x9C, 0xDC, then 0x1E8 | `DreamSys_OnActorContact`, then `DreamSys_OnEntityEvent` |
 
 DreamRunner makes DreamSys watch the pad and the clock (`DreamRunner_Run`); `DreamSys_EnterMap` makes it watch the map; an entity and DreamSys watch each other through `Model_SetTarget` when the entity is attached.
 

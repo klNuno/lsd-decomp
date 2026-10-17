@@ -49,13 +49,13 @@ The colour is the running day point at the moment the chunk loads ([moods](dream
 
 | Class | File | Size | Vtable | Constructor |
 | --- | --- | --- | --- | --- |
-| Actor | `actor.c` | 0x58 | 0x800878D4 | `Actor_Construct` |
-| Model, an Actor | `model.c` | 0x98 | 0x8008A6C4 | `Model_Construct` |
-| Entity, a Model | `entity.c` | 0x108 | 0x80089AD4, class word 0x1F234 | `Entity_Construct` |
+| Actor | `actor.c` | 0x58 | 0x800878D4 | `Actor_Init` |
+| Model, an Actor | `model.c` | 0x98 | 0x8008A6C4 | `Model_Init` |
+| Entity, a Model | `entity.c` | 0x108 | 0x80089AD4, class word 0x1F234 | `Entity_Init` |
 
-Model splits a model file into parts (one per TMD object), plays one animation frame by frame (`Model_Tick`, `Model_ApplyFrame`) and keeps a target: `Model_SetTarget` makes the entity and DreamSys watch each other, which is how entity events reach DreamSys. Actor gives the moves (`Actor_MoveZ`, `Actor_MoveX`, `Actor_MoveY` along the model's own axes, `Actor_MoveZOnGround` with the ground test). Their third argument, `notify`, makes `Actor_MoveAxis` send the box list after the move (`sendBoxes`, message 6, 7 or 8 for z, x or y); the map passes it to wall tiles, and a hit wall answers with message 4, which `Entity_OnWallTouch` turns into sleep ([walls](links.md#walls-and-tile-flags)). It is a wall check, not a follow flag: the minotaur rickshaw moves with it and rolls straight on ([the rickshaws](../discoveries.md#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto)).
+Model splits a model file into parts (one per TMD object), plays one animation frame by frame (`Model_Tick`, `Model_ApplyFrame`) and keeps a target: `Model_SetTarget` makes the entity and DreamSys watch each other, which is how entity events reach DreamSys. Actor gives the moves (`Actor_MoveZ`, `Actor_MoveX`, `Actor_MoveY` along the model's own axes, `Actor_MoveZOnGround` with the ground test). Their third argument, `notify`, makes `Actor_MoveAxis` send the box list after the move (`sendBoxes`, message 6, 7 or 8 for z, x or y); the map passes it to wall tiles, and a hit wall answers with message 4, which `Entity_OnTileContact` turns into sleep ([walls](links.md#walls-and-tile-flags)). It is a wall check, not a follow flag: the minotaur rickshaw moves with it and rolls straight on ([the rickshaws](../discoveries.md#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto)).
 
-`Entity_Create(type, source, soundBank)` allocates 0x108 bytes and constructs: the Model part, the type, no effects, then `Entity_Init` (light flags 1 when the record's points byte is 1 to 9, tick mode 0x42, asleep). `Entity_Attach` attaches the model; a record with wake mode 0 wakes at once, and with handler range 0 also starts its handler at once.
+`Entity_Create(type, source, soundBank)` allocates 0x108 bytes and constructs: the Model part, the type, no effects, then `Entity_Reset` (light flags 1 when the record's points byte is 1 to 9, tick mode 0x42, asleep). `Entity_Attach` attaches the model; a record with wake mode 0 wakes at once, and with handler range 0 also starts its handler at once.
 
 The entity slots that matter:
 
@@ -65,8 +65,8 @@ The entity slots that matter:
 | 0x44, 0x48 | `SceneNode_SetRotation`, `SceneNode_SetScale` | rotation and scale as {num, den} fractions, set or added |
 | 0x4C, 0x50 | `Entity_Attach`, `Entity_Detach` | |
 | 0x98 | `Entity_Update` | each clock tick |
-| 0xDC | `Entity_OnActorTouch` | a contact; posts the record's link or end |
-| 0xE0 | `Entity_OnWallTouch` | a wall: falls asleep |
+| 0xDC | `Entity_OnActorContact` | a contact; posts the record's link or end |
+| 0xE0 | `Entity_OnTileContact` | a wall: falls asleep |
 | 0x14C to 0x158 | `Entity_GetRecord`, `Entity_GetPoints`, `Entity_GetLinkStage`, `Entity_GetVideo` | record readers DreamSys calls |
 | 0x15C, 0x160 | `Entity_Wake`, `Entity_Sleep` | visible and awake, or hidden, handler stopped, touch cleared |
 | 0x164 | `Entity_SetTouched` | posts event 9 |
@@ -106,9 +106,9 @@ A dump of the 130 records: `work/hunt3/recs.py`. Player view: [the character rec
 | --- | --- | --- |
 | 4 | DreamSys's contact with an entity | passes it back to the entity's slot 0x38 |
 | 9 | `Entity_SetTouched` | logs the mood, adds the points, may keep a flashback |
-| 10 | `Entity_OnActorTouch` with a link above 0, `Entity_CheckLinkRadius` with a link below 0, handlers | link to the record's stage ([links](links.md#links-sent-by-characters)) |
-| 11 | `Entity_OnActorTouch` with link 0x7F and a video, handlers | ends the dream and queues the record's video |
-| 12 | `Entity_OnActorTouch` with link 0x7F and no video, handlers | ends the dream |
+| 10 | `Entity_OnActorContact` with a link above 0, `Entity_CheckLinkRadius` with a link below 0, handlers | link to the record's stage ([links](links.md#links-sent-by-characters)) |
+| 11 | `Entity_OnActorContact` with link 0x7F and a video, handlers | ends the dream and queues the record's video |
+| 12 | `Entity_OnActorContact` with link 0x7F and no video, handlers | ends the dream |
 
 All are ignored while a transition runs; 9, 11 and 12 do nothing in flashback mode. Player view: [signals from characters and objects](../discoveries.md#-signals-from-characters-and-objects).
 

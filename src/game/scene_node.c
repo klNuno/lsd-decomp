@@ -25,15 +25,13 @@
 /* Message a node sends to the node it hit, and that the hit node keeps as contact. */
 #define NODE_MSG_CONTACT 4
 
-/* not in game/scene_node.h: each file that calls it reads the vtable through its own view of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 static void SceneNode_UnlinkModel(SceneNode *node);
 static s32 Fraction_ToFixed(Fraction *fraction);
 static s32 ModelBox_OutCode(ModelBox *box, ModelVec *point);
 static s32 ModelBox_ClipSegment(ModelVec *out, ModelBox *box, ModelVec *start, ModelVec *end);
 static void ModelBox_FindExit(ModelVec *out, ModelBox *box, ModelVec *inside, ModelVec *outside);
 static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to);
-static void Render_TransformVectors(ModelVec *dst, ModelVec *src, s32 count, void *matrix);
+static void Vec_TransformShort(ModelVec *dst, ModelVec *src, s32 count, void *matrix);
 
 extern SceneNodeVtbl g_sceneNodeVtbl;
 extern s32 g_nodeZeroRotation[];
@@ -236,15 +234,15 @@ SceneNode *SceneNode_Detach(SceneNode *node) {
 /* Slot 0x54 */
 void SceneNode_DetachChildren(SceneNode *node) {
     SceneNode *child;
-    s32 more;
+    s32 iter;
 
     child = NULL;
     do {
-        node->vtbl->nextChild(node, &child, &more);
+        node->vtbl->nextChild(node, &child, &iter);
         if (child != NULL) {
             child->vtbl->detach(child);
         }
-    } while (more != 0);
+    } while (iter != 0);
 }
 
 /* Slot 0x58: the next watched scene node whose parent is this node, NULL at the end. */
@@ -353,7 +351,7 @@ void SceneNode_GetBoxList(SceneNode *node, NodeBoxList *boxList) {
 
 /* Slot 0x90: moves the box list into world space and notifies the watchers with it. */
 void SceneNode_SendShape(SceneNode *node, NodeBoxList *boxList, s32 message) {
-    Render_TransformVectors(boxList->corners, boxList->corners, boxList->count * 8, &node->object.coord->workm);
+    Vec_TransformShort(boxList->corners, boxList->corners, boxList->count * 8, &node->object.coord->workm);
     node->contact = NULL;
     node->hitMask = 0;
     node->boxList = boxList;
@@ -439,9 +437,9 @@ void SceneNode_WorldToLocal(SceneNode *node, ModelVec *offset, ModelVec *dst, Mo
         parent->vtbl->getRotMatrix(parent, parentMtx, 1);
         MulMatrix2(parentMtx, worldMtx);
     }
-    Render_TransformVectors(dst, src, count, worldMtx);
+    Vec_TransformShort(dst, src, count, worldMtx);
     if (offset != NULL) {
-        Render_TransformVectors(offset, offset, 1, worldMtx);
+        Vec_TransformShort(offset, offset, 1, worldMtx);
     }
 }
 
@@ -713,7 +711,7 @@ void SceneNode_RotateVector(SceneNode *node, Vec3 *dst, ModelVec *src) {
     dst->x = src->x;
     dst->y = src->y;
     dst->z = src->z;
-    Render_TransformLongVectors(dst, dst, 1, &rotMtx);
+    Vec_TransformLong(dst, dst, 1, &rotMtx);
 }
 
 /* Rotates src by the node's own rotation and adds the node's world position. */
@@ -722,7 +720,7 @@ void SceneNode_LocalToWorld(SceneNode *node, Vec3 *dst, Vec3 *src) {
     Vec3 *worldPos;
 
     node->vtbl->getRotMatrix(node, &rotMtx, 0);
-    Render_TransformLongVectors(dst, src, 1, &rotMtx);
+    Vec_TransformLong(dst, src, 1, &rotMtx);
     worldPos = NULL;
     if (node->parent != NULL) {
         worldPos = &node->object.coord->workm.t;
@@ -822,11 +820,12 @@ static void SceneNode_SubtractVec(Vec3 *out, ModelVec *from, ModelVec *to) {
 
 /*
  * Turns entity toward target (docs/discoveries.md, touch range): yaw and pitch from ratan2 in
- * degrees; noPitch keeps it level, facing == 0 turns it away (yaw + 180), extra is added after.
+ * degrees; noPitch keeps it level, alongZ is 1 for a subject that looks along +z (the dreamer), 0 adds
+ * 180 to the yaw (the entities), extra is added after.
  * Behavior_Type115 and Behavior_Type81 swap the two (the dreamer turns to the entity) through casts:
  * both classes are scene nodes, with the parent at 0x0C, the coordinate at 0x14 and slot 0x44.
  */
-void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 facing, Fraction *extra) {
+void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, s32 alongZ, Fraction *extra) {
     Fraction rot[3];
     Vec3 *targetPos;
     Vec3 *pos;
@@ -858,7 +857,7 @@ void SceneNode_TurnToward(Entity *entity, struct DreamSys *target, s32 noPitch, 
     if (noPitch != 0) {
         rot[0].num = 0;
     }
-    if (facing == 0) {
+    if (alongZ == 0) {
         rot[1].num = yaw + 0xB4;
     }
     entity->vtbl->rotate(entity, 1, rot);
@@ -918,7 +917,7 @@ s32 Bits_SetField(s32 *word, s32 shift, s32 width, s32 value) {
     return (u32)(mask & old) >> shift;
 }
 
-static void Render_TransformVectors(ModelVec *dst, ModelVec *src, s32 count, void *matrix) {
+static void Vec_TransformShort(ModelVec *dst, ModelVec *src, s32 count, void *matrix) {
     ModelVec tmp;
     ModelVec *end;
 
@@ -932,7 +931,7 @@ static void Render_TransformVectors(ModelVec *dst, ModelVec *src, s32 count, voi
 }
 
 /* ApplyMatrixLV on count long vectors (12 bytes each). */
-void Render_TransformLongVectors(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix) {
+void Vec_TransformLong(Vec3 *dstVecs, Vec3 *srcVecs, s32 count, Matrix *matrix) {
     Vec3 *dst;
     Vec3 *src;
     Vec3 *end;

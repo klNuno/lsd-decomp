@@ -11,8 +11,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 
 extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
 static void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
@@ -31,7 +29,7 @@ Box *Box_Create(BoxSize *size, u8 *color, s32 priority) {
 }
 
 /* Slot 0x08: base scene node init, then the Box vtable and slot 0x40 */
-void Box_Construct(void **box, BoxSize *size, u8 *color, s32 priority) {
+void Box_Init(void **box, BoxSize *size, u8 *color, s32 priority) {
     BoxVtbl *vtbl;
 
     SceneNode_GetVtbl()->init(box);
@@ -41,7 +39,7 @@ void Box_Construct(void **box, BoxSize *size, u8 *color, s32 priority) {
 }
 
 /* Slot 0x40: relative position (0, 0), the size, the color or the default gray, mask of 13 bits */
-void Box_Init(Box *box, BoxSize *size, u8 *color, s32 priority) {
+void Box_Reset(Box *box, BoxSize *size, u8 *color, s32 priority) {
     BoxVtbl *vtbl;
 
     box->priority = priority;

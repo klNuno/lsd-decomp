@@ -37,7 +37,7 @@ Model *Model_New(ModelSource *source, SoundBank *soundBank) {
     return NULL;
 }
 
-void *Model_Construct(Model *model, ModelSource *source, SoundBank *soundBank) {
+void *Model_Init(Model *model, ModelSource *source, SoundBank *soundBank) {
     if (Actor_GetVtbl()->init(model) != 0) {
         model->vtbl = Model_GetVtbl();
         model->soundBank = soundBank;
@@ -69,7 +69,7 @@ void Model_OnNotify(Model *model, u16 **sender, s32 message) {
     }
 }
 
-void Model_Init(Model *model) {
+void Model_Reset(Model *model) {
     SceneNode *part;
 
     Actor_GetVtbl()->setVisible(model, 0);
@@ -85,11 +85,11 @@ void Model_Init(Model *model) {
     }
 }
 
-void Model_Attach(Model *model, void *target, void *watched, s32 parent, s32 child) {
+void Model_Attach(Model *model, void *target, void *clock, s32 map, s32 position) {
     if (model->parent == 0) {
-        Actor_GetVtbl()->attach(model, parent, child);
-        if ((watched != 0) && (model->clock == 0)) {
-            model->vtbl->watch(model, watched);
+        Actor_GetVtbl()->attach(model, map, position);
+        if ((clock != 0) && (model->clock == 0)) {
+            model->vtbl->watch(model, clock);
         }
         model->vtbl->setTarget(model, target);
     }
@@ -368,7 +368,7 @@ void *Model_ApplyFrame(Model *model, u8 *frame, void *context) {
 /*
  * Slot 0x138: one frame command on one part. Type 0 masks and sets the part's flags; type 1 rotates
  * (degrees * 4096 / 360), scales and moves it, adding when flags bit 0 is set, else setting; type 2
- * gives it a texture; type 3 attaches it to the model or to another part.
+ * links a TMD object to it (SceneNode_LinkModel); type 3 attaches it to the model or to another part.
  */
 s32 Model_ApplyCommand(Model *model, s32 command) {
     u8 id;

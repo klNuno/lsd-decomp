@@ -113,7 +113,7 @@ typedef struct StageMapVtbl {
     void (*hideSlot)();     /* 0x108 StageMap_HideSlot */
     void *(*getLocation)(); /* 0x10C StageMap_GetLocation */
     s32 (*locate)();        /* 0x110 StageMap_Locate */
-    MapSlot *(*notifiedSlot)(); /* 0x114 StageMap_GetNotifiedSlot (map, &place): the current slot, its chunk (col, row) into place */
+    MapSlot *(*notifiedSlot)(); /* 0x114 StageMap_GetNotifiedSlot (map, &place): the notified slot, its chunk (col, row) into place */
     MapSlot *(*slotById)(); /* 0x118 StageMap_SlotById */
     MapSlot *(*slotAt)();   /* 0x11C StageMap_SlotAt */
     s32 (*slotIndexById)(); /* 0x120 StageMap_SlotIndexById */
@@ -149,7 +149,7 @@ typedef struct StageMap {
         MapViewSave save[3];
     } v;
     MapLocation location;   /* 0xBC where the target stands */
-    s32 *messageFilter;     /* 0xE8 message codes slot 0xD0 passes on, 0-terminated */
+    s32 *messageFilter;     /* 0xE8 sender class words slot 0xD0 passes on, 0-terminated (g_placeMapMessageFilter: 0x1F34, 0x1F234) */
     MapSlot slots[7];       /* 0xEC */
     s32 swapping;           /* 0x1B0 set while chunks load */
     u16 pendingSlots;       /* 0x1B4 slots still loading */

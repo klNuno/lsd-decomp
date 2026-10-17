@@ -8,6 +8,7 @@
 #include "game/scenery.h"
 #include "game/dream_sys.h"
 #include "game/sound_bank.h"
+#include "game/bgm.h"
 #include "game/screen.h"
 #include "game/clock.h"
 #include "game/tmd.h"
@@ -24,48 +25,12 @@ struct Tix;
  * Slots are left unprototyped: callers pass different argument types.
  */
 
-/* Objects the pause window suspends (slots 0x4C/0x50, 0x88/0x8C) and the "Pause" text. */
-typedef struct PlaceObjVtbl {
-    u8 pad_00[0x04];
-    void (*delete_)();                /* 0x04 Object_Delete */
-    u8 pad_08[0x48 - 0x08];
-    void (*stop)();
-    void (*pause)();
-    void (*resume)();
-    u8 pad_54[0x5C - 0x54];
-    void (*setSeq)();                  /* music: plays the track Music_PickTrack chose */
-    u8 pad_60[0x7C - 0x60];
-    s32 *(*getScreenRect)();                  /* 0x7C first word read by the view setup */
-    void *(*getModel)();                 /* 0x80 refs.models: the model of an index */
-    u8 pad_84[0x88 - 0x84];
-    void (*muteBank)();
-    void (*unmuteBank)();
-    u8 pad_90[0xB8 - 0x90];
-    void (*setColor)();
-} PlaceObjVtbl;
-
-typedef struct PlaceObj {
-    PlaceObjVtbl *vt;
-} PlaceObj;
-
-/* The class Task_GetVtbl returns, base of Place: the slots Place calls up to. */
-typedef struct PlaceBaseVtbl {
-    u8 pad_00[0x08];
-    void (*construct)();              /* 0x08 */
-    void (*destruct)();               /* 0x0C */
-    u8 pad_10[0x38 - 0x10];
-    void (*onNotify)();               /* 0x38 */
-    u8 pad_3C[0x44 - 0x3C];
-    void (*attach)();                 /* 0x44 */
-    void (*detach)();                 /* 0x48 */
-} PlaceBaseVtbl;
-
 /* Vtable 0x80087034. Slot names from the functions stored there (src/game/place.c). */
 typedef struct PlaceVtbl {
     s32 classWord;                    /* 0x0002F230 */
     void *(*delete_)();               /* 0x04 Object_Delete */
-    void (*construct)();              /* 0x08 Place_Construct */
-    void (*destruct)();               /* 0x0C Place_Destruct */
+    void (*init)();              /* 0x08 Place_Init */
+    void (*destroy)();               /* 0x0C Place_Destruct */
     void (*watch)();                  /* 0x10 Object_Watch */
     void (*unwatch)();                /* 0x14 Object_Unwatch */
     u8 pad_18[0x30 - 0x18];
@@ -121,7 +86,7 @@ typedef struct Place {
     s32 ticks;            /* 0x1C counted by the tick while started */
     s32 state;            /* 0x20 0 normal, 5 after load, 4 to 10 while a transition runs */
     u8 pad_24[0x34 - 0x24];
-    PlaceObj *sound;      /* 0x34 suspended by the pause window (slots 0x88/0x8C); Sym_InitStage arg3 */
+    SoundBank *sound;     /* 0x34 suspended by the pause window (slots 0x88/0x8C); Sym_InitStage arg3 */
     s32 stage;            /* 0x38 stage index 0 to 13 */
     DreamSys *dreamSys;   /* 0x3C set by attach, watched */
     s32 linkPeriod;            /* 0x40 0x10 at load, DreamSys slot 0xF8 third argument */
@@ -129,7 +94,7 @@ typedef struct Place {
     s32 viewDistance;            /* 0x48 load argument, 0xA000 when 0; map slot 0xDC */
     s32 unk4C;            /* 0x4C load argument */
     Ambience *ambience;   /* 0x50 Scenery_Begin's record, or the one given to load */
-    PlaceObj *music;      /* 0x54 slot 0x5C plays Music_PickTrack's sequence */
+    Bgm *music;           /* 0x54 slot 0x5C (setSeq) plays Music_PickTrack's sequence */
     struct Tix *texLoader; /* 0x58 Tix_Create's texture-set loader (discoveries "texture set") */
     u8 pad_5C[0x60 - 0x5C];
     s32 texLoading;       /* 0x60 set at load, cleared when the loader is done or failed */
@@ -142,6 +107,6 @@ typedef struct Place {
 } Place;
 
 /* Functions of src/game/place.c that other files call or reference (docs/naming.md, Prototypes) */
-void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s32 stage);
+void *Place_New(SoundBank *seBank, void *music, void *font, void *models, s32 stage);
 
 #endif

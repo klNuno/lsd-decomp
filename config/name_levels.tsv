@@ -24,16 +24,16 @@ Bgm_SetVolume	func	bgm.c	code	Slot 0x54: SsSeqSetVol(seqId, left, right)
 Bgm_Stop	func	bgm.c	code	Slot 0x48: SsSeqStop and SsSeqClose when playing, state BGM_NONE
 File_AddDirEntries	func	file_base.c	code	CD back end only: sets g_fileDirTableSet, File_SetDirTable, grows File_GetDirCount by count, File_ResolveEntries on the new 0x1C-byte entries; File_ResolvePathTablePart retries it
 File_CopyIoSlots	func	file_base.c	code	Copies vtable slots 0x40 to 0x58 and 0x68 to 0x74 from src to dst
-File_Delete	func	file_base.c	code	Slot 0x04 of g_fileBaseVtbl and g_fileVtable: clears keepData, calls destroy, Object base destroy, Heap_Free(file)
+File_Delete	func	file_base.c	code	Slot 0x04 of g_fileBaseVtbl and g_fileVtbl: clears keepData, calls destroy, Object base destroy, Heap_Free(file)
 File_DestroyBase	func	file_base.c	code	Slot 0x0C of g_fileBaseVtbl: calls close then freeData
-File_EmptySlot60	func	file_base.c	code	Slot 0x60 of g_fileBaseVtbl and g_fileVtable, empty body
+File_EmptySlot60	func	file_base.c	code	Slot 0x60 of g_fileBaseVtbl and g_fileVtbl, empty body
 File_EnableWait	func	file_base.c	code	Calls File_Enable (File_NullEnable off the CD back end) with its three arguments until it returns non-zero; Scene passes (0, 0, 0), DreamRunner_Init (!useCdSearch, 1, 1)
-File_FreeData	func	file_base.c	code	Slot 0x5C of g_fileBaseVtbl and g_fileVtable: Heap_Free(data) when data and size are set and keepData is 0
+File_FreeData	func	file_base.c	code	Slot 0x5C of g_fileBaseVtbl and g_fileVtbl: Heap_Free(data) when data and size are set and keepData is 0
 File_GetBackendEnabled	func	file_base.c	code	File_GetEnabled(optionOut) when g_fileBackend is 0x13, else File_NullGetEnabled; static and never called
 File_GetBackendOpKind	func	file_base.c	code	File_GetOpKind when g_fileBackend is 0x13, else 0; static and never called
 File_GetBackendState	func	file_base.c	code	File_GetState when g_fileBackend is 0x13, else 0; static and never called
 File_GetBackendVSyncMode	func	file_base.c	code	File_GetVSyncMode when g_fileBackend is 0x13, else File_NullGetVSyncMode; static and never called
-File_GetBackendVtbl	func	file_base.c	code	Returns File_GetNullVtbl when g_fileBackend is 0x23, else File_GetVtable; every loader Init (Tim_Init, Tmd_Init) calls its init as the base class
+File_GetBackendVtbl	func	file_base.c	code	Returns File_GetNullVtbl when g_fileBackend is 0x23, else File_GetVtbl; every loader Init (Tim_Init, Tmd_Init) calls its init as the base class
 File_GetBaseVtbl	func	file_base.c	code	Returns g_fileBaseVtbl
 File_GetPathPrefix	func	file_base.c	code	Returns g_filePathPrefix; File_BuildPath copies it after the leading backslash of every CD path
 File_InitBase	func	file_base.c	code	Slot 0x08 of g_fileBaseVtbl: Object init, installs File_GetBaseVtbl, zeroes isOpen, data, size, keepData, pending, flags, direct, state
@@ -43,21 +43,21 @@ File_JoinPath	func	file_base.c	code	dst = prefix (when not NULL) + name + suffix
 File_LoadWhole	func	file_base.c	code	Slot 0x58 of g_fileBaseVtbl: open(path, 1, 0), seek(0, 2) for the size, Heap_Alloc, seek(0, 0), read, close, stores data and size
 File_LockBackend	func	file_base.c	code	File_Lock when g_fileBackend is 0x13; called by Tix_SetFadeColor and Tix_OnReadDone
 File_MakeSource	func	file_base.c	code	Fills FileSource {data, path, unk_08} and returns it; called by Mom_LoadParts, Mml_LoadParts, TodPack_OnLoaded, Sym_ResetGroupsAndLoadSpy
-File_MarkLoaded	func	file_base.c	code	Slot 0x64 (onLoaded) of g_fileBaseVtbl and g_fileVtable: sets bit 0 of flags
-File_SetBackend	func	file_base.c	code	Stores the id in g_fileBackend, picks File_GetVtable for 0x13 else File_GetNullVtbl, File_CopyIoSlots into the base and every g_fileClassGetters vtable
+File_MarkLoaded	func	file_base.c	code	Slot 0x64 (onLoaded) of g_fileBaseVtbl and g_fileVtbl: sets bit 0 of flags
+File_SetBackend	func	file_base.c	code	Stores the id in g_fileBackend, picks File_GetVtbl for 0x13 else File_GetNullVtbl, File_CopyIoSlots into the base and every g_fileClassGetters vtable
 File_SetPathPrefix	func	file_base.c	code	Stores its argument in g_filePathPrefix; Scene_Init is the only caller
 File_UnlockBackend	func	file_base.c	code	File_Unlock when g_fileBackend is 0x13
 File_BeginOp	func	file_cd.c	code	g_fileBusy = 1, g_fileOpKind and g_fileState set, g_fileDone = 0, head request running = 1
 File_BuildPath	func	file_cd.c	code	Writes "\", File_GetPathPrefix, name and g_fileVersionSuffix (";1"): the ISO path CdSearchFile takes
-File_CancelRequests	func	file_cd.c	code	Slot 0x74 of g_fileVtable: CdFlush and File_EndOp if the object's request runs, File_FreeRequest on each of its requests
+File_CancelRequests	func	file_cd.c	code	Slot 0x74 of g_fileVtbl: CdFlush and File_EndOp if the object's request runs, File_FreeRequest on each of its requests
 File_ClearVSyncPending	func	file_cd.c	code	g_fileVSyncPending = 0 under the lock; static and never called
-File_Close	func	file_cd.c	code	slot 0x48 (close) of g_fileVtable, clears isOpen or queues request kind 3, the data stays (slot 0x5C File_FreeData frees it)
-File_CloseSync	func	file_cd.c	code	sync close, clears isOpen (a located file, not loaded data), File_Close calls it when g_fileEnabled and g_fileOption are 0
-File_Create	func	file_cd.c	code	Heap_Alloc(0x2C) then File_GetVtable()->init; static and never called
-File_DestroyCd	func	file_cd.c	code	slot 0x0C (destroy) of g_fileVtable, calls cancel (0x74) then slot 0x5C File_FreeData, it steps nothing
-File_DestroySync	func	file_cd.c	code	slot 0x0C of the same unlinked sync class (base destroy only, nothing references it), next to File_InitSync and File_CloseSync and apart from File_DestroyCd
-File_EmptySlot40	func	file_cd.c	code	Slot 0x40 of g_fileVtable, empty body
-File_EmptySlot50	func	file_cd.c	code	Slot 0x50 of g_fileVtable, empty body
+File_Close	func	file_cd.c	code	slot 0x48 (close) of g_fileVtbl, clears isOpen or queues request kind 3, the data stays (slot 0x5C File_FreeData frees it)
+File_SyncClose	func	file_cd.c	code	slot 0x48 (close) of the sync class: clears isOpen (a located file, not loaded data), File_Close calls it when g_fileEnabled and g_fileOption are 0
+File_Create	func	file_cd.c	code	Heap_Alloc(0x2C) then File_GetVtbl()->init; static and never called
+File_DestroyCd	func	file_cd.c	code	slot 0x0C (destroy) of g_fileVtbl, calls cancel (0x74) then slot 0x5C File_FreeData, it steps nothing
+File_SyncDestroy	func	file_cd.c	code	slot 0x0C of the same unlinked sync class (base destroy only, nothing references it), next to File_SyncInit
+File_EmptySlot40	func	file_cd.c	code	Slot 0x40 of g_fileVtbl, empty body
+File_EmptySlot50	func	file_cd.c	code	Slot 0x50 of g_fileVtbl, empty body
 File_Enable	func	file_cd.c	code	When g_fileBusy is 0: with mode 0 sets or clears File_OnVSync as the Display frame callback, then stores g_fileVSyncMode, g_fileEnabled, g_fileOption, returns 1
 File_EndOp	func	file_cd.c	code	Clears g_fileOpKind, g_fileState, g_fileAsyncMode, g_fileRetryCount, g_fileBusy; g_fileDone = 1
 File_EntryAt	func	file_cd.c	code	Returns g_fileDirTable + index * 0x1C under the lock
@@ -67,35 +67,35 @@ File_FreeRequest	func	file_cd.c	code	Unlinks the request from g_fileRequestHead 
 File_GetDirCount	func	file_cd.c	code	Returns g_fileDirCount
 File_GetEnabled	func	file_cd.c	code	Writes g_fileOption to *outValue when not NULL, returns g_fileEnabled
 File_GetOpKind	func	file_cd.c	code	Returns g_fileOpKind
-File_GetSize	func	file_cd.c	code	Sync seek: returns cdSize rounded up to whole sectors plus one when isOpen, ignoring offset and whence; File_Seek calls it when the system is off
+File_SyncSeek	func	file_cd.c	code	slot 0x4C (seek) of the sync class: returns cdSize rounded up to whole sectors plus one when isOpen, ignoring offset and whence; File_Seek calls it when the system is off
 File_GetState	func	file_cd.c	code	Returns g_fileState
 File_GetVSyncMode	func	file_cd.c	code	Returns g_fileVSyncMode
-File_GetVtable	func	file_cd.c	code	Returns g_fileVtable
+File_GetVtbl	func	file_cd.c	code	Returns g_fileVtbl
 File_HookVSync	func	file_cd.c	code	VSyncCallback(File_OnVSync) once when g_fileVSyncMode is set, g_fileVSyncHooked = 1, g_fileVSyncPending = 1
 File_InitCd	func	file_cd.c	code	Once (g_fileCdReady): CdSetDebug(0), CdControlB(0xE, 0x80) (setmode double speed) until it succeeds
-File_InitCdObject	func	file_cd.c	code	slot 0x08 of g_fileVtable, base init, File_GetVtable, direct = 0, File_InitCd, names the CD class next to File_InitBase and File_InitSync
-File_InitSync	func	file_cd.c	code	init of the sync file class no vtable in the executable holds (base init, File_GetVtable, isOpen = 0), nothing references it
+File_InitCdObject	func	file_cd.c	code	slot 0x08 of g_fileVtbl, base init, File_GetVtbl, direct = 0, File_InitCd, names the CD class next to File_InitBase and File_SyncInit
+File_SyncInit	func	file_cd.c	code	slot 0x08 of the sync file class no vtable in the executable holds (base init, File_GetVtbl, isOpen = 0), nothing references it; slots by address order against g_fileVtbl
 File_IsBusy	func	file_cd.c	code	Returns g_fileBusy
 File_IsDone	func	file_cd.c	code	Returns g_fileDone
-File_LoadWholeCd	func	file_cd.c	code	slot 0x58 (load) of g_fileVtable, allocates the file sectors and CdReads the whole file into data (request kind 7), the sync fallback is File_LoadWhole
-File_Locate	func	file_cd.c	code	Sync open: File_BuildPath, CdSearchFile up to 100 tries ("File not found. path = %s"), copies cdPos and cdSize, isOpen = 1; File_OpenByName calls it when the system is off
+File_LoadWholeCd	func	file_cd.c	code	slot 0x58 (load) of g_fileVtbl, allocates the file sectors and CdReads the whole file into data (request kind 7), the sync fallback is File_LoadWhole
+File_SyncOpen	func	file_cd.c	code	slot 0x44 (open) of the sync class: File_BuildPath, CdSearchFile up to 100 tries ("File not found. path = %s"), copies cdPos and cdSize, isOpen = 1; File_OpenByName calls it when the system is off
 File_Lock	func	file_cd.c	code	g_fileLock = 1; File_OnVSync does nothing while it is set
 File_NewRequest	func	file_cd.c	code	Heap_Alloc(0x24) FileRequest appended at the tail of g_fileRequestHead
 File_OnVSync	func	file_cd.c	code	Passed to VSyncCallback and Display setFrameCallback: when unlocked and Heap_IsBusy is 0, File_PollIo or File_StepIo by g_fileAsyncMode, runQueue when pending
-File_OpenByName	func	file_cd.c	code	slot 0x44 (open) of g_fileVtable, finds the file with File_FindEntry or CdSearchFile, copies cdPos and cdSize, seeks there and sets isOpen, reads no data
+File_OpenByName	func	file_cd.c	code	slot 0x44 (open) of g_fileVtbl, finds the file with File_FindEntry or CdSearchFile, copies cdPos and cdSize, seeks there and sets isOpen, reads no data
 File_PollIo	func	file_cd.c	code	g_fileAsyncMode 1 machine: states 1-2 CdControlF seek and CdSync, 7-8 CdRead and CdReadSync, each finishes the op with File_EndOp
 File_QueueRequest	func	file_cd.c	code	File_NewRequest, fills kind, file, index, param0, param1, clears flags, pending + 1, File_HookVSync
-File_Read	func	file_cd.c	code	Slot 0x54 of g_fileVtable: CdRead(size >> 11 sectors, buffer) at once or through File_PollIo, or queues kind 5
-File_ReadSync	func	file_cd.c	code	Sync read: CdControl 2 to cdPos, CdSync, CdRead(size >> 11 sectors), retry on -1; File_Read calls it when the system is off
-File_RequestLoad	func	file_cd.c	code	slot 0x6C (loadAsync) of g_fileVtable, queues kind 7 (the whole-file load of slot 0x58) or calls load at once, never queues kind 2 (open)
+File_Read	func	file_cd.c	code	Slot 0x54 of g_fileVtbl: CdRead(size >> 11 sectors, buffer) at once or through File_PollIo, or queues kind 5
+File_SyncRead	func	file_cd.c	code	slot 0x54 (read) of the sync class: CdControl 2 to cdPos, CdSync, CdRead(size >> 11 sectors), retry on -1; File_Read calls it when the system is off
+File_RequestLoad	func	file_cd.c	code	slot 0x6C (loadAsync) of g_fileVtbl, queues kind 7 (the whole-file load of slot 0x58) or calls load at once, never queues kind 2 (open)
 File_ResolveEntries	func	file_cd.c	code	For each DirEntry: File_BuildPath, CdSearchFile up to 101 tries ("File not found. file = %s"), copies pos and size
-File_Seek	func	file_cd.c	code	Slot 0x4C of g_fileVtable: offset rounded up to sectors, CdIntToPos(CdPosToInt(cdPos) + sector) and CdControl 2 for whence 0, else returns the rounded cdSize
-File_ServiceQueue	func	file_cd.c	code	Slot 0x68 of g_fileVtable: runs the head FileRequest through the vtable by kind, or when g_fileDone sets flags, calls onLoaded and File_FreeRequest
+File_Seek	func	file_cd.c	code	Slot 0x4C of g_fileVtbl: offset rounded up to sectors, CdIntToPos(CdPosToInt(cdPos) + sector) and CdControl 2 for whence 0, else returns the rounded cdSize
+File_ServiceQueue	func	file_cd.c	code	Slot 0x68 of g_fileVtbl: runs the head FileRequest through the vtable by kind, or when g_fileDone sets flags, calls onLoaded and File_FreeRequest
 File_SetDirCount	func	file_cd.c	code	g_fileDirCount = count
 File_SetDirTable	func	file_cd.c	code	g_fileDirTable = table
 File_SetState	func	file_cd.c	code	g_fileState = state, g_fileRetryCount = 0
 File_StepIo	func	file_cd.c	guess	g_fileAsyncMode 2 machine for File_LoadWholeCd: seek then read the whole file, restores g_fileCurEntry; "Step" does not tell it apart from File_PollIo
-File_Stop	func	file_cd.c	guess	Slot 0x70 of g_fileVtable: File_UnhookVSync under the lock, called by File_ServiceQueue when the queue empties; it stops the VSync hook, not a transfer
+File_Stop	func	file_cd.c	guess	Slot 0x70 of g_fileVtbl: File_UnhookVSync under the lock, called by File_ServiceQueue when the queue empties; it stops the VSync hook, not a transfer
 File_UnhookVSync	func	file_cd.c	code	When g_fileAsyncMode is 0 and hooked: VSyncCallback(0) if g_fileVSyncMode, clears g_fileVSyncHooked and g_fileVSyncPending
 File_Unlock	func	file_cd.c	code	g_fileLock = 0
 File_GetNullVtbl	func	file_null.c	code	Returns g_fileNullVtbl; File_GetBackendVtbl and File_SetBackend use it off the CD back end
@@ -114,7 +114,7 @@ File_NullOpen	func	file_null.c	code	Slot 0x44 (open) of g_fileNullVtbl, empty bo
 File_NullRead	func	file_null.c	code	Slot 0x54 (read) of g_fileNullVtbl, returns 0
 File_NullRunQueue	func	file_null.c	code	Slot 0x68 (runQueue) of g_fileNullVtbl, empty body
 File_NullSeek	func	file_null.c	code	Slot 0x4C (seek) of g_fileNullVtbl, empty body
-File_NullStop	func	file_null.c	code	Slot 0x70 of g_fileNullVtbl, File_Stop's slot in g_fileVtable, empty body
+File_NullStop	func	file_null.c	code	Slot 0x70 of g_fileNullVtbl, File_Stop's slot in g_fileVtbl, empty body
 HandlerNode_Run	func	handler_node.c	code	Resets the 3 voices, handler(owner, node), then per voice stopVoice, setOctave and playTone with the fade, or stops on -2; tick + 1
 HandlerNode_Start	func	handler_node.c	code	When id is 0: stores id, owner, handler, voices to -1, tick 0, fadeSteps 10, returns 1; Entity, DreamSys fall sound and SoundSpot call it
 HandlerNode_Stop	func	handler_node.c	code	Stops each playing voice through bank slot 0x84 stopVoice and clears id
@@ -203,14 +203,14 @@ Sound_SetOctave	func	sound_bank.c	code	Slot 0x9C: noteShift = octave * 12 - 24 (
 Sound_StopVoice	func	sound_bank.c	code	Slot 0x84: SsUtKeyOffV(voice) below 0x18 voices, else SsUtAllKeyOff; returns -1
 Sound_UnmuteBank	func	sound_bank.c	code	Slot 0x8C: SsSetMute(0) once, muted = 0
 Actor_ApplyPos	func	src/game/actor.c	code	sets or adds the vector to coord->coord.t and clears coord->flg so libgs recomputes it
-Actor_Construct	func	src/game/actor.c	code	slot 0x08 of g_actorVtbl; SceneNode construct, installs the vtable, clears state, map and clock, runs slot 0x40
+Actor_Init	func	src/game/actor.c	code	slot 0x08 of g_actorVtbl; SceneNode init, installs the vtable, clears state, map and clock, runs slot 0x40 (Actor_Reset)
 Actor_EmptySlotD8	func	src/game/actor.c	code	slot 0xD8 of g_actorVtbl and of the vtables that copy it, empty
 Actor_EmptySlotE8	func	src/game/actor.c	code	slot 0xE8 of g_actorVtbl and the vtables that copy it, empty; SendBoxes calls it on an Actor contact
 Actor_FindGroundInCells	func	src/game/actor.c	code	Actor_FindGroundInRect over each loaded cell, first hit
 Actor_FindGroundInRect	func	src/game/actor.c	code	walks a rectangle of the cell's 20-wide tile grid and each tile's next chain, first tile Actor_ProbeGroundAt accepts
 Actor_GetGroundRects	func	src/game/actor.c	code	size 1, the actor's tile in its slot plus the slots above and below on a stacked stage, else the size x size square clipped to the 20 x 20 grid
 Actor_GetVtbl	func	src/game/actor.c	code	returns g_actorVtbl
-Actor_Init	func	src/game/actor.c	code	slot 0x40; speed 0x12C and boxMargin 0
+Actor_Reset	func	src/game/actor.c	code	slot 0x40; speed 0x12C and boxMargin 0
 Actor_MoveAxis	func	src/game/actor.c	code	sets one s16 of the move vector and speed to the value, moveLocal, clears it, then sendBoxes with the message when asked
 Actor_MoveLocal	func	src/game/actor.c	code	slot 0xC0; SceneNode_RotateVector by the actor's rotation, then slot 0xBC movePos
 Actor_MovePos	func	src/game/actor.c	code	slot 0xBC; Actor_ApplyPos(set 0), the vector is added to the coord translation
@@ -220,10 +220,10 @@ Actor_MoveXOnGround	func	src/game/actor.c	code	slot 0xD4; Actor_MoveThenSnap wit
 Actor_MoveY	func	src/game/actor.c	code	slot 0xCC; Actor_MoveAxis on y (g_actorMoveVec[1]) with message 8
 Actor_MoveZ	func	src/game/actor.c	code	slot 0xC4; Actor_MoveAxis on z (g_actorMoveVecZ) with message 6
 Actor_MoveZOnGround	func	src/game/actor.c	code	slot 0xD0; Actor_MoveThenSnap with slot 0xC4 moveZ
-Actor_New	func	src/game/actor.c	code	Heap_Alloc(0x58) then slot 0x08 Actor_Construct; used for kind 0 scenery parts and for each model part (model.c), not only scenery
+Actor_New	func	src/game/actor.c	code	Heap_Alloc(0x58) then slot 0x08 Actor_Init; used for kind 0 scenery parts and for each model part (model.c), not only scenery
 Actor_OnNode	func	src/game/actor.c	code	slot 0x9C; by the low byte of the sender's class word, 0x34 (Actor family) to slot 0xDC and 0x24 (MapTile) to slot 0xE0, registers passed through
-Actor_OnNode24	func	src/game/actor.c	code	slot 0xE0, a sender of class byte 0x24 (MapTile); SceneNode_OnNode only
-Actor_OnNode34	func	src/game/actor.c	code	slot 0xDC, a sender of class byte 0x34; SceneNode_OnNode, then slot 0xA0 SceneNode_CheckContact for messages 5 to 8. The number is a class byte, not a message
+Actor_OnTileContact	func	src/game/actor.c	code	slot 0xE0, Actor_OnNode calls it for a sender whose vtable class byte is 0x24 (MapTile); SceneNode_OnNode only
+Actor_OnActorContact	func	src/game/actor.c	code	slot 0xDC, Actor_OnNode calls it for a sender whose vtable class byte is 0x34 (Actor, Model, Entity, DreamSys, Scenery); SceneNode_OnNode, then slot 0xA0 SceneNode_CheckContact for messages 5 to 8
 Actor_ProbeGroundAt	func	src/game/actor.c	code	the tile when SceneNode_ProbeHeight hits it (arguments still in registers), else 0
 Actor_SendBoxes	func	src/game/actor.c	code	slot 0x88; base sendBoxes, then for moves 5 to 8 with a ready model gets the box list, shifts it by speed and margin (ModelBox_ShiftList), sends it, runs slot 0xE8 of an Actor contact
 Actor_SetBoxMargin	func	src/game/actor.c	code	slot 0xEC; boxMargin (+0x54) added to the speed by Actor_SendBoxes; Place_Load sets it on DreamSys from g_stageBoxMargins
@@ -253,10 +253,10 @@ BgMap_Destroy	func	src/game/bg_map.c	code	slot 0x0C: frees the index table, back
 BgMap_GetVtbl	func	src/game/bg_map.c	code	returns g_bgMapVtbl
 BgMap_Init	func	src/game/bg_map.c	code	slot 0x08: back end init, own vtable, keeps the cells; without skipBuild sets fullScreen and runs onLoaded at once
 BgMap_OnLoaded	func	src/game/bg_map.c	code	slot 0x64: in state 0 runs slot 0x78 build and sets built
-Box_Construct	func	src/game/box.c	code	slot 0x08: SceneNode init, installs g_boxVtbl, runs slot 0x40; same Construct and Init pair as Fade
+Box_Init	func	src/game/box.c	code	slot 0x08: SceneNode init, installs g_boxVtbl, runs slot 0x40 (Box_Reset); the X_Init and X_Reset pair every class uses
 Box_Create	func	src/game/box.c	code	Heap_Alloc(0x6C) then slot 0x08 of g_boxVtbl with size, color, priority
 Box_GetVtbl	func	src/game/box.c	code	returns g_boxVtbl
-Box_Init	func	src/game/box.c	code	slot 0x40: priority, relative 1, GsBOXF cleared, size, color (g_boxDefaultColor if NULL), Box_SetMask(13); a reset slot
+Box_Reset	func	src/game/box.c	code	slot 0x40: priority, relative 1, GsBOXF cleared, size, color (g_boxDefaultColor if NULL), Box_SetMask(13); a reset slot
 Box_SetBlendMode	func	src/game/box.c	code	slot 0x68: GsBOXF attribute bits 28 and 29, the semi-transparency rate; Fade_Begin passes 1 (add) or 2 (subtract)
 Box_SetColor	func	src/game/box.c	code	slot 0xB8: Rgb_CopyOrAdd into the GsBOXF color at +0x64
 Box_SetMask	func	src/game/box.c	guess	slot 0xCC: +0x68 = (1 << bits) - 1; nothing reads +0x68 as a mask, so the role is unproven (13 matches View otBits, a max OT index is possible)
@@ -434,7 +434,7 @@ DreamSys_ComputeDayPoint	func	src/game/dream_sys.c	game	slot 0x1FC: Mood_Resolve
 DreamSys_EmptySlot12C	func	src/game/dream_sys.c	code	returns 0 in g_dreamSysVtbl slot 0x12C, which DreamSys_Walk calls before moving
 DreamSys_EmptySlot14C	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0x14C, the look mode 2 handler
 DreamSys_EmptySlot150	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0x150, the look mode 3 handler
-DreamSys_EmptySlotE8	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0xE8, which DreamSys_OnWallTouch calls last
+DreamSys_EmptySlotE8	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0xE8, which DreamSys_OnTileContact calls last
 DreamSys_EndDay	func	src/game/dream_sys.c	game	slot 0x1B8: restores savedDay, on reason 0 scores, day point, AdvanceDay; reason 2 new game; breakpoint run hunt3 run3.log
 DreamSys_EndFall	func	src/game/dream_sys.c	code	slot 0x17C clears falling, sets fallSoundOn to its argument and stops the sound node when non-zero; Place passes 1 at the end of its fall fade
 DreamSys_EnterMap	func	src/game/dream_sys.c	code	slot 0x4C called by Place with its map: map setTarget gives the start position, Actor attach, watch map, flashback rotation and length+4 s or arrival heading
@@ -448,8 +448,8 @@ DreamSys_GetPreviousPoint	func	src/game/dream_sys.c	game	slot 0x1EC: mode 1 read
 DreamSys_GetSaveBlock	func	src/game/dream_sys.c	game	slot 0x1B0 returns DreamSys + 0x178 and size 0x700; that block was found in RAM and saved to the card in game
 DreamSys_GetSightHeight	func	src/game/dream_sys.c	code	y of the camera viewpoint to reference point line at depth pos, from View +0x14 and +0x20 (GsRVIEW2)
 DreamSys_GetStage	func	src/game/dream_sys.c	code	slot 0x1E0 returns stage (+0x164); DreamRunner reads it
-DreamSys_GetVtable	func	src/game/dream_sys.c	code	returns g_dreamSysVtbl; the class convention elsewhere is X_GetVtbl
-DreamSys_Init	func	src/game/dream_sys.c	code	slot 0x08: Actor construct, sets vtable, sound bank, camera, tmd, watches TMD model 0, no time limit, controls locked, neverSaved, InitNewGame, Reset
+DreamSys_GetVtbl	func	src/game/dream_sys.c	code	returns g_dreamSysVtbl, the X_GetVtbl convention
+DreamSys_Init	func	src/game/dream_sys.c	code	slot 0x08: Actor init, sets vtable, sound bank, camera, tmd, watches TMD model 0, no time limit, controls locked, neverSaved, InitNewGame, Reset
 DreamSys_InitNewGame	func	src/game/dream_sys.c	game	slot 0x198 writes g_saveMagic "J01", zero year, day, scores, sets SHAKE 1, Nav_InitFlags; J01 at +0x178 found in RAM (one block)
 DreamSys_IsNeverSaved	func	src/game/dream_sys.c	code	slot 0x1AC returns neverSaved (+0x878), set by Init and an erase, cleared by a card save or load
 DreamSys_LeaveMap	func	src/game/dream_sys.c	code	slot 0x50 called by the Place teardown: map deactivate, unwatch +0x4C map, Actor detach
@@ -474,7 +474,7 @@ DreamSys_OnEntityEvent	func	src/game/dream_sys.c	game	slot 0x1E8: 4, 9 touch, 10
 DreamSys_OnGroundProbe	func	src/game/dream_sys.c	game	overrides slot 0x88 (sendBoxes): -1 from Actor_SnapToGround sets step sound from contact flags, -2 links a fall or RestorePosition; falls seen in hunt 8 f1.log
 DreamSys_OnMapMessage	func	src/game/dream_sys.c	code	slot 0x1E4: StageMap message 5 logs the chunk mood of the map location (slot 0x1F4)
 DreamSys_OnPad	func	src/game/dream_sys.c	code	slot 0x94: pad codes minus 2, UP DOWN walk, LEFT RIGHT turn, TRIANGLE SQUARE pitch, CROSS run, L1 R1 look back, L2 R2 side steps, 25 CIRCLE pressed, UP released
-DreamSys_OnWallTouch	func	src/game/dream_sys.c	game	slot 0xE0 message 4: touched tile into place, LinkStatic else LinkDynamic while dynamicLinkOn, RestorePosition; hunt 8 f9.log 14 put-backs then a link
+DreamSys_OnTileContact	func	src/game/dream_sys.c	game	slot 0xE0 message 4: touched tile into place, LinkStatic else LinkDynamic while dynamicLinkOn, RestorePosition; hunt 8 f9.log 14 put-backs then a link
 DreamSys_PlayStepSound	func	src/game/dream_sys.c	code	slot 0x168: tone g_stepSoundTones and octave g_stepSoundOctaves of stepSound on the sound bank, extra tones for sound 11
 DreamSys_PopSpeed	func	src/game/dream_sys.c	code	slot 0x188 restores speed from savedSpeed; OnPad on UP released
 DreamSys_PushSpeed	func	src/game/dream_sys.c	code	slot 0x184 keeps speed in savedSpeed and sets a new one; OnPad CROSS while walking forward pushes 4
@@ -482,7 +482,7 @@ DreamSys_Reset	func	src/game/dream_sys.c	code	slot 0x40, last call of DreamSys_I
 DreamSys_ResetMoodAccumulators	func	src/game/dream_sys.c	code	slot 0x1F0: Mood_Reset on both accumulators, then logs the special day point in both when given
 DreamSys_RestorePosition	func	src/game/dream_sys.c	game	slot 0x224 copies them back and clears flg; put the dreamer back 14 times at a wall in hunt 8 f9.log
 DreamSys_ReverseDirection	func	src/game/dream_sys.c	code	swaps walkDirection 1 and 2 or 3 and 4 and clears walkingForward while TickLookBack turns the dreamer
-DreamSys_RouteEntityMessage	func	src/game/dream_sys.c	code	slot 0xDC: Actor_OnNode34, then forwards to slot 0x1E8 when the sender class word & 0xFFFFF is 0x1F234 (Entity)
+DreamSys_OnActorContact	func	src/game/dream_sys.c	code	slot 0xDC: Actor_OnActorContact, then forwards to slot 0x1E8 when the sender class word & 0xFFFFF is 0x1F234 (Entity)
 DreamSys_RouteMapMessage	func	src/game/dream_sys.c	code	slot 0x9C: Actor_OnNode, then forwards to slot 0x1E4 when the sender class word & 0xFFF is 0x114 (StageMap)
 DreamSys_SavePosition	func	src/game/dream_sys.c	code	slot 0x220 copies the GsCOORDINATE2 and its param to coordCopy and paramCopy; Walk calls it before moving
 DreamSys_SetAutoWalk	func	src/game/dream_sys.c	code	slot 0xF4: Place passes 1 at a facing link fade, 2 at a fall, 0 at the end; non-zero sets speed 1 and turns to linkHeading
@@ -650,22 +650,22 @@ Entity_CheckLinkRadius	func	src/game/entity.c	code	with record link < 0 and vide
 Entity_CheckSleep	func	src/game/entity.c	code	slot 0x174; awake: Entity_CheckLinkRadius, then sleepMode >= 10 compares timer with mode*15, 1 sleeps in box, 2 out of box; returns awake
 Entity_CheckTouch	func	src/game/entity.c	code	slot 0x178; awake and not touched: setTouched(1) when in the box at |touchRange|; negative touchRange also calls SceneNode_TurnToward each tick
 Entity_CheckWake	func	src/game/entity.c	code	slot 0x170; asleep and state != 1: wakeMode 4 or 3 in box roll rand()&0x7F, 1 wakes in box, 2 wakes out of box; returns awake
-Entity_Construct	func	src/game/entity.c	code	slot 0x08 of g_entityVtbl; Model base construct, installs Entity_GetVtbl, stores type, clears handlerNode.id and both effects, runs slot 0x40
-Entity_Create	func	src/game/entity.c	code	Heap_Alloc(0x108), vtable slot 0x08 Entity_Construct, Heap_Free on failure; sym.c Sym_SpawnAtPlace calls it
-Entity_Destruct	func	src/game/entity.c	code	slot 0x0C; deletes the Fades at +0x100 and +0x104 through slot 0x04, then Model base destruct
+Entity_Init	func	src/game/entity.c	code	slot 0x08 of g_entityVtbl; Model base init, installs Entity_GetVtbl, stores type, clears handlerNode.id and both effects, runs slot 0x40 (Entity_Reset)
+Entity_Create	func	src/game/entity.c	code	Heap_Alloc(0x108), vtable slot 0x08 Entity_Init, Heap_Free on failure; sym.c Sym_SpawnAtPlace calls it
+Entity_Destruct	func	src/game/entity.c	code	slot 0x0C; deletes the Fades at +0x100 and +0x104 through slot 0x04, then the Model base destroy
 Entity_Detach	func	src/game/entity.c	code	slot 0x50; while attached: sleep, Model base detach, clear the map at +0x4C
 Entity_GetLinkStage	func	src/game/entity.c	code	slot 0x154; record link: negative gives ~link, else link - 1; DreamSys_OnEntityEvent stores it as the next stage on event 10
 Entity_GetPoints	func	src/game/entity.c	code	slot 0x150; record points * 1000, added to save.instanceScore by DreamSys_OnEntityEvent on event 9
 Entity_GetRecord	func	src/game/entity.c	code	slot 0x14C; returns &g_entityRecords[type]; DreamSys_OnEntityEvent reads its mood on event 9
 Entity_GetSoundFade	func	src/game/entity.c	code	slot 0x148; distance to dreamSys over (record soundRange<<11) / handlerNode.fadeSteps, -1 out of range; handlers store it in HandlerNode.fade
 Entity_GetVideo	func	src/game/entity.c	code	slot 0x158; record video - 1; DreamSys_OnEntityEvent uses it as the cinematic variant on event 11
-Entity_GetVtbl	func	src/game/entity.c	code	returns &g_entityVtbl (0x80089AD4); Entity_Construct installs it
+Entity_GetVtbl	func	src/game/entity.c	code	returns &g_entityVtbl (0x80089AD4); Entity_Init installs it
 Entity_GroundDistance	func	src/game/entity.c	code	slot 0x144; returns |dx| + |dz| between the entity coord.t and the other object coord workm.t
-Entity_Init	func	src/game/entity.c	code	slot 0x40, last step of Entity_Construct: setLightFlags(1) when record points is 1 to 9, tick mode 0x42, then sleep
+Entity_Reset	func	src/game/entity.c	code	slot 0x40, last step of Entity_Init: setLightFlags(1) when record points is 1 to 9, tick mode 0x42, then sleep
 Entity_IsAtPointAhead	func	src/game/entity.c	code	wraps DreamSys_TestPointAhead, true when the entity stands in a box of half side record +9 around the point range << 11 ahead of the dreamer, hunt7 G1 saw it in game
 Entity_IsDreamerNear	func	src/game/entity.c	code	dreamSys y within 0x200 of the entity y and distanceTo (slot 0x144) below the radius
-Entity_OnActorTouch	func	src/game/entity.c	code	slot 0xDC, Actor_OnNode sends messages from senders of class byte 0x34 (Actor family, DreamSys too); message 4 with link > 0 posts 10, or 11/12 for link 0x7F
-Entity_OnWallTouch	func	src/game/entity.c	guess	slot 0xE0, messages from class byte 0x24 senders (MapTile); message 4 puts the entity to sleep. "Wall" is unproven: any map tile sender reaches it
+Entity_OnActorContact	func	src/game/entity.c	code	slot 0xDC, Actor_OnNode sends messages from senders of class byte 0x34 (Actor family, DreamSys too); message 4 with link > 0 posts 10, or 11/12 for link 0x7F
+Entity_OnTileContact	func	src/game/entity.c	guess	slot 0xE0, messages from senders of class byte 0x24 (MapTile); message 4 puts the entity to sleep. Any map tile sender reaches it, not only walls
 Entity_RunHandler	func	src/game/entity.c	code	slot 0x11C (tick mode 0x42 tick function): HandlerNode_Run on the entity sound bank and handler node, then handlerTicks++
 Entity_SetTouched	func	src/game/entity.c	code	slot 0x164; posts event 9 (DreamSys logs mood and points) when set, stores touched at +0xF4
 Entity_Sleep	func	src/game/entity.c	code	slot 0x160; setVisible(0), stopHandler, setTouched(0), awake = 0
@@ -675,11 +675,11 @@ Entity_StopHandler	func	src/game/entity.c	code	slot 0x16C; HandlerNode_Stop, sto
 Entity_Update	func	src/game/entity.c	code	slot 0x98; runs checkWake then checkSleep, checkHandlerStart then checkHandlerStop, checkTouch, then Model base update
 Entity_Wake	func	src/game/entity.c	code	slot 0x15C; setVisible(1), awake = 1, timer = 0; called by Entity_CheckWake and Entity_Attach
 Fade_Begin	func	src/game/fade.c	code	slot 0xDC: picks the channels (default when negative), tick count 0x100 / step, watches the ticker, shows semi-transparent with blend mode 1 or 2
-Fade_Construct	func	src/game/fade.c	code	slot 0x08: Box slot 0x08 with g_fadePalette[channels] or black, installs the Fade vtable, runs slot 0x40; Construct and Init pairs differ from View_Init and View_Reset
+Fade_Init	func	src/game/fade.c	code	slot 0x08: Box slot 0x08 with g_fadePalette[channels] or black, installs the Fade vtable, runs slot 0x40 (Fade_Reset)
 Fade_Create	func	src/game/fade.c	code	Heap_Alloc(0xA0) then slot 0x08 of g_fadeVtbl with size, channels, priority; View_Init and the entity effect call it
 Fade_GetColor	func	src/game/fade.c	code	slot 0xE4: g_fadeBlackPalette for channels 0xF, else g_fadePalette[channels]
 Fade_GetVtbl	func	src/game/fade.c	code	returns g_fadeVtbl
-Fade_Init	func	src/game/fade.c	code	slot 0x40: state 0, step 10, channels 0, holdMode 0, tint 0, hidden and opaque; a reset slot, see the report on Construct and Init
+Fade_Reset	func	src/game/fade.c	code	slot 0x40: state 0, step 10, channels 0, holdMode 0, tint 0, hidden and opaque; a reset slot
 Fade_RestoreRect	func	src/game/fade.c	code	slot 0xEC: writes back the position, width and height Fade_SaveAndSetRect saved
 Fade_SaveAndSetRect	func	src/game/fade.c	code	slot 0xE8: on a shown fade, saves width, height and position, then writes the new size halves and position
 Fade_SetStep	func	src/game/fade.c	code	slot 0xD0: stores the step at +0x74; Place_StartFade passes the duration argument
@@ -700,16 +700,16 @@ Glyph_GetRect	func	src/game/glyph.c	code	g_glyphCellRect moved by (code & 0x1F) 
 Glyph_GetVtbl	func	src/game/glyph.c	code	returns g_glyphVtbl
 Glyph_Init	func	src/game/glyph.c	code	slot 0x08: ScreenSprite init on the space cell, own vtable, then slot 0x40 with the code
 Glyph_SetCode	func	src/game/glyph.c	code	slot 0xC4: stores +0xA8 and moves the sprite u v to the character's 8x8 cell
-Glyph_Setup	func	src/game/glyph.c	code	slot 0x40: calls slot 0xC4 setCode with the code
+Glyph_Reset	func	src/game/glyph.c	code	slot 0x40: calls slot 0xC4 setCode with the code
 Graph_BlinkReel	func	src/game/graph.c	game	slot 0x124: from tick 31 every 24 ticks a matched box gets g_graphReelColor; green cells seen one by one in game (secret video reel)
 Graph_CheckReel	func	src/game/graph.c	game	compares g_reelPoints with the last n graph points, sets reelSeen; discoveries "The secret video reel", +0x5DF went 0 to 1 in game
 Graph_CreateBoxes	func	src/game/graph.c	code	slot 0xD8 (setMenu), 100 Box_Create widgets (GsBOXF, glossary Box) and reelDays, no GsSPRITE is made
 Graph_Draw	func	src/game/graph.c	game	slot 0xE0: one box per day back from yesterday, n = min(day,100) or 100; discoveries "The graph screen only shows your last 100 days", checked in game
 Graph_FreeBoxes	func	src/game/graph.c	code	slot 0xDC (freeMenu), frees reelDays and deletes the 100 Box widgets of Graph_CreateBoxes, then the MenuScreen freeMenu
-Graph_GetVtable	func	src/game/graph.c	code	returns g_graphVtbl; note the class convention elsewhere is X_GetVtbl
+Graph_GetVtbl	func	src/game/graph.c	code	returns g_graphVtbl, the X_GetVtbl convention
 Graph_Init	func	src/game/graph.c	code	slot 0x08 of g_graphVtbl: MenuScreen init with ETC\ETCSE, sets g_graphVtbl, keeps the DreamSys, then setMenu and slot 0x40
 Graph_LoadImage	func	src/game/graph.c	code	g_graphVtbl slot 0x40: fade speed 5, 0x190 packets, setPicture ETC\HGRAPH.TIM, timeout 10
-Graph_New	func	src/game/graph.c	code	Heap_Alloc(0x244) then slot 0x08 of Graph_GetVtable; Scene_RunTitle runs it as a screen factory
+Graph_New	func	src/game/graph.c	code	Heap_Alloc(0x244) then slot 0x08 of Graph_GetVtbl; Scene_RunTitle runs it as a screen factory
 Graph_OnCircle	func	src/game/graph.c	code	g_graphVtbl slot 0x78: plays sound 0x10 and closes only while reelFound is 0
 Graph_OnClock	func	src/game/graph.c	code	g_graphVtbl slot 0x5C after MenuScreen onClock: newest day box visible on ticks & 1 while items have focus, then slot 0x124 blinkReel
 Graph_Run	func	src/game/graph.c	game	slot 0x44: returns 2 when reelFound, Scene_RunTitle then plays the reel; discoveries "The secret video reel", film seen in game
@@ -741,14 +741,14 @@ Object_RemoveWatcher	func	src/game/heap.c	code	slot 0x24: List_Remove on object-
 Object_Unwatch	func	src/game/heap.c	code	slot 0x14: List_Remove on object->watched, then other->removeWatcher(other, object)
 Object_UnwatchAll	func	src/game/heap.c	code	slot 0x18: calls unwatch(object, value) for every value of object->watched
 Object_Watch	func	src/game/heap.c	code	slot 0x10: List_Push on object->watched, then other->addWatcher(other, object)
-Label_Construct	func	src/game/label.c	code	slot 0x08: Glyph init on a space, count Glyph_Create(font, 0x20) at +0xB4, then slot 0x40 with the text
+Label_Init	func	src/game/label.c	code	slot 0x08: Glyph init on a space, count Glyph_Create(font, 0x20) at +0xB4, then slot 0x40 with the text
 Label_Create	func	src/game/label.c	code	Heap_Alloc(0xB8) then slot 0x08 of g_labelVtbl with font, count, text; Menu and SaveMenu make their texts with it
 Label_Destroy	func	src/game/label.c	code	slot 0x0C: Object_DeleteArray on the glyphs, Heap_Free of the array, then the Glyph destroy
 Label_EmptySlotC8	func	src/game/label.c	code	empty body at slot 0xC8 of g_labelVtbl, where g_glyphVtbl has Glyph_GetCode
 Label_EmptySlotD0	func	src/game/label.c	code	empty body at slot 0xD0 of g_labelVtbl
 Label_GetVtbl	func	src/game/label.c	code	returns g_labelVtbl
 Label_Hide	func	src/game/label.c	code	slot 0x50: hides each shown glyph, then the label through the Glyph slot 0x50
-Label_Init	func	src/game/label.c	code	slot 0x40: setSpacing(7) then setText; a reset slot like Fade_Init
+Label_Reset	func	src/game/label.c	code	slot 0x40: setSpacing(7) then setText; a reset slot like Fade_Reset
 Label_SetChar	func	src/game/label.c	code	slot 0xC4: runs Glyph slot 0xC4 Glyph_SetCode on glyph index; overrides the slot glyph.c calls setCode
 Label_SetColor	func	src/game/label.c	code	slot 0xB8: runs setColor on each shown glyph
 Label_SetPosition	func	src/game/label.c	code	slot 0xBC: on a shown label moves itself and lays out all count glyphs from origin by spacing, ignoring gapAt
@@ -810,16 +810,16 @@ Model_ApplyFrame	func	src/game/model.c	code	slot 0x134 runs the u16 packet count
 Model_Attach	func	src/game/model.c	code	slot 0x4C: Actor attach to the map and position, watches the clock argument, setTarget; Entity_Attach chains to it
 Model_BuildParts	func	src/game/model.c	code	file slot scanFirstFrame for the ids, allocates parts and partIds, one Actor_New per id, part = parts[current]
 Model_ClearTarget	func	src/game/model.c	code	slot 0x140 unwatches both ways and clears +0x94
-Model_Construct	func	src/game/model.c	code	g_modelVtbl slot 0x08: Actor construct, vtable, sound bank, clears file and parts, load (0xF4), watches the file, init (0x40)
+Model_Init	func	src/game/model.c	code	g_modelVtbl slot 0x08: Actor init, vtable, sound bank, clears file and parts, load (0xF4), watches the file, reset (0x40)
 Model_CreateParts	func	src/game/model.c	code	slot 0x100: Model_BuildParts unless parts is set
 Model_Destruct	func	src/game/model.c	code	g_modelVtbl slot 0x0C: unload (0xF8) then the Actor destroy
 Model_Detach	func	src/game/model.c	code	slot 0x50: clearTarget, unwatch +0x50, Actor detach
 Model_FindPart	func	src/game/model.c	code	slot 0xFC: index of the part whose TOD object id in partIds matches, -1 when none
 Model_FreeFile	func	src/game/model.c	code	freeParts (0x104), deletes the Mom only when ownsFile
 Model_FreeParts	func	src/game/model.c	code	slot 0x104: Model_ReleaseParts when parts is set
-Model_GetVtbl	func	src/game/model.c	code	returns g_modelVtbl, the vtable Model_Construct installs
-Model_Init	func	src/game/model.c	code	slot 0x40: hidden, setAnim6Flag 1, speed 0x12C, tick off, tick mode 0x41, animation 0 stopped, links the current part model
-Model_Load	func	src/game/model.c	code	slot 0xF4: Model_LoadFile unless a file is set; 0 on success as Model_Construct tests
+Model_GetVtbl	func	src/game/model.c	code	returns g_modelVtbl, the vtable Model_Init installs
+Model_Reset	func	src/game/model.c	code	slot 0x40: hidden, setAnim6Flag 1, speed 0x12C, tick off, tick mode 0x41, animation 0 stopped, links the current part model
+Model_Load	func	src/game/model.c	code	slot 0xF4: Model_LoadFile unless a file is set; 0 on success as Model_Init tests
 Model_LoadFile	func	src/game/model.c	code	borrows the source Mom (+0xC, ownsFile 0) or Mom_Create (ownsFile 1), then createParts (0x100)
 Model_New	func	src/game/model.c	code	Heap_Alloc(0x98), slot 0x08 of Model_GetVtbl, frees on failure; nothing calls it (Entity builds its own)
 Model_OnNotify	func	src/game/model.c	code	slot 0x38: Actor onNotify, then deletes itself when its borrowed file (class 0x5F03, Mom) sends message 1
@@ -932,18 +932,18 @@ Place_Attach	func	src/game/place.c	code	slot 0x44, run with the runner's ScreenE
 Place_CheckTextureLoad	func	src/game/place.c	game	a failed loader is deleted and the limit becomes elapsed + 30 s, a done one gets the ambience colour, then setup; start once no map slot is pending. Forced in game, work/hunt4/B-texfail.lua
 Place_ClosePause	func	src/game/place.c	game	slot 0xD4; deletes the label, unmutes the bank, resumes music and clock, re-enables the view; setPresentEnabled(1) seen in pause.log
 Place_ConfirmExit	func	src/game/place.c	game	slot 0xC8, TRIANGLE; when armed, closes the pause and notifies 0xD (DreamSys_EndDay(2), new game); wipe seen in work/hunt4/B-run1.log
-Place_Construct	func	src/game/place.c	code	slot 0x08 of g_placeVtbl; Task construct with the sound bank, installs the vtable, keeps music, stage and the refs, clears ready, started and the pause, texLoading 1, slot 0x40
-Place_Destruct	func	src/game/place.c	code	slot 0x0C; calls the Task destruct only
+Place_Init	func	src/game/place.c	code	slot 0x08 of g_placeVtbl; Task init with the sound bank, installs the vtable, keeps music, stage and the refs, clears ready, started and the pause, texLoading 1, slot 0x40
+Place_Destruct	func	src/game/place.c	code	slot 0x0C; calls the Task destroy only
 Place_Detach	func	src/game/place.c	code	slot 0x48; unwatches DreamSys, then the Task detach
 Place_DisarmExit	func	src/game/place.c	code	slot 0xC4, SELECT released, and from TogglePause; exitArmed = 0
-Place_EmptySlot40	func	src/game/place.c	code	slot 0x40 of g_placeVtbl (reset), empty; Place_Construct calls it
+Place_EmptySlot40	func	src/game/place.c	code	slot 0x40 of g_placeVtbl (reset), empty; Place_Init calls it
 Place_EmptySlot7C	func	src/game/place.c	code	slot 0x7C of g_placeVtbl, empty
 Place_EmptySlotBC	func	src/game/place.c	code	slot 0xBC of g_placeVtbl, empty
 Place_ExitNoRecord	func	src/game/place.c	code	slot 0xCC, no caller; when armed, closes the pause and notifies 0xC (DreamSys_EndDay(1), day restored)
 Place_GetChunkPath	func	src/game/place.c	code	the map's chunk loader; tail calls Stage_GetChunkPath with the stage (chunk index still in a1) or Stage_GetChunkPathAt(stage, col, row) when the index is negative
 Place_GetVtbl	func	src/game/place.c	code	returns g_placeVtbl
 Place_Load	func	src/game/place.c	game	slot 0x4C begin; Music_PickTrack, Tix_Create(Stage_PickTexturePath), Scenery_Begin, speeds, bounds, ray rule, box margin, state 5; RAM work/unknowns/U3/a74.log args (0, 0, 0)
-Place_New	func	src/game/place.c	code	Heap_Alloc(0x88) then slot 0x08 Place_Construct; DreamRunner_CreatePlace passes the SE bank, the music, ETC\ETC.TIM, ETC\DREAMER.TMD and the stage
+Place_New	func	src/game/place.c	code	Heap_Alloc(0x88) then slot 0x08 Place_Init; DreamRunner_CreatePlace passes the SE bank, the music, ETC\ETC.TIM, ETC\DREAMER.TMD and the stage
 Place_OnDisplay	func	src/game/place.c	code	slot 0x54; on display message 2 runs Place_CheckTextureLoad
 Place_OnDreamSysNotify	func	src/game/place.c	code	slot 0x90; in state 0, DreamSys messages 10 and 12 to 17 go to slots 0x94 to 0xAC; in another state a message of 9 or more clears DreamSys.transition
 Place_OnFaderNotify	func	src/game/place.c	code	slot 0xB0; fader 5 unwatches, auto walk 0, state 0; 6 unwatches, clear colour from the fader, state 10 ends the fall into 4, notifies the state
@@ -1001,7 +1001,7 @@ RootNode_GetVtbl	func	src/game/root_node.c	code	returns g_rootNodeVtbl
 RootNode_Init	func	src/game/root_node.c	code	slot 0x08: SceneNode init, own vtable, FlatLight_New(0 to 2) each watched, then slot 0x40
 RootNode_OnNode	func	src/game/root_node.c	code	slot 0x9C (SceneNode onNode), empty body
 RootNode_SetAmbient	func	src/game/root_node.c	code	slot 0xBC: stores the Color3 (swapping out the previous one when asked) and calls GsSetAmbient with each byte times 16; Place passes the ambience color
-RootNode_Setup	func	src/game/root_node.c	code	slot 0x40: clears the flg word of the node's GsCOORDINATE2
+RootNode_Reset	func	src/game/root_node.c	code	slot 0x40: clears the flg word of the node's GsCOORDINATE2
 Scene_GetVtbl	func	src/game/scene.c	code	returns g_sceneVtbl; Scene_New and Scene_Init use it
 Scene_Init	func	src/game/scene.c	code	slot 0x08 of g_sceneVtbl: App init with settings->fileBackend, loads ETC\DREAME5.TMD, DreamSys_New, then seedRandom
 Scene_New	func	src/game/scene.c	code	Heap_Alloc(0x2C) then Scene_GetVtbl()->init(scene, settings); main's only constructor call with g_sceneSettings
@@ -1024,8 +1024,8 @@ Fraction_ToFixed	func	src/game/scene_node.c	code	num / den in 20.12 fixed point
 ModelBox_ClipSegment	func	src/game/scene_node.c	code	outcodes of both ends: 0 outside, 1 both inside, 2 start inside, 3 end inside (exit point through ModelBox_FindExit), else bisects
 ModelBox_FindExit	func	src/game/scene_node.c	code	bisects from a point inside the box to one outside until the midpoint stops moving
 ModelBox_OutCode	func	src/game/scene_node.c	code	6-bit outcode of a point against a ModelBox: 8/4 x, 2/1 y, 0x20/0x10 z
-Render_TransformLongVectors	func	src/game/scene_node.c	code	ApplyMatrixLV on count long vectors; used by View_DrawNode and SceneNode rotations (prefix outside render.c, see report)
-Render_TransformVectors	func	src/game/scene_node.c	code	ApplyMatrixSV on count short vectors; used by SceneNode collision code, not by render.c (prefix outside its file, see report)
+Vec_TransformLong	func	src/game/scene_node.c	code	ApplyMatrixLV on count long vectors; used by View_DrawNode and SceneNode rotations (prefix outside render.c, see report)
+Vec_TransformShort	func	src/game/scene_node.c	code	ApplyMatrixSV on count short vectors; used by SceneNode collision code, not by render.c (prefix outside its file, see report)
 SceneNode_AddActorWatchers	func	src/game/scene_node.c	code	slot 0xB4: each scene-node watcher of object whose class byte is 0x34 (g_actorVtbl's class word) watches node; no caller reads the slot
 SceneNode_Attach	func	src/game/scene_node.c	code	slot 0x4C: when parentless, sets parent and coord super, parent->watch(node), position from pos or 0
 SceneNode_BoxesOverlap	func	src/game/scene_node.c	code	slot 0xA8: bounding box of the moved corners against the bounding box of the model's boxes, 1 when they overlap
@@ -1121,31 +1121,31 @@ Scenery_AttachPart	func	src/game/scenery_obj.c	guess	slots 0x4C attach, 0x44 rot
 Scenery_Build	func	src/game/scenery_obj.c	code	keeps the view height, attaches to the map with rotation and scale, links model 0 or 2 of DREAMER.TMD for kinds 0 and 1, builds the parts by kind
 Scenery_BuildKind2	func	src/game/scenery_obj.c	code	five sprite parts; variant 2 and up moves part 1 by g_sceneryKind2Offsets and recolours it, else part 1 semi-transparent and scaled; part 2 hidden
 Scenery_BuildKind3	func	src/game/scenery_obj.c	code	five sprite parts with no scale
-Scenery_Construct	func	src/game/scenery_obj.c	code	slot 0x08 of g_sceneryVtbl; Actor construct, installs the vtable, state 0, kind, init (slot 0x40), then Scenery_Build
+Scenery_Init	func	src/game/scenery_obj.c	code	slot 0x08 of g_sceneryVtbl; Actor init, installs the vtable, state 0, kind, reset (slot 0x40), then Scenery_Build
 Scenery_CreateSpriteParts	func	src/game/scenery_obj.c	code	five SceneryPart_New(index 0) parts from ETC.TIM attached to the object, coloured with +0x74, scaled when asked
 Scenery_DeleteKind0Parts	func	src/game/scenery_obj.c	code	Object_DeleteArray of the two kind 0 parts when it has a direction
 Scenery_DeleteKind2Parts	func	src/game/scenery_obj.c	code	Object_DeleteArray of the five kind 2 parts
 Scenery_DeleteKind3Parts	func	src/game/scenery_obj.c	code	Object_DeleteArray of the five kind 3 parts
 Scenery_DeleteParts	func	src/game/scenery_obj.c	code	deletes the parts of kinds 0, 2 and 3
-Scenery_Destruct	func	src/game/scenery_obj.c	code	slot 0x0C; Scenery_DeleteParts (a0 still the object), then the Actor destruct SceneNode_Destroy
+Scenery_Destruct	func	src/game/scenery_obj.c	code	slot 0x0C; Scenery_DeleteParts (a0 still the object), then the Actor destroy SceneNode_Destroy
 Scenery_Follow	func	src/game/scenery_obj.c	code	setPos (Actor_SetPos) at origin + offset plus the view height change since Build, then the per-kind update
 Scenery_GetVtbl	func	src/game/scenery_obj.c	code	returns g_sceneryVtbl
-Scenery_Init	func	src/game/scenery_obj.c	code	slot 0x40; copies the SceneryParams to +0x58 and zeroes ticks
-Scenery_New	func	src/game/scenery_obj.c	code	Heap_Alloc(0x98) then slot 0x08 Scenery_Construct with kind, params, map and origin, Heap_Free on failure
+Scenery_Reset	func	src/game/scenery_obj.c	code	slot 0x40; copies the SceneryParams to +0x58 and zeroes ticks
+Scenery_New	func	src/game/scenery_obj.c	code	Heap_Alloc(0x98) then slot 0x08 Scenery_Init with kind, params, map and origin, Heap_Free on failure
 Scenery_PlaceKind0Parts	func	src/game/scenery_obj.c	code	kind 0 with a direction; makes two Actor parts with its model (move 0) or sets their position (Actor_SetPos, move 1), spaced by g_sceneryPartSpacing
 Scenery_SetPlaceRefs	func	src/game/scenery_obj.c	code	from Scenery_CreateAll; keeps the place models, ETC.TIM and view, gives models 0 and 2 the CLUT g_sceneryModelClut (ModelObject_SetClut); family unused
 Scenery_Update	func	src/game/scenery_obj.c	code	slot 0xEC, from Scenery_UpdateAll; counts ticks and runs Scenery_Follow with the same registers
 Scenery_UpdateKind0	func	src/game/scenery_obj.c	code	kind 0 with a direction and a non-zero speed, past 500 ticks spins itself and its parts by g_sceneryKind0Spin and moves the parts, re-places them every 0x5FB4 / speed ticks
 Scenery_UpdateKind2	func	src/game/scenery_obj.c	code	kind 2 per-tick update, empty
 Scenery_UpdateKind3	func	src/game/scenery_obj.c	code	each tick parts 1 to 4 get a random scale of g_sceneryKind3Scales and a random sprite angle (rand() % 360) << 12
-SceneryPart_Construct	func	src/game/scenery_part.c	code	slot 0x08 of g_sceneryPartVtbl; SpriteNode init with the image and rect g_sceneryPartRects[index], blend rate 0, clears +0xA4, runs slot 0x40
+SceneryPart_Init	func	src/game/scenery_part.c	code	slot 0x08 of g_sceneryPartVtbl; SpriteNode init with the image and rect g_sceneryPartRects[index], blend rate 0, clears +0xA4, runs slot 0x40
 SceneryPart_EmptySlot98	func	src/game/scenery_part.c	code	slot 0x98 of g_sceneryPartVtbl, empty
 SceneryPart_EmptySlotBC	func	src/game/scenery_part.c	code	slot 0xBC of g_sceneryPartVtbl, empty
 SceneryPart_EmptySlotC0	func	src/game/scenery_part.c	code	slot 0xC0 of g_sceneryPartVtbl, empty
 SceneryPart_EmptySlotC4	func	src/game/scenery_part.c	code	slot 0xC4 of g_sceneryPartVtbl, empty
 SceneryPart_GetVtbl	func	src/game/scenery_part.c	code	returns g_sceneryPartVtbl
-SceneryPart_Init	func	src/game/scenery_part.c	code	slot 0x40; keeps the index and sets the sprite CLUT (+0x74, +0x76) from g_sceneryPartCluts[index]
-SceneryPart_New	func	src/game/scenery_part.c	code	Heap_Alloc(0xA8) then slot 0x08 SceneryPart_Construct; only Scenery_CreateSpriteParts calls it
+SceneryPart_Reset	func	src/game/scenery_part.c	code	slot 0x40; keeps the index and sets the sprite CLUT (+0x74, +0x76) from g_sceneryPartCluts[index]
+SceneryPart_New	func	src/game/scenery_part.c	code	Heap_Alloc(0xA8) then slot 0x08 SceneryPart_Init; only Scenery_CreateSpriteParts calls it
 SceneryPart_SetScale	func	src/game/scenery_part.c	code	slot 0x48; two 4.12 ratios from ratio[0] / ratio[1] and ratio[2] / ratio[3] into the sprite scale, or multiplies +0x5C and +0x60 while +0x58 is set
 ScreenSprite_Attach	func	src/game/screen_sprite.c	code	slot 0x4C: when not attached, SpriteNode slot 0x4C under parent at g_screenSpriteOrigin, then slot 0xBC setPosition
 ScreenSprite_Create	func	src/game/screen_sprite.c	code	Heap_Alloc(0xA8) then slot 0x08 of g_screenSpriteVtbl with image, rect and the passed-through last word
@@ -1153,7 +1153,7 @@ ScreenSprite_GetVtbl	func	src/game/screen_sprite.c	code	returns g_screenSpriteVt
 ScreenSprite_Init	func	src/game/screen_sprite.c	code	slot 0x08: SpriteNode init with blend rate 0, own vtable, then slot 0x40
 ScreenSprite_SetPivot	func	src/game/screen_sprite.c	code	slot 0xC0: sets GsSPRITE mx my: 0 middle, 1 left, 2 right, 3 top, 4 bottom
 ScreenSprite_SetPosition	func	src/game/screen_sprite.c	code	slot 0xBC: on an attached sprite stores the ScreenPoint at +0xA0, which View_DrawNode reads as percent of the half screen
-ScreenSprite_Setup	func	src/game/screen_sprite.c	code	slot 0x40, empty body
+ScreenSprite_Reset	func	src/game/screen_sprite.c	code	slot 0x40, empty body
 SeqFile_Create	func	src/game/seq_file.c	code	Heap_Alloc(0x30) then slot 0x08 of g_seqFileVtbl with the path; Bgm makes its SEQ with it
 SeqFile_Destroy	func	src/game/seq_file.c	code	slot 0x0C: clears loaded, then the back end destroy
 SeqFile_GetVtbl	func	src/game/seq_file.c	code	returns g_seqFileVtbl
@@ -1439,7 +1439,7 @@ g_cdInitDone	global	app.c	code	Set to 1 after the only CdInit call, in App_Init
 g_bgmActive	global	bgm.c	code	1 from Bgm_Init to Bgm_Destroy, returned by Bgm_IsActive
 g_bgmVtbl	global	bgm.c	code	Slots 0x08 Bgm_Init to 0x60 Bgm_SetBank; returned by Bgm_GetVtbl
 g_seqTable	global	bgm.c	code	SEQ attribute table area given to SsSetTableSize(table, 2, 1) (2 SEQs, 1 track)
-g_fileBackend	global	file_base.c	code	Back end id written by File_SetBackend (App_Init passes it): 0x13 CD (tag of g_fileVtable) or 0x23 (tag of g_fileNullVtbl); every File_*Backend helper tests it
+g_fileBackend	global	file_base.c	code	Back end id written by File_SetBackend (App_Init passes it): 0x13 CD (tag of g_fileVtbl) or 0x23 (tag of g_fileNullVtbl); every File_*Backend helper tests it
 g_fileBaseVtbl	global	file_base.c	code	Tag 3, slots File_Delete, File_InitBase, File_DestroyBase, File_LoadWhole to File_MarkLoaded; returned by File_GetBaseVtbl
 g_fileClassGetters	global	file_base.c	code	NULL-terminated list of vtable getters (MapModels_GetVtbl, Tim_GetVtbl, Tix_GetVtbl, Tmd_GetVtbl, Mml_GetVtbl and others) walked by File_SetBackend
 g_fileDirTableSet	global	file_base.c	code	Set to 1 by File_AddDirEntries before File_SetDirTable; nothing reads it
@@ -1467,7 +1467,7 @@ g_fileVSyncHooked	global	file_cd.c	code	Set by File_HookVSync after VSyncCallbac
 g_fileVSyncMode	global	file_cd.c	code	Set by File_Enable; non-zero hooks File_OnVSync with VSyncCallback, 0 uses the Display frame callback instead
 g_fileVSyncPending	global	file_cd.c	code	Set by File_HookVSync, cleared by File_UnhookVSync; File_OnVSync calls runQueue while set
 g_fileVersionSuffix	global	file_cd.c	code	";1" in .sdata, appended by File_BuildPath
-g_fileVtable	global	file_cd.c	code	Tag 0x13, CD back end: File_InitCdObject, File_DestroyCd, File_OpenByName to File_CancelRequests; returned by File_GetVtable
+g_fileVtbl	global	file_cd.c	code	Tag 0x13, CD back end: File_InitCdObject, File_DestroyCd, File_OpenByName to File_CancelRequests; returned by File_GetVtbl
 g_fileNullEnabled	global	file_null.c	guess	Stored by File_NullEnable, returned by File_NullGetEnabled; mirrors g_fileEnabled, whose meaning is itself a guess
 g_fileNullOption	global	file_null.c	guess	Stored by File_NullEnable, written out by File_NullGetEnabled; mirrors g_fileOption
 g_mapModelsVtbl	global	map_models.c	code	Class word 0xE03, slots 0x08 MapModels_Init, 0x0C MapModels_Destroy, 0x64 MapModels_OnLoaded, 0x78 MapModels_NextModel
@@ -1509,7 +1509,7 @@ g_bgDefaultColor	global	src/game/bg.c	code	Color3 (0x80, 0x80, 0x80) Bg_SetMap c
 g_bgVtbl	global	src/game/bg.c	code	class word 0x54, the GsSortBg kind of View_DrawNode, returned by Bg_GetVtbl
 g_bgCellsVtbl	global	src/game/bg_cells.c	code	class word 0x303, File slots with 0x08 BgCells_Init, 0x64 BgCells_OnLoaded, 0x78 BgCells_Build
 g_bgMapVtbl	global	src/game/bg_map.c	code	class word 0x203, File slots with 0x08 BgMap_Init, 0x64 BgMap_OnLoaded, 0x78 BgMap_Build
-g_boxDefaultColor	global	src/game/box.c	code	(128, 128, 128) in sdata, the color Box_Init uses when given NULL
+g_boxDefaultColor	global	src/game/box.c	code	(128, 128, 128) in sdata, the color Box_Reset uses when given NULL
 g_boxVtbl	global	src/game/box.c	code	class word 0x64, the GsSortBoxFill kind of View_DrawNode, returned by Box_GetVtbl
 g_cardCount	global	src/game/card.c	code	Card_Init starts the card BIOS only when it is 0 and increments it
 g_cardDevice0	global	src/game/card.c	code	The string "bu00:" at 0x8008AAA4, used for port 0 by Card_MakePath and Card_Format
@@ -1605,7 +1605,7 @@ g_effectDefaultPos	global	src/game/entity.c	code	{-100, -100}: the position Enti
 g_effectDefaultSize	global	src/game/entity.c	code	{320, 240}: the size Entity_StartEffect gives Fade_Create when size is NULL
 g_entityRecordHandler	global	src/game/entity.c	code	g_entityRecords + 0xC, EntityRecord.handler of type 0, a label so splat writes the handler words of the table as pointers
 g_entityRecords	global	src/game/entity.c	code	16-byte records indexed by Entity.type; every Entity_Check* and getter reads it; 130 types, handler at +0xC (exe dump)
-g_entityVtbl	global	src/game/entity.c	code	Entity_GetVtbl returns it; slots hold Entity_Construct, Entity_Update, Entity_GetSoundFade and the rest (exe dump)
+g_entityVtbl	global	src/game/entity.c	code	Entity_GetVtbl returns it; slots hold Entity_Init, Entity_Update, Entity_GetSoundFade and the rest (exe dump)
 g_moveXNeg64	global	src/game/entity.c	code	Vec3 (-64, 0, 0) read from the exe; added to the position by entity slot 0xBC Actor_MovePos (world axes, y down)
 g_moveY256	global	src/game/entity.c	code	Vec3 (0, 256, 0) read from the exe; added to the position by entity slot 0xBC Actor_MovePos (world axes, y down)
 g_moveY64	global	src/game/entity.c	code	Vec3 (0, 64, 0) read from the exe; added to the position by entity slot 0xBC Actor_MovePos (world axes, y down)
@@ -1654,7 +1654,7 @@ g_type41Scale	global	src/game/entity.c	code	{num, den} scale triple that Behavio
 g_type74ClearColor	global	src/game/entity.c	game	bytes (0, 100, 190) Behavior_Type74 gives View setClearColor at tick 0; blue sky seen in game (discoveries Long Hallway room)
 g_type78Stopped	global	src/game/entity.c	code	bss of entity.c: Behavior_Type78 clears it at tick 0, sets it when state 11 lies down at tick 510; at tick 520 every type 78 stops
 g_fadeBlackPalette	global	src/game/fade.c	code	24 zero bytes after g_fadePalette, the start color of Fade_StartOut and the color of channels 0xF
-g_fadePalette	global	src/game/fade.c	code	eight RGB triples indexed by the channel mask (1 blue, 2 green, 4 red, 7 white), read by Fade_Construct, Fade_StartIn, Fade_GetColor
+g_fadePalette	global	src/game/fade.c	code	eight RGB triples indexed by the channel mask (1 blue, 2 green, 4 red, 7 white), read by Fade_Init, Fade_StartIn, Fade_GetColor
 g_fadeVtbl	global	src/game/fade.c	code	class word 0x164, Box slots plus Fade_ slots 0xD0 to 0xF0, returned by Fade_GetVtbl
 g_flatLightVtbl	global	src/game/flat_light.c	code	class word 6, Object slots then 0x40 FlatLight_SetId, 0x44 SetColor, 0x48 SetVector, returned by FlatLight_GetVtbl
 g_glyphCellRect	global	src/game/glyph.c	code	SpriteRect {0, 0, 8, 8} copied by Glyph_GetRect
@@ -1663,7 +1663,7 @@ g_graphBoxSize	global	src/game/graph.c	code	BoxSize (10,10) passed to every Box_
 g_graphNewestColor	global	src/game/graph.c	game	RGB (255,0,0) of boxes[0], the newest day; red newest point seen on the graph screen in game
 g_graphOldColor	global	src/game/graph.c	game	RGB (255,255,255) start of the older boxes, 20 less per step then 1; dark grey old point seen in game (last 100 days)
 g_graphReelColor	global	src/game/graph.c	game	RGB (0,255,0) Graph_BlinkReel sets on matched boxes; 100 pure-green pixels per cell in game (secret video reel)
-g_graphVtbl	global	src/game/graph.c	code	returned by Graph_GetVtable; slots 0x08 Graph_Init to 0x124 Graph_BlinkReel in asm/data/main.data.s
+g_graphVtbl	global	src/game/graph.c	code	returned by Graph_GetVtbl; slots 0x08 Graph_Init to 0x124 Graph_BlinkReel in asm/data/main.data.s
 g_reelPoints	global	src/game/graph.c	game	4 s8 pairs (-1,1) (1,1) (0,0) (0,-3) Graph_CheckReel compares; discoveries "The secret video reel", checked in game
 g_currentHeap	global	src/game/heap.c	code	written only by Heap_SetCurrent, read first by Heap_Init, Heap_Alloc and Heap_Free (their heap argument only when NULL)
 g_heapBusy	global	src/game/heap.c	code	set to 1 and 0 by Heap_SetBusy around Heap_Alloc and Heap_Free, read by Heap_IsBusy
@@ -1727,7 +1727,7 @@ g_placeMapMessageFilter	global	src/game/place.c	code	class words 0x1F34 (DreamSy
 g_placeProjectionOffset	global	src/game/place.c	code	0, added to (screen width / 2) * 5 / 3 for setProjection in Place_Setup
 g_placeRefPoint	global	src/game/place.c	code	(0, -1200, 10000), the reference point of the same setCamera calls
 g_placeViewpoint	global	src/game/place.c	code	(0, -1200, 0), the viewpoint of setCamera in Place_Load and Place_Setup
-g_placeVtbl	global	src/game/place.c	code	vtable at 0x80087034, class word 0x2F230, slots 0x08 Place_Construct to 0xD4 Place_ClosePause in the data
+g_placeVtbl	global	src/game/place.c	code	vtable at 0x80087034, class word 0x2F230, slots 0x08 Place_Init to 0xD4 Place_ClosePause in the data
 g_stage0Bounds	global	src/game/place.c	code	three words 0 8 9 that Place_Load gives the map's setBounds on stage 0 only
 g_stageBoxMargins	global	src/game/place.c	code	14 words, one per stage, Place_Load gives DreamSys setBoxMargin (Actor_SetBoxMargin, +0x54)
 g_clipDivisionForced	global	src/game/render.c	code	set only by Render_ForceClipDivision; when non-zero Render_FillClipHeader uses g_clipForcedDivision
@@ -1777,7 +1777,7 @@ g_placeStage	global	src/game/scenery.c	code	Place.stage kept by Scenery_Begin; e
 g_placeTicks	global	src/game/scenery.c	game	zeroed by Scenery_Begin, counted by Scenery_Tick, the first tick builds the scenery; the community's location_time, zeroed in RAM in work/hunt6 z1.log
 g_scenery	global	src/game/scenery.c	code	the scenery objects Scenery_CreateAll makes, updated and deleted as an array
 g_sceneryCount	global	src/game/scenery.c	code	number of objects in g_scenery set by Scenery_CreateAll
-g_sceneryHeights	global	src/game/scenery.c	code	heights -0x1800, -0x2800, -0x3800, -0x5000 picked by rand() & 3, or by rand() % 5 in CreateKind0 (index 4 reads the next label)
+g_sceneryHeights	global	src/game/scenery.c	code	heights -0x1800, -0x2800, -0x3800, -0x5000 picked by rand() & 3, or by rand() % 5 in CreateKind0, whose index 4 reads past the table into D_80087338 (the word 0x0A0A0200)
 g_sceneryHeights1	global	src/game/scenery.c	game	entry 1 of g_sceneryHeights, -10240, the day-7 height seen for every cloud on day 133
 g_sceneryHeights2	global	src/game/scenery.c	code	entry 2 of g_sceneryHeights, -0x3800, the height of kinds 1, 2 and 3
 g_sceneryKind0Counts	global	src/game/scenery.c	code	kind 0 counts 0, 3, 8, 16 picked by rand() & 3
@@ -1786,7 +1786,7 @@ g_sceneryKind2AltColor	global	src/game/scenery.c	code	a word nothing writes (alw
 g_sceneryKind2Colors	global	src/game/scenery.c	code	RGB triples of the kind 2 parts (CreateKind2)
 g_sceneryKind3Colors	global	src/game/scenery.c	code	RGB triples of the kind 3 parts (CreateKind3)
 g_sceneryMap	global	src/game/scenery.c	code	the StageMap kept by Scenery_Begin, 0 after Scenery_Teardown; its placeToWorld places scenery and spots
-g_sceneryParams	global	src/game/scenery.c	code	the SceneryParams the RandomizeParams functions and CreateKind fill, copied whole by Scenery_Init
+g_sceneryParams	global	src/game/scenery.c	code	the SceneryParams the RandomizeParams functions and CreateKind fill, copied whole by Scenery_Reset
 g_sceneryRotations	global	src/game/scenery.c	code	7 entries of three fractions (degrees), SceneryParams.rotation given to slot 0x44
 g_sceneryScales	global	src/game/scenery.c	code	5 entries of three fractions, the kind 0 scale given to slot 0x48
 g_soundSpotHandlers	global	src/game/scenery.c	code	handler by spot type, SoundSpot_Type1 to SoundSpot_Type14
@@ -1816,10 +1816,10 @@ g_sceneryModels	global	src/game/scenery_obj.c	code	refs.models kept by Scenery_S
 g_sceneryPartSpacing	global	src/game/scenery_obj.c	code	offsets 0, -0x80, 0x80, -0x100, 0x40 by direction, along x (times scale) for 1 and 2, along y for 3 and 4
 g_sceneryView	global	src/game/scenery_obj.c	code	refs.view, read for viewpoint.y by Build and Follow
 g_sceneryViewY	global	src/game/scenery_obj.c	code	view viewpoint.y at the last Scenery_Build, subtracted by Scenery_Follow
-g_sceneryVtbl	global	src/game/scenery_obj.c	code	vtable at 0x800876FC, class word 0xEF34, Actor slots with Scenery_Construct, Destruct, Init and Scenery_Update at 0xEC
+g_sceneryVtbl	global	src/game/scenery_obj.c	code	vtable at 0x800876FC, class word 0xEF34, Actor slots with Scenery_Init (0x08), Scenery_Destruct (0x0C), Scenery_Reset (0x40) and Scenery_Update at 0xEC
 g_sceneryPartCluts	global	src/game/scenery_part.c	code	CLUT x and y by part index, (0x3D0, 0x1FF) and (0x3E0, 0x1FF)
 g_sceneryPartRects	global	src/game/scenery_part.c	code	two 12-byte sprite rects, 16 x 16 at (0, 0x120) and (0x10, 0x120) of ETC.TIM, by part index
-g_sceneryPartVtbl	global	src/game/scenery_part.c	code	vtable at 0x800879C4, class word 0x1F44, SpriteNode slots with SceneryPart_Construct, Init, SetScale and empty 0x98, 0xBC to 0xC4
+g_sceneryPartVtbl	global	src/game/scenery_part.c	code	vtable at 0x800879C4, class word 0x1F44, SpriteNode slots with SceneryPart_Init, Init, SetScale and empty 0x98, 0xBC to 0xC4
 g_screenSpriteOrigin	global	src/game/screen_sprite.c	code	three zero words ScreenSprite_Attach passes as the 3D attach position
 g_screenSpriteVtbl	global	src/game/screen_sprite.c	code	class word 0x144, the kind View_DrawNode places in 2D, returned by ScreenSprite_GetVtbl
 g_seqFileVtbl	global	src/game/seq_file.c	code	class word 0xB03, slots 0x08 SeqFile_Init, 0x0C SeqFile_Destroy, 0x64 SeqFile_OnLoaded, returned by SeqFile_GetVtbl
@@ -1871,7 +1871,7 @@ g_spyModel	global	src/game/sym.c	game	one entry {Mom from ETC\SYMSPY.MOM, the Gr
 g_symClock	global	src/game/sym.c	code	Sym_InitStage stores Place clock (place->clock in Place_Setup); attach gives it to Model_Attach, which watches it
 g_symDreamSys	global	src/game/sym.c	code	Sym_InitStage stores the DreamSys; spawned entities attach to it and the colour rules ask its slot 0x200
 g_symMap	global	src/game/sym.c	code	Sym_InitStage stores the place StageMap; Sym_SpawnAtPlace uses its placeToWorld, attach gets it
-g_symSoundBank	global	src/game/sym.c	code	Sym_InitStage stores the place sound bank; Entity_Create passes it to Model_Construct
+g_symSoundBank	global	src/game/sym.c	code	Sym_InitStage stores the place sound bank; Entity_Create passes it to Model_Init
 g_taskVtbl	global	src/game/task.c	code	Class word 0x230 at 0x80086668; slot 0x08 Task_Init, 0x44 Task_Run (vtable dump)
 g_clutPaletteShift	global	src/game/tim_pack.c	code	gp s16 3: TimPack_OnLoaded turns a CLUT row into a palette index with (cy - 0x1E0) >> it; the same value as g_clutFadeShift
 g_timPackVtbl	global	src/game/tim_pack.c	code	class word 0xC03, File slots with 0x08 TimPack_Init, 0x64 TimPack_OnLoaded, 0x78 TimPack_UploadAll
@@ -1884,7 +1884,7 @@ g_overlayPos	global	src/game/view.c	code	ScreenPoint (-100, -100) given to the o
 g_overlaySize	global	src/game/view.c	code	BoxSize 320 x 240 given to Fade_Create for the View overlay by View_Init
 g_viewDefaultColor	global	src/game/view.c	code	Color3 black copied to fogColor and clearColor by View_Reset
 g_viewDefaultScreenSize	global	src/game/view.c	code	ScreenPoint (0x100, 0xF0) copied to View +0x34 by View_Reset
-g_viewNoTwist	global	src/game/view.c	code	ViewRatio (0, 1) View_SetCamera uses when the twist argument is NULL
+g_viewNoTwist	global	src/game/view.c	code	Fraction (0, 1) View_SetCamera uses when the twist argument is NULL
 g_viewVtbl	global	src/game/view.c	code	returned by View_GetVtbl, class word 7, slots are the View_ functions of this file
 g_timVtbl	global	tim.c	code	Class word 0x103, slots 0x08 Tim_Init, 0x78 Tim_Upload, 0x98 func_8003B5E4, 0x9C Tim_GetInfo; returned by Tim_GetVtbl
 g_videoScreenVtbl	global	video_screen.c	code	Class word 0x1130, MenuScreen slots with the VideoScreen overrides and 0x124 to 0x134; returned by VideoScreen_GetVtbl
@@ -1898,7 +1898,7 @@ BgCells	type	include/game/bg_cells.h	code	0x38 bytes from BgCells_Create: File f
 BgCellsVtbl	type	include/game/bg_cells.h	code	FileVtbl then slot 0x78 of g_bgCellsVtbl
 BgMap	type	include/game/bg_map.h	code	0x44 bytes from BgMap_Create: File fields, a GsMAP at +0x2C, its BgCells
 BgMapVtbl	type	include/game/bg_map.h	code	FileVtbl then slot 0x78 of g_bgMapVtbl
-BoxSize	type	include/game/box.h	code	two words read as u16 low halves by Box_Init and Box_SetSize, the GsBOXF w and h
+BoxSize	type	include/game/box.h	code	two words read as u16 low halves by Box_Reset and Box_SetSize, the GsBOXF w and h
 Card	type	include/game/card.h	code	0x84 bytes (Card_New), an Object subclass, vtable g_cardVtbl
 CardDialog	type	include/game/card.h	code	The keyboard (CommentObject_New) or the chooser (StringList_New) the card opens
 CardDialogVtbl	type	include/game/card.h	code	One view of two vtables: CommentObject 0x80086ED0 and StringList 0x80086F88; slot names match both at 0x44..0x50
@@ -1931,10 +1931,9 @@ Fade	type	include/game/fade.h	code	0xA0 bytes from Fade_Create with g_fadeVtbl; 
 FadeSaved	type	include/game/fade.h	code	a size word written as s32 by Fade_SaveAndSetRect and read as u16 by Fade_RestoreRect
 FadeStep	type	include/game/fade.h	code	the s32 step at +0x74 that Fade_Step reads as its low byte
 FadeVtbl	type	include/game/fade.h	code	the slot layout of g_fadeVtbl as Fade, Place and Entity call it
-File	type	include/game/file_base.h	code	0x2C bytes (File_Create Heap_Alloc(0x2C)), first fields of every loader class; vtables g_fileBaseVtbl and g_fileVtable
+File	type	include/game/file_base.h	code	0x2C bytes (File_Create Heap_Alloc(0x2C)), first fields of every loader class; vtables g_fileBaseVtbl and g_fileVtbl
 FileSource	type	include/game/file_base.h	code	Argument of every loader creator: data != NULL borrows a parent's bytes, else path is loaded (File_MakeSource, Tmd_Create, Mom_LoadParts)
-FileVtbl	type	include/game/file_base.h	code	Layout of g_fileBaseVtbl, g_fileVtable and g_fileNullVtbl: Object slots then the I/O slots 0x40 to 0x74 copied by File_CopyIoSlots
-CdlLocDir	type	include/game/file_cd.h	code	libcd CdlLOC layout (minute, second, sector, track): File_ResolveEntries copies CdSearchFile's pos into it, CdControl 2 seeks to it
+FileVtbl	type	include/game/file_base.h	code	Layout of g_fileBaseVtbl, g_fileVtbl and g_fileNullVtbl: Object slots then the I/O slots 0x40 to 0x74 copied by File_CopyIoSlots
 DirEntry	type	include/game/file_cd.h	code	0x1C-byte entry of g_fileDirTable: File_FindEntry and File_FindIndex step by 0x1C, File_ResolveEntries fills it, File_AddDirEntries appends them
 FlatLight	type	include/game/flat_light.h	code	0x20 bytes from FlatLight_New: Object header, light id, then a GsF_LIGHT (vector and rgb) at +0x10
 FlatLightVtbl	type	include/game/flat_light.h	code	Object slots then the three flat light slots of g_flatLightVtbl
@@ -1958,7 +1957,7 @@ MapChunk	type	include/game/map_chunk.h	code	0x3C bytes from MapChunk_New with g_
 MapChunkData	type	include/game/map_chunk.h	code	the header of an LBD chunk file at the start of the 0xB358 buffer
 MapChunkVtbl	type	include/game/map_chunk.h	code	slot layout of g_mapChunkVtbl
 MapModels	type	include/game/map_models.h	code	0x34-byte File subclass made by MapModels_New; StageMap points data at the chunk's square table (chunk data + modelsOffset) and sets tmd
-MapModelsVtbl	type	include/game/map_models.h	code	Layout of g_mapModelsVtbl: init, loadAsync and nextModel (slot 0x78); map_models.c and StageMap read it (ModelSetVtbl merged into it)
+MapModelsVtbl	type	include/game/map_models.h	code	Layout of g_mapModelsVtbl: the FileVtbl slots as base (init, loadAsync), then nextModel (slot 0x78); map_models.c and StageMap read it
 MapTile	type	include/game/map_tile.h	code	0x3C bytes (MapTile_New): a SceneNode (GsDOBJ2 at +0x10) plus flags and next
 MapTileVtbl	type	include/game/map_tile.h	code	g_mapTileVtbl 0x80086AA0; field names checked against the vtable dump
 Menu	type	include/game/menu.h	code	0xC4 bytes (Menu_New): MenuScreen fields to 0xA4 then its own; vtable g_menuVtbl
@@ -1989,9 +1988,6 @@ MovieVtbl	type	include/game/movie.h	code	slot layout of g_movieVtbl
 Pad	type	include/game/pad.h	code	the 0x20-byte object Pad_New allocates, vtable g_padVtbl, sender type 2
 PadVtbl	type	include/game/pad.h	code	g_padVtbl's slots as read in the data
 Place	type	include/game/place.h	code	0x88 bytes from Place_New, vtable g_placeVtbl class 0x2F230, a Task; one per stage visit
-PlaceBaseVtbl	type	include/game/place.h	code	Task_GetVtbl's vtable as Place calls it
-PlaceObj	type	include/game/place.h	guess	the objects of that mixed view; each pointer of Place has a real class type (Clock, Bgm, SoundBank, Tmd)
-PlaceObjVtbl	type	include/game/place.h	guess	one view mixing slots of five classes (Display 0x7C, Clock and Bgm 0x48 to 0x50, Bgm 0x5C, Tmd 0x80, SoundBank 0x88 0x8C)
 PlaceRefs	type	include/game/place.h	code	Place +0x6C to +0x7B, the four pointers Scenery_Begin keeps as g_placeRefs
 PlaceVtbl	type	include/game/place.h	code	view of g_placeVtbl
 DObj2	type	include/game/render.h	code	PSY-Q GsDOBJ2 {attribute, coord2, tmd} named like gs.h Coord2, the glossary and ModelObject call the TMD object table entry (TmdModel, ModelEntry) a TMD object
@@ -2030,7 +2026,6 @@ NeighborUse	type	include/game/stage_map.h	code	2-byte pairs of g_allNeighbors an
 StageMap	type	include/game/stage_map.h	code	0x1E8 bytes (StageMap_New), a RootNode subclass, vtable g_stageMapVtbl
 StageMapVtbl	type	include/game/stage_map.h	code	g_stageMapVtbl 0x800866E8, class word 0x114; field names checked against the vtable dump
 Stream	type	include/game/stream.h	code	0x5C bytes from Stream_New with g_streamVtbl
-StreamFile	type	include/game/stream.h	code	PSY-Q CdlFILE filled by CdSearchFile in Stream_Open
 StreamVtbl	type	include/game/stream.h	code	slot layout of g_streamVtbl
 Task	type	include/game/task.h	code	0x38 bytes (Task_New); Screen fields to 0x28 field for field, then result, timeout, bankName, sound
 TaskVtbl	type	include/game/task.h	code	g_taskVtbl 0x80086668, class word 0x230; field names checked against the vtable dump
@@ -2062,8 +2057,8 @@ Actor	type	include/game/actor.h	code	0x58 bytes from Actor_New, a SceneNode subc
 ActorVtbl	type	include/game/actor.h	code	view of g_actorVtbl; scenery_obj.c defines a second typedef ActorVtbl of its own
 GridRect	type	src/game/actor.c	code	a rectangle of tiles in a slot's 20 x 20 grid for the ground search
 BgMapView	type	src/game/bg.c	code	bg.c's view of BgMap's GsMAP fields with cellsY unsigned
-Bgm	type	src/game/bgm.c	code	0x24-byte music object (Bgm_New), "WBgm" in its SsSeqOpen error string; a SoundBank and a SeqFile played with SsSeq calls
-BgmVtbl	type	src/game/bgm.c	code	Layout of g_bgmVtbl: Object slots then 0x40 to 0x60 Bgm functions
+Bgm	type	include/game/bgm.h	code	0x24-byte music object (Bgm_New), "WBgm" in its SsSeqOpen error string; a SoundBank and a SeqFile played with SsSeq calls
+BgmVtbl	type	include/game/bgm.h	code	Layout of g_bgmVtbl: Object slots then 0x40 to 0x60 Bgm functions
 Box	type	include/game/box.h	code	0x6C bytes from Box_Create with g_boxVtbl: a scene node with a GsBOXF at +0x58
 BoxVtbl	type	include/game/box.h	code	slot layout of g_boxVtbl, used by box.c and fade.c
 CommentObject	type	src/game/comment_object.c	code	0x4C bytes made by CommentObject_New, vtable g_commentVtbl class 0x10; the save comment keyboard Card_OpenKeyboard opens
@@ -2077,7 +2072,7 @@ SpawnPoint	type	src/game/dream_link.c	code	6-byte spawn point or link target: ti
 TileOffset	type	src/game/dream_link.c	code	one 6-byte g_tileOffsets entry copied into StagePlace +4; its xy member reuses PlaceTile, whose col and row names do not fit offsets
 RotationYaw	type	include/game/dream_link.h	code	a SceneNode_GetRotation result read for its yaw at +4; defined again in dream_link.c, one type twice
 Glyph	type	include/game/glyph.h	code	0xAC bytes from Glyph_Create, a ScreenSprite with the character at +0xA8
-GlyphVtbl	type	include/game/glyph.h	code	slot layout of g_glyphVtbl: 0x08 Glyph_Init, 0x40 Glyph_Setup, 0xC4 Glyph_SetCode
+GlyphVtbl	type	include/game/glyph.h	code	slot layout of g_glyphVtbl: 0x08 Glyph_Init, 0x40 Glyph_Reset, 0xC4 Glyph_SetCode
 Graph	type	src/game/graph.c	code	the graph screen object, 0x244 bytes (Graph_New), MenuScreen base, g_graphVtbl
 GraphColor	type	src/game/graph.c	code	three s8 colour bytes Graph_CreateBoxes steps down, from g_graphOldColor
 GraphVtbl	type	src/game/graph.c	code	union view of g_graphVtbl: the ScreenVtbl slots plus the slot 0x124 of its own
@@ -2184,8 +2179,8 @@ watched	field	include/game/bg_map.h:BgMap	code	Object header +0x4
 watchers	field	include/game/bg_map.h:BgMap	code	Object header +0x8
 base	field	include/game/bg_map.h:BgMapVtbl	code	FileVtbl slots 0x00 to 0x74
 build	field	include/game/bg_map.h:BgMapVtbl	code	slot 0x78 of g_bgMapVtbl holds BgMap_Build
-height	field	include/game/box.h:BoxSize	code	copied to GsBOXF h by Box_Init and Box_SetSize; g_overlaySize holds 240
-width	field	include/game/box.h:BoxSize	code	copied to GsBOXF w by Box_Init and Box_SetSize; g_overlaySize holds 320
+height	field	include/game/box.h:BoxSize	code	copied to GsBOXF h by Box_Reset and Box_SetSize; g_overlaySize holds 240
+width	field	include/game/box.h:BoxSize	code	copied to GsBOXF w by Box_Reset and Box_SetSize; g_overlaySize holds 320
 channel	field	include/game/card.h:Card	code	+0x10 port << 4, passed to _card_info, _card_load, _card_clear
 choice	field	include/game/card.h:Card	code	+0x80 getChoice of the chooser, the index into titles and foundSuffixes
 chooser	field	include/game/card.h:Card	code	+0x7C the class 0x20 dialog (StringList)
@@ -2359,7 +2354,7 @@ circlePressed	field	include/game/dream_sys.h:DreamSys	code	OnPad sets it on pad 
 contact	field	include/game/dream_sys.h:DreamSys	code	Actor contact at +0x28 written by Actor_SnapToGround, the MapTile under the dreamer; OnGroundProbe reads its flags
 controlsLocked	field	include/game/dream_sys.h:DreamSys	code	LockControls sets it, StartPlace clears it; OnPad, TickWalk, TickBegin test it
 coordCopy	field	include/game/dream_sys.h:DreamSys	code	GsCOORDINATE2 copy of SavePosition, restored by RestorePosition
-dynamicLinkOn	field	include/game/dream_sys.h:DreamSys	game	OnWallTouch links dynamically only while set; TickBegin sets it 1 tick in linkPeriod; seen in hunt 8 f9.log
+dynamicLinkOn	field	include/game/dream_sys.h:DreamSys	game	DreamSys_OnTileContact links dynamically only while set; TickBegin sets it 1 tick in linkPeriod; seen in hunt 8 f9.log
 entityMood	field	include/game/dream_sys.h:DreamSys	game	MoodAccum of entities touched (LogEntityMood, message 9); read in RAM
 etcTim	field	include/game/dream_sys.h:DreamSys	code	ETC\ETC.TIM object set by SetEtcTim from DreamRunner_Init
 fallSound	field	include/game/dream_sys.h:DreamSys	code	HandlerNode started by SetMoveMode(2) with DreamSys_FallSoundHandler, run by TickFall
@@ -2387,7 +2382,7 @@ paramCopy	field	include/game/dream_sys.h:DreamSys	code	coordinate param copy of 
 parent	field	include/game/dream_sys.h:DreamSys	code	SceneNode parent at +0x0C (glossary SceneNode); TestPointAhead uses the coordinate only when it is set; Model calls the same field attached
 pitch	field	include/game/dream_sys.h:DreamSys	code	sum of the refPointY steps TickPitch applied, sprung back to 0
 pitchInput	field	include/game/dream_sys.h:DreamSys	code	1 TRIANGLE or 2 SQUARE from OnPad, the link steps set 2; TickPitch consumes it
-place	field	include/game/dream_sys.h:DreamSys	code	where the dreamer is or arrives: OnWallTouch writes the touched location, the link finders overwrite it with the target
+place	field	include/game/dream_sys.h:DreamSys	code	where the dreamer is or arrives: DreamSys_OnTileContact writes the touched location, the link finders overwrite it with the target
 object	field	include/game/dream_sys.h:DreamSys	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
 ref	field	include/game/dream_sys.h:DreamSys	code	CineRef view of cinematic returned whole
 save	field	include/game/dream_sys.h:DreamSys	game	+0x178 SaveBlock that GetSaveBlock returns; found in RAM
@@ -2413,7 +2408,7 @@ addActorWatchers	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0B4 hol
 addFlashback	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x214 holds DreamSys_AddFlashback in g_dreamSysVtbl (asm/data/main.data.s)
 addWatcher	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x020 holds Object_AddWatcher in g_dreamSysVtbl (asm/data/main.data.s)
 advanceDay	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x1A4 holds DreamSys_AdvanceDay in g_dreamSysVtbl (asm/data/main.data.s); that function is checked in game
-afterWallTouch	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0xE8 empty here (DreamSys_EmptySlotE8), called last by DreamSys_OnWallTouch
+afterWallTouch	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0xE8 empty here (DreamSys_EmptySlotE8), called last by DreamSys_OnTileContact
 beforeWalk	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x12C returns 0 here (DreamSys_EmptySlot12C), called by DreamSys_Walk before the move
 boxesOverlap	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0A8 holds SceneNode_BoxesOverlap in g_dreamSysVtbl (asm/data/main.data.s)
 calcUnlockScore	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x210 holds DreamSys_CalcUnlockScore in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2457,7 +2452,7 @@ maybeSaveFlashback	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x218 h
 moodLog	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x208 holds Mood_Log in g_dreamSysVtbl (asm/data/main.data.s); that function is checked in game
 moodReset	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x204 holds Mood_Reset in g_dreamSysVtbl (asm/data/main.data.s)
 moodResolve	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x20C holds Mood_Resolve in g_dreamSysVtbl (asm/data/main.data.s); that function is checked in game
-move	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0BC holds Actor_MovePos in g_dreamSysVtbl (asm/data/main.data.s)
+movePos	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0BC holds Actor_MovePos in g_dreamSysVtbl (asm/data/main.data.s)
 moveLocal	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0C0 holds Actor_MoveLocal in g_dreamSysVtbl (asm/data/main.data.s)
 moveX	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0C8 holds Actor_MoveX in g_dreamSysVtbl (asm/data/main.data.s)
 moveXOnGround	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0D4 holds Actor_MoveXOnGround in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2470,11 +2465,11 @@ nextWatcher	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x02C holds Ob
 notify	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x030 holds Object_Notify in g_dreamSysVtbl (asm/data/main.data.s)
 onClock	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x98 is the SceneNode onClock slot, it holds DreamSys_OnClock
 onEntityEvent	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x1E8 holds DreamSys_OnEntityEvent in g_dreamSysVtbl (asm/data/main.data.s); that function is checked in game
-onGroundProbe	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x88 holds DreamSys_OnGroundProbe; the SceneNode and Actor views name this slot sendBoxes, two names for one slot
+sendBoxes	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x88 holds DreamSys_OnGroundProbe, which runs Actor_SendBoxes first: the sendBoxes slot of SceneNodeVtbl and ActorVtbl, extended
 onMapMessage	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x1E4 holds DreamSys_OnMapMessage in g_dreamSysVtbl (asm/data/main.data.s)
 onNotify	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x038 holds SceneNode_OnNotify in g_dreamSysVtbl (asm/data/main.data.s)
 onPad	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x094 holds DreamSys_OnPad in g_dreamSysVtbl (asm/data/main.data.s)
-onWallTouch	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0xE0 holds DreamSys_OnWallTouch; Actor onNode24 in the Actor view; wall links seen in hunt 8
+onTileContact	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0xE0 holds DreamSys_OnTileContact; the same name in ActorVtbl, ModelVtbl and EntityVtbl; tile links seen in hunt 8
 playStepSound	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x168 holds DreamSys_PlayStepSound in g_dreamSysVtbl (asm/data/main.data.s)
 popSpeed	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x188 holds DreamSys_PopSpeed in g_dreamSysVtbl (asm/data/main.data.s)
 pushSpeed	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x184 holds DreamSys_PushSpeed in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2483,7 +2478,7 @@ removeWatcher	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x024 holds 
 reset	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x040 holds DreamSys_Reset in g_dreamSysVtbl (asm/data/main.data.s)
 resetMoodAccumulators	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x1F0 holds DreamSys_ResetMoodAccumulators in g_dreamSysVtbl (asm/data/main.data.s)
 restorePosition	field	include/game/dream_sys.h:DreamSysVtbl	game	slot 0x224 holds DreamSys_RestorePosition in g_dreamSysVtbl (asm/data/main.data.s); that function is checked in game
-routeEntityMessage	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0xDC holds DreamSys_RouteEntityMessage; Actor onNode34, Model onActorTouch in other views
+onActorContact	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0xDC holds DreamSys_OnActorContact; the same name in ActorVtbl, ModelVtbl and EntityVtbl
 routeMapMessage	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x9C holds DreamSys_RouteMapMessage; the Actor view names it onNode
 savePosition	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x220 holds DreamSys_SavePosition in g_dreamSysVtbl (asm/data/main.data.s)
 sendShape	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x090 holds SceneNode_SendShape in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2504,7 +2499,7 @@ setLinkPeriod	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x190 holds 
 setLit	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x06C holds SceneNode_SetLit in g_dreamSysVtbl (asm/data/main.data.s)
 setLookMode	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x138 holds DreamSys_SetLookMode in g_dreamSysVtbl (asm/data/main.data.s)
 setMoveMode	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x13C holds DreamSys_SetMoveMode in g_dreamSysVtbl (asm/data/main.data.s)
-setPosition	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0B8 holds Actor_SetPos in g_dreamSysVtbl (asm/data/main.data.s)
+setPos	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0B8 holds Actor_SetPos in g_dreamSysVtbl (asm/data/main.data.s)
 setRotation	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x044 holds SceneNode_SetRotation in g_dreamSysVtbl (asm/data/main.data.s)
 setScale	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x048 holds SceneNode_SetScale in g_dreamSysVtbl (asm/data/main.data.s)
 setSemiTrans	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x064 holds SceneNode_SetSemiTrans in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2582,21 +2577,21 @@ map	field	include/game/entity.h:Entity	code	+0x4C set by Entity_Attach, cleared 
 partCount	field	include/game/entity.h:Entity	code	+0x6C Model.partCount, model parts made by Model_CreateParts
 parts	field	include/game/entity.h:Entity	code	+0x70 Model.parts; Behavior_Type58 hides parts[1] through slot 0x60
 object	field	include/game/entity.h:Entity	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
-secondEffect	field	include/game/entity.h:Entity	guess	+0x104 only cleared by Entity_Construct and deleted by Entity_Destruct; nothing in entity.c creates it, so Fade is unproven
+secondEffect	field	include/game/entity.h:Entity	guess	+0x104 only cleared by Entity_Init and deleted by Entity_Destruct; nothing in entity.c creates it, so Fade is unproven
 soundBank	field	include/game/entity.h:Entity	code	+0x58 HandlerNode_Start, HandlerNode_Run and HandlerNode_Stop play the handler voices on it
 speed	field	include/game/entity.h:Entity	code	+0x48 Actor_MoveAxis stores the last move amount there; Behavior_WalkingGeisha and Type68 store their own speed
 state	field	include/game/entity.h:Entity	code	+0x44 the handlers script state; 1 means done and blocks Entity_CheckWake and handler start
 tickEnabled	field	include/game/entity.h:Entity	code	+0x8C Model.tickEnabled, set by startTick and cleared by stopTick (model.c)
 ticks	field	include/game/entity.h:Entity	code	+0x24 cleared by Entity_Wake; Entity_CheckSleep compares it with sleepMode*15; Model.timer counts it
 touched	field	include/game/entity.h:Entity	code	+0xF4 set by Entity_SetTouched (event 9) when the entity is in the box at touchRange ahead of the dreamer; no contact needed
-type	field	include/game/entity.h:Entity	code	+0x98 index into g_entityRecords, stored by Entity_Construct
-vtbl	field	include/game/entity.h:Entity	code	+0: Entity_Construct stores Entity_GetVtbl() there
+type	field	include/game/entity.h:Entity	code	+0x98 index into g_entityRecords, stored by Entity_Init
+vtbl	field	include/game/entity.h:Entity	code	+0: Entity_Init stores Entity_GetVtbl() there
 boxSize	field	include/game/entity.h:EntityRecord	code	last argument of every Entity_IsAtPointAhead: half side of the box (<<11, or 0x800/-n when negative) in DreamSys_TestPointAhead
 handler	field	include/game/entity.h:EntityRecord	code	Entity_StartHandler passes it to HandlerNode_Start; every Behavior_ function sits in one (exe dump)
 handlerRange	field	include/game/entity.h:EntityRecord	code	Entity_CheckHandlerStart starts the handler in the box at |range|; negative also stops it out of the box; 0 at attach starts at once
-link	field	include/game/entity.h:EntityRecord	code	Entity_GetLinkStage (>0 stage-1, <0 ~link); Entity_OnActorTouch links on contact when > 0, 0x7F ends the dream
+link	field	include/game/entity.h:EntityRecord	code	Entity_GetLinkStage (>0 stage-1, <0 ~link); Entity_OnActorContact links on contact when > 0, 0x7F ends the dream
 mood	field	include/game/entity.h:EntityRecord	code	MoodPoint at +0; DreamSys_OnEntityEvent logs it with logEntityMood on event 9
-points	field	include/game/entity.h:EntityRecord	code	times 1000 into save.instanceScore (Entity_GetPoints); 1 to 9 also sets light flags (Entity_Init), -9 to -1 raises the tested point (IsInRange)
+points	field	include/game/entity.h:EntityRecord	code	times 1000 into save.instanceScore (Entity_GetPoints); 1 to 9 also sets light flags (Entity_Reset), -9 to -1 raises the tested point (IsInRange)
 sleepMode	field	include/game/entity.h:EntityRecord	code	Entity_CheckSleep: 1 in box, 2 out of box, >= 10 after mode*15 ticks of timer
 soundRange	field	include/game/entity.h:EntityRecord	code	Entity_GetSoundFade divides the distance by (soundRange << 11) / fadeSteps
 touchRange	field	include/game/entity.h:EntityRecord	code	distance ahead of the touch test (Entity_CheckTouch); negative also turns the entity to the dreamer (SceneNode_TurnToward)
@@ -2610,9 +2605,9 @@ checkHandlerStop	field	include/game/entity.h:EntityVtbl	code	slot 0x180 holds En
 checkSleep	field	include/game/entity.h:EntityVtbl	code	slot 0x174 holds Entity_CheckSleep
 checkTouch	field	include/game/entity.h:EntityVtbl	code	slot 0x178 holds Entity_CheckTouch
 checkWake	field	include/game/entity.h:EntityVtbl	code	slot 0x170 holds Entity_CheckWake
-construct	field	include/game/entity.h:EntityVtbl	code	slot 0x08 holds Entity_Construct; Entity_Create calls it
+init	field	include/game/entity.h:EntityVtbl	code	slot 0x08 holds Entity_Init; Entity_Create calls it
 delete_	field	include/game/entity.h:EntityVtbl	code	slot 0x04 holds Object_Delete; Entity_Destruct calls it on the Fades through their own vtable
-destruct	field	include/game/entity.h:EntityVtbl	code	slot 0x0C holds Entity_Destruct
+destroy	field	include/game/entity.h:EntityVtbl	code	slot 0x0C holds Entity_Destruct
 detach	field	include/game/entity.h:EntityVtbl	code	slot 0x50 holds Entity_Detach
 distanceTo	field	include/game/entity.h:EntityVtbl	code	slot 0x144 holds Entity_GroundDistance: |dx| + |dz|
 getLinkStage	field	include/game/entity.h:EntityVtbl	code	slot 0x154 holds Entity_GetLinkStage
@@ -2620,22 +2615,22 @@ getPoints	field	include/game/entity.h:EntityVtbl	code	slot 0x150 holds Entity_Ge
 getRecord	field	include/game/entity.h:EntityVtbl	code	slot 0x14C holds Entity_GetRecord
 getSoundFade	field	include/game/entity.h:EntityVtbl	code	slot 0x148 holds Entity_GetSoundFade
 getVideo	field	include/game/entity.h:EntityVtbl	code	slot 0x158 holds Entity_GetVideo
-init	field	include/game/entity.h:EntityVtbl	code	slot 0x40 holds Entity_Init
-move	field	include/game/entity.h:EntityVtbl	code	slot 0xBC holds Actor_MovePos: adds a world vector
+reset	field	include/game/entity.h:EntityVtbl	code	slot 0x40 holds Entity_Reset
+movePos	field	include/game/entity.h:EntityVtbl	code	slot 0xBC holds Actor_MovePos: adds a world vector
 moveX	field	include/game/entity.h:EntityVtbl	code	slot 0xC8 holds Actor_MoveX (local x, message 7)
 moveY	field	include/game/entity.h:EntityVtbl	code	slot 0xCC holds Actor_MoveY (local y, message 8)
 moveZ	field	include/game/entity.h:EntityVtbl	code	slot 0xC4 holds Actor_MoveZ (Actor_MoveAxis on local z, message 6)
 moveZOnGround	field	include/game/entity.h:EntityVtbl	code	slot 0xD0 holds Actor_MoveZOnGround: moveZ then the ground snap
 notify	field	include/game/entity.h:EntityVtbl	code	slot 0x30 holds Object_Notify (ObjectVtbl.notify), it tells every watcher synchronously, DreamSys_OnEntityEvent is one of them
-onActorTouch	field	include/game/entity.h:EntityVtbl	code	slot 0xDC holds Entity_OnActorTouch, reached for senders of class byte 0x34 (Actor family)
+onActorContact	field	include/game/entity.h:EntityVtbl	code	slot 0xDC holds Entity_OnActorContact, reached for senders of class byte 0x34 (Actor family)
 onNotify	field	include/game/entity.h:EntityVtbl	code	slot 0x38 holds Model_OnNotify, ObjectVtbl.onNotify
-onWallTouch	field	include/game/entity.h:EntityVtbl	guess	slot 0xE0 holds Entity_OnWallTouch, reached for senders of class byte 0x24 (MapTile); wall not shown
+onTileContact	field	include/game/entity.h:EntityVtbl	guess	slot 0xE0 holds Entity_OnTileContact, reached for senders of class byte 0x24 (MapTile); wall not shown
 playAnimation	field	include/game/entity.h:EntityVtbl	code	slot 0x12C holds Model_PlayAnimation
 rotate	field	include/game/entity.h:EntityVtbl	code	slot 0x44 holds SceneNode_SetRotation: assign or add a {num, den} degree triple
 scale	field	include/game/entity.h:EntityVtbl	code	slot 0x48 holds SceneNode_SetScale: assign or add a {num, den} triple
 setAnimation	field	include/game/entity.h:EntityVtbl	code	slot 0x128 holds Model_SetAnimation
 setLightFlags	field	include/game/entity.h:EntityVtbl	code	slot 0x70 holds Model_SetLightFlags (the header comment says SceneNode_SetLightFlags, the base slot)
-setPosition	field	include/game/entity.h:EntityVtbl	code	slot 0xB8 holds Actor_SetPos
+setPos	field	include/game/entity.h:EntityVtbl	code	slot 0xB8 holds Actor_SetPos
 setTickMode	field	include/game/entity.h:EntityVtbl	code	slot 0x10C holds Model_SetTickMode
 setTouched	field	include/game/entity.h:EntityVtbl	code	slot 0x164 holds Entity_SetTouched
 setVisible	field	include/game/entity.h:EntityVtbl	code	slot 0x60 holds Model_SetVisible
@@ -2645,7 +2640,7 @@ startTick	field	include/game/entity.h:EntityVtbl	code	slot 0x110 holds Model_Sta
 stopAnimation	field	include/game/entity.h:EntityVtbl	code	slot 0x130 holds Model_StopAnimation
 stopHandler	field	include/game/entity.h:EntityVtbl	code	slot 0x16C holds Entity_StopHandler
 stopTick	field	include/game/entity.h:EntityVtbl	code	slot 0x114 holds Model_StopTick
-update	field	include/game/entity.h:EntityVtbl	code	slot 0x98 holds Entity_Update
+onClock	field	include/game/entity.h:EntityVtbl	code	slot 0x98 holds Entity_Update
 wake	field	include/game/entity.h:EntityVtbl	code	slot 0x15C holds Entity_Wake
 done	field	include/game/entity.h:SpawnGroup	code	Sym_CheckRule sets it when a rule passes; a negative rule then fails while it is set; Sym_ResetGroupsAndLoadSpy clears it
 model	field	include/game/entity.h:SpawnGroup	code	Sym_SpawnGroup passes it to the square object getMom: model index in the square file
@@ -2676,7 +2671,7 @@ state	field	include/game/fade.h:Fade	code	0 idle, 1 after Fade_StartIn, 2 after 
 step	field	include/game/fade.h:Fade	code	added to the channels each tick by Fade_Step, 0x100 / step is the tick count
 tint	field	include/game/fade.h:Fade	game	set from the flashback mode: the fade runs short and Fade_Stop keeps the box shown; seen in game as the colour veil (work/hunt8/Q2 fbB2.log, fbR2.log)
 tintDivisor	field	include/game/fade.h:Fade	code	Fade_Begin runs ticks - ticks / tintDivisor ticks when tinted; Place passes 3
-vtbl	field	include/game/fade.h:Fade	code	Object header word 0, set by Fade_Construct
+vtbl	field	include/game/fade.h:Fade	code	Object header word 0, set by Fade_Init
 width	field	include/game/fade.h:Fade	code	GsBOXF w at +0x60, set by Fade_SaveAndSetRect
 x	field	include/game/fade.h:Fade	code	GsBOXF x at +0x5C, written by View_DrawNode
 y	field	include/game/fade.h:Fade	code	GsBOXF y at +0x5E, written by View_DrawNode
@@ -2688,9 +2683,9 @@ begin	field	include/game/fade.h:FadeVtbl	code	slot 0xDC of g_fadeVtbl holds Fade
 delete_	field	include/game/fade.h:FadeVtbl	code	Object base slot 0x04, g_fadeVtbl holds Object_Delete
 getColor	field	include/game/fade.h:FadeVtbl	code	slot 0xE4 of g_fadeVtbl holds Fade_GetColor
 hide	field	include/game/fade.h:FadeVtbl	code	slot 0x50 of g_fadeVtbl holds SceneNode_Detach, the inverse of show 0x4C
-init	field	include/game/fade.h:FadeVtbl	code	slot 0x08 of g_fadeVtbl holds Fade_Construct, the slot every class calls init
+init	field	include/game/fade.h:FadeVtbl	code	slot 0x08 of g_fadeVtbl holds Fade_Init, the slot every class calls init
 notify	field	include/game/fade.h:FadeVtbl	code	Object base slot 0x30, g_fadeVtbl holds Object_Notify
-reset	field	include/game/fade.h:FadeVtbl	code	slot 0x40 of g_fadeVtbl holds Fade_Init
+reset	field	include/game/fade.h:FadeVtbl	code	slot 0x40 of g_fadeVtbl holds Fade_Reset
 setBlendMode	field	include/game/fade.h:FadeVtbl	code	slot 0x68 of g_fadeVtbl holds Box_SetBlendMode
 setColor	field	include/game/fade.h:FadeVtbl	code	slot 0xB8 of g_fadeVtbl holds Box_SetColor
 setSemiTrans	field	include/game/fade.h:FadeVtbl	code	slot 0x64 of g_fadeVtbl holds Box_SetSemiTrans
@@ -2703,7 +2698,7 @@ startOut	field	include/game/fade.h:FadeVtbl	code	slot 0xD8 of g_fadeVtbl holds F
 stop	field	include/game/fade.h:FadeVtbl	code	slot 0xE0 of g_fadeVtbl holds Fade_Stop
 unwatch	field	include/game/fade.h:FadeVtbl	code	slot 0x14 of g_fadeVtbl holds SceneNode_Unwatch
 watch	field	include/game/fade.h:FadeVtbl	code	slot 0x10 of g_fadeVtbl holds SceneNode_Watch
-cdPos	field	include/game/file_base.h:File	code	CdlLOC copied from CdSearchFile or the DirEntry by File_OpenByName; File_Seek passes it to CdPosToInt, File_ReadSync to CdControl 2
+cdPos	field	include/game/file_base.h:File	code	CdlLOC copied from CdSearchFile or the DirEntry by File_OpenByName; File_Seek passes it to CdPosToInt, File_SyncRead to CdControl 2
 cdSize	field	include/game/file_base.h:File	code	File size from the same CdlFILE or DirEntry; File_Seek whence != 0 returns it rounded up to 0x800
 data	field	include/game/file_base.h:File	code	File_LoadWhole and File_LoadWholeCd store the whole-file buffer here; File_FreeData frees it
 direct	field	include/game/file_base.h:File	code	CD slots run at once when set, else queue a request; File_ServiceQueue sets it around the slot call
@@ -2730,10 +2725,6 @@ read	field	include/game/file_base.h:FileVtbl	code	Slot 0x54 (self, buffer, size)
 runQueue	field	include/game/file_base.h:FileVtbl	code	Slot 0x68 File_ServiceQueue, called by File_OnVSync while g_fileVSyncPending is set
 seek	field	include/game/file_base.h:FileVtbl	code	Slot 0x4C (self, offset, whence); File_LoadWhole reads the size with whence 2
 stop	field	include/game/file_base.h:FileVtbl	guess	Slot 0x70 File_Stop only unhooks the VSync callback when no async op runs; File_ServiceQueue calls it when the queue empties. "stop" hides that it is an idle hook
-minute	field	include/game/file_cd.h:CdlLocDir	code	CdlLOC.minute, byte 0 of the position CdSearchFile returns
-second	field	include/game/file_cd.h:CdlLocDir	code	CdlLOC.second, byte 1
-sector	field	include/game/file_cd.h:CdlLocDir	code	CdlLOC.sector, byte 2
-track	field	include/game/file_cd.h:CdlLocDir	code	CdlLOC.track, byte 3 (unused by the CD controller); file_cd.c still has CdlLoc and CdlLocTail copies
 name	field	include/game/file_cd.h:DirEntry	code	Path given to File_BuildPath by File_ResolveEntries and searched with strstr by File_FindEntry and File_FindIndex
 pos	field	include/game/file_cd.h:DirEntry	code	CdlLOC at +0x14 from CdSearchFile; File_PollIo and File_StepIo seek to g_fileCurEntry + 0x14
 size	field	include/game/file_cd.h:DirEntry	code	File size from CdSearchFile; File_LoadWholeCd rounds it up to sectors for its buffer
@@ -2812,17 +2803,17 @@ removeWatcher	field	include/game/heap.h:ObjectVtbl	code	slot 0x24 Object_RemoveW
 unwatch	field	include/game/heap.h:ObjectVtbl	code	slot 0x14 Object_Unwatch, called by Object_UnwatchAll and Object_OnNotify
 unwatchAll	field	include/game/heap.h:ObjectVtbl	code	slot 0x18 Object_UnwatchAll, called by Object_Destroy
 watch	field	include/game/heap.h:ObjectVtbl	code	slot 0x10 Object_Watch
-count	field	include/game/label.h:Label	code	number of glyphs Label_Construct allocates; Label_Destroy and Label_SetPosition loop over it
+count	field	include/game/label.h:Label	code	number of glyphs Label_Init allocates; Label_Destroy and Label_SetPosition loop over it
 firstShown	field	include/game/label.h:Label	code	index of the first glyph those slots touch; Menu sets 4
 gapAt	field	include/game/label.h:Label	code	Label_Show adds 16 pixels before this glyph index when nonzero; Menu sets 9 for the save title
-glyphs	field	include/game/label.h:Label	code	the count Glyph pointers Label_Construct allocates and fills with Glyph_Create
+glyphs	field	include/game/label.h:Label	code	the count Glyph pointers Label_Init allocates and fills with Glyph_Create
 parent	field	include/game/label.h:Label	code	scene node parent at +0xC; Label_Show acts when 0, Label_Hide and Label_SetPosition when set
 shownCount	field	include/game/label.h:Label	code	how many glyphs from firstShown Label_Show, Hide, SetVisible and SetColor touch; Menu sets 8
-spacing	field	include/game/label.h:Label	code	x step per glyph in Label_Show and Label_SetPosition, 7 by Label_Init
-vtbl	field	include/game/label.h:Label	code	Object header word 0, set by Label_Construct
+spacing	field	include/game/label.h:Label	code	x step per glyph in Label_Show and Label_SetPosition, 7 by Label_Reset
+vtbl	field	include/game/label.h:Label	code	Object header word 0, set by Label_Init
 delete_	field	include/game/label.h:LabelVtbl	code	Object base slot 0x04, g_labelVtbl holds Object_Delete
-init	field	include/game/label.h:LabelVtbl	code	slot 0x08 of g_labelVtbl holds Label_Construct
-reset	field	include/game/label.h:LabelVtbl	code	slot 0x40 of g_labelVtbl holds Label_Init
+init	field	include/game/label.h:LabelVtbl	code	slot 0x08 of g_labelVtbl holds Label_Init
+reset	field	include/game/label.h:LabelVtbl	code	slot 0x40 of g_labelVtbl holds Label_Reset
 setColor	field	include/game/label.h:LabelVtbl	code	slot 0xB8 of g_labelVtbl holds Label_SetColor
 setSpacing	field	include/game/label.h:LabelVtbl	code	slot 0xD4 of g_labelVtbl holds Label_SetSpacing
 setText	field	include/game/label.h:LabelVtbl	code	slot 0xCC of g_labelVtbl holds Label_SetText
@@ -2865,7 +2856,6 @@ unload	field	include/game/map_chunk.h:MapChunkVtbl	code	slot 0x74 of g_mapChunkV
 data	field	include/game/map_models.h:MapModels	code	File.data; StageMap sets it to chunk data + modelsOffset, MapModels_NextModel reads the square records from it
 size	field	include/game/map_models.h:MapModels	code	File.size; StageMap sets 0 so freeData keeps the chunk's bytes
 tmd	field	include/game/map_models.h:MapModels	code	Tmd_Create on the bytes after the square table (stage_map.c); MapModels_NextModel asks it getModel for each square
-delete_	field	include/game/map_models.h:MapModelsVtbl	code	Slot 0x04 File_Delete
 nextModel	field	include/game/map_models.h:MapModelsVtbl	code	Slot 0x78 MapModels_NextModel, called by StageMap for each square until it returns NULL
 flags	field	include/game/map_tile.h:MapTile	code	+0x36 copied from the map record flags; MapTile_Tell passes messages only with 0x80 (walls, checked in memory)
 model	field	include/game/map_tile.h:MapTile	code	+0x20 SceneNode.model, the model object of the square
@@ -3108,21 +3098,6 @@ texLoading	field	include/game/place.h:Place	code	set at construct and load, clea
 ticks	field	include/game/place.h:Place	code	Screen.ticks, counted by Place_Tick, read by Place_OnTimeUp
 view	field	include/game/place.h:Place	code	Screen.view, its overlay is the place fader
 viewDistance	field	include/game/place.h:Place	code	Place_Load argument or 0xA000, given to the map's setViewDistance
-attach	field	include/game/place.h:PlaceBaseVtbl	code	slot 0x44 of the Task vtable
-construct	field	include/game/place.h:PlaceBaseVtbl	code	slot 0x08 of the Task vtable
-destruct	field	include/game/place.h:PlaceBaseVtbl	code	slot 0x0C of the Task vtable
-detach	field	include/game/place.h:PlaceBaseVtbl	code	slot 0x48 of the Task vtable
-onNotify	field	include/game/place.h:PlaceBaseVtbl	code	slot 0x38 of the Task vtable
-delete_	field	include/game/place.h:PlaceObjVtbl	code	slot 0x04 Object_Delete
-getModel	field	include/game/place.h:PlaceObjVtbl	code	slot 0x80 Tmd_GetModel on refs.models
-getScreenRect	field	include/game/place.h:PlaceObjVtbl	code	slot 0x7C Display_GetScreenRect on env->display
-muteBank	field	include/game/place.h:PlaceObjVtbl	code	slot 0x88 Sound_MuteBank
-pause	field	include/game/place.h:PlaceObjVtbl	code	slot 0x4C Clock_Pause and Bgm_Pause (Place_UpdatePause)
-resume	field	include/game/place.h:PlaceObjVtbl	code	slot 0x50 Clock_Resume and Bgm_Resume (Place_ClosePause)
-setColor	field	include/game/place.h:PlaceObjVtbl	guess	slot 0xB8, called through this view by nothing (the Pause label uses Widget)
-setSeq	field	include/game/place.h:PlaceObjVtbl	code	slot 0x5C Bgm_SetSeq with Music_PickTrack's track
-stop	field	include/game/place.h:PlaceObjVtbl	code	slot 0x48 Bgm_Stop on the music (Place_Unload)
-unmuteBank	field	include/game/place.h:PlaceObjVtbl	code	slot 0x8C Sound_UnmuteBank
 etcTim	field	include/game/place.h:PlaceRefs	code	runner->etcTim (ETC.TIM), the Pause label font and the sheet the scenery parts cut 16x16 sprites from
 models	field	include/game/place.h:PlaceRefs	code	runner->dreamerModel, the Tmd of ETC\DREAMER.TMD; slot 0x80 Tmd_GetModel gives the scenery models 0 and 2
 soundBank	field	include/game/place.h:PlaceRefs	code	a SoundBank (runner->sound, SND SE), the bank HandlerNode_Start, HandlerNode_Run and HandlerNode_Stop play on, not a list
@@ -3132,9 +3107,9 @@ attach	field	include/game/place.h:PlaceVtbl	code	slot 0x44 Place_Attach
 classWord	field	include/game/place.h:PlaceVtbl	code	0x2F230 in the data
 closePause	field	include/game/place.h:PlaceVtbl	code	slot 0xD4 Place_ClosePause
 confirmExit	field	include/game/place.h:PlaceVtbl	code	slot 0xC8 Place_ConfirmExit
-construct	field	include/game/place.h:PlaceVtbl	code	slot 0x08 Place_Construct
+init	field	include/game/place.h:PlaceVtbl	code	slot 0x08 Place_Init
 delete_	field	include/game/place.h:PlaceVtbl	code	slot 0x04 Object_Delete
-destruct	field	include/game/place.h:PlaceVtbl	code	slot 0x0C Place_Destruct
+destroy	field	include/game/place.h:PlaceVtbl	code	slot 0x0C Place_Destruct
 detach	field	include/game/place.h:PlaceVtbl	code	slot 0x48 Place_Detach
 disarmExit	field	include/game/place.h:PlaceVtbl	code	slot 0xC4 Place_DisarmExit
 exitNoRecord	field	include/game/place.h:PlaceVtbl	code	slot 0xCC Place_ExitNoRecord
@@ -3246,7 +3221,11 @@ depth	field	include/game/scenery.h:AmbienceRecord	code	index of g_ambienceDepths
 mode	field	include/game/scenery.h:AmbienceRecord	code	copied to Ambience.mode
 altColor	field	include/game/scenery_obj.h:Scenery	code	params dayMark copied at +0x78, the colour override of part 1 of kind 2, always 0
 color	field	include/game/scenery_obj.h:Scenery	code	params color, the sprite parts' colour
-coord	field	include/game/scenery_obj.h:Scenery	code	SceneNode.coord (+0x14), the GsCOORDINATE2 pointer, scene_node.h names it coord
+watched	field	include/game/scenery_obj.h:Scenery	code	Actor.watched (+0x04), the base class field under its name
+watchers	field	include/game/scenery_obj.h:Scenery	code	Actor.watchers (+0x08)
+parent	field	include/game/scenery_obj.h:Scenery	code	Actor.parent (+0x0C), the node SceneNode_Attach sets
+object	field	include/game/scenery_obj.h:Scenery	code	Actor.object (+0x10), the DObj2: object.coord is the GsCOORDINATE2 whose flg Scenery_UpdateKind0 clears once moved
+id	field	include/game/scenery_obj.h:Scenery	code	Actor.id (+0x1C)
 direction	field	include/game/scenery_obj.h:Scenery	guess	params direction, axis and sign of the kind 0 parts
 kind	field	include/game/scenery_obj.h:Scenery	code	0 to 3 from Scenery_New; it sits on Actor.boxMargin (+0x54), which Scenery never sets since its slot 0xEC is Scenery_Update
 model	field	include/game/scenery_obj.h:Scenery	code	SceneNode.model, the linked model object
@@ -3275,9 +3254,9 @@ setScale	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x48 Scener
 setSemiTrans	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x64 SpriteNode_SetSemiTrans
 setVisible	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x60 SpriteNode_SetVisible
 attach	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x4C SceneNode_Attach
-construct	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x08 Scenery_Construct
-destruct	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x0C Scenery_Destruct
-init	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x40 Scenery_Init
+init	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x08 Scenery_Init
+destroy	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x0C Scenery_Destruct
+reset	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x40 Scenery_Reset
 movePos	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0xBC Actor_MovePos
 setPos	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0xB8 Actor_SetPos
 setRotation	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x44 SceneNode_SetRotation
@@ -3400,6 +3379,8 @@ playTone	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x80 Sound_Play
 pollTransfer	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x78 Sound_PollTransfer
 setOctave	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x9C Sound_SetOctave
 stopVoice	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x84 Sound_StopVoice
+muteBank	field	include/game/sound_bank.h:SoundBankVtbl	code	slot 0x88 of g_soundBankVtbl holds Sound_MuteBank; Place_UpdatePause calls it on Place.sound when the pause opens
+unmuteBank	field	include/game/sound_bank.h:SoundBankVtbl	code	slot 0x8C of g_soundBankVtbl holds Sound_UnmuteBank; Place_ClosePause calls it on Place.sound
 center	field	include/game/sound_bank.h:SoundTone	code	VagAtr +4 center note, plus noteShift, the note of SsUtKeyOn
 fine	field	include/game/sound_bank.h:SoundTone	code	VagAtr +5 shift, passed as the fine tuning of SsUtKeyOn
 h	field	include/game/sprite_node.h:SpriteRect	code	copied to GsSPRITE h by SpriteNode_FillSprite
@@ -3535,9 +3516,6 @@ state	field	include/game/stream.h:Stream	code	0 closed, 1 seeked, 2 reading, 4 s
 vtbl	field	include/game/stream.h:Stream	code	Object header word 0
 watched	field	include/game/stream.h:Stream	code	Object header +0x4
 watchers	field	include/game/stream.h:Stream	code	Object header +0x8
-name	field	include/game/stream.h:StreamFile	code	CdlFILE name
-pos	field	include/game/stream.h:StreamFile	code	CdlFILE pos, given to CdControl CdlSetloc and the seek slot
-size	field	include/game/stream.h:StreamFile	code	CdlFILE size, divided by frameBytes for endFrame
 clearRing	field	include/game/stream.h:StreamVtbl	code	slot 0x78 of g_streamVtbl holds Stream_ClearRing
 close	field	include/game/stream.h:StreamVtbl	code	slot 0x48 of g_streamVtbl holds Stream_Close
 delete_	field	include/game/stream.h:StreamVtbl	code	Object base slot 0x04, g_streamVtbl holds Object_Delete
@@ -3768,19 +3746,19 @@ object	field	include/game/actor.h:Actor	code	the GsDOBJ2 head (DObj2, render.h) 
 map	field	include/game/actor.h:Actor	code	watched sender of class 0x114, the StageMap Actor_SnapToGround locates in
 model	field	include/game/actor.h:Actor	code	SceneNode.model, tested by ModelObject_GetBoxCount in SendBoxes
 speed	field	include/game/actor.h:Actor	code	0x12C at init, the last move step set by Actor_MoveAxis and slot 0xE4; shifts the box list
-state	field	include/game/actor.h:Actor	code	cleared by Actor_Construct and Scenery_Construct; no reader in these files
+state	field	include/game/actor.h:Actor	code	cleared by Actor_Init and Scenery_Init; no reader in these files
 afterTouch	field	include/game/actor.h:ActorVtbl	guess	slot 0xE8, empty for Actor, run by SendBoxes on a contact of class byte 0x34 after the boxes are sent
 checkContact	field	include/game/actor.h:ActorVtbl	code	slot 0xA0 SceneNode_CheckContact
 classByte	field	include/game/actor.h:ActorVtbl	code	low byte of the class word, 0x34 for the Actor family
-init	field	include/game/actor.h:ActorVtbl	code	slot 0x08 Actor_Construct
+init	field	include/game/actor.h:ActorVtbl	code	slot 0x08 Actor_Init
 destroy	field	include/game/actor.h:ActorVtbl	code	slot 0x0C SceneNode_Destroy
 getBoxList	field	include/game/actor.h:ActorVtbl	code	slot 0x8C SceneNode_GetBoxList
 moveLocal	field	include/game/actor.h:ActorVtbl	code	slot 0xC0 Actor_MoveLocal
 movePos	field	include/game/actor.h:ActorVtbl	code	slot 0xBC Actor_MovePos
 moveX	field	include/game/actor.h:ActorVtbl	code	slot 0xC8 Actor_MoveX
 moveZ	field	include/game/actor.h:ActorVtbl	code	slot 0xC4 Actor_MoveZ
-onTouch24	field	include/game/actor.h:ActorVtbl	guess	slot 0xE0 Actor_OnNode24, a MapTile sender
-onTouch34	field	include/game/actor.h:ActorVtbl	guess	slot 0xDC Actor_OnNode34; its comment calls 0x34 a message byte, it is the sender's class byte; touch is a reading of the SceneNode contact messages
+onTileContact	field	include/game/actor.h:ActorVtbl	guess	slot 0xE0 Actor_OnTileContact, a MapTile sender
+onActorContact	field	include/game/actor.h:ActorVtbl	guess	slot 0xDC Actor_OnActorContact, called by Actor_OnNode for senders of class byte 0x34 (the sender's vtable byte, checked in the dump); contact is a reading of the SceneNode contact messages
 sendBoxes	field	include/game/actor.h:ActorVtbl	code	slot 0x88 Actor_SendBoxes
 sendShape	field	include/game/actor.h:ActorVtbl	code	slot 0x90 SceneNode_SendShape
 height	field	src/game/actor.c:GridRect	code	rows to walk
@@ -3791,36 +3769,36 @@ cellH	field	src/game/bg.c:BgMapView	code	GsMAP cellh
 cellW	field	src/game/bg.c:BgMapView	code	GsMAP cellw
 cellsX	field	src/game/bg.c:BgMapView	code	GsMAP ncellw
 cellsY	field	src/game/bg.c:BgMapView	code	GsMAP ncellh
-autoPlay	field	src/game/bgm.c:Bgm	code	Bgm_New argument; Bgm_OnDisplayEvent, SetSeq and SetBank call play after a successful Bgm_Open when set
-bank	field	src/game/bgm.c:Bgm	code	Sound_CreateBank result of Bgm_SetBank; Bgm_Open passes its vabId to SsSeqOpen
-paused	field	src/game/bgm.c:Bgm	code	Set by Bgm_Pause, cleared by Bgm_Resume
-playing	field	src/game/bgm.c:Bgm	code	Set by Bgm_Play, cleared by Bgm_Stop
-seq	field	src/game/bgm.c:Bgm	code	SeqFile_Create result of Bgm_SetSeq; Bgm_Open passes its data to SsSeqOpen
-seqId	field	src/game/bgm.c:Bgm	code	SsSeqOpen access number, passed to every SsSeq call
-state	field	src/game/bgm.c:Bgm	code	BGM_NONE, BGM_WAITING (set by SetSeq and SetBank when Bgm_Open fails), BGM_OPEN after SsSeqOpen
-fadeVolume	field	src/game/bgm.c:BgmVtbl	code	Slot 0x58 Bgm_FadeVolume
-onDisplayEvent	field	src/game/bgm.c:BgmVtbl	code	Slot 0x40 Bgm_OnDisplayEvent, called by Bgm_OnNotify for display senders
-pause	field	src/game/bgm.c:BgmVtbl	code	Slot 0x4C Bgm_Pause; Place pauses the music with it
-play	field	src/game/bgm.c:BgmVtbl	code	Slot 0x44 Bgm_Play
-resume	field	src/game/bgm.c:BgmVtbl	code	Slot 0x50 Bgm_Resume
-setBank	field	src/game/bgm.c:BgmVtbl	code	Slot 0x60 Bgm_SetBank
-setSeq	field	src/game/bgm.c:BgmVtbl	code	Slot 0x5C Bgm_SetSeq
-setVolume	field	src/game/bgm.c:BgmVtbl	code	Slot 0x54 Bgm_SetVolume
-stop	field	src/game/bgm.c:BgmVtbl	code	Slot 0x48 Bgm_Stop
+autoPlay	field	include/game/bgm.h:Bgm	code	Bgm_New argument; Bgm_OnDisplayEvent, SetSeq and SetBank call play after a successful Bgm_Open when set
+bank	field	include/game/bgm.h:Bgm	code	Sound_CreateBank result of Bgm_SetBank; Bgm_Open passes its vabId to SsSeqOpen
+paused	field	include/game/bgm.h:Bgm	code	Set by Bgm_Pause, cleared by Bgm_Resume
+playing	field	include/game/bgm.h:Bgm	code	Set by Bgm_Play, cleared by Bgm_Stop
+seq	field	include/game/bgm.h:Bgm	code	SeqFile_Create result of Bgm_SetSeq; Bgm_Open passes its data to SsSeqOpen
+seqId	field	include/game/bgm.h:Bgm	code	SsSeqOpen access number, passed to every SsSeq call
+state	field	include/game/bgm.h:Bgm	code	BGM_NONE, BGM_WAITING (set by SetSeq and SetBank when Bgm_Open fails), BGM_OPEN after SsSeqOpen
+fadeVolume	field	include/game/bgm.h:BgmVtbl	code	Slot 0x58 Bgm_FadeVolume
+onDisplayEvent	field	include/game/bgm.h:BgmVtbl	code	Slot 0x40 Bgm_OnDisplayEvent, called by Bgm_OnNotify for display senders
+pause	field	include/game/bgm.h:BgmVtbl	code	Slot 0x4C Bgm_Pause; Place pauses the music with it
+play	field	include/game/bgm.h:BgmVtbl	code	Slot 0x44 Bgm_Play
+resume	field	include/game/bgm.h:BgmVtbl	code	Slot 0x50 Bgm_Resume
+setBank	field	include/game/bgm.h:BgmVtbl	code	Slot 0x60 Bgm_SetBank
+setSeq	field	include/game/bgm.h:BgmVtbl	code	Slot 0x5C Bgm_SetSeq
+setVolume	field	include/game/bgm.h:BgmVtbl	code	Slot 0x54 Bgm_SetVolume
+stop	field	include/game/bgm.h:BgmVtbl	code	Slot 0x48 Bgm_Stop
 attribute	field	include/game/box.h:Box	code	GsBOXF attribute: bit 31 hidden, bit 30 semi-transparent, bits 28 and 29 the rate
 color	field	include/game/box.h:Box	code	GsBOXF r g b, written by Box_SetColor
 height	field	include/game/box.h:Box	code	GsBOXF h, from BoxSize
 mask	field	include/game/box.h:Box	guess	(1 << bits) - 1 from Box_SetMask; no reader treats it as a mask
 parent	field	include/game/box.h:Box	code	scene node parent at +0xC; Box_Show attaches only when 0, the setters act only when set
 position	field	include/game/box.h:Box	code	ScreenPoint View_DrawNode turns into GsBOXF x and y
-priority	field	include/game/box.h:Box	code	given to GsSortBoxFill by View_DrawNode, set by Box_Init and Box_SetPriority
+priority	field	include/game/box.h:Box	code	given to GsSortBoxFill by View_DrawNode, set by Box_Reset and Box_SetPriority
 relative	field	include/game/box.h:Box	code	when set View_DrawNode takes position as a percent of half the screen; Box_ShowAbsolute clears it
-vtbl	field	include/game/box.h:Box	code	Object header word 0, set by Box_Construct
+vtbl	field	include/game/box.h:Box	code	Object header word 0, set by Box_Init
 width	field	include/game/box.h:Box	code	GsBOXF w, from BoxSize
 x	field	include/game/box.h:Box	code	GsBOXF x written by View_DrawNode from position
 y	field	include/game/box.h:Box	code	GsBOXF y written by View_DrawNode from position
-init	field	include/game/box.h:BoxVtbl	code	slot 0x08 of g_boxVtbl holds Box_Construct
-reset	field	include/game/box.h:BoxVtbl	code	slot 0x40 of g_boxVtbl holds Box_Init
+init	field	include/game/box.h:BoxVtbl	code	slot 0x08 of g_boxVtbl holds Box_Init
+reset	field	include/game/box.h:BoxVtbl	code	slot 0x40 of g_boxVtbl holds Box_Reset
 setColor	field	include/game/box.h:BoxVtbl	code	slot 0xB8 of g_boxVtbl holds Box_SetColor
 setMask	field	include/game/box.h:BoxVtbl	guess	slot 0xCC of g_boxVtbl holds Box_SetMask, whose role is unproven
 setPosition	field	include/game/box.h:BoxVtbl	code	slot 0xBC of g_boxVtbl holds Box_SetPosition
@@ -3892,7 +3870,7 @@ sprite	field	include/game/glyph.h:Glyph	code	the GsSPRITE at +0x64 whose u v Gly
 vtbl	field	include/game/glyph.h:Glyph	code	Object header word 0
 init	field	include/game/glyph.h:GlyphVtbl	code	slot 0x08 of g_glyphVtbl holds Glyph_Init
 setCode	field	include/game/glyph.h:GlyphVtbl	code	slot 0xC4 of g_glyphVtbl holds Glyph_SetCode
-setup	field	include/game/glyph.h:GlyphVtbl	code	slot 0x40 of g_glyphVtbl holds Glyph_Setup
+reset	field	include/game/glyph.h:GlyphVtbl	code	slot 0x40 of g_glyphVtbl holds Glyph_Reset
 boxes	field	src/game/graph.c:Graph	code	100 Box widgets from Box_Create, [0] newest; Graph_Draw places them
 dreamSys	field	src/game/graph.c:Graph	code	Graph_Init argument; the save block comes from its slot 0x1B0
 reelDays	field	src/game/graph.c:Graph	code	4 bytes: days back of each matched reel point, written by Graph_CheckReel, read by Graph_BlinkReel
@@ -3921,29 +3899,29 @@ object	field	include/game/model.h:Model	code	the GsDOBJ2 head (DObj2, render.h) 
 file	field	include/game/model.h:Model	code	+0x5C the Mom, borrowed or loaded by Model_LoadFile
 forwardContact	field	include/game/model.h:Model	code	+0x64 set by slot 0xF0, Model_TickForward then sends the current part sendBoxes(6), no animation
 ownsFile	field	include/game/model.h:Model	code	+0x60 1 when Model_LoadFile created the Mom, 0 when borrowed; FreeFile and OnNotify test it
-part	field	include/game/model.h:Model	code	+0x68 parts[current], the part scanFirstFrame names; Model_Init and TickForward use it
+part	field	include/game/model.h:Model	code	+0x68 parts[current], the part scanFirstFrame names; Model_Reset and TickForward use it
 partCount	field	include/game/model.h:Model	code	+0x6C parts made by Model_BuildParts
 partIds	field	include/game/model.h:Model	code	+0x74 the TOD object id of each part, searched by Model_FindPart
 parts	field	include/game/model.h:Model	code	+0x70 one Actor_New per TOD object id of the first frame
-soundBank	field	include/game/model.h:Model	code	+0x58 from Model_Construct; Model_PlaySound plays on it
+soundBank	field	include/game/model.h:Model	code	+0x58 from Model_Init; Model_PlaySound plays on it
 target	field	include/game/model.h:Model	code	+0x94 the model it and its target watch both ways (SetTarget); Entity_Attach passes the DreamSys
 tickEnabled	field	include/game/model.h:Model	code	+0x8C StartTick and StopTick; TickAnimation runs tickFn only while set
 tickFn	field	include/game/model.h:Model	code	+0x78 slot 0x118, 0x11C or 0x120 from SetTickMode, run by TickAnimation while tickEnabled
 ticks	field	include/game/model.h:Model	code	+0x24 ticks counted by Model_Tick; the Grey Man leaves after 180 x 15 of them (code)
-vtbl	field	include/game/model.h:Model	code	g_modelVtbl set by Model_Construct
+vtbl	field	include/game/model.h:Model	code	g_modelVtbl set by Model_Init
 file	field	include/game/model.h:ModelSource	code	ready Mom Model_LoadFile borrows (ownsFile 0)
 source	field	include/game/model.h:ModelSource	code	FileSource given to Mom_Create when file is NULL
 applyCommand	field	include/game/model.h:ModelVtbl	code	slot 0x138 holds Model_ApplyCommand in g_modelVtbl (asm/data/main.data.s)
 applyFrame	field	include/game/model.h:ModelVtbl	code	slot 0x134 holds Model_ApplyFrame in g_modelVtbl (asm/data/main.data.s)
 clearTarget	field	include/game/model.h:ModelVtbl	code	slot 0x140 holds Model_ClearTarget in g_modelVtbl (asm/data/main.data.s)
-init	field	include/game/model.h:ModelVtbl	code	slot 0x08 holds Model_Construct in g_modelVtbl (asm/data/main.data.s)
+init	field	include/game/model.h:ModelVtbl	code	slot 0x08 holds Model_Init in g_modelVtbl (asm/data/main.data.s)
 createParts	field	include/game/model.h:ModelVtbl	code	slot 0x100 holds Model_CreateParts in g_modelVtbl (asm/data/main.data.s)
 delete_	field	include/game/model.h:ModelVtbl	code	slot 0x04 holds Object_Delete in g_modelVtbl (asm/data/main.data.s)
 freeParts	field	include/game/model.h:ModelVtbl	code	slot 0x104 holds Model_FreeParts in g_modelVtbl (asm/data/main.data.s)
 load	field	include/game/model.h:ModelVtbl	code	slot 0xF4 holds Model_Load in g_modelVtbl (asm/data/main.data.s)
 moveZ	field	include/game/model.h:ModelVtbl	code	slot 0xC4 holds Actor_MoveZ in g_modelVtbl (asm/data/main.data.s)
-onTouch34	field	include/game/model.h:ModelVtbl	code	slot 0xDC holds Actor_OnNode34 in g_modelVtbl (asm/data/main.data.s)
-onTouch24	field	include/game/model.h:ModelVtbl	code	slot 0xE0 holds Actor_OnNode24 in g_modelVtbl (asm/data/main.data.s)
+onActorContact	field	include/game/model.h:ModelVtbl	code	slot 0xDC holds Actor_OnActorContact in g_modelVtbl (asm/data/main.data.s)
+onTileContact	field	include/game/model.h:ModelVtbl	code	slot 0xE0 holds Actor_OnTileContact in g_modelVtbl (asm/data/main.data.s)
 setAnimation	field	include/game/model.h:ModelVtbl	code	slot 0x128 holds Model_SetAnimation in g_modelVtbl (asm/data/main.data.s)
 setForwardContact	field	include/game/model.h:ModelVtbl	code	slot 0xF0 Model_SetForwardContact, gates the part contact message 6 in Model_TickForward
 setSpeed	field	include/game/model.h:ModelVtbl	code	slot 0xE4 holds Actor_SetSpeed in g_modelVtbl (asm/data/main.data.s)
@@ -3975,7 +3953,7 @@ streamEnded	field	src/game/movie.c:MovieSliceView	code	Movie.streamEnded
 category	field	src/game/path_table.c:CineChoice	code	special-day category, negative for an event video
 variant	field	src/game/path_table.c:CineChoice	code	0 and 1 videos A and B, 2 to 5 pictures, or the event number
 ambient	field	include/game/root_node.h:RootNode	code	the Color3 RootNode_SetAmbient stores and gives GsSetAmbient times 16
-coord	field	include/game/root_node.h:RootNode	code	scene node GsCOORDINATE2 pointer at +0x14; RootNode_Setup clears its first word flg
+coord	field	include/game/root_node.h:RootNode	code	scene node GsCOORDINATE2 pointer at +0x14; RootNode_Reset clears its first word flg
 lights	field	include/game/root_node.h:RootNode	code	FlatLight_New(0..2) in RootNode_Init, returned by RootNode_GetLight
 parent	field	include/game/root_node.h:RootNode	code	scene node parent at +0xC
 vtbl	field	include/game/root_node.h:RootNode	code	Object header word 0
@@ -3983,7 +3961,8 @@ watched	field	include/game/root_node.h:RootNode	code	Object header +0x4
 watchers	field	include/game/root_node.h:RootNode	code	Object header +0x8
 getLight	field	include/game/root_node.h:RootNodeVtbl	code	slot 0xB8 of g_rootNodeVtbl holds RootNode_GetLight
 init	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x08 of g_rootNodeVtbl holds RootNode_Init
-setup	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x40 of g_rootNodeVtbl holds RootNode_Setup
+destroy	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x0C of g_rootNodeVtbl holds RootNode_Destroy; StageMap_Destroy chains to it last
+reset	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x40 of g_rootNodeVtbl holds RootNode_Reset
 watch	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x10 of g_rootNodeVtbl holds SceneNode_Watch
 boxX	field	src/game/scene_draw.c:DrawNode	code	+0x50 is Box.position (box.c), View_DrawNode stores it into GsBOXF x, a position and not a width
 boxY	field	src/game/scene_draw.c:DrawNode	code	+0x54 Box.position y, stored into GsBOXF y
@@ -4023,7 +4002,7 @@ watched	field	include/game/screen_sprite.h:ScreenSprite	code	Object header +0x4 
 watchers	field	include/game/screen_sprite.h:ScreenSprite	code	Object header +0x8 watcher list
 init	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0x08 of g_screenSpriteVtbl holds ScreenSprite_Init
 setPosition	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0xBC of g_screenSpriteVtbl holds ScreenSprite_SetPosition
-setup	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0x40 of g_screenSpriteVtbl holds ScreenSprite_Setup
+reset	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0x40 of g_screenSpriteVtbl holds ScreenSprite_Reset
 attribute	field	include/game/gs.h:Sprite	code	GsSPRITE attribute: color mode bits 24 and 25 from FillSprite, bits 28 to 31 from the SetBlendRate, SetSemiTrans, SetVisible slots
 color	field	include/game/gs.h:Sprite	code	GsSPRITE r g b, 0x80 neutral
 cx	field	include/game/gs.h:Sprite	code	GsSPRITE cx, the TIM CLUT x
@@ -4120,6 +4099,6 @@ src	field	src/game/tix.c:ClutRows	code	RECT of the palette row given to StoreIma
 bytes	field	src/game/tix.c:TixHeaderBytes	code	the 0x24 header bytes
 CineId	type	include/game/dream_sys.h	code	DreamSys.cinematic.id: {category, variant}, written by Day_FindSpecial (ex SpecialCine) and DreamSys_Update
 sprite	field	include/game/scenery_part.h:SceneryPart	code	SpriteNode.sprite, the GsSPRITE at +0x64: cx, cy from g_sceneryPartCluts, scaleX, scaleY by slot 0x48, rotate for kind 3
-index	field	include/game/scenery_part.h:SceneryPart	code	set by SceneryPart_Init, indexes g_sceneryPartCluts and g_sceneryPartRects
-reset	field	include/game/actor.h:ActorVtbl	code	slot 0x40 Actor_Init, the override of SceneNode_Reset (ex init)
-reset	field	include/game/model.h:ModelVtbl	code	slot 0x40 holds Model_Init in g_modelVtbl (asm/data/main.data.s), ex init
+index	field	include/game/scenery_part.h:SceneryPart	code	set by SceneryPart_Reset, indexes g_sceneryPartCluts and g_sceneryPartRects
+reset	field	include/game/actor.h:ActorVtbl	code	slot 0x40 Actor_Reset, the override of SceneNode_Reset (ex init)
+reset	field	include/game/model.h:ModelVtbl	code	slot 0x40 holds Model_Reset in g_modelVtbl (asm/data/main.data.s), ex init

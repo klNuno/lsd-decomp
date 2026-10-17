@@ -33,9 +33,9 @@ another cut (each guess says which).
 | [`pad.c`](../src/game/pad.c) | `Pad_New..Pad_GetVtbl` @0x80025B34 | proven | psyq/80020C74 before, psyq/80025EAC after; one class |
 | *psyq/80025EAC* | Sony: LIBAPI,LIBETC | | |
 | [`scene.c`](../src/game/scene.c) | `Scene_New..Scene_GetVtbl` @0x80025F7C | likely | start proven (psyq/80025EAC before); class ends with Scene_GetVtbl; only Scene functions use the unit .rodata; data order g_sceneVtbl then File data |
-| [`file_base.c`](../src/game/file_base.c) | `File_Delete..File_JoinPath` @0x800269F0 | likely | end proven (psyq/80027130 LIBC2 after); data inversion g_fileVtable after g_fileClassGetters binds 22..26, gp g_fileBackend binds 24..37; File base class and backend selection |
+| [`file_base.c`](../src/game/file_base.c) | `File_Delete..File_JoinPath` @0x800269F0 | likely | end proven (psyq/80027130 LIBC2 after); data inversion g_fileVtbl after g_fileClassGetters binds 22..26, gp g_fileBackend binds 24..37; File base class and backend selection |
 | *psyq/80027130* | Sony: LIBC2 | | |
-| [`file_cd.c`](../src/game/file_cd.c) | `File_Create..File_GetVSyncMode` @0x800271D8 | proven | psyq/80027130 before, psyq/80028B78 after; rodata strings of File_ResolveEntries/File_Locate sit before the jtbls of File_ServiceQueue (one cc1 output) and gp g_fileEnabled bind it |
+| [`file_cd.c`](../src/game/file_cd.c) | `File_Create..File_GetVSyncMode` @0x800271D8 | proven | psyq/80027130 before, psyq/80028B78 after; rodata strings of File_ResolveEntries/File_SyncOpen sit before the jtbls of File_ServiceQueue (one cc1 output) and gp g_fileEnabled bind it |
 | *psyq/80028B78* | Sony: LIBC2,LIBCD | | |
 | [`map_models.c`](../src/game/map_models.c) | `MapModels_New..func_8002C3B8` @0x8002C12C | likely | start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, func_8002C3B8 (empty slot) kept with it |
 | [`file_null.c`](../src/game/file_null.c) | `File_NullInit..File_NullGetVSyncMode` @0x8002C3C0 | likely | null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data |
@@ -121,9 +121,9 @@ another cut (each guess says which).
 | [`scenery_obj.c`](../src/game/scenery_obj.c) | `Scenery_New..Scenery_SetPlaceRefs` @0x80056320 | likely | gp g_sceneryModels/View/Font bind 108..124; class ends with GetVtbl then the setter the manager calls |
 | [`actor.c`](../src/game/actor.c) | `Actor_New..Actor_GetVtbl` @0x80056FE4 | likely | class ends with GetVtbl, g_actorVtbl after Scenery data |
 | [`scenery_part.c`](../src/game/scenery_part.c) | `SceneryPart_New..SceneryPart_GetVtbl` @0x80057C94 | likely | data inversion binds 157..164 |
-| [`graph.c`](../src/game/graph.c) | `Graph_New..Graph_GetVtable` @0x80057F68 | likely | ETC\ETCSE (Graph_Init) after the Place jtbl proves a boundary before Graph_Init; [ETCSE][ETC\HGRAPH.TIM] is 0x1C bytes so the DreamSys jtbl at 0x80011788 is 8-aligned in its own object: the 0x80058078 cut is not forced; one class |
-| [`dream_sys.c`](../src/game/dream_sys.c) | `DreamSys_New..DreamSys_GetVtable` @0x80058774 | likely | data inversions bind DreamSys_Reset..DreamSys_GetVtable (Mood_* inside); jtbls of DreamSys_OnPad and DreamSys_OnEntityEvent |
-| [`dream_link.c`](../src/game/dream_link.c) | `Nav_InitFlags..Day_FindSpecial` @0x8005BA50 | guess | gp g_navFlags binds 112..128; Sym strings after the DreamSys jtbl prove a boundary after DreamSys_GetVtable, Link_Find, Spawn_PickFromMood or Day_FindSpecial; could close dream_sys.c |
+| [`graph.c`](../src/game/graph.c) | `Graph_New..Graph_GetVtbl` @0x80057F68 | likely | ETC\ETCSE (Graph_Init) after the Place jtbl proves a boundary before Graph_Init; [ETCSE][ETC\HGRAPH.TIM] is 0x1C bytes so the DreamSys jtbl at 0x80011788 is 8-aligned in its own object: the 0x80058078 cut is not forced; one class |
+| [`dream_sys.c`](../src/game/dream_sys.c) | `DreamSys_New..DreamSys_GetVtbl` @0x80058774 | likely | data inversions bind DreamSys_Reset..DreamSys_GetVtbl (Mood_* inside); jtbls of DreamSys_OnPad and DreamSys_OnEntityEvent |
+| [`dream_link.c`](../src/game/dream_link.c) | `Nav_InitFlags..Day_FindSpecial` @0x8005BA50 | guess | gp g_navFlags binds 112..128; Sym strings after the DreamSys jtbl prove a boundary after DreamSys_GetVtbl, Link_Find, Spawn_PickFromMood or Day_FindSpecial; could close dream_sys.c |
 | [`sym.c`](../src/game/sym.c) | `Sym_ResetGroupsAndLoadSpy..Sym_SpawnSpy` @0x8005C508 | likely | rodata object F starts with its strings (proven boundary in (0x8005B03C, 0x8005C508]); gp g_sym* and data inversions bind 0..16 |
 | [`entity.c`](../src/game/entity.c) | `Entity_Create..Behavior_Type129` @0x8005CFDC | likely | proven one file for Entity_Attach..Behavior_TinyLips: 670+ data inversions between entity records and behaviour tables; Entity_Create..Init and Behavior_Type129 by adjacency |
 | [`model.c`](../src/game/model.c) | `Model_New..Model_GetVtbl` @0x800655D4 | likely | end proven (end of .text); class ends with GetVtbl, g_modelVtbl last |
@@ -174,7 +174,7 @@ are proven exactly by a Sony object.
 The study corrected one older claim: the cut at 0x80058078 is not forced. `ETC\ETCSE` and
 `ETC\HGRAPH.TIM` form one rodata object of 0x1C bytes, so DreamSys's first jump table at
 0x80011788 is 8-aligned in its own object either way, and Graph_New, Graph_Init and
-Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
+Graph_LoadImage..Graph_GetVtbl read as one class file, `graph.c`.
 
 A later check corrected the study itself (2026-10-17): `spu.c` and `seq_timer.c`, two files it
 rated proven because a Sony object sits on each side, are Sony code too. Their 11 functions line up

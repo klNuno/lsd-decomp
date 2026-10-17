@@ -65,7 +65,7 @@ until no CD operation is running.
 
 | `g_fileEnabled`, `g_fileOption` | Mode | Used by |
 | --- | --- | --- |
-| 0, 0 | synchronous: `File_Locate` (`CdSearchFile`), `File_ReadSync`, `File_LoadWhole` | logos, videos, title, menu: `File_EnableWait(0, 0, 0)` before each |
+| 0, 0 | synchronous: `File_SyncOpen` (`CdSearchFile`), `File_SyncRead`, `File_LoadWhole` | logos, videos, title, menu: `File_EnableWait(0, 0, 0)` before each |
 | 1, 1 | queued and asynchronous, positions from the path table | the dream: `DreamRunner_Init` calls `File_EnableWait(useCdSearch == 0, 1, 1)` |
 | 0, 1 | queued, but each request blocks and searches the disc | `useCdSearch` set; `g_sceneSettings` leaves it 0 ([unused switches](../discoveries.md#-switches-and-features-the-game-never-uses)) |
 

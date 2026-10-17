@@ -103,7 +103,7 @@ void Sym_FreeModels(void) {
     }
 }
 
-void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank, void *watched) {
+void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank, void *clock) {
     ModelSource source;
     SpyModel *entry;
     u32 i;
@@ -113,7 +113,7 @@ void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank
     g_symMap = map;
     g_symDreamSys = dreamSys;
     g_symSoundBank = soundBank;
-    g_symClock = watched;
+    g_symClock = clock;
     /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
         source.file = entry->model;

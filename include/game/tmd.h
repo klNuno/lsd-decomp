@@ -38,7 +38,7 @@ typedef struct Tmd {
         TmdHeader *header;
     } data;                   /* 0x10 */
     s32 size;
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

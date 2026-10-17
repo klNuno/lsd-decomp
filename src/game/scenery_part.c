@@ -7,13 +7,11 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* CLUT position of each part in VRAM (SceneryPart_Init). */
+/* CLUT position of each part in VRAM (SceneryPart_Reset). */
 typedef struct SceneryPartClut { u16 x; u16 y; } SceneryPartClut;
 extern SceneryPartClut g_sceneryPartCluts[];
 static SceneryPartVtbl *SceneryPart_GetVtbl(void);
 extern u8 g_sceneryPartRects[];
-/* the vtable of sprite_node.c, not in game/sprite_node.h */
-SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SceneryPartVtbl g_sceneryPartVtbl;
 
 /* Allocate a scenery part of class g_sceneryPartVtbl (0xA8 bytes) for kinds 2 and 3. */
@@ -29,7 +27,7 @@ void *SceneryPart_New(s32 index, s32 blendRate, void *font) {
 }
 
 /* Slot 0x08 of g_sceneryPartVtbl: base construct with the font and the 12-byte entry g_sceneryPartRects[index]. */
-void SceneryPart_Construct(SceneryPart *part, s32 index, s32 blendRate, void *font) {
+void SceneryPart_Init(SceneryPart *part, s32 index, s32 blendRate, void *font) {
     SpriteNode_GetVtbl()->init(part, font, 0, (SpriteRect *)(g_sceneryPartRects + index * 0xC), blendRate, 0);
     part->vtbl = SceneryPart_GetVtbl();
     part->unkA4 = 0;
@@ -37,7 +35,7 @@ void SceneryPart_Construct(SceneryPart *part, s32 index, s32 blendRate, void *fo
 }
 
 /* Slot 0x40 */
-void SceneryPart_Init(SceneryPart *part, s32 index) {
+void SceneryPart_Reset(SceneryPart *part, s32 index) {
     part->index = index;
     part->sprite.cx = g_sceneryPartCluts[index].x;
     part->sprite.cy = g_sceneryPartCluts[index].y;

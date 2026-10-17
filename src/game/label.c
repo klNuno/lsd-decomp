@@ -25,7 +25,7 @@ Label *Label_Create(Tim *font, s32 count, char *text) {
 }
 
 /* Slot 0x08: a space glyph of font with count space glyphs under it, then slot 0x40 with the text */
-void Label_Construct(Label *label, Tim *font, s32 count, char *text) {
+void Label_Init(Label *label, Tim *font, s32 count, char *text) {
     Glyph **glyphs;
     s32 i;
 
@@ -54,7 +54,7 @@ void Label_Destroy(Label *label) {
 }
 
 /* Slot 0x40: spacing 7, then the text */
-void Label_Init(Label *label, char *text) {
+void Label_Reset(Label *label, char *text) {
     label->vtbl->setSpacing(label, 7);
     label->vtbl->setText(label, text);
 }

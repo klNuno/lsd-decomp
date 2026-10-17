@@ -26,22 +26,22 @@ typedef struct ModelSource {
 typedef struct ModelVtbl {
     u8 pad_00[0x4];                                        /* 0x00 class word 0x234 */
     void *(*delete_)(void *self);                          /* 0x04 Object_Delete */
-    s32 (*init)(void *self, ModelSource *source, SoundBank *soundBank); /* 0x08 Model_Construct */
+    s32 (*init)(void *self, ModelSource *source, SoundBank *soundBank); /* 0x08 Model_Init */
     void (*destroy)(void *self);                           /* 0x0C Model_Destruct */
     void (*watch)(void *self, void *other);                /* 0x10 Actor_Watch */
     void (*unwatch)(void *self, void *other);              /* 0x14 Actor_Unwatch */
     u8 pad_18[0x40 - 0x18];
-    void (*reset)(void *self);                             /* 0x40 Model_Init */
+    void (*reset)(void *self);                             /* 0x40 Model_Reset */
     u8 pad_44[0x4C - 0x44];
     void (*attach)(void *self, void *target, void *watched, void *map, void *placement); /* 0x4C Model_Attach */
     void (*detach)(void *self);                            /* 0x50 Model_Detach */
     u8 pad_54[0x98 - 0x54];
     void (*onClock)(void *self, void *sender, s32 phase);  /* 0x98 Model_Update */
     u8 pad_9C[0xC4 - 0x9C];
-    void (*moveZ)(void *self, s32 amount, s32 animate);    /* 0xC4 Actor_MoveZ */
+    void (*moveZ)(void *self, s32 amount, s32 notify);     /* 0xC4 Actor_MoveZ, notify sends box message 6 */
     u8 pad_C8[0xDC - 0xC8];
-    void (*onTouch34)(void *self, void *sender, s32 message); /* 0xDC Actor_OnNode34, Entity_OnActorTouch in the entity class */
-    void (*onTouch24)(void *self, void *sender, s32 message); /* 0xE0 Actor_OnNode24, Entity_OnWallTouch in the entity class */
+    void (*onActorContact)(void *self, void *sender, s32 message); /* 0xDC Actor_OnActorContact, Entity_OnActorContact in the entity class */
+    void (*onTileContact)(void *self, void *sender, s32 message); /* 0xE0 Actor_OnTileContact, Entity_OnTileContact in the entity class */
     void (*setSpeed)(void *self, s32 speed);               /* 0xE4 Actor_SetSpeed */
     u8 pad_E8[0xF0 - 0xE8];
     void (*setForwardContact)(void *self, s32 value);      /* 0xF0 Model_SetForwardContact */
@@ -95,10 +95,10 @@ typedef struct Model {
     SoundBank *soundBank;        /* 0x58 */
     Mom *file;                   /* 0x5C */
     s32 ownsFile;                /* 0x60 1 when the file was loaded here, 0 when borrowed */
-    s32 forwardContact;          /* 0x64 1 makes tickA play part animation 6 */
+    s32 forwardContact;          /* 0x64 1 makes Model_TickForward send the current part's boxes (message 6) */
     struct SceneNode *part;      /* 0x68 the part the file names as current */
     s32 partCount;               /* 0x6C */
-    struct SceneNode **parts;    /* 0x70 one Actor (Actor_New) per object of the file's TMD */
+    struct SceneNode **parts;    /* 0x70 one Actor (Actor_New) per TOD object id of the file's first frame */
     u8 *partIds;                 /* 0x74 one id per part, the file's numbering */
     void (*tickFn)(void *self);  /* 0x78 run each tick while tickEnabled, chosen by setTickMode */
     s32 animation;               /* 0x7C */

@@ -14,8 +14,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* not in game/sprite_node.h: scenery_part.c still reads this vtable through its own view of the slots */
-SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */
 
@@ -34,11 +32,11 @@ ScreenSprite *ScreenSprite_Create(Tim *image, SpriteRect *rect, s32 unused) {
 void ScreenSprite_Init(ScreenSprite *sprite, Tim *image, SpriteRect *rect, s32 unused) {
     SpriteNode_GetVtbl()->init(sprite, image, 0, rect, 0, unused);
     sprite->vtbl = ScreenSprite_GetVtbl();
-    sprite->vtbl->setup(sprite);
+    sprite->vtbl->reset(sprite);
 }
 
 /* Slot 0x40 */
-void ScreenSprite_Setup(void) {
+void ScreenSprite_Reset(void) {
 }
 
 /* Slot 0x4C: attach to the parent node at the origin, then set the 2D position. */

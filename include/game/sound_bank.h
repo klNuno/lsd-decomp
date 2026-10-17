@@ -25,7 +25,7 @@ typedef struct SoundTone {
 /* Vtable g_soundBankVtbl (Sound_GetBankClass); slots 0x80, 0x84, 0x9C are the sound calls. */
 typedef struct SoundBankVtbl {
     u8 pad_00[0x4];
-    void *(*delete_)();                                                      /* 0x04 Object_Delete */
+    void *(*delete_)();                                                      /* 0x04 File_Delete */
     void (*init)(void *bank, s8 *path);                                      /* 0x08 Sound_InitBank, from Sound_CreateBank */
     u8 pad_0C[0x58 - 0x0C];
     void (*load)(void *bank, void *fullPath, u8 *vabBuffer);               /* 0x58 */
@@ -37,7 +37,9 @@ typedef struct SoundBankVtbl {
     void (*loadProgramTable)(void *bank);                                              /* 0x7C */
     s32 (*playTone)(void *bank, s32 sound, s32 volume, s32 endVolume);      /* 0x80 Sound_PlayTone: SsUtKeyOn, then SsUtAutoVol */
     s32 (*stopVoice)(void *bank, s32 voice);                                 /* 0x84 Sound_StopVoice */
-    u8 pad_88[0x9C - 0x88];
+    void (*muteBank)();                                                      /* 0x88 Sound_MuteBank, the pause window */
+    void (*unmuteBank)();                                                    /* 0x8C Sound_UnmuteBank */
+    u8 pad_90[0x9C - 0x90];
     void (*setOctave)(void *bank, s32 octave);                               /* 0x9C Sound_SetOctave; -1 from the menu */
 } SoundBankVtbl;
 
@@ -49,7 +51,7 @@ typedef struct SoundBank {
     /* 0x0C */ s32 isOpen;
     /* 0x10 */ u8 *data;          /* the VAB header, then the body; g_vabBuffer keeps it between calls */
     /* 0x14 */ s32 size;
-    /* 0x18 */ CdlLocDir cdPos;
+    /* 0x18 */ CdlLOC cdPos;
     /* 0x1C */ u32 cdSize;
     /* 0x20 */ u16 keepData;
     /* 0x22 */ u16 pending;

@@ -12,7 +12,7 @@
 
 /*
  * Characters ("entities"): the per-type record table, the spawn tables that place them,
- * and the character object of class vtable 0x80089AD4 (constructor Entity_Construct, 0x108 bytes).
+ * and the character object of class vtable 0x80089AD4 (constructor Entity_Init, 0x108 bytes).
  * Meanings and addresses: docs/discoveries.md, "The hidden rules that decide which characters
  * appear" and "The character record: mood, points, waking up and leaving".
  */
@@ -21,8 +21,8 @@
 typedef struct EntityRecord {
     MoodPoint mood;  /* 0x00 graph point logged when touched (slot 0x14C returns the record) */
     s8 points;       /* 0x02 points / 1000 (slot 0x150) */
-    s8 wakeMode;     /* 0x03 0 at spawn, 1 in range, 2 out of range, 3 in range and 1/128, 4 1/128 anywhere */
-    u8 sleepMode;    /* 0x04 1 in range, 2 out of range, >= 10 after sleepMode * 15 ticks */
+    s8 wakeMode;     /* 0x03 0 at spawn, 1 in the box ahead of the dreamer, 2 outside it, 3 in it and 1/128, 4 1/128 anywhere */
+    u8 sleepMode;    /* 0x04 1 in the box ahead of the dreamer, 2 outside it, >= 10 after sleepMode * 15 ticks */
     s8 wakeRange;    /* 0x05 range of the wake and sleep tests, << 11 */
     s8 touchRange;   /* 0x06 negative: same range, and the entity also faces or follows the dreamer (SceneNode_TurnToward) */
     s8 link;         /* 0x07 > 0 stage link - 1, < 0 stage ~link (slot 0x154) */
@@ -69,14 +69,14 @@ struct Fade;
 typedef struct EntityVtbl {
     u8 pad_00[0x4];
     void *(*delete_)(void *self);                             /* 0x04 Object_Delete */
-    s32 (*construct)(void *self, s32 type, void *source, SoundBank *soundBank); /* 0x08 Entity_Construct */
-    void (*destruct)(void *self);                             /* 0x0C Entity_Destruct */
+    s32 (*init)(void *self, s32 type, void *source, SoundBank *soundBank); /* 0x08 Entity_Init */
+    void (*destroy)(void *self);                             /* 0x0C Entity_Destruct */
     u8 pad_10[0x30 - 0x10];
-    void (*notify)(void *self, s32 event);                 /* 0x30 entity event: 9 touch, 10 link, 11 video end, 12 end */
+    void (*notify)(void *self, s32 event);                 /* 0x30 entity event: 9 touch (the box ahead), 10 link, 11 end with the record's video, 12 end */
     u8 pad_34[0x38 - 0x34];
     void (*onNotify)(void *self, void *sender, s32 message);  /* 0x38 Model_OnNotify */
     u8 pad_3C[0x40 - 0x3C];
-    void (*init)(void *self);                                 /* 0x40 Entity_Init, last step of construct */
+    void (*reset)(void *self);                                 /* 0x40 Entity_Reset, last step of init */
     void (*rotate)(void *self, s32 absolute, void *angles);   /* 0x44 SceneNode_SetRotation: degrees as {num, den} s16 pairs */
     void (*scale)(void *self, s32 absolute, void *factors);   /* 0x48 SceneNode_SetScale: {num, den} s16 pairs */
     void (*attach)(void *self, struct DreamSys *dreamSys, void *watched, struct StageMap *map, void *placement); /* 0x4C Entity_Attach */
@@ -84,20 +84,20 @@ typedef struct EntityVtbl {
     u8 pad_54[0x60 - 0x54];
     void (*setVisible)(void *self, s32 visible);              /* 0x60 Model_SetVisible, 1 on wake, 0 on sleep */
     u8 pad_64[0x70 - 0x64];
-    void (*setLightFlags)(void *self, s32 flags);             /* 0x70 SceneNode_SetLightFlags */
+    void (*setLightFlags)(void *self, s32 flags);             /* 0x70 Model_SetLightFlags */
     u8 pad_74[0x98 - 0x74];
-    void (*update)(void *self, void *sender, s32 phase);      /* 0x98 Entity_Update */
+    void (*onClock)(void *self, void *sender, s32 phase);      /* 0x98 Entity_Update */
     u8 pad_9C[0xB8 - 0x9C];
-    void (*setPosition)(void *self, void *pos);               /* 0xB8 Actor_SetPos */
-    void (*move)(void *self, void *delta);                    /* 0xBC Actor_MovePos: adds a world vector to the position */
+    void (*setPos)(void *self, void *pos);               /* 0xB8 Actor_SetPos */
+    void (*movePos)(void *self, void *delta);                    /* 0xBC Actor_MovePos: adds a world vector to the position */
     u8 pad_C0[0xC4 - 0xC0];
-    void (*moveZ)(void *self, s32 amount, s32 animate);       /* 0xC4 Actor_MoveZ: along the model's own z axis */
-    void (*moveX)();                                          /* 0xC8 Actor_MoveX (self, amount, animate): own x axis */
-    void (*moveY)(void *self, s32 amount, s32 animate);       /* 0xCC Actor_MoveY: own y axis, negative is up */
-    void (*moveZOnGround)(void *self, s32 amount, s32 animate); /* 0xD0 Actor_MoveZOnGround: moveZ, then the ground test Actor_SnapToGround */
+    void (*moveZ)(void *self, s32 amount, s32 notify);        /* 0xC4 Actor_MoveZ: along the model's own z axis; notify sends box message 6 after the move */
+    void (*moveX)();                                          /* 0xC8 Actor_MoveX (self, amount, notify): own x axis, box message 7 */
+    void (*moveY)(void *self, s32 amount, s32 notify);        /* 0xCC Actor_MoveY: own y axis, negative is up, box message 8 */
+    void (*moveZOnGround)(void *self, s32 amount, s32 notify); /* 0xD0 Actor_MoveZOnGround: moveZ, then the ground test Actor_SnapToGround */
     u8 pad_D4[0xDC - 0xD4];
-    void (*onActorTouch)(void *self, void *sender, s32 message); /* 0xDC Entity_OnActorTouch */
-    void (*onWallTouch)(void *self, void *sender, s32 message);  /* 0xE0 Entity_OnWallTouch */
+    void (*onActorContact)(void *self, void *sender, s32 message); /* 0xDC Entity_OnActorContact */
+    void (*onTileContact)(void *self, void *sender, s32 message);  /* 0xE0 Entity_OnTileContact */
     u8 pad_E4[0x10C - 0xE4];
     void (*setTickMode)(void *self, s32 mode);                /* 0x10C Model_SetTickMode */
     void (*startTick)(void *self);                            /* 0x110 Model_StartTick */

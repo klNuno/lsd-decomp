@@ -20,10 +20,10 @@
  */
 
 static void Place_CheckTextureLoad(Place *place, Tix *loader);
-/* the vtable of task.c through this file's view of its slots, so not from game/task.h */
-PlaceBaseVtbl *Task_GetVtbl();
+/* unprototyped, not from game/task.h: Place_Destruct calls it with the place as an argument */
+TaskVtbl *Task_GetVtbl();
 void Place_StartFade(Place *place, s32 color, s32 holdMode, s32 duration, s32 watch);
-static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row);
+static void Place_GetChunkPath(Place *place, s32 chunkIndex, s32 col, s32 row);
 static PlaceVtbl *Place_GetVtbl(void);
 extern u8 g_pauseText[];
 extern s32 g_pauseTextPos[];
@@ -37,27 +37,27 @@ extern s32 g_stageBoxMargins[];
 extern s32 g_stage0Bounds[];
 
 /* Allocate a place (0x88 bytes) and construct it (slot 0x08); called by the dream runner DreamRunner_CreatePlace. */
-void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s32 stage) {
+void *Place_New(SoundBank *seBank, void *music, void *font, void *models, s32 stage) {
     void *place;
 
     place = Heap_Alloc(0x88);
     if (place != NULL) {
-        Place_GetVtbl()->construct(place, handlerList, music, font, models, stage);
+        Place_GetVtbl()->init(place, seBank, music, font, models, stage);
         return place;
     }
     return NULL;
 }
 
 /* Slot 0x08 */
-void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void *font, Tmd *models, s32 stage) {
-    Task_GetVtbl()->construct(place, 0, handlerList);
+void Place_Init(Place *place, SoundBank *seBank, Bgm *music, void *font, Tmd *models, s32 stage) {
+    Task_GetVtbl()->init(place, 0, seBank);
     place->vtbl = Place_GetVtbl();
     place->ready = 0;
     place->started = 0;
     place->texLoading = 1;
     place->music = music;
     place->stage = stage;
-    place->refs.soundBank = handlerList;
+    place->refs.soundBank = seBank;
     place->refs.etcTim = font;
     place->refs.models = models;
     place->pauseOpen = 0;
@@ -67,7 +67,7 @@ void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void
 
 /* Slot 0x0C */
 void Place_Destruct(s32 place) {
-    Task_GetVtbl(place)->destruct(place);
+    Task_GetVtbl(place)->destroy(place);
 }
 
 /*
@@ -93,18 +93,18 @@ void Place_EmptySlot40(void) {
 }
 
 /* Slot 0x44: keep the DreamSys and register Place_GetChunkPath with the runner's object. */
-void Place_Attach(Place *place, ScreenEnv *owner, DreamSys *dreamSys) {
+void Place_Attach(Place *place, ScreenEnv *env, DreamSys *dreamSys) {
     StageMap *obj;
 
-    obj = (StageMap *)owner->root;
+    obj = (StageMap *)env->root;
     obj->vtbl->setChunkLoader(obj, &Place_GetChunkPath, place);
     place->dreamSys = dreamSys;
-    Task_GetVtbl()->attach(place, owner, 1);
+    Task_GetVtbl()->run(place, env, 1);
     place->vtbl->watch(place, dreamSys);
 }
 
-static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
-    if (result >= 0) {
+static void Place_GetChunkPath(Place *place, s32 chunkIndex, s32 col, s32 row) {
+    if (chunkIndex >= 0) {
         Stage_GetChunkPath(place->stage);
     } else {
         Stage_GetChunkPathAt(place->stage, col, row);
@@ -114,7 +114,7 @@ static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
 /* Slot 0x48 */
 void Place_Detach(Place *place) {
     place->vtbl->unwatch(place, place->dreamSys);
-    Task_GetVtbl()->detach(place);
+    Task_GetVtbl()->finish(place);
 }
 
 /*
@@ -129,7 +129,7 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
     view = place->view;
     view->vtbl->detach(view);
     place->texLoading = 1;
-    place->music->vt->setSeq(place->music, Music_PickTrack(place->stage, 0));
+    place->music->vtbl->setSeq(place->music, Music_PickTrack(place->stage, 0));
     place->texLoader = Tix_Create(Stage_PickTexturePath(place->stage, 0, place->dreamSys->vtbl->getDayNumber(place->dreamSys, 0)));
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
     place->refs.view = view;
@@ -166,13 +166,13 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
 
 /* Slot 0x50: teardown (called without the place), free the scenery, stop the music object. */
 void Place_Unload(Place *place) {
-    PlaceObj *music;
+    Bgm *music;
 
     place->vtbl->teardown();
     Sym_FreeSpy();
     Scenery_Teardown();
     music = place->music;
-    music->vt->stop(music);
+    music->vtbl->stop(music);
 }
 
 /* Slot 0x54 */
@@ -528,7 +528,7 @@ void Place_OnMapNotify(Place *place, s32 sender, s32 message) {
     }
 }
 
-/* Slot 0xB8: spawn the characters of the map cell under the dreamer (Sym_SpawnOrSpy, discoveries "Grey Man spawn"). */
+/* Slot 0xB8: spawn the characters of the slot the map last notified (Sym_SpawnOrSpy, discoveries "Grey Man spawn"). */
 s32 Place_SpawnCell(Place *place) {
     s32 chunkKey;
     StageMap *map;
@@ -598,8 +598,8 @@ void Place_UpdatePause(Place *place) {
     if (ticks == 4) {
         place->view->vtbl->setPresentEnabled(place->view, 0);
         place->clock->vtbl->pause(place->clock);
-        place->music->vt->pause(place->music);
-        place->sound->vt->muteBank(place->sound);
+        place->music->vtbl->pause(place->music);
+        place->sound->vtbl->muteBank(place->sound);
     }
 }
 
@@ -608,8 +608,8 @@ void Place_ClosePause(Place *place) {
     if (place->pauseOpen != 0) {
         place->pauseText->vtbl->delete_(place->pauseText);
     }
-    place->sound->vt->unmuteBank(place->sound);
-    place->music->vt->resume(place->music);
+    place->sound->vtbl->unmuteBank(place->sound);
+    place->music->vtbl->resume(place->music);
     place->clock->vtbl->resume(place->clock);
     place->view->vtbl->setPresentEnabled(place->view, 1);
     place->pauseOpen = 0;

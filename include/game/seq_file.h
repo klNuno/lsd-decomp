@@ -10,9 +10,9 @@ typedef struct SeqFile {
     ListNode *watched;
     ListNode *watchers;
     s32 isOpen;
-    s32 data;                 /* 0x10 the SEQ, given to SsSeqOpen (an s32 there) */
+    u8 *data;                 /* 0x10 the SEQ, given to SsSeqOpen */
     s32 size;
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

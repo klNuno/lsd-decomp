@@ -195,7 +195,7 @@ void CommentObject_SetText(CommentObject *obj, u8 *text, s32 mode) {
 
 INCLUDE_RODATA("asm/nonmatchings/game/comment_object", g_alphabetText);
 
-void CommentObject_Open(CommentObject *obj, s32 enable) {
+void CommentObject_Open(CommentObject *obj, s32 parent) {
     s8 nameBuf[0x20];
     Tim *inputWidget;
     ScreenSprite *box;
@@ -203,24 +203,24 @@ void CommentObject_Open(CommentObject *obj, s32 enable) {
     Glyph *glyph;
     Tim *fontWidget;
 
-    if ((enable != 0) && (obj->inputBox == NULL)) {
+    if ((parent != 0) && (obj->inputBox == NULL)) {
         inputWidget = Tim_New(File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
         inputWidget->vtbl->upload(inputWidget);
         obj->inputBox = ScreenSprite_Create(inputWidget, &g_inputBoxRect, 0);
         inputWidget->vtbl->base.delete_(inputWidget);
         box = obj->inputBox;
-        box->vtbl->attach(box, enable, g_inputBoxPos);
+        box->vtbl->attach(box, parent, g_inputBoxPos);
         fontWidget = Tim_New(File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->upload(fontWidget);
         obj->textLabel = Label_Create(fontWidget, obj->textLength, obj->textBuf);
         obj->caretGlyph = Glyph_Create(fontWidget, 0x5F);
         fontWidget->vtbl->base.delete_(fontWidget);
         label = obj->textLabel;
-        label->vtbl->show(label, enable, g_commentTextPos);
+        label->vtbl->show(label, parent, g_commentTextPos);
         label = obj->textLabel;
         label->vtbl->setColor(label, g_glyphColor);
         glyph = obj->caretGlyph;
-        glyph->vtbl->attach(glyph, enable, &g_commentOriginX);
+        glyph->vtbl->attach(glyph, parent, &g_commentOriginX);
     }
 }
 
@@ -448,7 +448,7 @@ void CommentObject_ClearText(CommentObject *obj) {
     }
 }
 
-void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 refresh) {
+void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 withTone) {
     s32 pos[2];
     Glyph *glyph;
 
@@ -458,13 +458,13 @@ void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 refresh) {
         glyph = obj->caretGlyph;
         glyph->vtbl->setPosition(glyph, pos);
         obj->caret = caret;
-        if (refresh != 0) {
+        if (withTone != 0) {
             obj->vtbl->playTone(obj, 0);
         }
     }
 }
 
-void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 refresh) {
+void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 withTone) {
     Label *label;
 
     if (obj->inputBox != 0) {
@@ -473,7 +473,7 @@ void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 ref
         label->vtbl->setChar(label, g_alphabet[charIndex], caret);
         obj->caret = caret;
         obj->charIndex = charIndex;
-        if (refresh != 0) {
+        if (withTone != 0) {
             obj->vtbl->playTone(obj, 0);
         }
     }

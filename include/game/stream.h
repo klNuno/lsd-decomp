@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "game/heap.h"
+#include "psyq/libcd.h"
 
 /*
  * The CD stream (vtable g_streamVtbl, 0x5C bytes, Stream_New, src/game/stream.c): plays one STR file
@@ -36,17 +37,12 @@ typedef struct StreamVtbl {
 } StreamVtbl;
 
 /* PSY-Q CdlFILE */
-typedef struct StreamFile {
-    u8 pos[4];              /* CdlLOC of the first sector */
-    u32 size;               /* bytes */
-    s8 name[16];
-} StreamFile;
 
 struct Stream {
     StreamVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
-    StreamFile file;        /* 0x0C CdSearchFile result */
+    CdlFILE file;           /* 0x0C CdSearchFile result: first sector, size in bytes, name */
     u8 result[0x2C - 0x24]; /* 0x24 CdSync result (Stream_Sync) */
     s32 state;              /* 0x2C 0 closed, 1 seeked, 2 reading, 4 stopped */
     s32 muted;              /* 0x30 */

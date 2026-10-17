@@ -46,6 +46,7 @@ typedef struct SpriteNode {
 } SpriteNode;
 
 /* Functions of src/game/sprite_node.c that other files call or reference (docs/naming.md, Prototypes) */
+SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 void SpriteNode_SetRotation(SpriteNode *node, s32 assign, Fraction *degrees);
 s32 SpriteNode_SetVisible(SpriteNode *node, s32 visible);
 void SpriteNode_SetSemiTrans(SpriteNode *node, s32 semiTrans);

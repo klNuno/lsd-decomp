@@ -8,7 +8,7 @@
 #include "game/actor.h"
 #include "game/scenery_part.h"
 
-/* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, Scenery_Init). */
+/* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, Scenery_Reset). */
 typedef struct SceneryParams {
     s32 x;        /* 0x00 offset from the origin: random +-22 tiles (<< 11) in Scenery_RandomizeParams */
     s32 y;        /* 0x04 */
@@ -18,20 +18,20 @@ typedef struct SceneryParams {
     s32 direction;    /* 0x14 rand() % 5 */
     s32 variant;    /* 0x18 */
     u8 *color;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
-    s32 altColor;    /* 0x20 kind 2: day number % 20, or g_sceneryKind2AltColor */
+    s32 altColor;    /* 0x20 kind 2 only: g_sceneryKind2AltColor or day number % 20 when that is 0, so always 0; a colour override part 1 would take instead of color */
 } SceneryParams;
 
 /*
  * A scenery object (class g_sceneryVtbl returned by Scenery_GetVtbl, 0x98 bytes, made by Scenery_New):
  * one of 4 kinds made around the dreamer at a place's first tick (Scenery_CreateAll, work/hunt6/F-findings.md).
- * Its base class is g_actorVtbl (constructor Actor_Construct, 0x58 bytes).
+ * Its base class is g_actorVtbl (constructor Actor_Init, 0x58 bytes).
  */
 typedef struct SceneryVtbl {
     u8 pad_00[0x08];
-    s32 (*construct)();   /* 0x08 Scenery_Construct */
-    void (*destruct)();   /* 0x0C Scenery_Destruct */
+    s32 (*init)();   /* 0x08 Scenery_Init */
+    void (*destroy)();   /* 0x0C Scenery_Destruct */
     u8 pad_10[0x40 - 0x10];
-    void (*init)();       /* 0x40 Scenery_Init */
+    void (*reset)();       /* 0x40 Scenery_Reset */
     void (*setRotation)();
     void (*setScale)();
     void (*attach)();
@@ -43,10 +43,12 @@ typedef struct SceneryVtbl {
 } SceneryVtbl;
 
 typedef struct Scenery {
-    SceneryVtbl *vt;
-    u8 pad_04[0x14 - 0x04];
-    s32 *coord;        /* 0x14 its first word is cleared once moved */
-    u8 pad_18[0x20 - 0x18];
+    SceneryVtbl *vtbl;
+    ListNode *watched;    /* 0x04 Actor's fields up to +0x54 (actor.h), under Actor's names */
+    ListNode *watchers;   /* 0x08 */
+    struct SceneNode *parent; /* 0x0C */
+    DObj2 object;         /* 0x10 object.coord flg is cleared once moved */
+    s32 id;               /* 0x1C */
     void *model;          /* 0x20 */
     u32 ticks;            /* 0x24 counted by update (Scenery_Update) */
     u8 pad_28[0x44 - 0x28];
@@ -68,6 +70,6 @@ typedef struct Scenery {
 
 /* Functions of src/game/scenery_obj.c that other files call or reference (docs/naming.md, Prototypes) */
 Scenery *Scenery_New(s32 kind, SceneryParams *params, StageMap *map, Vec3 *origin);
-void Scenery_SetPlaceRefs(s32 family, Tmd *models, void *font, View *view);
+void Scenery_SetPlaceRefs(s32 unused, Tmd *models, void *font, View *view);
 
 #endif

@@ -372,7 +372,7 @@ static void Scenery_UpdateAll(void *origin) {
         objs = g_scenery;
         for (i = 0; i < g_sceneryCount; i++) {
             Scenery *obj = objs[i];
-            obj->vt->update(obj, origin);
+            obj->vtbl->update(obj, origin);
         }
     }
 }
@@ -460,7 +460,7 @@ static Scenery **Scenery_CreateKind3(Scenery **out, void *origin) {
     return out;
 }
 
-/* Kind 2, one object: a colour of g_sceneryKind2Colors, and dayMark g_sceneryKind2AltColor (0 on day numbers divisible by 20). */
+/* Kind 2, one object: a colour of g_sceneryKind2Colors, and altColor g_sceneryKind2AltColor (always 0), or day number % 20 when that is 0. */
 static Scenery **Scenery_CreateKind2(Scenery **out, void *origin) {
     ParamWord *p;
     u8 **q;
@@ -608,7 +608,7 @@ static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (o
  * leak, work/hunt6/F-findings.md). Then it updates them and the two spot slots, and returns the
  * range of a spot just taken when it equals found.
  */
-s32 Scenery_Tick(void *mapPos, s32 ignored, s32 found) {
+s32 Scenery_Tick(void *mapPos, s32 ignored, s32 spotType) {
     s32 posBuf[4];
     void *origin;
     s32 i;
@@ -636,10 +636,10 @@ s32 Scenery_Tick(void *mapPos, s32 ignored, s32 found) {
                 *slot = SoundSpot_Release(*slot);
             }
         } else {
-            *slot = SoundSpot_Acquire(&g_soundSpotSlotData[i], &found, origin, ignored);
+            *slot = SoundSpot_Acquire(&g_soundSpotSlotData[i], &spotType, origin, ignored);
         }
     }
-    return found;
+    return spotType;
 }
 
 void Stage_CyclePalettes(void) {

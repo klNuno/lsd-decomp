@@ -14,6 +14,7 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 
 - Format: `Subsystem_VerbNoun` for functions (`Dream_AdvanceDay`, `Link_PickTarget`), `g_` plus a noun for globals (`g_dayCount`), `PascalCase` for struct types (`DreamState`).
 - Subsystems in use: see the glossary. Add a subsystem to the glossary before using it.
+- Class slots carry one name in every class: `X_Init` fills slot 0x08 (the constructor body), `X_Reset` slot 0x40, `X_GetVtbl` returns the vtable, `X_OnActorContact` and `X_OnTileContact` fill 0xDC and 0xE0 (messages from senders of class byte 0x34 and 0x24); the vtable structs name these slots `init`, `reset`, `onActorContact`, `onTileContact`, and 0x0C `destroy`, 0x88 `sendBoxes`, 0x98 `onClock`, 0x64 `onLoaded` for the file classes. A function keeps a name of its own when it does more than the slot says (`Model_Update` at 0x98, `DreamSys_OnGroundProbe` at 0x88).
 - A field keeps its offset in its name (`unk_14`) until two independent uses agree on its meaning.
 - Every rename goes in `config/symbol_addrs.txt` with a comment pointing to its row in `docs/discoveries.md`.
 - Every name of ours has a level in `config/name_levels.tsv` (columns NAME KIND FILE LEVEL EVIDENCE): `game` when an emulator run showed what the name claims, `code` when the code proves it and nothing else fits, `guess` when it is plausible but unproven (the evidence says what is missing), `wrong` when the code contradicts it (only types waiting for a merge). `tools/rename.py` and `tools/field_rename.py` keep it in step; a new name gets its row with its evidence. The 2026-10-17 audit wrote it (work/names/), and `tools/name_levels.py comments` copies its evidence into the comments of `config/symbol_addrs.txt`.
@@ -32,7 +33,7 @@ Matching is half the job; the other half is C a person can read. Every change be
 A function's prototype lives in the header of the file that defines it, `include/game/<file>.h`, written like the definition with its parameter names; callers include that header ([layout.md](layout.md), rule 6). Its non-gp globals that other files read are declared there with `extern`; gp globals never are (rule 1). Sony functions are declared in `include/psyq/<lib>.h` (libapi, libetc, libgpu, libgte, libgs, libcd, libspu, libsnd, libpress, libcard, libc), one header per PSY-Q library, holding only what the game calls in the form its calls need; a struct argument the callers read through different views of their own is `void *`. The exceptions keep the bytes, each with a comment saying why:
 
 - Unprototyped in the header (`s32 Cine_PickOpeningPath();`) when a caller passes another number of arguments than the definition takes, because the call in the executable passes them: `Heap_Create`, `SceneNode_ProbeHeight`, `SceneNode_LocalToWorld`, `ModelObject_GetBox`, `File_LoadWhole`, `Music_GetEffectsBank`, `Music_PickTrack`, `Stage_GetChunkPath`, `Cine_PickOpeningPath`, `Cine_GetEndingPath`, and `Cine_GetPath` (scene.c passes the `{category, variant}` pair as one s32). `Heap_Alloc`, `Heap_Free` and `Rand_SeedAndNext` are K&R definitions on purpose, so their header form has no parameters either.
-- `X_GetVtbl` of Actor, RootNode, Screen, SceneNode, SpriteNode, Task and View stays out of the headers: a subclass calls its base class's methods through its own view of the vtable struct (other slot names or types), so each file that calls it declares it with its own return type, one comment line above. Merging those views into one vtable struct per class removes the exception.
+- `Task_GetVtbl` stays out of task.h: Place_Destruct calls it with the place as an argument (the call in the executable leaves it in a0), so place.c declares it unprototyped, and task.c and dream_runner.c declare their own `TaskVtbl *Task_GetVtbl(void)`. The other base classes (Actor, RootNode, Screen, SceneNode, SpriteNode, View) have one vtable struct and their `X_GetVtbl` is in their header.
 - `Cine_GetVideoFrames` is defined as s16 in path_table.c; scene.c declares it as s32 because its code takes the word as is, and an s16 prototype adds a sign extension.
 
 ## Evidence that counts
@@ -49,24 +50,25 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | --- | --- | --- |
 | Day | One dream, from falling asleep to waking; the counter at +0x180 wraps from 364 to 0 and increments the year | code: `DreamSys_AdvanceDay` @0x8005A304, checked in RAM 2026-10-15 |
 | Zone | One of the dream areas (Happy Town, Violence District, Moonlight Tower and others) | community knowledge |
-| Link | Touching something that moves you to another place: dynamic (random main zone) or static (per-zone table) | community knowledge (lsddecomp, compu-lsd) |
+| Link | Touching something that moves you to another place. Four link lists (static, facing, extra, scripted) plus dynamic links to a random main zone; `g_dynamicLinkCount` counts every `Spawn_PickRandom` call (character links, falls, the start of a day with no matching spawn) | code: [links](engine/links.md); first named from community knowledge (lsddecomp, compu-lsd) |
 | Graph | The mood chart shown after each day, two axes | community knowledge |
 | Flashback | A replay of saved moments: up to 10 entries of 0x24 bytes at DreamSys +0x470, 20 s each; the menu item needs an unlock score above 9,999,999 and one entry | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678, `DreamSys_AddFlashback` @0x8005B74C) |
 | Grey Man | The figure who erases flashbacks when met | community knowledge (compu-lsd, fandom) |
-| DreamSys | The game-state object at `0x80091530` (vtable `0x80087BDC`): day, year, scores, graph, timer, current stage | code: discoveries 2026-10-15, checked in RAM |
+| DreamSys | The game-state object at `0x80091530` (vtable `0x80087BDC`): day, year, scores, graph, timer, current stage. It is also the dreamer actor (class word 0x1F34 under Actor): walk, look, camera, step sounds, fall | code: discoveries 2026-10-15, checked in RAM |
 | Day number | Day + 1 as returned by `DreamSys_GetDayNumber` @0x8005A2E4; parity and special-day checks use it, the stored day at +0x180 starts at 0 | code: discoveries 2026-10-15 |
-| Stage | One of the 14 `STGxx` folders, indexed 0 to 13 in every per-stage table (time limits, chunk moods, spawn points, paths) | code: discoveries 2026-10-15 |
+| Stage | One of the 14 `STGxx` folders, indexed 0 to 13 in every per-stage table (time limits, chunk moods, spawn points, paths). Stage names the index; the object that runs one is a Place | code: discoveries 2026-10-15 |
 | Spawn | A stage's arrival point: {chunk, tile, adjustment index}, 6 bytes, tables at 0x800885B8 | code: discoveries 2026-10-15 |
 | Mood | A graph point, two s8 axes in -9..9; a chunk's mood is one s16 in its stage table | code: discoveries 2026-10-15 |
 | Unlock score | DreamSys +0x184 = navigation score (+0x188) + instance score (+0x18C), recomputed at each normal day end | code: discoveries 2026-10-15 (`DreamSys_CalcUnlockScore` @0x8005B6E0, `Nav_CalcScore` @0x8005BA7C) |
 | Special day | One of the 42 day numbers of `g_specialDays` @0x80088CCC; shows `SPDAYnnA/B.STR` (variants 0, 1) or `SPDAYnnC-F.TIM` (2 to 5) instead of a dream | code: discoveries 2026-10-15, checked in game |
-| Entity event | A message from an entity to DreamSys (`DreamSys_OnEntityEvent` @0x8005B03C): 9 touch, 10 link, 11 end with video, 12 end | code: discoveries 2026-10-15 |
+| Entity event | A message from an entity to DreamSys (`DreamSys_OnEntityEvent` @0x8005B03C): 9 touch (the box test ahead of the dreamer, `Entity_CheckTouch`), 10 link, 11 end with the record's video, 12 end. Contact itself is message 4 in `Entity_OnActorContact` | code: discoveries 2026-10-15 |
+| Transition | DreamSys +0x44, the code of the link or event running (0xB to 0x11), 0 when idle; a watcher that clears it during the notify cancels the link | code: [dream system](engine/dream-system.md), `DreamSys_ExecuteLink` |
+| Box ahead | The test of a point in the box ahead of the dreamer (`DreamSys_TestPointAhead`, `Entity_IsWithinBox`): the entity record's wake, sleep and touch ranges use it | code: src/game/dream_sys.c, src/game/entity.c |
 | Sym | Entities loaded from `ETC\SYM*.MOM`; only `SYMSPY.MOM` is loaded | code: discoveries 2026-10-15 |
 | Nav | Navigation flags and score: 30 flags at DreamSys +0x5E0 and the dynamic link count at +0x600 that make the navigation score | code: discoveries 2026-10-15 (`Nav_CalcScore` @0x8005BA7C) |
-| Cine | Special-day and entity-event cinematics: the {category, variant} to path and video id tables | code: discoveries 2026-10-15 (`Cine_GetPath` @0x80049334) |
+| Cine | Every video path (logos, opening, special days, entity events, ending) and its frame count: the {category, variant} to path and video id tables | code: discoveries 2026-10-15 (`Cine_GetPath` @0x80049334, `Cine_GetLogoPath`, `Cine_PickOpeningPath`, `Cine_GetEndingPath`) |
 | Scene | The scene class that `Scene_Init` builds with `ETC\DREAME5.TMD` and a new DreamSys, and the code of its file `src/game/scene.c` (random seed, special-day cinematic) | code: discoveries 2026-10-15 (`Scene_PlayCinematic` @0x8002677C) |
-| Menu | The main menu object, the screen with the day number and the Flashback item, and its items | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678) |
-| SaveMenu | The memory card menu object: card file name, title with the day number, save and load of the 0x700-byte block | code: discoveries 2026-10-15 (`Menu_Save` @0x8004E0E4) |
+| Menu | The main menu object, the screen with the day number and the Flashback item, and its items. The memory card menu is the same class (menu.h): card file name, title with the day number (`Menu_SetTitleDay`), save and load of the 0x700-byte block (`Menu_Save`, `Menu_Load`) | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678, `Menu_Save` @0x8004E0E4) |
 | Rand | The game's wrapper around PSY-Q `srand` and `rand` | code: discoveries 2026-10-15 (`Rand_SeedAndNext` @0x80048CFC) |
 | Music | The dream's sound bank (one of 7, `g_musicBanks`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
 | Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: work/hunt6/F-findings.md, `include/game/heap.h` |
@@ -75,23 +77,27 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Render | Model drawing: TMD polygons sorted into the ordering table, projected, clipped and turned into GPU packets | code: src/game/render.c |
 | Entity | A character or object of the dream (0x108 bytes, vtable 0x80089AD4), created from a spawn group with its 16-byte record at 0x80089EA4 | code: `include/game/entity.h`, discoveries "The character record" |
 | Screen | The base screen class (vtable 0x8006E878): a state machine run by the display loop, with clock, pad and view | code: src/game/screen.c, `include/game/screen.h` |
+| ScreenEnv | What every screen runs with: display, pad, clock, root node and view; a NULL clock, root or view is made for the run. The scene keeps it at +0x1C, the dream runner and the place pass it on | code: `include/game/screen.h` (`ScreenEnv`) |
 | MenuScreen | A Screen with sound bank, picture, fades, timeout and an item menu (vtable 0x8006E730): logos, special-day pictures, the main menu | code: `include/game/menu_screen.h` |
 | VideoScreen | The MenuScreen that plays one STR video (vtable 0x8006E5F8) | code: `include/game/video_screen.h` |
 | View | The 3D view (vtable 0x8006E8E4): GsRVIEW2, double ordering tables, fog and light mode | code: `include/game/view.h` |
 | Task | A class with a tick count, a timeout and a result (vtable 0x80086668) that DreamRunner and Place derive from | code: `include/game/task.h` |
 | DreamRunner | The object built for each dream (vtable 0x800865C8): loads the dreamer model and the music bank, creates the place, rebuilds it after a link | code: `include/game/dream_runner.h` |
 | StageMap | The map that keeps the 7 chunks around the dreamer loaded and shows the tiles in view (vtable 0x800866E8) | code: `include/game/stage_map.h` |
+| Cell | A MapSlot of the stage map, the 20 x 20 tiles of one chunk; `Place_SpawnCell` spawns the characters of the slot the map last notified | code: `include/game/stage_map.h` (`MapSlot`), src/game/place.c |
 | MapTile | One tile model of a chunk (vtable 0x80086AA0), a GsDOBJ2 at +0x10 | code: `include/game/map_tile.h` |
-| Place | The object that runs one stage while the dreamer is in it (vtable 0x80087034): load, pad handler, pause, fades | code: `include/game/place.h` |
-| Actor | The base class of scenery objects and their parts (vtable 0x800878D4, 0x58 bytes) | code: src/game/actor.c |
+| Place | The object that runs one stage while the dreamer is in it (vtable 0x80087034): load, pad handler, pause, fades. Place names the object, Stage the 0 to 13 index | code: `include/game/place.h` |
+| Actor | The base class of Model, Entity, DreamSys and Scenery (vtable 0x800878D4, 0x58 bytes); `Actor_New` makes every model part (model.c) as well as the kind 0 scenery parts. Slot 0xDC takes the messages of senders of class byte 0x34 (`X_OnActorContact`), 0xE0 those of map tiles, class byte 0x24 (`X_OnTileContact`) | code: src/game/actor.c, `Actor_OnNode` |
 | Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/scenery.h`, work/hunt6/F-findings.md |
 | Ambience | The fog and sky record of a place, picked per stage or from the day's family | code: src/game/scenery.c |
 | Model | The model base class every entity derives from (vtable 0x8008A6C4, 0x98 bytes): model file, parts, animation, per-tick function, sound bank | code: src/game/model.c |
+| TOD packet | One command of a TOD animation frame, `Model_ApplyCommand` by type: 0 attribute, 1 coordinate (rotate, scale, move), 2 TMD object (links one to the part), 3 parent | code: src/game/model.c |
 | ModelObject | One model instance of a TMD object, an Object subclass of 0x24 bytes, with its box and ray test | code: src/game/model_object.c |
 | ModelBox | The min and max corners of a model object, and the 8-corner box list of the ray tests | code: src/game/model_object.c |
 | SceneNode | An object of the node classes of src/game/scene_node.c: parent at +0xC, GsCOORDINATE2 at +0x14 | code: src/game/scene_node.c |
 | File | The CD file object: locate, load, seek and the read queue (0x2C bytes) | code: src/game/file_cd.c |
-| Tix | A TEXx.TIX texture set file and its palette fades | code: `include/game/tix.h` |
+| FileRequest | One queued file request (open, close, seek, read, load whole), run by `File_ServiceQueue` | code: src/game/file_cd.c |
+| Tix | A TEXx.TIX texture set file and its palette fades. Its fog rows (`TixFade`, `Tix_SetFadeColor`, `Tix_BuildFade`) are not the `Fade` class, the screen fader | code: `include/game/tix.h` |
 | TimPack | One part of a TIX, a list of TIM images | code: `include/game/tim_pack.h` |
 | Tmd | A TMD model file and its model objects | code: `include/game/tmd.h` |
 | Tod | A TOD animation file | code: `include/game/tod.h` |
@@ -103,14 +109,14 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | BgCells | The GsCELL table of a BgMap | code: `include/game/bg_cells.h` |
 | Movie | The MDEC movie player | code: `include/game/movie.h` |
 | Card | The memory card object (vtable 0x80086DC4, 0x84 bytes): card events, bu00 and bu10 file access, the save format, the save and load dialogs | code: `include/game/card.h` |
-| Sound | A model's sound bank (0x64 bytes): loads a VAB, builds its tone tables, starts and stops voices | code: src/game/sound_bank.c |
+| Sound | A sound bank (0x64 bytes): loads a VAB, builds its tone tables, starts and stops voices. Models, menus, Bgm and Place each hold one | code: src/game/sound_bank.c |
 | Fade | A Box that fades its color (vtable 0x8006E99C): the 320x240 layer of the view, the place fader, the Grey Man white flash; RgbFade fades one RGB triple | code: src/game/fade.c |
 | RgbFade | See Fade | code: src/game/fade.c |
 | Rgb | Color byte helpers | code: src/game/box.c |
 | Pos | Position pair helpers: set, save, restore | code: src/game/fade.c |
 | Text | Shift-JIS fullwidth text: encode, decode, format a number | code: src/game/text.c |
 | CommentObject | The on-screen keyboard object (0x4C bytes, vtable 0x80086ED0): text buffer, alphabet, caret | code: src/game/comment_object.c |
-| StringList | A list of strings with their lengths and a maximum length | code: src/game/string_list.c |
+| StringList | A list of strings with their lengths and a maximum length: the LOAD file chooser window of the memory card menu | code: src/game/string_list.c |
 | App | The base class of Scene (vtable 0x8006E4F0): CD init, 320x240 screen, display and pad, the main loop | code: src/game/app.c |
 | Display | The display object (vtable 0x8006C070): frame loop and VRAM transfers | code: src/game/display.c |
 | Bgm | The music player ("WBgm" in its error message): a sound bank and a SEQ file played by libsnd | code: src/game/bgm.c |
@@ -126,12 +132,14 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | RootNode | The root scene node with 3 lights and the ambient color, base of StageMap (vtable 0x8006EFAC) | code: src/game/root_node.c |
 | FlatLight | The flat light helpers of RootNode | code: src/game/flat_light.c |
 | Box | A filled 2D rectangle widget, a GsBOXF at +0x58 (vtable 0x8006EAC0) | code: src/game/box.c |
+| Widget | The view type of the menu objects drawn on the overlay (Box, Fade, Label, Glyph): one vtable struct for their shared slots | code: `include/game/screen.h` (`Widget`, `WidgetVtbl`) |
 | Label | A row of glyphs that shows a text (vtable 0x8006EB90) | code: src/game/label.c |
 | Fraction | A {numerator, denominator} pair used for scales | code: src/game/scene_node.c |
+| Vec | Vector helpers of the scene nodes: `Vec_TransformShort` and `Vec_TransformLong` apply a matrix to short (ModelVec) or long (Vec3) vectors for the collision boxes, the rotations and the sprites (scene_node.c; render.c does not use them) | code: src/game/scene_node.c |
 | Bits | Bit flag helpers of the scene nodes (GsDOBJ2 attribute bits) | code: src/game/scene_node.c |
 | DreamView | The dream camera, a View subclass of 0xDC bytes (vtable 0x800869D8) | code: src/game/dream_view.c |
 | MapModels | The model list of one map chunk (vtable 0x8006D940) | code: src/game/map_models.c |
-| HandlerNode | The node that runs a behaviour handler every tick and plays its voices | code: `include/game/handler_node.h`, src/game/handler_node.c |
+| HandlerNode | The node that runs a behaviour handler every tick and plays its voices; "node" because it sits in no list, its id is the caller's (an entity type + 1, DreamSys 1, a sound spot its type) | code: `include/game/handler_node.h`, src/game/handler_node.c |
 | SoundSpot | A fixed ambient sound source of a place, played from the SND\SE bank; at most two play at once, quieter with distance | code: src/game/scenery.c |
 | SceneryPart | A sprite part of the scenery (vtable 0x800879C4) | code: src/game/scenery_part.c |
 | Behavior | A 16-byte entity behaviour record {handler, parameters} and its handler | code: discoveries 2026-10-15 (`Behavior_EraseFlashbacks` @0x80064618) |

@@ -17,8 +17,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* not in game/view.h: each file that calls it reads the vtable through its own view of the slots */
-ViewVtbl *View_GetVtbl(void);
 static SceneNode *SceneNode_GetRoot(SceneNode *node);
 static void View_SetGeomScreen(s32 projection);
 extern ViewVtbl g_viewVtbl[];   /* View */

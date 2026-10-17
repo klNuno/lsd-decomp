@@ -22,7 +22,7 @@ static s32 Mood_GetColor(MoodPoint *point);
 static s32 DreamSys_ExecuteLink();
 extern u8 g_turnRotations[];
 s32 g_saveMagic;
-static DreamSysVtbl *DreamSys_GetVtable(void);
+static DreamSysVtbl *DreamSys_GetVtbl(void);
 extern s32 g_dreamerStartRotation[];
 static s32 Mood_CalcAxis(s32, s32, s32);
 extern s32 g_fallStep[];
@@ -55,7 +55,7 @@ DreamSys *DreamSys_New(Tmd *tmd, SoundBank *soundBank, View *camera) {
 
     dreamSys = Heap_Alloc(0x928);
     if (dreamSys != NULL) {
-        DreamSys_GetVtable()->init(dreamSys, tmd, soundBank, camera);
+        DreamSys_GetVtbl()->init(dreamSys, tmd, soundBank, camera);
         return dreamSys;
     }
     return NULL;
@@ -63,7 +63,7 @@ DreamSys *DreamSys_New(Tmd *tmd, SoundBank *soundBank, View *camera) {
 
 void DreamSys_Init(DreamSys *dreamSys, Tmd *tmd, SoundBank *soundBank, View *camera) {
     Actor_GetVtbl()->init(dreamSys);
-    dreamSys->vtbl = DreamSys_GetVtable();
+    dreamSys->vtbl = DreamSys_GetVtbl();
     dreamSys->soundBank = soundBank;
     dreamSys->camera = camera;
     dreamSys->etcTim = 0;
@@ -238,18 +238,18 @@ void DreamSys_RouteMapMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
     }
 }
 
-void DreamSys_RouteEntityMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
-    Actor_GetVtbl()->onTouch34(dreamSys, sender, message);
+void DreamSys_OnActorContact(DreamSys *dreamSys, s32 **sender, s32 message) {
+    Actor_GetVtbl()->onActorContact(dreamSys, sender, message);
     if ((**sender & 0xFFFFF) == 0x1F234) {
         dreamSys->vtbl->onEntityEvent(dreamSys, sender, message);
     }
 }
 
-void DreamSys_OnWallTouch(DreamSys *dreamSys, s32 **sender, s32 message) {
+void DreamSys_OnTileContact(DreamSys *dreamSys, s32 **sender, s32 message) {
     StageMap *map;
     StagePlace *touched;
 
-    Actor_GetVtbl()->onTouch24(dreamSys, sender, message);
+    Actor_GetVtbl()->onTileContact(dreamSys, sender, message);
     if (message == 4 && dreamSys->transition == 0) {
         map = dreamSys->map;
         touched = map->vtbl->getTellKey(map, sender);
@@ -696,7 +696,7 @@ void DreamSys_Walk(DreamSys *dreamSys, s32 direction) {
             if (dreamSys->stage == 0) {
                 coord = dreamSys->object.coord;
                 if (coord->coord.t.y < -0x7D0 && coord->coord.t.x >= -0x1F3) {
-                    dreamSys->vtbl->onWallTouch(dreamSys, dreamSys, 4);
+                    dreamSys->vtbl->onTileContact(dreamSys, dreamSys, 4);
                 }
             }
         }
@@ -718,7 +718,7 @@ void DreamSys_TickFall(DreamSys *dreamSys) {
     View *camera;
 
     if (dreamSys->falling != 0) {
-        dreamSys->vtbl->move(dreamSys, g_fallStep);
+        dreamSys->vtbl->movePos(dreamSys, g_fallStep);
         camera = dreamSys->camera;
         camera->refPoint.y = camera->refPoint.y - 0x258;
     }
@@ -899,11 +899,11 @@ void DreamSys_LinkDynamic(DreamSys *dreamSys) {
     }
 }
 
-s32 DreamSys_LinkStatic(DreamSys *dreamSys, void *target) {
+s32 DreamSys_LinkStatic(DreamSys *dreamSys, void *location) {
     s32 newStage;
 
     if (dreamSys->transition == 0) {
-        newStage = Link_FindStatic(&dreamSys->place, target, dreamSys->stage);
+        newStage = Link_FindStatic(&dreamSys->place, location, dreamSys->stage);
         if (newStage >= 0) {
             DreamSys_ExecuteLink(dreamSys, newStage, 0xD, 1);
             return 1;
@@ -981,7 +981,7 @@ s32 DreamSys_LinkExtra(DreamSys *dreamSys, StagePlace *location) {
         if (DreamSys_ExecuteLink(dreamSys, newStage, 0x11, 0) != 0) {
             dreamSys->transition = 0;
             dreamSys->map->vtbl->placeToWorld(dreamSys->map, worldPos, &dreamSys->place);
-            dreamSys->vtbl->setPosition(dreamSys, worldPos);
+            dreamSys->vtbl->setPos(dreamSys, worldPos);
             if (bonusSeconds != 0 && dreamSys->flashbackMode == 0) {
                 dreamSys->vtbl->swapTimeLimit(dreamSys, dreamSys->vtbl->getElapsedSeconds(dreamSys) + bonusSeconds);
             }
@@ -1008,7 +1008,7 @@ static s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition
     return 1;
 }
 
-s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
+s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *location) {
     Fraction rotation[3];
 
     if (dreamSys->transition == 0) {
@@ -1024,10 +1024,10 @@ s32 DreamSys_StartLinkStep(DreamSys *dreamSys, StagePlace *target) {
             }
             return 0;
         }
-        if (Link_FindScripted(&dreamSys->place, target, dreamSys->stage) >= 0) {
+        if (Link_FindScripted(&dreamSys->place, location, dreamSys->stage) >= 0) {
             SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
             if (Link_CheckScripted(&dreamSys->arrivalHeading, &dreamSys->linkHeading, (RotationYaw *)rotation) != 0 && dreamSys->walkingForward != 0) {
-                dreamSys->linkStartPlace = *target;
+                dreamSys->linkStartPlace = *location;
                 dreamSys->ignorePad = 1;
                 dreamSys->skipMoveBoxes = 1;
                 dreamSys->linkStepTick = 0;
@@ -1157,14 +1157,14 @@ s32 DreamSys_LinkStep3(DreamSys *dreamSys) {
     return 0;
 }
 
-static void DreamSys_MoveToTileOffset(DreamSys *dreamSys, s16 *from, s16 *to) {
+static void DreamSys_MoveToTileOffset(DreamSys *dreamSys, s16 *start, s16 *current) {
     s32 delta[3];
 
-    delta[0] = from[0] - to[0];
-    delta[1] = from[1] - to[1];
-    delta[2] = from[2] - to[2];
+    delta[0] = start[0] - current[0];
+    delta[1] = start[1] - current[1];
+    delta[2] = start[2] - current[2];
     delta[1] = 0;
-    dreamSys->vtbl->move(dreamSys, delta);
+    dreamSys->vtbl->movePos(dreamSys, delta);
 }
 
 s32 DreamSys_GetStage(DreamSys *dreamSys) {
@@ -1428,6 +1428,6 @@ s32 func_8005BA20(DreamSys *dreamSys, s32 value) {
     return old;
 }
 
-static DreamSysVtbl *DreamSys_GetVtable(void) {
+static DreamSysVtbl *DreamSys_GetVtbl(void) {
     return &g_dreamSysVtbl;
 }

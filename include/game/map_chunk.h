@@ -50,7 +50,7 @@ typedef struct MapChunk {
     s32 isOpen;
     MapChunkData *data;       /* 0x10 the 0xB358-byte chunk buffer */
     s32 size;                 /* 0x14 0xB358 once the buffer exists */
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;             /* 0x20 set to data != NULL at creation */
     u16 pending;

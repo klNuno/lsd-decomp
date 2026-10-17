@@ -26,7 +26,7 @@ typedef struct BoxFill {
 } BoxFill;
 
 /* Any scene node as View_DrawNode reads it (scene_node.h SceneNode, then the fields of the kind it draws:
-   Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
+   Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's position at +0xA0). */
 typedef struct DrawNode {
     u32 *vtbl;              /* 0x00 vtable; its first word is the tag: low 4 bits the sender type, low byte the kind */
     ListNode *watched;      /* 0x04 the watched objects, its children among them (List_Next) */
@@ -45,8 +45,8 @@ typedef struct DrawNode {
     u8 pad_60[0x4];
     Sprite sprite;          /* 0x64 */
     u8 pad_88[0x18];
-    s32 spriteX;             /* 0xA0 sprite x scale, used with half the screen width */
-    s32 spriteY;             /* 0xA4 sprite y scale, used with half the screen height */
+    s32 spriteX;             /* 0xA0 ScreenSprite.position x, in percent of half the screen width */
+    s32 spriteY;             /* 0xA4 ScreenSprite.position y, in percent of half the screen height */
 } DrawNode;
 
 
@@ -155,15 +155,15 @@ void View_DrawNode(View *view, DrawNode *node) {
             return;
         }
         if (node->parent->parent != 0) {
-            Render_TransformLongVectors(pos, &node->object.coord->coord.t, 1, ls);
+            Vec_TransformLong(pos, &node->object.coord->coord.t, 1, ls);
             pos->x += lsbuf.t.x;
             pos->y += lsbuf.t.y;
             pos->z += lsbuf.t.z;
         } else {
             *pos = lsbuf.t;
         }
-        /* unk4C is the near plane (View_Reset stores 10): a sprite behind it is dropped.
-           unk98 is the OT z step, (far - near) / OT length + 1, computed by the view's frame setup. */
+        /* nearZ is the near plane (View_Reset stores 10): a sprite behind it is dropped.
+           otZStep is the OT z step, (far - near) / OT length + 1, computed by the view's frame setup. */
         if (pos->z > view->nearZ) {
             pos->x = pos->x * view->projection / pos->z;
             pos->y = pos->y * view->projection / pos->z;

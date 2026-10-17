@@ -50,7 +50,7 @@ typedef struct Tix {
         TixHeaderBytes *copy; /* the same 0x24 bytes, copied whole from the read buffer */
     } data;                   /* 0x10 */
     s32 size;                 /* 0x14 0x24 */
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

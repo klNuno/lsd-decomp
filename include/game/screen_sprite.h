@@ -16,7 +16,7 @@ typedef struct ScreenSpriteVtbl {
     void *(*delete_)();                                    /* 0x04 Object_Delete */
     void (*init)(void *sprite, Tim *image, SpriteRect *rect, s32 unused); /* 0x08 ScreenSprite_Init */
     u8 pad_0C[0x40 - 0x0C];
-    void (*setup)();                                       /* 0x40 ScreenSprite_Setup, empty */
+    void (*reset)();                                       /* 0x40 ScreenSprite_Reset, empty */
     u8 pad_44[0x4C - 0x44];
     void (*attach)();                                      /* 0x4C ScreenSprite_Attach (sprite, parent, 2D position) */
     u8 pad_50[0x78 - 0x50];

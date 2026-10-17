@@ -122,7 +122,7 @@ typedef struct DreamSysVtbl {
     void (*setDivision)();                                                 /* 0x07C SceneNode_SetDivision */
     void (*setBackfaceClip)();                                                 /* 0x080 SceneNode_SetBackfaceClip */
     void (*getRotMatrix)();                                                 /* 0x084 SceneNode_GetRotMatrix */
-    void (*onGroundProbe)();                                                 /* 0x088 DreamSys_OnGroundProbe */
+    void (*sendBoxes)();                                                 /* 0x088 DreamSys_OnGroundProbe */
     void (*getBoxList)();                                                 /* 0x08C SceneNode_GetBoxList */
     void (*sendShape)();                                                 /* 0x090 SceneNode_SendShape */
     void (*onPad)();                                                 /* 0x094 DreamSys_OnPad */
@@ -134,8 +134,8 @@ typedef struct DreamSysVtbl {
     void (*rayTestBoxes)();                                                 /* 0x0AC SceneNode_RayTestBoxes */
     void (*unkB0)();                                                 /* 0x0B0 0x00000000 */
     void (*addActorWatchers)();                                                 /* 0x0B4 SceneNode_AddActorWatchers */
-    void (*setPosition)(struct DreamSys *, void *);                  /* 0x0B8 Actor_SetPos */
-    void (*move)(struct DreamSys *, s32 *);                          /* 0x0BC Actor_MovePos */
+    void (*setPos)(struct DreamSys *, void *);                  /* 0x0B8 Actor_SetPos */
+    void (*movePos)(struct DreamSys *, s32 *);                          /* 0x0BC Actor_MovePos */
     void (*moveLocal)();                                                 /* 0x0C0 Actor_MoveLocal */
     void (*moveZ)();                                                 /* 0x0C4 Actor_MoveZ */
     void (*moveX)();                                                 /* 0x0C8 Actor_MoveX */
@@ -143,8 +143,8 @@ typedef struct DreamSysVtbl {
     void (*moveZOnGround)();                                                 /* 0x0D0 Actor_MoveZOnGround */
     void (*moveXOnGround)(struct DreamSys *, void *, s32);                   /* 0x0D4 Actor_MoveXOnGround */
     void (*unkD8)();                                                 /* 0x0D8 Actor_EmptySlotD8 */
-    void (*routeEntityMessage)();                                                 /* 0x0DC DreamSys_RouteEntityMessage */
-    void (*onWallTouch)(struct DreamSys *, void *, s32);             /* 0x0E0 DreamSys_OnWallTouch */
+    void (*onActorContact)();                                                 /* 0x0DC DreamSys_OnActorContact */
+    void (*onTileContact)(struct DreamSys *, void *, s32);             /* 0x0E0 DreamSys_OnTileContact */
     void (*setSpeed)();                                                 /* 0x0E4 Actor_SetSpeed */
     void (*afterWallTouch)(struct DreamSys *);                                /* 0x0E8 DreamSys_EmptySlotE8 */
     void (*setBoxMargin)();                                                 /* 0x0EC Actor_SetBoxMargin */
@@ -237,7 +237,7 @@ typedef struct DreamSys {
     DObj2 object;           /* 0x10 coord is its GsCOORDINATE2 (gs.h), as for entities */
     s32 id;                 /* 0x1C */
     ModelObject *model;     /* 0x20 */
-    u32 ticks;              /* 0x24 ticks of the dream, 15 per second (DreamSys_OnClock) */
+    u32 ticks;              /* 0x24 ticks of the dream, one per frame in the emulator (DreamSys_OnClock) */
     struct MapTile *contact; /* 0x28 the MapTile under the dreamer (Actor_SnapToGround): its flags give the step sound */
     s32 hitMask;            /* 0x2C */
     NodeBoxList *boxList;   /* 0x30 */
@@ -277,7 +277,7 @@ typedef struct DreamSys {
     s32 fallSoundOn;
     HandlerNode fallSound;  /* 0xCC plays the fall sounds (DreamSys_FallSoundHandler) while falling */
     u32 linkPeriod;
-    s32 dynamicLinkOn;      /* links dynamically only when set (DreamSys_OnWallTouch) */
+    s32 dynamicLinkOn;      /* links dynamically only when set (DreamSys_OnTileContact) */
     s32 unk128;
     s32 unk12C;
     s32 unk130;

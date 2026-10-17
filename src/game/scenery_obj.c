@@ -57,7 +57,7 @@ Scenery *Scenery_New(s32 kind, SceneryParams *params, StageMap *map, Vec3 *origi
     if (scenery == 0) {
         return 0;
     }
-    if (Scenery_GetVtbl()->construct(scenery, kind, params, map, origin) != 0) {
+    if (Scenery_GetVtbl()->init(scenery, kind, params, map, origin) != 0) {
         return scenery;
     }
     Heap_Free(scenery);
@@ -65,12 +65,12 @@ Scenery *Scenery_New(s32 kind, SceneryParams *params, StageMap *map, Vec3 *origi
 }
 
 /* Slot 0x08 */
-Scenery *Scenery_Construct(Scenery *scenery, s32 kind, SceneryParams *params, StageMap *map, Vec3 *origin) {
+Scenery *Scenery_Init(Scenery *scenery, s32 kind, SceneryParams *params, StageMap *map, Vec3 *origin) {
     if (Actor_GetVtbl()->init(scenery) != 0) {
-        scenery->vt = Scenery_GetVtbl();
+        scenery->vtbl = Scenery_GetVtbl();
         scenery->state = 0;
         scenery->kind = kind;
-        scenery->vt->init(scenery, params);
+        scenery->vtbl->reset(scenery, params);
         Scenery_Build(scenery, map, origin);
         return scenery;
     }
@@ -84,7 +84,7 @@ void Scenery_Destruct(s32 scenery) {
 }
 
 /* Slot 0x40: copy the parameters to +0x58. */
-void Scenery_Init(Scenery *scenery, SceneryParams *params) {
+void Scenery_Reset(Scenery *scenery, SceneryParams *params) {
     *(SceneryParams *)((u8 *)scenery + 0x58) = *params;
     scenery->ticks = 0;
 }
@@ -127,7 +127,7 @@ static void Scenery_Follow(Scenery *scenery, Vec3 *origin) {
 
     Scenery_AddOffset(&pos, origin, &scenery->offset);
     pos.y += g_sceneryView->viewpoint.y - g_sceneryViewY;
-    scenery->vt->setPos(scenery, &pos);
+    scenery->vtbl->setPos(scenery, &pos);
     switch (scenery->kind) {
     case 0:
         Scenery_UpdateKind0(scenery, origin);
@@ -219,7 +219,7 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
         if (g_sceneryKind0Speeds[idx] != 0) {
             part = scenery->u.pair;
             if (scenery->ticks >= 0x1F5) {
-                scenery->vt->setRotation(scenery, 0, &g_sceneryKind0Spin);
+                scenery->vtbl->setRotation(scenery, 0, &g_sceneryKind0Spin);
                 i = 0;
                 speed = &g_sceneryKind0Speeds[idx];
                 off = 0;
@@ -246,7 +246,7 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
             }
         }
     }
-    *scenery->coord = 0;
+    scenery->object.coord->flg = 0;
 }
 
 static void Scenery_DeleteKind0Parts(Scenery *scenery) {
@@ -346,7 +346,7 @@ SceneryVtbl *Scenery_GetVtbl(void) {
 }
 
 /* Keep the place's models, font and view for the scenery, and prepare models g_sceneryModelIndexes[0..1]. */
-void Scenery_SetPlaceRefs(s32 family, Tmd *models, void *font, View *view) {
+void Scenery_SetPlaceRefs(s32 unused, Tmd *models, void *font, View *view) {
     s32 i;
 
     g_sceneryModels = models;

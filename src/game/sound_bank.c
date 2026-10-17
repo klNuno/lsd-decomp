@@ -202,7 +202,7 @@ s16 Sound_PlayTone(SoundBank *bank, s32 sound, s16 volume, s16 endVolume) {
     return voice;
 }
 
-s32 Sound_StopVoice(s32 bank, s32 voice) {
+s32 Sound_StopVoice(SoundBank *bank, s32 voice) {
     if (voice < 0x18) {
         SsUtKeyOffV(voice);
     } else {
@@ -242,6 +242,7 @@ SoundBankVtbl *Sound_GetBankClass(void) {
     return &g_soundBankVtbl;
 }
 
+/* Returns g_bankCount; nothing in the executable calls it or holds its address. */
 static s32 Sound_GetBankCount(void) {
     return g_bankCount;
 }

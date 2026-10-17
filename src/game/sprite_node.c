@@ -26,11 +26,7 @@ typedef struct SpriteRectBytes {
     u16 h;
 } SpriteRectBytes;
 
-/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 static void SpriteNode_FillSprite();
-/* not in game/sprite_node.h: scenery_part.c still reads this vtable through its own view of the slots */
-SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 
 static SpriteNode *SpriteNode_Create(Tim *image, s32 blendRate, SpriteRect *rect, s32 unused4, s32 unused5) {

@@ -13,9 +13,9 @@
 typedef struct LabelVtbl {
     u8 pad_00[0x4];
     void *(*delete_)();                       /* 0x04 Object_Delete */
-    void (*init)(void *label, Tim *font, s32 count, char *text); /* 0x08 Label_Construct */
+    void (*init)(void *label, Tim *font, s32 count, char *text); /* 0x08 Label_Init */
     u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *label, char *text);   /* 0x40 Label_Init */
+    void (*reset)(void *label, char *text);   /* 0x40 Label_Reset */
     u8 pad_44[0x4C - 0x44];
     void (*show)();                           /* 0x4C Label_Show (label, root, 2D position) */
     u8 pad_50[0xB8 - 0x50];

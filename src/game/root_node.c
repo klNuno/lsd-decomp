@@ -14,10 +14,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
-/* not in game/root_node.h: stage_map.c still reads this vtable through its own view of the slots */
-RootNodeVtbl *RootNode_GetVtbl(void);
 extern RootNodeVtbl g_rootNodeVtbl;
 
 RootNode *RootNode_Create(void) {
@@ -42,7 +38,7 @@ void RootNode_Init(RootNode *root) {
         *light = FlatLight_New(i);
         root->vtbl->watch(root, *light);
     }
-    root->vtbl->setup(root);
+    root->vtbl->reset(root);
 }
 
 /* Slot 0x0C: deletes its lights. */
@@ -58,7 +54,7 @@ void RootNode_Destroy(RootNode *root) {
 }
 
 /* Slot 0x40: only clears the flg word of its GsCOORDINATE2 (the base SceneNode_Reset resets the node). */
-void RootNode_Setup(RootNode *root) {
+void RootNode_Reset(RootNode *root) {
     *root->coord = 0;
 }
 

@@ -92,6 +92,7 @@ s32 Nav_CalcScore(void) {
     return sum;
 }
 
+/* g_stageTimeLimits[stage]; nothing in the executable calls it or holds its address (Spawn_PickFromMood reads the table itself). */
 static s16 Stage_GetTimeLimit(s32 stage) {
     return g_stageTimeLimits[stage];
 }

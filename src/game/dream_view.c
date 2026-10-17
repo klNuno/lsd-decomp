@@ -12,8 +12,6 @@
 /* The 0xDC object of class 0x800869D8 (DreamView_New): a View whose slots 0xB8 to 0xC4 are empty. */
 extern ViewVtbl g_dreamViewVtbl;
 
-/* the vtable of view.c, not in game/view.h */
-ViewVtbl *View_GetVtbl(void);
 static ViewVtbl *DreamView_GetVtbl(void);
 
 View *DreamView_New(void) {

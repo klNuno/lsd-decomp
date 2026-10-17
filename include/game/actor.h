@@ -20,7 +20,7 @@ typedef struct ActorVtbl {
     u8 classByte;             /* 0x00 low byte of SceneNodeVtbl.classWord: 0x34 runs afterTouch on contact */
     u8 pad_01[0x04 - 0x01];
     void *(*delete_)();       /* 0x04 Object_Delete */
-    void *(*init)();          /* 0x08 Actor_Construct, returns the actor or NULL */
+    void *(*init)();          /* 0x08 Actor_Init, returns the actor or NULL */
     void (*destroy)();        /* 0x0C SceneNode_Destroy */
     void (*watch)();          /* 0x10 Actor_Watch */
     void (*unwatch)();        /* 0x14 Actor_Unwatch */
@@ -34,7 +34,7 @@ typedef struct ActorVtbl {
     void (*unk34)();          /* 0x34 Object_EmptySlot34, empty */
     void (*onNotify)();       /* 0x38 SceneNode_OnNotify */
     void (*unk3C)();          /* 0x3C 0 */
-    void (*reset)();          /* 0x40 Actor_Init: speed 0x12C, boxMargin 0 */
+    void (*reset)();          /* 0x40 Actor_Reset: speed 0x12C, boxMargin 0 */
     void (*setRotation)();    /* 0x44 SceneNode_SetRotation */
     void (*setScale)();       /* 0x48 SceneNode_SetScale */
     void (*attach)();         /* 0x4C SceneNode_Attach */
@@ -73,8 +73,8 @@ typedef struct ActorVtbl {
     void (*moveZOnGround)();  /* 0xD0 Actor_MoveZOnGround */
     void (*moveXOnGround)();  /* 0xD4 Actor_MoveXOnGround */
     void (*unkD8)();          /* 0xD8 Actor_EmptySlotD8, empty */
-    void (*onTouch34)();      /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
-    void (*onTouch24)();      /* 0xE0 Actor_OnNode24: on message byte 0x24 */
+    void (*onActorContact)(); /* 0xDC Actor_OnActorContact: Actor_OnNode for a sender of class byte 0x34 */
+    void (*onTileContact)();  /* 0xE0 Actor_OnTileContact: for a sender of class byte 0x24 (MapTile) */
     void (*setSpeed)();       /* 0xE4 Actor_SetSpeed */
     void (*afterTouch)();     /* 0xE8 Actor_EmptySlotE8; the contact's override runs after a 0x34 touch */
     void (*setBoxMargin)();   /* 0xEC Actor_SetBoxMargin */
@@ -82,7 +82,7 @@ typedef struct ActorVtbl {
 
 /*
  * The base class of the scenery objects, their kind 0 parts, Model (so every Entity) and DreamSys:
- * vtable g_actorVtbl, constructor Actor_Construct, 0x58 bytes (Actor_New). Fields up to +0x44 are
+ * vtable g_actorVtbl, constructor Actor_Init, 0x58 bytes (Actor_New). Fields up to +0x44 are
  * SceneNode's (scene_node.h) under the same names, with the vtable typed as ActorVtbl and contact
  * left untyped (an Actor or a MapTile).
  */
@@ -115,7 +115,7 @@ void Actor_Watch(Actor *actor, s32 **other);
 void Actor_Unwatch(Actor *actor, s32 **other);
 void Actor_UnwatchAll(Actor *actor);
 void Actor_SendBoxes(Actor *actor, s32 message);
-void Actor_OnNode(Actor *actor, u8 **message);
+void Actor_OnNode(Actor *actor, u8 **sender);
 void Actor_SetPos(void *actor, Vec3 *pos);
 void Actor_MovePos(void *actor, Vec3 *delta);
 void Actor_MoveLocal(Actor *actor, ModelVec *local);
@@ -125,8 +125,8 @@ void Actor_MoveY(void *actor, s32 value, s32 notify);
 void Actor_MoveZOnGround(Actor *actor, s32 value, s32 notify);
 void Actor_MoveXOnGround(Actor *actor, s32 value, s32 notify);
 void Actor_EmptySlotD8(void);
-void Actor_OnNode34(Actor *actor, void *sender, s32 message);
-void Actor_OnNode24(Actor *actor, void *sender, s32 message);
+void Actor_OnActorContact(Actor *actor, void *sender, s32 message);
+void Actor_OnTileContact(Actor *actor, void *sender, s32 message);
 void Actor_SetSpeed(Actor *actor, s16 value);
 void Actor_EmptySlotE8(void);
 void Actor_SetBoxMargin(Actor *actor, s32 value);

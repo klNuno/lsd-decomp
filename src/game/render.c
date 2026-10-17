@@ -423,7 +423,7 @@ extern TmdRgb g_texturedRgb; /* {0x80, 0x80, 0x80} in .sdata */
 void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     TmdCtx *ctx;
     GpuPacket prim;
-    TmdFace packet;
+    TmdFace face;
     s32 remaining;
     s32 count;
 
@@ -436,7 +436,7 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     Render_InitClipSlots(ctx->triClip.b, g_clipTriWork.b, 3);
     Render_InitClipSlots(ctx->quadClip.b, g_clipQuadWork.b, 4);
     remaining = object->tmd->primitiveCount;
-    packet.b = (u8 *)object->tmd->primitives;
+    face.b = (u8 *)object->tmd->primitives;
     ctx->vertices = (u8 *)object->tmd->vertices;
     ctx->normals = object->tmd->normals;
     if (object->coord->super != NULL) {
@@ -457,9 +457,9 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     }
     while (remaining != 0) {
         prim.b = GsOUT_PACKET_P;
-        ctx->type = packet.head->type & 0xFD07;
-        count = packet.head->count;
-        ctx->semiTrans = (*(u32 *)packet.head >> 25) & 1;
+        ctx->type = face.head->type & 0xFD07;
+        count = face.head->count;
+        ctx->semiTrans = (*(u32 *)face.head >> 25) & 1;
         remaining -= count;
         switch (ctx->type) {
         case 0x2000:
@@ -467,15 +467,15 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x20;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.f3->v0, packet.f3->v1, packet.f3->v2, Render_StoreXyF3) == 0) {
-                    gte_ldv0(ctx->normals + packet.f3->normal * 8);
-                    gte_ldrgb(&packet.f3->rgb);
+                if (Render_ProjectTri(prim.b, ctx, face.f3->v0, face.f3->v1, face.f3->v2, Render_StoreXyF3) == 0) {
+                    gte_ldv0(ctx->normals + face.f3->normal * 8);
+                    gte_ldrgb(&face.f3->rgb);
                     gte_ncds();
                     gte_strgb(&prim.f3->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyF3(prim.f3, ctx);
                 }
-                packet.f3++;
+                face.f3++;
                 count--;
             } while (count != 0);
             break;
@@ -484,21 +484,21 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x30;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.f3Grad->v0, packet.f3Grad->v1, packet.f3Grad->v2, Render_StoreXyG3) == 0) {
-                    gte_ldv0(ctx->normals + packet.f3Grad->normal * 8);
-                    gte_ldrgb(&packet.f3Grad->rgb0);
+                if (Render_ProjectTri(prim.b, ctx, face.f3Grad->v0, face.f3Grad->v1, face.f3Grad->v2, Render_StoreXyG3) == 0) {
+                    gte_ldv0(ctx->normals + face.f3Grad->normal * 8);
+                    gte_ldrgb(&face.f3Grad->rgb0);
                     gte_ncds();
                     gte_strgb(&prim.g3->c0);
                     prim.head->code = ctx->primCode;
-                    gte_ldrgb(&packet.f3Grad->rgb1);
+                    gte_ldrgb(&face.f3Grad->rgb1);
                     gte_ncds();
                     gte_strgb(&prim.g3->c1);
-                    gte_ldrgb(&packet.f3Grad->rgb2);
+                    gte_ldrgb(&face.f3Grad->rgb2);
                     gte_ncds();
                     gte_strgb(&prim.g3->c2);
                     prim.b = Render_AddPolyG3(prim.g3, ctx);
                 }
-                packet.f3Grad++;
+                face.f3Grad++;
                 count--;
             } while (count != 0);
             break;
@@ -507,14 +507,14 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x20;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.f3Unlit->v0, packet.f3Unlit->v1, packet.f3Unlit->v2, Render_StoreXyF3) == 0) {
-                    gte_ldrgb(&packet.f3Unlit->rgb);
+                if (Render_ProjectTri(prim.b, ctx, face.f3Unlit->v0, face.f3Unlit->v1, face.f3Unlit->v2, Render_StoreXyF3) == 0) {
+                    gte_ldrgb(&face.f3Unlit->rgb);
                     gte_dpcs();
                     gte_strgb(&prim.f3->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyF3(prim.f3, ctx);
                 }
-                packet.f3Unlit++;
+                face.f3Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -524,18 +524,18 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             Render_SetPrimFlags(prim.head, ctx);
             gte_ldrgb(&ctx->baseRgb);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.ft3->v0, packet.ft3->v1, packet.ft3->v2, Render_StoreXyFT3) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.ft3->uv0;
-                    *(s32 *)(prim.b + 0x14) = packet.ft3->uv1;
-                    *(s32 *)(prim.b + 0x1C) = packet.ft3->uv2;
+                if (Render_ProjectTri(prim.b, ctx, face.ft3->v0, face.ft3->v1, face.ft3->v2, Render_StoreXyFT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.ft3->uv0;
+                    *(s32 *)(prim.b + 0x14) = face.ft3->uv1;
+                    *(s32 *)(prim.b + 0x1C) = face.ft3->uv2;
                     prim.ft3->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldv0(ctx->normals + packet.ft3->normal * 8);
+                    gte_ldv0(ctx->normals + face.ft3->normal * 8);
                     gte_ncds();
                     gte_strgb(&prim.ft3->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyFT3(prim.ft3, ctx);
                 }
-                packet.ft3++;
+                face.ft3++;
                 count--;
             } while (count != 0);
             break;
@@ -544,18 +544,18 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x24;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.ft3Unlit->v0, packet.ft3Unlit->v1, packet.ft3Unlit->v2, Render_StoreXyFT3) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.ft3Unlit->uv0;
-                    *(s32 *)(prim.b + 0x14) = packet.ft3Unlit->uv1;
-                    *(s32 *)(prim.b + 0x1C) = packet.ft3Unlit->uv2;
+                if (Render_ProjectTri(prim.b, ctx, face.ft3Unlit->v0, face.ft3Unlit->v1, face.ft3Unlit->v2, Render_StoreXyFT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.ft3Unlit->uv0;
+                    *(s32 *)(prim.b + 0x14) = face.ft3Unlit->uv1;
+                    *(s32 *)(prim.b + 0x1C) = face.ft3Unlit->uv2;
                     prim.ft3->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb(&packet.ft3Unlit->rgb);
+                    gte_ldrgb(&face.ft3Unlit->rgb);
                     gte_dpcs();
                     gte_strgb(&prim.ft3->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyFT3(prim.ft3, ctx);
                 }
-                packet.ft3Unlit++;
+                face.ft3Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -564,15 +564,15 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x28;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.f4->v0, packet.f4->v1, packet.f4->v2, packet.f4->v3, Render_StoreXyF4) == 0) {
-                    gte_ldv0(ctx->normals + packet.f4->normal * 8);
-                    gte_ldrgb(&packet.f4->rgb);
+                if (Render_ProjectQuad(prim.b, ctx, face.f4->v0, face.f4->v1, face.f4->v2, face.f4->v3, Render_StoreXyF4) == 0) {
+                    gte_ldv0(ctx->normals + face.f4->normal * 8);
+                    gte_ldrgb(&face.f4->rgb);
                     gte_ncds();
                     gte_strgb(&prim.f4->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyF4(prim.f4, ctx);
                 }
-                packet.f4++;
+                face.f4++;
                 count--;
             } while (count != 0);
             break;
@@ -581,14 +581,14 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x28;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.f4Unlit->v0, packet.f4Unlit->v1, packet.f4Unlit->v2, packet.f4Unlit->v3, Render_StoreXyF4) == 0) {
-                    gte_ldrgb(&packet.f4Unlit->rgb);
+                if (Render_ProjectQuad(prim.b, ctx, face.f4Unlit->v0, face.f4Unlit->v1, face.f4Unlit->v2, face.f4Unlit->v3, Render_StoreXyF4) == 0) {
+                    gte_ldrgb(&face.f4Unlit->rgb);
                     gte_dpcs();
                     gte_strgb(&prim.f4->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyF4(prim.f4, ctx);
                 }
-                packet.f4Unlit++;
+                face.f4Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -598,19 +598,19 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             Render_SetPrimFlags(prim.head, ctx);
             gte_ldrgb(&ctx->baseRgb);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.ft4->v0, packet.ft4->v1, packet.ft4->v2, packet.ft4->v3, Render_StoreXyFT4) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.ft4->uv0;
-                    *(s32 *)(prim.b + 0x14) = packet.ft4->uv1;
-                    *(s32 *)(prim.b + 0x1C) = packet.ft4->uv2;
-                    *(s32 *)(prim.b + 0x24) = packet.ft4->uv3;
+                if (Render_ProjectQuad(prim.b, ctx, face.ft4->v0, face.ft4->v1, face.ft4->v2, face.ft4->v3, Render_StoreXyFT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.ft4->uv0;
+                    *(s32 *)(prim.b + 0x14) = face.ft4->uv1;
+                    *(s32 *)(prim.b + 0x1C) = face.ft4->uv2;
+                    *(s32 *)(prim.b + 0x24) = face.ft4->uv3;
                     prim.ft4->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldv0(ctx->normals + packet.ft4->normal * 8);
+                    gte_ldv0(ctx->normals + face.ft4->normal * 8);
                     gte_ncds();
                     gte_strgb(&prim.ft4->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyFT4(prim.ft4, ctx);
                 }
-                packet.ft4++;
+                face.ft4++;
                 count--;
             } while (count != 0);
             break;
@@ -619,19 +619,19 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x2C;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.ft4Unlit->v0, packet.ft4Unlit->v1, packet.ft4Unlit->v2, packet.ft4Unlit->v3, Render_StoreXyFT4) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.ft4Unlit->uv0;
-                    *(s32 *)(prim.b + 0x14) = packet.ft4Unlit->uv1;
-                    *(s32 *)(prim.b + 0x1C) = packet.ft4Unlit->uv2;
-                    *(s32 *)(prim.b + 0x24) = packet.ft4Unlit->uv3;
+                if (Render_ProjectQuad(prim.b, ctx, face.ft4Unlit->v0, face.ft4Unlit->v1, face.ft4Unlit->v2, face.ft4Unlit->v3, Render_StoreXyFT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.ft4Unlit->uv0;
+                    *(s32 *)(prim.b + 0x14) = face.ft4Unlit->uv1;
+                    *(s32 *)(prim.b + 0x1C) = face.ft4Unlit->uv2;
+                    *(s32 *)(prim.b + 0x24) = face.ft4Unlit->uv3;
                     prim.ft4->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb(&packet.ft4Unlit->rgb);
+                    gte_ldrgb(&face.ft4Unlit->rgb);
                     gte_dpcs();
                     gte_strgb(&prim.ft4->rgbc);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyFT4(prim.ft4, ctx);
                 }
-                packet.ft4Unlit++;
+                face.ft4Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -640,14 +640,14 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x30;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.g3Unlit->v0, packet.g3Unlit->v1, packet.g3Unlit->v2, Render_StoreXyG3) == 0) {
-                    gte_ldrgb3c(&packet.g3Unlit->rgb0);
+                if (Render_ProjectTri(prim.b, ctx, face.g3Unlit->v0, face.g3Unlit->v1, face.g3Unlit->v2, Render_StoreXyG3) == 0) {
+                    gte_ldrgb3c(&face.g3Unlit->rgb0);
                     gte_dpct();
                     gte_strgb3_g3(prim.b);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyG3(prim.g3, ctx);
                 }
-                packet.g3Unlit++;
+                face.g3Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -656,18 +656,18 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x34;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectTri(prim.b, ctx, packet.gt3Unlit->v0, packet.gt3Unlit->v1, packet.gt3Unlit->v2, Render_StoreXyGT3) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.gt3Unlit->uv0;
-                    *(s32 *)(prim.b + 0x18) = packet.gt3Unlit->uv1;
-                    *(s32 *)(prim.b + 0x24) = packet.gt3Unlit->uv2;
+                if (Render_ProjectTri(prim.b, ctx, face.gt3Unlit->v0, face.gt3Unlit->v1, face.gt3Unlit->v2, Render_StoreXyGT3) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.gt3Unlit->uv0;
+                    *(s32 *)(prim.b + 0x18) = face.gt3Unlit->uv1;
+                    *(s32 *)(prim.b + 0x24) = face.gt3Unlit->uv2;
                     prim.gt3->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb3(&packet.gt3Unlit->rgb0, &packet.gt3Unlit->rgb1, &packet.gt3Unlit->rgb2);
+                    gte_ldrgb3(&face.gt3Unlit->rgb0, &face.gt3Unlit->rgb1, &face.gt3Unlit->rgb2);
                     gte_dpct();
                     gte_strgb3(&prim.gt3->c0, &prim.gt3->c1, &prim.gt3->c2);
                     prim.head->code = ctx->primCode;
                     prim.b = Render_AddPolyGT3(prim.gt3, ctx);
                 }
-                packet.gt3Unlit++;
+                face.gt3Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -676,17 +676,17 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x38;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.g4Unlit->v0, packet.g4Unlit->v1, packet.g4Unlit->v2, packet.g4Unlit->v3, Render_StoreXyG4) == 0) {
-                    gte_ldrgb3c(&packet.g4Unlit->rgb0);
+                if (Render_ProjectQuad(prim.b, ctx, face.g4Unlit->v0, face.g4Unlit->v1, face.g4Unlit->v2, face.g4Unlit->v3, Render_StoreXyG4) == 0) {
+                    gte_ldrgb3c(&face.g4Unlit->rgb0);
                     gte_dpct();
                     gte_strgb3_g3(prim.b);
                     prim.head->code = ctx->primCode;
-                    gte_ldrgb(&packet.g4Unlit->rgb3);
+                    gte_ldrgb(&face.g4Unlit->rgb3);
                     gte_dpcs();
                     gte_strgb(&prim.g4->c3);
                     prim.b = Render_AddPolyG4(prim.g4, ctx);
                 }
-                packet.g4Unlit++;
+                face.g4Unlit++;
                 count--;
             } while (count != 0);
             break;
@@ -695,22 +695,22 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
             prim.head->code = 0x3C;
             Render_SetPrimFlags(prim.head, ctx);
             do {
-                if (Render_ProjectQuad(prim.b, ctx, packet.gt4Unlit->v0, packet.gt4Unlit->v1, packet.gt4Unlit->v2, packet.gt4Unlit->v3, Render_StoreXyGT4) == 0) {
-                    *(s32 *)(prim.b + 0xC) = packet.gt4Unlit->uv0;
-                    *(s32 *)(prim.b + 0x18) = packet.gt4Unlit->uv1;
-                    *(s32 *)(prim.b + 0x24) = packet.gt4Unlit->uv2;
-                    *(s32 *)(prim.b + 0x30) = packet.gt4Unlit->uv3;
+                if (Render_ProjectQuad(prim.b, ctx, face.gt4Unlit->v0, face.gt4Unlit->v1, face.gt4Unlit->v2, face.gt4Unlit->v3, Render_StoreXyGT4) == 0) {
+                    *(s32 *)(prim.b + 0xC) = face.gt4Unlit->uv0;
+                    *(s32 *)(prim.b + 0x18) = face.gt4Unlit->uv1;
+                    *(s32 *)(prim.b + 0x24) = face.gt4Unlit->uv2;
+                    *(s32 *)(prim.b + 0x30) = face.gt4Unlit->uv3;
                     prim.gt4->clut += (ctx->depth >> ctx->depthShift) << 6;
-                    gte_ldrgb3(&packet.gt4Unlit->rgb0, &packet.gt4Unlit->rgb1, &packet.gt4Unlit->rgb2);
+                    gte_ldrgb3(&face.gt4Unlit->rgb0, &face.gt4Unlit->rgb1, &face.gt4Unlit->rgb2);
                     gte_dpct();
                     gte_strgb3(&prim.gt4->c0, &prim.gt4->c1, &prim.gt4->c2);
                     prim.head->code = ctx->primCode;
-                    gte_ldrgb(&packet.gt4Unlit->rgb3);
+                    gte_ldrgb(&face.gt4Unlit->rgb3);
                     gte_dpcs();
                     gte_strgb(&prim.gt4->c3);
                     prim.b = Render_AddPolyGT4(prim.gt4, ctx);
                 }
-                packet.gt4Unlit++;
+                face.gt4Unlit++;
                 count--;
             } while (count != 0);
             break;

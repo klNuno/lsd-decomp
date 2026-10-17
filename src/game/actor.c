@@ -26,8 +26,6 @@ static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec);
 extern s16 g_actorMoveVecZ[];
 void Actor_MoveAxis(void *self, s16 *field, s32 value, s32 notify, s32 message);
 extern s16 g_actorMoveVec[];
-/* the vtable of scene_node.c, not in game/scene_node.h: other files read it through their own views */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 s32 Actor_SnapToGround();
 static MapTile *Actor_FindGroundInCells(Actor *actor, s32 *delta, u8 *pos, s32 count, GridRect *rects, MapSlot **cells);
 static MapTile *Actor_FindGroundInRect(Actor *actor, s32 *delta, u8 *pos, GridRect *r, MapSlot *cell);
@@ -52,7 +50,7 @@ void *Actor_New(void) {
 }
 
 /* Slot 0x08 of the base class g_actorVtbl */
-void *Actor_Construct(Actor *actor) {
+void *Actor_Init(Actor *actor) {
     if (SceneNode_GetVtbl()->init(actor) != 0) {
         actor->vtbl = Actor_GetVtbl();
         actor->state = 0;
@@ -100,12 +98,12 @@ void Actor_UnwatchAll(Actor *actor) {
 }
 
 /* Slot 0x40 */
-void Actor_Init(Actor *actor) {
+void Actor_Reset(Actor *actor) {
     actor->speed = 0x12C;
     actor->boxMargin = 0;
 }
 
-/* Slot 0x88: messages 5 to 8 while unk20 passes ModelObject_GetBoxCount. */
+/* Slot 0x88: messages 5 to 8 while the actor's model has boxes (ModelObject_GetBoxCount). */
 void Actor_SendBoxes(Actor *actor, s32 message) {
     union {
         NodeBoxList node;
@@ -134,14 +132,15 @@ void Actor_SendBoxes(Actor *actor, s32 message) {
     }
 }
 
-/* Slot 0x9C: message byte 0x34 goes to slot 0xDC, 0x24 to 0xE0 (both called without arguments). */
-void Actor_OnNode(Actor *actor, u8 **message) {
-    u8 c = **message;
+/* Slot 0x9C: the class byte of the sender's vtable picks the slot, 0x34 (an Actor) slot 0xDC, 0x24 (a MapTile)
+   slot 0xE0 (both called without arguments, the registers still hold them). */
+void Actor_OnNode(Actor *actor, u8 **sender) {
+    u8 c = **sender;
 
     if (c == 0x34) {
-        actor->vtbl->onTouch34();
+        actor->vtbl->onActorContact();
     } else if (c == 0x24) {
-        actor->vtbl->onTouch24();
+        actor->vtbl->onTileContact();
     }
 }
 
@@ -377,7 +376,7 @@ static MapTile *Actor_ProbeGroundAt(MapTile *entry) {
 }
 
 /* Slot 0xDC: the base slot 0x9C, then slot 0xA0 for messages 5 to 8. */
-void Actor_OnNode34(Actor *actor, void *sender, s32 message) {
+void Actor_OnActorContact(Actor *actor, void *sender, s32 message) {
     SceneNode_GetVtbl()->onNode(actor, sender, message);
     if (message < 9) {
         if (message >= 5) {
@@ -387,7 +386,7 @@ void Actor_OnNode34(Actor *actor, void *sender, s32 message) {
 }
 
 /* Slot 0xE0 */
-void Actor_OnNode24(Actor *actor, void *sender, s32 message) {
+void Actor_OnTileContact(Actor *actor, void *sender, s32 message) {
     SceneNode_GetVtbl()->onNode(actor, sender, message);
 }
 

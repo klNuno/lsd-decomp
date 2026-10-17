@@ -16,7 +16,7 @@ typedef struct HandlerVoice {
 /* The handler node (0x54 bytes) at Entity +0x9C, the handler's second argument: HandlerNode_Start registers it,
    HandlerNode_Stop removes it, HandlerNode_Run runs handler(owner, node) once per tick. */
 typedef struct HandlerNode {
-    s32 id;                  /* 0x00 entity type + 1 while registered, 0 once stopped */
+    s32 id;                  /* 0x00 the caller's id while registered (an entity its type + 1, DreamSys 1, a sound spot its type), 0 once stopped */
     s32 tick;                /* 0x04 runs so far, counted by HandlerNode_Run */
     void *owner;             /* 0x08 the entity, passed back as the handler's first argument */
     void (*handler)();       /* 0x0C the record's handler, called as handler(owner, node) */

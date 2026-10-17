@@ -41,11 +41,11 @@ void Glyph_Init(Glyph *glyph, Tim *font, u8 code) {
     ScreenSprite_GetVtbl()->init(glyph, font, &rect, 0);
     vtbl = Glyph_GetVtbl();
     glyph->vtbl = vtbl;
-    vtbl->setup(glyph, code);
+    vtbl->reset(glyph, code);
 }
 
 /* Slot 0x40 */
-void Glyph_Setup(Glyph *glyph, u8 code) {
+void Glyph_Reset(Glyph *glyph, u8 code) {
     glyph->vtbl->setCode(glyph, code);
 }
 

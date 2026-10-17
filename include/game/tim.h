@@ -51,7 +51,7 @@ typedef struct Tim {
         u32 *words;           /* the TIM file: id word, then the TIM */
     } data;                   /* 0x10 */
     s32 size;                 /* 0x14 0 when the TIM is borrowed from a TimPack */
-    CdlLocDir cdPos;
+    CdlLOC cdPos;
     u32 cdSize;
     u16 keepData;
     u16 pending;

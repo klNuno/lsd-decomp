@@ -19,14 +19,14 @@ typedef struct Fade Fade;
 typedef struct FadeVtbl {
     u8 pad_00[0x4];
     void *(*delete_)();                       /* 0x04 Object_Delete */
-    void (*init)(void *fade, BoxSize *size, s32 channels, s32 priority); /* 0x08 Fade_Construct */
+    void (*init)(void *fade, BoxSize *size, s32 channels, s32 priority); /* 0x08 Fade_Init */
     u8 pad_0C[0x10 - 0xC];
     void (*watch)(Fade *fade);                /* 0x10 (fade, ticker) */
     void (*unwatch)(Fade *fade, s32 ticker);  /* 0x14 */
     u8 pad_18[0x30 - 0x18];
     void (*notify)(Fade *fade, s32 message);  /* 0x30 */
     u8 pad_34[0x40 - 0x34];
-    void (*reset)(void *fade, s32 channels);  /* 0x40 Fade_Init */
+    void (*reset)(void *fade, s32 channels);  /* 0x40 Fade_Reset */
     u8 pad_44[0x4C - 0x44];
     void (*show)();                           /* 0x4C Box_Show (fade, root, position) */
     void (*hide)();                           /* 0x50 */

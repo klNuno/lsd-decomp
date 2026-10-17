@@ -19,8 +19,6 @@ typedef struct BgMapView {
     u16 cellsY;
 } BgMapView;
 
-/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
-SceneNodeVtbl *SceneNode_GetVtbl(void);
 static BgVtbl *Bg_GetVtbl(void);
 extern BgVtbl g_bgVtbl;
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
