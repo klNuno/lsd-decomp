@@ -179,5 +179,6 @@ void Screen_Finish(Screen *screen);
 void Screen_OnDisplay(Screen *screen, Display *display, s32 message);
 void Screen_StartLoop(Screen *screen);
 void Screen_StopLoop(Screen *screen);
+ScreenVtbl *Screen_GetVtbl(void);
 
 #endif

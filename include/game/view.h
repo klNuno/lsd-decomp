@@ -14,13 +14,6 @@
  * Object: the GsRVIEW2, two ordering tables with their packet areas, fog, light mode and clear color.
  */
 
-/* Three words copied whole: GsRVIEW2 viewpoint or reference point. */
-typedef struct ScreenVec {
-    s32 x;
-    s32 y;
-    s32 z;
-} ScreenVec;
-
 /* The view's slots past Object (vtable g_viewVtbl). */
 typedef struct ViewVtbl {
     s32 classWord;               /* 0x00 7 */
@@ -78,8 +71,8 @@ typedef struct View {
     Display *display;       /* 0x0C the watched type 1 object */
     SceneNode *node;        /* 0x10 the watched type 4 object; rendered with its root */
     /* 0x14 GsRVIEW2, given to GsSetRefView2 */
-    ScreenVec viewpoint;    /* 0x14 */
-    ScreenVec refPoint;     /* 0x20 */
+    Vec3 viewpoint;         /* 0x14 world position, copied whole */
+    Vec3 refPoint;          /* 0x20 */
     s32 twist;              /* 0x2C rz, 4.12 */
     Coord2 *super;          /* 0x30 node's coordinate; render clears its flg */
     ScreenPoint screenSize; /* 0x34 (0x100, 0xF0): View_DrawNode (src/game/scene_draw.c) sizes boxes and sprites by its half */
@@ -111,8 +104,6 @@ typedef struct View {
 } View;
 
 /* Functions of src/game/view.c that other files call or reference (docs/naming.md, Prototypes) */
-/* types defined in src/game/view.c */
-struct ViewRatio;
 View *View_New(void);
 void View_Destroy(View *view);
 void View_Watch(View *view, Object *other);
@@ -130,11 +121,11 @@ void View_SetLightMode(View *view, s32 lightMode);
 void View_SetClearColor(View *view, Color3 *color);
 void View_SetFogColor(View *view, Color3 *color);
 void View_SetFogNear(View *view, s32 fogNear);
-void View_SetCamera(View *view, SceneNode *node, ScreenVec *viewpoint, ScreenVec *refPoint, struct ViewRatio *twist);
+void View_SetCamera(View *view, SceneNode *node, Vec3 *viewpoint, Vec3 *refPoint, Fraction *twist);
 void View_Detach(View *view);
-void View_SetViewpoint(View *view, ScreenVec *viewpoint);
-void View_SetRefPoint(View *view, ScreenVec *refPoint);
-void View_SetTwist(View *view, struct ViewRatio *ratio);
+void View_SetViewpoint(View *view, Vec3 *viewpoint);
+void View_SetRefPoint(View *view, Vec3 *refPoint);
+void View_SetTwist(View *view, Fraction *twist);
 void View_EmptySlot84(void);
 void View_EmptySlot88(void);
 void View_AllocOt(View *view);

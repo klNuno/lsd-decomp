@@ -9,29 +9,12 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-extern struct RenderObjVtbl g_dreamViewVtbl;
+/* The 0xDC object of class 0x800869D8 (DreamView_New): a View whose slots 0xB8 to 0xC4 are empty. */
+extern ViewVtbl g_dreamViewVtbl;
 
-/* The 0xDC object of class 0x800869D8 (DreamView_New); slot 0xA0 is View_DrawNode, which draws scene nodes. */
-typedef struct RenderObjVtbl {
-    u8 pad_00[0x08];
-    void (*init)();             /* 0x08 */
-    u8 pad_0C[0x40 - 0x0C];
-    void (*reset)();            /* 0x40 */
-    u8 pad_44[0x9C - 0x44];
-    void (*render)();            /* 0x9C */
-} RenderObjVtbl;
-
-typedef struct RenderObj {
-    RenderObjVtbl *vtbl;
-    u8 pad_04[0x10 - 0x04];
-    s32 node;
-    u8 pad_14[0x70 - 0x14];
-    s32 otReady;
-} RenderObj;
-
-/* the vtable of view.c through this file's view of its slots, so not from game/view.h */
-RenderObjVtbl *View_GetVtbl(void);
-static RenderObjVtbl *DreamView_GetVtbl(void);
+/* the vtable of view.c, not in game/view.h */
+ViewVtbl *View_GetVtbl(void);
+static ViewVtbl *DreamView_GetVtbl(void);
 
 View *DreamView_New(void) {
     View *obj;
@@ -45,7 +28,7 @@ View *DreamView_New(void) {
 }
 
 void DreamView_Init(void **obj) {
-    RenderObjVtbl *vtbl;
+    ViewVtbl *vtbl;
 
     View_GetVtbl()->init(obj);
     vtbl = DreamView_GetVtbl();
@@ -56,7 +39,7 @@ void DreamView_Init(void **obj) {
 void DreamView_Reset(void) {
 }
 
-void DreamView_Render(RenderObj *obj) {
+void DreamView_Render(View *obj) {
     if ((obj->node != 0) && (obj->otReady != 0)) {
         View_GetVtbl()->render(obj);
     }
@@ -74,6 +57,6 @@ void DreamView_EmptySlotC0(void) {
 void DreamView_EmptySlotC4(void) {
 }
 
-static RenderObjVtbl *DreamView_GetVtbl(void) {
+static ViewVtbl *DreamView_GetVtbl(void) {
     return &g_dreamViewVtbl;
 }

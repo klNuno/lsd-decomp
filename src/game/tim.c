@@ -45,7 +45,7 @@ void Tim_Upload(Tim *tim) {
 
     display = Display_GetCurrent();
     image = &tim->image;
-    if (tim->data != NULL) {
+    if (tim->data.words != NULL) {
         tim->vtbl->getInfo(tim, image);
         rect.x = tim->image.px;
         rect.y = tim->image.py;
@@ -88,7 +88,7 @@ void func_8003B5E4(Tim *tim) {
 }
 
 void Tim_GetInfo(Tim *tim, void *image) {
-    GsGetTimInfo(tim->data + 1, image);
+    GsGetTimInfo(tim->data.words + 1, image);
 }
 
 TimVtbl *Tim_GetVtbl(void) {

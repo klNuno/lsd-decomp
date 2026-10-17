@@ -8,23 +8,10 @@
 /*
  * Task (src/game/task.c): vtable 0x80086668, class id 0x230, 0x38 bytes, a class with a timeout and a
  * result that the dream runner (dream_runner.h) and the dream stage (place.h) derive from. Its base
- * (vtable 0x8006E878) runs the loop.
+ * (Screen, vtable 0x8006E878, screen.h ScreenVtbl and Screen_GetVtbl) runs the loop.
  * Vtable contents come from the executable (work/readable/W3/vt.py); slots are named after the
  * function stored there. Slots are left unprototyped where callers pass different types.
  */
-
-/* The base class of Task (vtable 0x8006E878, src/game/screen.c): the slots Task chains to. */
-typedef struct TaskBaseVtbl {
-    u8 pad_00[0x08];
-    void (*init)();         /* 0x08 Screen_Init */
-    void (*destroy)();      /* 0x0C Object_Destroy */
-    u8 pad_10[0x44 - 0x10];
-    void (*run)();          /* 0x44 Screen_Run */
-    void (*finish)();        /* 0x48 Screen_Finish */
-    u8 pad_4C[0x5C - 0x4C];
-    void (*onTick)();       /* 0x5C Screen_OnClock: ticks++ */
-    void (*setState)();     /* 0x60 Screen_SetState: state = arg, notify the watchers */
-} TaskBaseVtbl;
 
 typedef struct TaskVtbl {
     s32 classWord;          /* 0x230 */
@@ -53,12 +40,18 @@ typedef struct TaskVtbl {
     void (*onTimeout)();    /* 0x7C 0 in this vtable, set by derived classes */
 } TaskVtbl;
 
+/* The first 0x28 bytes are the screen's (screen.h Screen), field for field; the vtable is the Task one. */
 typedef struct Task {
     TaskVtbl *vtbl;
-    u8 pad_04[0x1C - 0x04];
-    u32 ticks;              /* 0x1C counted by the base's slot 0x5C */
+    ListNode *watched;
+    ListNode *watchers;
+    ScreenEnv *env;         /* 0x0C */
+    Clock *clock;           /* 0x10 */
+    SceneNode *root;        /* 0x14 */
+    struct View *view;      /* 0x18 */
+    s32 ticks;              /* 0x1C counted by the base's slot 0x5C */
     s32 state;              /* 0x20 set by slot 0x60 */
-    u8 pad_24[0x28 - 0x24];
+    s32 noLoop;             /* 0x24 */
     s32 result;             /* 0x28 returned by run */
     u32 timeout;            /* 0x2C ticks; -1 never (slot 0x6C) */
     s8 *bankName;           /* 0x30 when not 0, the task made its own sound bank from this name */

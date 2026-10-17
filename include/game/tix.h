@@ -35,16 +35,27 @@ typedef struct TixFade {
 
 struct TimPack;
 
+/* The TIX header, copied as bytes (alignment 1) */
+typedef struct TixHeaderBytes {
+    u8 bytes[0x24];
+} TixHeaderBytes;
+
 typedef struct Tix {
-    TixVtbl *vtbl;
+    TixVtbl *vtbl;            /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    u32 *header;              /* 0x10 {count, offsets[4], sizes[4]}, 0x24 bytes */
+    s32 isOpen;
+    union {
+        u32 *header;          /* {count, offsets[4], sizes[4]}, 0x24 bytes */
+        TixHeaderBytes *copy; /* the same 0x24 bytes, copied whole from the read buffer */
+    } data;                   /* 0x10 */
     s32 size;                 /* 0x14 0x24 */
-    u8 pad_18[0x24 - 0x18];
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
     u32 flags;                /* 0x24 done requests (File_ServiceQueue): 0x10 open, 0x40 seek, 0x80 read */
-    u8 pad_28[0x2A - 0x28];
+    u16 direct;
     u16 state;                /* 0x2A 9 reading the header, 10 reading parts, 0 done */
     u32 partIndex;            /* 0x2C part being read */
     struct TimPack **parts;   /* 0x30 one TimPack per part */

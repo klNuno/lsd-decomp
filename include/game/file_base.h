@@ -3,10 +3,12 @@
 
 #include "common.h"
 #include "game/heap.h"
+#include "game/file_cd.h"
 
 /*
  * The file class of src/game/file_base.c, the base of every file loader (tix.h, tim.h, tim_pack.h,
- * tmd.h, tod.h, tod_pack.h, mom.h, mml.h, bg.h, bg_cells.h, bg_map.h, movie.h, stream.h; base vtable 0x8006D430, returned by File_GetBaseVtbl; File_GetBackendVtbl
+ * tmd.h, tod.h, tod_pack.h, mom.h, mml.h, bg_cells.h, bg_map.h, map_chunk.h, seq_file.h,
+ * sound_bank.h; base vtable 0x8006D430, returned by File_GetBaseVtbl; File_GetBackendVtbl
  * returns the CD or PC back end, picked by g_fileBackend). At boot File_SetBackend copies the back
  * end's I/O slots (0x40 to 0x58 and 0x68 to 0x74) into the base vtable and into every class
  * vtable listed at 0x8006D4AC, which holds the vtable getters of the loader classes: in the data those
@@ -52,7 +54,8 @@ typedef struct FileVtbl {
 
 /*
  * The file object (0x2C bytes, base vtable 0x8006D430, src/game/file_base.c and the CD back end of
- * src/game/file_cd.c). Every class of this header starts with these fields.
+ * src/game/file_cd.c). Every file class starts with these fields, with its own vtable type and
+ * often a union for data (the parts its onLoaded parses).
  */
 typedef struct File {
     FileVtbl *vtbl;
@@ -61,8 +64,8 @@ typedef struct File {
     s32 isOpen;      /* 0x0C set by open (File_OpenByName), cleared by close (File_Close) */
     u8 *data;        /* 0x10 the whole file, or a parent's bytes */
     s32 size;        /* 0x14 0 when the data is borrowed */
-    s32 cdPos;       /* 0x18 CdlLOC of the file, copied whole from its directory entry */
-    s32 cdSize;      /* 0x1C its size on the disc, from the same entry */
+    CdlLocDir cdPos; /* 0x18 CdlLOC of the file, copied whole from its directory entry */
+    u32 cdSize;      /* 0x1C its size on the disc, from the same entry */
     u16 keepData;    /* 0x20 when set, freeData keeps the data */
     u16 pending;     /* 0x22 queued requests: File_QueueRequest adds one */
     u32 flags;       /* 0x24 done requests (File_ServiceQueue); bit 0 set by the base onLoaded */

@@ -15,8 +15,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* not in game/screen.h: each file that calls it reads the vtable through its own view of the slots */
-ScreenVtbl *Screen_GetVtbl(void);
 extern ScreenVtbl g_screenVtbl[]; /* Screen */
 
 void Screen_Init(Screen *screen) {

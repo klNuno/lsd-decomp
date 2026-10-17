@@ -11,10 +11,6 @@
  * File boundaries: proven (docs/layout.md)
  */
 
-typedef struct FileLoadedView {
-    u8 pad[0xC];
-    s32 isOpen;          /* File.isOpen: File_CloseSync drops it */
-} FileLoadedView;
 s32 g_fileEnabled;
 s32 g_fileOption;
 s32 g_fileBusy;
@@ -25,45 +21,10 @@ struct FileRequest *g_fileRequestHead;
 s32 g_fileAsyncMode;
 s32 g_fileRetryCount;
 s32 g_fileVSyncPending;
-typedef struct FileSizeView {
-    u8 pad[0xC];
-    s32 isOpen;          /* File.isOpen */
-    u8 pad2[0xC];
-    u32 cdSize;          /* File.cdSize, rounded up to whole sectors */
-} FileSizeView;
 static void File_UnhookVSync(void);
-typedef struct ObjectClassTable {
-    u8 pad_00[0x8];
-    void (*init)(void *);    /* 0x08 Object_Init */
-    void (*destroy)(s32);    /* 0x0C Object_Destroy */
-} ObjectClassTable;
 static void File_InitCd(void);
-typedef struct FileInitObject {
-    void *vtbl;              /* File.vtbl, the back end vtable */
-    u8 pad4[0x24];
-    s16 direct;              /* File.direct, 0: requests are queued */
-} FileInitObject;
-typedef struct FileInitClassTable {
-    u8 pad[8];
-    void (*init)(FileInitObject *);  /* 0x08 Object_Init */
-} FileInitClassTable;
 DirEntry *g_fileDirTable;
 s32 g_fileCdReady;
-typedef struct FileInitRecord {
-    void *vtbl;              /* File.vtbl */
-    u8 pad_04[0x8];
-    s32 isOpen;              /* File.isOpen, 0 until File_Locate finds the file */
-} FileInitRecord;
-typedef struct FileStepObject FileStepObject;
-typedef struct {
-    u8 pad[0x5C];
-    void (*onLoaded)(FileStepObject *); /* 0x5C File_MarkLoaded: flags |= 1 */
-    u8 pad2[0x74 - 0x60];
-    void (*cancel)(void);               /* 0x74 File_CancelRequests */
-} FileStepVt;
-struct FileStepObject {
-    FileStepVt *vt;
-};
 s32 g_fileVSyncHooked;
 s32 g_fileVSyncMode;
 static s32 File_OnVSync(void);
@@ -87,97 +48,32 @@ static void File_BeginOp(s32 kind, s32 state);
 static void File_EndOp(void);
 static s32 File_FindIndex(char *name);
 static void File_QueueRequest(File *obj, s32 index, s32 kind, s32 param3, s32 param4);
-typedef struct VSyncObject {
-    /* 0x00 */ u8 pad_00[0xC];
-    /* 0x0C */ s32 unkC;
-    /* 0x10 */ u8 pad_10[0x10];
-    /* 0x20 */ s32 unk20;
-    /* 0x24 */ s32 unk24;
-} VSyncObject;
 s32 g_fileLock;
 static void File_PollIo(void);
 static void File_StepIo(void);
-typedef struct FileVtSlot48 {
-    u8 pad[0x48];
-    void (*close)(void *);   /* 0x48 File_Close */
-} FileVtSlot48;
-typedef struct FileSeekView {
-    FileVtSlot48 *vtbl;  /* File.vtbl */
-    u8 pad4[0x8];
-    s32 isOpen;          /* File.isOpen */
-    u8 pad10[0x8];
-    u8 cdPos[0x8];       /* File.cdPos, the CdlLOC given to CdControl command 2 */
-} FileSeekView;
-typedef struct FileRequestLink FileRequestLink;
-struct FileRequestLink {
-    s32 running;         /* FileRequest.running */
-    u8 pad4[0x8];
-    void *file;          /* FileRequest.file */
-    u8 pad10[0x10];
-    FileRequestLink *next; /* FileRequest.next */
-};
 DirEntry *g_fileCurEntry;
 DirEntry *g_filePrevEntry;
 static void File_SetState(s32 state);
 s32 g_fileReadSectorCount;
 u8 *g_fileReadBuf;
-static s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset);
+static s32 File_ReadSync(File *obj, void *dst, u32 offset);
 extern FileVtbl g_fileVtable;
-typedef struct FileEntryView {
-    u8 pad[0xC];
-    s32 isOpen;          /* File.isOpen */
-    u8 pad2[0x18 - 0x10];
-    u8 cdPos[4];         /* File.cdPos */
-    u32 cdSize;          /* File.cdSize */
-    u8 pad3[0x28 - 0x20];
-    u16 direct;          /* File.direct */
-} FileEntryView;
 extern u8 g_fileScratchPos[];
-static s32 File_GetSize(FileSizeView *obj);
+static s32 File_GetSize(File *obj);
 s8 *File_BuildPath();
-typedef struct CdlLoc {
-    u8 m, s, f, t;
-} CdlLoc;
-typedef struct CdlFile {
-    CdlLoc pos;
-    s32 size;
-    u8 name[0x10];
-} CdlFile;
-typedef struct FileLoadState {
-    u8 pad[0xC];
-    s32 isOpen;          /* File.isOpen, set once CdSearchFile finds it */
-    u8 pad2[0x8];
-    CdlLoc cdPos;        /* File.cdPos */
-    s32 cdSize;          /* File.cdSize */
-} FileLoadState;
-/* Left unprototyped: File_Locate gets the File itself, File_CloseSync no argument (a0 still
-   holds the file) and File_FreeRequest both request views. */
-static void File_Locate();
+/* Left unprototyped: File_CloseSync is called with no argument (a0 still holds the file). */
+static void File_Locate(File *obj);
 static void File_CloseSync();
-static void File_FreeRequest();
+static void File_FreeRequest(FileRequest *node);
 static DirEntry *File_EntryAt(s32 index);
 typedef struct CdlFileDir {
     CdlLocDir pos;
     s32 size;
     s8 name[16];
 } CdlFileDir;
-typedef struct CdlLocTail {
-    u8 m;
-    u8 s;
-    u8 f;
-    u8 t;
-} CdlLocTail;
-typedef struct DirEntryTail {
-    u8 pad[0x14];
-    CdlLocTail pos;      /* DirEntry.pos, the CdlLOC at +0x14 */
-    s32 size;            /* DirEntry.size */
-} DirEntryTail;
-typedef struct CdlFileTail {
-    CdlLocTail pos;
-    s32 size;
-    u8 name[0x10];
-} CdlFileTail;
 static DirEntry *File_FindEntry(char *name);
+/* File_LoadWholeCd calls slot 0x64 as a void function: with FileVtbl's s32 slot gcc no longer
+   shares the call with the close call below it, so this one function keeps its own view of File. */
 typedef struct FileVtOpen {
     u8 pad[0x48];
     void (*close)(void *);   /* 0x48 File_Close */
@@ -185,20 +81,20 @@ typedef struct FileVtOpen {
     void (*onLoaded)(void *); /* 0x64 File_MarkLoaded */
 } FileVtOpen;
 typedef struct FileOpenObject {
-    FileVtOpen *vtbl;    /* File.vtbl */
-    u8 pad4[0xC];
-    u8 *data;            /* File.data, the buffer the whole file is read into */
-    s32 size;            /* File.size, the buffer size in bytes */
-    u8 pad18[0x8];
-    u16 keepData;        /* File.keepData, reuses the buffer when set */
-    u8 pad22[0x2];
-    s32 flags;           /* File.flags */
-    u16 direct;          /* File.direct */
+    FileVtOpen *vtbl;    /* File's fields (file_base.h), with this vtable type */
+    ListNode *watched;
+    ListNode *watchers;
+    s32 isOpen;
+    u8 *data;            /* 0x10 the buffer the whole file is read into */
+    s32 size;            /* 0x14 the buffer size in bytes */
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;        /* 0x20 reuses the buffer when set */
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
 } FileOpenObject;
-typedef struct DirEntrySize {
-    u8 pad[0x18];
-    u32 size;            /* DirEntry.size, rounded up to sectors by File_LoadWholeCd */
-} DirEntrySize;
 
 static File *File_Create(void) {
     File *obj;
@@ -211,16 +107,16 @@ static File *File_Create(void) {
     return NULL;
 }
 
-void File_InitCdObject(FileInitObject *obj) {
-    ((FileInitClassTable *)File_GetBaseVtbl())->init(obj);
+void File_InitCdObject(File *obj) {
+    File_GetBaseVtbl()->init(obj);
     obj->vtbl = File_GetVtable();
     obj->direct = 0;
     File_InitCd();
 }
 
-void File_DestroyCd(FileStepObject *obj) {
-    obj->vt->cancel();
-    obj->vt->onLoaded(obj);
+void File_DestroyCd(File *obj) {
+    obj->vtbl->cancel();
+    obj->vtbl->freeData(obj);
 }
 
 void File_EmptySlot40(void) {
@@ -228,7 +124,7 @@ void File_EmptySlot40(void) {
 
 void File_OpenByName(File *obj, char *name, s32 param2, s32 param3) {
     s8 path[0x40];
-    CdlFileTail file;
+    CdlFileDir file;
     s32 result;
 
     if (g_fileEnabled == 0 && g_fileOption == 0) {
@@ -244,15 +140,15 @@ void File_OpenByName(File *obj, char *name, s32 param2, s32 param3) {
                 if (g_fileCurEntry == 0) {
                     return;
                 }
-                *(CdlLocTail *)&obj->cdPos = ((DirEntryTail *)g_fileCurEntry)->pos;
-                obj->cdSize = ((DirEntryTail *)g_fileCurEntry)->size;
+                obj->cdPos = g_fileCurEntry->pos;
+                obj->cdSize = g_fileCurEntry->size;
                 g_fileAsyncMode = 1;
                 obj->isOpen = 1;
             } else {
                 File_BuildPath(path, (s8 *)name);
                 while (CdSearchFile(&file, path) == 0) {
                 }
-                *(CdlLocTail *)&obj->cdPos = file.pos;
+                obj->cdPos = file.pos;
                 obj->cdSize = file.size;
                 do {
                     CdControl(2, (u8 *)&obj->cdPos, 0);
@@ -288,7 +184,7 @@ void File_Close(File *obj) {
     File_Unlock();
 }
 
-s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
+s32 File_Seek(File *obj, u32 offset, s32 mode) {
     u8 *buf;
     u32 sector;
     s32 base;
@@ -296,7 +192,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
     u32 v;
 
     if (g_fileEnabled == 0 && g_fileOption == 0) {
-        return File_GetSize((FileSizeView *)obj);
+        return File_GetSize(obj);
     }
     File_Lock();
     if (obj->direct != 0) {
@@ -306,7 +202,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
             if (offset & 0x7FF) {
                 sector++;
             }
-            base = CdPosToInt(obj->cdPos);
+            base = CdPosToInt((u8 *)&obj->cdPos);
             buf = g_fileScratchPos;
             CdIntToPos(base + sector, buf);
             if (mode == 0) {
@@ -332,7 +228,7 @@ s32 File_Seek(FileEntryView *obj, u32 offset, s32 mode) {
             }
         }
     } else {
-        File_QueueRequest((File *)obj, 0, 4, offset, mode);
+        File_QueueRequest(obj, 0, 4, offset, mode);
     }
     File_Unlock();
     return 0;
@@ -345,7 +241,7 @@ s32 File_Read(File *obj, u8 *buf, u32 offset) {
     s32 status;
 
     if ((g_fileEnabled == 0) && (g_fileOption == 0)) {
-        File_ReadSync((FileSeekView *)obj, buf, offset);
+        File_ReadSync(obj, buf, offset);
         return 0;
     }
     File_Lock();
@@ -398,9 +294,9 @@ void File_LoadWholeCd(FileOpenObject *obj, char *name) {
             if (entry == 0) {
                 return;
             }
-            sectors = ((DirEntrySize *)entry)->size >> 11;
+            sectors = entry->size >> 11;
             g_fileReadSectorCount = sectors;
-            if (((DirEntrySize *)entry)->size & 0x7FF) {
+            if (entry->size & 0x7FF) {
                 g_fileReadSectorCount = sectors + 1;
             }
             cur = obj->data;
@@ -514,7 +410,7 @@ void File_RequestLoad(File *obj, char *name) {
     if (name != 0) {
         if (g_fileEnabled != 0) {
             uninit->markLoaded = 1;
-            File_QueueRequest(obj, File_FindIndex(name), 7, 0, 0);
+            File_QueueRequest((File *)obj, File_FindIndex(name), 7, 0, 0);
         } else {
             obj->vtbl->load(obj, name);
             if (obj->pending == 0) {
@@ -532,13 +428,13 @@ void File_Stop(void) {
 }
 
 void File_CancelRequests(File *obj) {
-    FileRequestLink *node;
-    FileRequestLink *cur;
-    FileRequestLink *next;
+    FileRequest *node;
+    FileRequest *cur;
+    FileRequest *next;
     DirEntry *tmp;
 
     File_Lock();
-    node = (FileRequestLink *)g_fileRequestHead;
+    node = g_fileRequestHead;
     if (node != NULL && obj->pending != 0) {
         obj->flags = 0;
         if (node->file == obj && node->running != 0 && g_fileDone == 0) {
@@ -548,7 +444,7 @@ void File_CancelRequests(File *obj) {
             g_filePrevEntry = 0;
             g_fileCurEntry = tmp;
         }
-        cur = (FileRequestLink *)g_fileRequestHead;
+        cur = g_fileRequestHead;
         while (cur != NULL) {
             next = cur->next;
             if (cur->file == obj) {
@@ -956,7 +852,7 @@ static void File_SetState(s32 state) {
     g_fileRetryCount = 0;
 }
 
-static void File_InitSync(FileInitRecord *obj) {
+static void File_InitSync(File *obj) {
     File_GetBaseVtbl()->init(obj);
     obj->vtbl = File_GetVtable();
     obj->isOpen = 0;
@@ -969,9 +865,9 @@ static void File_DestroySync(s32 handle) {
 static void func_80028918(void) {
 }
 
-static void File_Locate(FileLoadState *obj) {
+static void File_Locate(File *obj) {
     s32 tries;
-    CdlFile file;
+    CdlFileDir file;
     s8 name[0x40];
 
     tries = 0;
@@ -1001,13 +897,13 @@ s8 *File_BuildPath(s8 *path, s8 *name) {
     return path;
 }
 
-static void File_CloseSync(FileLoadedView *obj) {
+static void File_CloseSync(File *obj) {
     if (obj->isOpen != 0) {
         obj->isOpen = 0;
     }
 }
 
-static s32 File_GetSize(FileSizeView *obj) {
+static s32 File_GetSize(File *obj) {
     if (obj->isOpen != 0) {
         return ((obj->cdSize >> 0xB) + 1) << 0xB;
     }
@@ -1017,7 +913,7 @@ static s32 File_GetSize(FileSizeView *obj) {
 static void func_80028A7C(void) {
 }
 
-static s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset) {
+static s32 File_ReadSync(File *obj, void *dst, u32 offset) {
     u8 buf[0x800];
     u8 result[0x10];
     s32 status;
@@ -1029,7 +925,7 @@ static s32 File_ReadSync(FileSeekView *obj, void *dst, u32 offset) {
     }
 retry:
     sectors = offset >> 11;
-    CdControl(2, obj->cdPos, 0);
+    CdControl(2, (u8 *)&obj->cdPos, 0);
 sync:
     status = CdSync(0, result);
     if (status == 0) {

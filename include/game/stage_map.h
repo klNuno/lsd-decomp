@@ -76,20 +76,6 @@ typedef struct NeighborUse {
     u8 enabled;
 } NeighborUse;
 
-/* What the map follows (+0x6C) and the senders of its messages: objects with a GsCOORDINATE2 at +0x14. */
-typedef struct MapActor {
-    u8 pad_00[0x0C];
-    s32 parent;           /* 0x0C */
-    u8 pad_10[0x14 - 0x10];
-    Coord2 *coord;          /* 0x14 */
-} MapActor;
-
-/* The 12-byte records +0x1E4 points to (g_tileStretchSlowUp to g_tileStretchFastDown), handed to every tile's slot 0x48. */
-typedef struct MapTileStep {
-    s16 unk0[3];
-    s16 ticks;              /* 0x06 64 or 4: +0x1E0 = ticks x count (StageMap_StartTileStretch) */
-} MapTileStep;
-
 typedef struct StageMapVtbl {
     s32 classWord;          /* 0x114 */
     void *(*delete_)();     /* 0x04 Object_Delete */
@@ -148,7 +134,7 @@ typedef struct StageMap {
     s32 (*loadChunk)();     /* 0x60 (loadContext, chunk index, 0, 0), set by slot 0xC8 */
     void *loadContext;      /* 0x64 */
     StageGrid *grid;        /* 0x68 */
-    MapActor *target;       /* 0x6C what the view follows, set by slot 0xE4 */
+    SceneNode *target;      /* 0x6C what the view follows (the DreamSys), set by slot 0xE4 */
     s32 active;             /* 0x70 slots 0xEC and 0xF0 */
     s32 viewDistance;       /* 0x74 slot 0xDC */
     s16 viewHalf;           /* 0x78 viewDistance >> 12 */
@@ -177,7 +163,7 @@ typedef struct StageMap {
     s32 unk1CC[4];          /* 0x1CC address returned by slot 0x130 */
     void *bounds;           /* 0x1DC box of chunks tested by StageMap_IsOutsideBounds */
     s32 stretchTicks;             /* 0x1E0 */
-    MapTileStep *stretchStep;    /* 0x1E4 */
+    Fraction *stretchStep;  /* 0x1E4 a Fraction[3] scale step handed to every tile's slot 0x48 (g_tileStretchSlowUp to g_tileStretchFastDown); its y denominator is the ticks per step */
 } StageMap;
 
 /* Functions of src/game/stage_map.c that other files call or reference (docs/naming.md, Prototypes) */

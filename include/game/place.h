@@ -8,6 +8,9 @@
 #include "game/scenery.h"
 #include "game/dream_sys.h"
 #include "game/sound_bank.h"
+#include "game/screen.h"
+#include "game/clock.h"
+#include "game/tmd.h"
 
 struct Tix;
 
@@ -103,16 +106,16 @@ typedef struct PlaceVtbl {
 /* Place +0x6C to +0x7C, the four words the scenery code keeps a pointer to (g_placeRefs). */
 typedef struct PlaceRefs {
     SoundBank *soundBank; /* +0x0 list the spot handlers are registered in (HandlerNode_Start) */
-    PlaceObj *models;     /* +0x4 slot 0x80 returns a model by index (Scenery_Build, Scenery_SetPlaceRefs) */
+    Tmd *models;          /* +0x4 the dreamer model's TMD (tmd.h): slot 0x80 returns a model by index (Scenery_Build, Scenery_SetPlaceRefs) */
     void *etcTim;           /* +0x8 font of the "Pause" text and of the kind 2 and 3 scenery parts */
     View *view;           /* +0xC the view again, set by load */
 } PlaceRefs;
 
 typedef struct Place {
-    PlaceVtbl *vt;
+    PlaceVtbl *vtbl;
     u8 pad_04[0x0C - 0x04];
-    PlaceObj **env;      /* 0x0C */
-    PlaceObj *clock;      /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
+    ScreenEnv *env;       /* 0x0C the dream runner's context (screen.h): display, pad, clock, root the StageMap, view */
+    Clock *clock;         /* 0x10 suspended by the pause window; passed to Sym_InitStage and the fader */
     StageMap *map;        /* 0x14 the stage map (stage_map.h), also g_symMap (Sym_InitStage) and g_sceneryMap */
     View *view;           /* 0x18 the screen's view (screen.h Screen.view): its overlay is the place fader */
     s32 ticks;            /* 0x1C counted by the tick while started */

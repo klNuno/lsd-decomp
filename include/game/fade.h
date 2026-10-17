@@ -63,11 +63,15 @@ typedef union FadeSaved {
 #define FADE_MSG_IN_DONE 5
 #define FADE_MSG_OUT_DONE 6
 
+/* The first 0x6C bytes are the box's (box.h Box), field for field; the vtable is the Fade one. */
 struct Fade {
     FadeVtbl *vtbl;
     u8 pad_04[0xC - 0x4];
     s32 parent;             /* 0x0C */
-    u8 pad_10[0x50 - 0x10];
+    u8 pad_10[0x44 - 0x10];
+    s32 priority;           /* 0x44 */
+    s32 relative;           /* 0x48 */
+    s32 unk_4C;
     ScreenPoint position;   /* 0x50 */
     s32 attribute;          /* 0x58 */
     u16 x;                  /* 0x5C */

@@ -14,60 +14,7 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* libgs GsSPRITE */
-typedef struct Sprite {
-    s32 attribute;  /* 0x00 bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend rate, 24-25 color mode */
-    u16 x;          /* 0x04 */
-    u16 y;          /* 0x06 */
-    u16 w;          /* 0x08 */
-    u16 h;          /* 0x0A */
-    u16 tpage;      /* 0x0C */
-    u8 u;           /* 0x0E */
-    u8 v;           /* 0x0F */
-    u16 cx;         /* 0x10 CLUT */
-    u16 cy;         /* 0x12 */
-    Color3 color;   /* 0x14 0x80 neutral */
-    u8 pad_17;
-    s16 mx;         /* 0x18 rotation and scaling center */
-    s16 my;         /* 0x1A */
-    u16 scaleX;     /* 0x1C 0x1000 = 1 */
-    u16 scaleY;     /* 0x1E */
-    s32 rotate;     /* 0x20 degrees, 20.12 */
-} Sprite;
-
-/* Slots of g_spriteNodeVtbl this unit calls, with the arguments it passes. */
-typedef struct SpriteNodeVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *, Tim *, s32, SpriteRect *, s32, s32); /* 0x08 SpriteNode_Init */
-    u8 pad_0C[0x40 - 0x0C];
-    void (*setImage)(void *, s32, s32, s32, s32, s32); /* 0x40 SpriteNode_SetImage */
-    u8 pad_44[0x4C - 0x44];
-    void (*attach)(void *, s32, void *);               /* 0x4C SceneNode_Attach (node, parent, Vec3 position) */
-} SpriteNodeVtbl;
-
-struct ScreenSprite;
-
-typedef struct ScreenSpriteVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *, Tim *, SpriteRect *, s32);       /* 0x08 ScreenSprite_Init */
-    u8 pad_0C[0x40 - 0x0C];
-    void (*setup)(void *);                                /* 0x40 ScreenSprite_Setup, empty */
-    u8 pad_44[0xBC - 0x44];
-    void (*setPosition)(struct ScreenSprite *, ScreenPoint *); /* 0xBC ScreenSprite_SetPosition */
-} ScreenSpriteVtbl;
-
-typedef struct ScreenSprite {
-    ScreenSpriteVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 parent;             /* 0x0C */
-    u8 pad_10[0x64 - 0x10];
-    Sprite sprite;          /* 0x64 */
-    u8 pad_88[0xA0 - 0x88];
-    ScreenPoint position;   /* 0xA0 set once attached */
-} ScreenSprite;
-
-/* not from game/sprite_node.h: other files read this vtable through their own views of the slots */
+/* not in game/sprite_node.h: scenery_part.c still reads this vtable through its own view of the slots */
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern ScreenSpriteVtbl g_screenSpriteVtbl;
 extern s32 g_screenSpriteOrigin[3];          /* {0, 0, 0}: the Vec3 a screen sprite is attached at */

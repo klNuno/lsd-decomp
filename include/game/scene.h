@@ -18,30 +18,14 @@ typedef struct SceneSettings {
 } SceneSettings;
 
 /*
- * Scene (vtable g_sceneVtbl 0x8006D3C8, src/game/scene.c), the App the game runs: main
- * (src/game/main.c) makes it with g_sceneSettings, then calls setup (0x44) and run (0x4C).
- * Every slot of g_sceneVtbl; 0x00 to 0x3C are Object's, 0x48 and 0x4C the base class's.
+ * Scene (vtable g_sceneVtbl 0x8006D3C8, class word 0x1F60, src/game/scene.c), the App the game runs:
+ * main (src/game/main.c) makes it with g_sceneSettings, then calls start (0x44) and run (0x4C). Its
+ * vtable has the layout of AppVtbl (app.h): it fills 0x50 to 0x64 and puts Scene_SeedRandom in slot
+ * 0x40 (setScreenMode in App), Scene_Init and Scene_Start in 0x08 and 0x44.
+ * The first 0x20 bytes are the app's (app.h App), field for field.
  */
-typedef struct SceneVtbl {
-    s32 classWord;          /* 0x00 0x1F60 */
-    void *(*delete_)();    /* 0x04 Object_Delete */
-    void (*init)();        /* 0x08 Scene_Init (scene, settings) */
-    void (*destroy)();     /* 0x0C App_Destroy, empty */
-    u8 pad_10[0x40 - 0x10];
-    void (*seedRandom)();  /* 0x40 Scene_SeedRandom */
-    void (*start)();       /* 0x44 Scene_Start (scene, display, pad) */
-    void (*unk48)();       /* 0x48 func_8003B108, empty */
-    void (*run)();         /* 0x4C App_Run, the scene loop */
-    void (*showLogos)();   /* 0x50 Scene_ShowLogos */
-    void (*playOpening)(); /* 0x54 Scene_PlayOpening */
-    s32 (*runTitle)();     /* 0x58 Scene_RunTitle */
-    void (*unk5C)();       /* 0x5C func_80026690, empty: run when the title returns 1, which it never does */
-    s32 (*runDream)();     /* 0x60 Scene_RunDream */
-    void (*playEnding)();  /* 0x64 Scene_PlayEnding */
-} SceneVtbl;
-
 typedef struct Scene {
-    SceneVtbl *vtbl;
+    AppVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
     /* App */

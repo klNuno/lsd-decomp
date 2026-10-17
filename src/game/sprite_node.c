@@ -14,28 +14,8 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* libgs GsSPRITE */
-typedef struct Sprite {
-    s32 attribute;  /* 0x00 bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend rate, 24-25 color mode */
-    u16 x;          /* 0x04 */
-    u16 y;          /* 0x06 */
-    u16 w;          /* 0x08 */
-    u16 h;          /* 0x0A */
-    u16 tpage;      /* 0x0C */
-    u8 u;           /* 0x0E */
-    u8 v;           /* 0x0F */
-    u16 cx;         /* 0x10 CLUT */
-    u16 cy;         /* 0x12 */
-    Color3 color;   /* 0x14 0x80 neutral */
-    u8 pad_17;
-    s16 mx;         /* 0x18 rotation and scaling center */
-    s16 my;         /* 0x1A */
-    u16 scaleX;     /* 0x1C 0x1000 = 1 */
-    u16 scaleY;     /* 0x1E */
-    s32 rotate;     /* 0x20 degrees, 20.12 */
-} Sprite;
-
-/* SpriteRect as SpriteNode_FillSprite reads it: bytes for u and v, halves for w and h. */
+/* SpriteRect as SpriteNode_FillSprite reads it: bytes for u and v, halves for w and h. Kept as a view:
+   reading u and v as u16 would load them with lhu instead of lbu. */
 typedef struct SpriteRectBytes {
     u8 u;
     u8 pad_01;
@@ -46,54 +26,10 @@ typedef struct SpriteRectBytes {
     u16 h;
 } SpriteRectBytes;
 
-/* The start of the GsIMAGE of a TIM image object (at +0x2C), as SpriteNode_FillSprite reads it. */
-typedef struct SpriteTim {
-    s32 pmode;      /* 0x00 the low 2 bits are the color mode */
-    s16 px;         /* 0x04 VRAM position of the pixels */
-    s16 py;
-    u8 pad_08[0x10 - 0x08];
-    u16 cx;         /* 0x10 VRAM position of the CLUT */
-    u16 cy;
-} SpriteTim;
-
-/* The rotation a scene node takes (base slot 0x44): 3 angles in degrees, each a fraction. */
-typedef struct NodeAngles {
-    Fraction x;
-    Fraction y;
-    Fraction z;
-} NodeAngles;
-
-struct SpriteNode;
-
-/* Slots of g_spriteNodeVtbl this unit calls, with the arguments it passes. */
-typedef struct SpriteNodeVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *, Tim *, s32, SpriteRect *, s32, s32);     /* 0x08 SpriteNode_Init */
-    u8 pad_0C[0x40 - 0x0C];
-    void (*setImage)(void *, Tim *, s32, SpriteRect *, s32, s32); /* 0x40 SpriteNode_SetImage */
-    u8 pad_44[0x4C - 0x44];
-    void (*attach)(void *, s32, void *);               /* 0x4C SceneNode_Attach (node, parent, Vec3 position) */
-} SpriteNodeVtbl;
-
-/* The first 0x18 bytes are the scene node's (scene_node.h SceneNode). */
-typedef struct SpriteNode {
-    SpriteNodeVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 parent;             /* 0x0C SceneNode *, 0 until attached */
-    u8 pad_10[0x48 - 0x10];
-    TimImage *tim;          /* 0x48 the GsIMAGE inside the image object (read as a SpriteTim) */
-    SpriteRect rect;        /* 0x4C */
-    s32 unk58;              /* 0x58 0 */
-    u8 pad_5C[0x64 - 0x5C];
-    Sprite sprite;          /* 0x64 */
-    u8 pad_88[0xA0 - 0x88];
-} SpriteNode;
-
-/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
-ObjectVtbl *SceneNode_GetVtbl(void);
+/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
 static void SpriteNode_FillSprite();
-/* not in game/sprite_node.h: each file that calls it reads the vtable through its own view of the slots */
+/* not in game/sprite_node.h: scenery_part.c still reads this vtable through its own view of the slots */
 SpriteNodeVtbl *SpriteNode_GetVtbl(void);
 extern SpriteNodeVtbl g_spriteNodeVtbl;
 
@@ -127,7 +63,7 @@ void SpriteNode_SetImage(SpriteNode *node, Tim *image, s32 blendRate, SpriteRect
 }
 
 /* Fills the sprite for the rect of the TIM: centered pivot, white, scale 1, no rotation. */
-static void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes *rect, SpriteTim *tim) {
+static void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes *rect, TimImage *tim) {
     s32 colorMode;
 
     colorMode = tim->pmode;
@@ -153,10 +89,10 @@ static void SpriteNode_FillSprite(Sprite *sprite, s32 blendRate, SpriteRectBytes
 }
 
 /* Slot 0x44: a sprite only turns around z; assign 0 adds to the current angle. */
-void SpriteNode_SetRotation(SpriteNode *node, s32 assign, NodeAngles *angles) {
+void SpriteNode_SetRotation(SpriteNode *node, s32 assign, Fraction *degrees) {
     s32 rotate;
 
-    rotate = ((angles->z.num / angles->z.den) << 12) + (((angles->z.num % angles->z.den) << 12) / angles->z.den);
+    rotate = ((degrees[2].num / degrees[2].den) << 12) + (((degrees[2].num % degrees[2].den) << 12) / degrees[2].den);
     if (assign != 0) {
         node->sprite.rotate = rotate;
         return;

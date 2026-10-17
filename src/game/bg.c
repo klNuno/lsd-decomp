@@ -19,14 +19,8 @@ typedef struct BgMapView {
     u16 cellsY;
 } BgMapView;
 
-/* Bg_SetRotation's argument: a fraction at +8 */
-typedef struct BgAngle {
-    u8 pad_00[0x8];
-    s16 num;
-    s16 den;
-} BgAngle;
-/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
-ObjectVtbl *SceneNode_GetVtbl(void);
+/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
 static BgVtbl *Bg_GetVtbl(void);
 extern BgVtbl g_bgVtbl;
 extern Color3 g_bgDefaultColor;    /* {0x80, 0x80, 0x80}, the neutral GsBG colour */
@@ -74,10 +68,11 @@ void Bg_SetMap(Bg *bg, BgMapView *map, s32 mode) {
     bg->bg.my = bg->bg.h / 2;
 }
 
-/* Slot 0x44: rotate = num / den in fixed point 12 bits, set when set != 0, else added */
-void Bg_SetRotation(Bg *bg, s32 set, BgAngle *angle) {
-    s16 num = angle->num;
-    s16 den = angle->den;
+/* Slot 0x44: degrees x, y, z like SceneNode_SetRotation; a GsBG turns around z only:
+   rotate = num / den in fixed point 12 bits, set when set != 0, else added */
+void Bg_SetRotation(Bg *bg, s32 set, Fraction *degrees) {
+    s16 num = degrees[2].num;
+    s16 den = degrees[2].den;
     s32 value = ((num / den) << 12) + (((num % den) << 12) / den);
 
     if (set != 0) {

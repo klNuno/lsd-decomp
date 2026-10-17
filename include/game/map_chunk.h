@@ -44,18 +44,19 @@ typedef struct MapChunkData {
 } MapChunkData;
 
 typedef struct MapChunk {
-    MapChunkVtbl *vtbl;
+    MapChunkVtbl *vtbl;       /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    MapChunkData *data;      /* 0x10 the 0xB358-byte chunk buffer */
-    s32 size;                /* 0x14 0xB358 once the buffer exists */
-    u8 pad_18[0x20 - 0x18];
-    u16 keepData;            /* 0x20 File.keepData: set to data != NULL at creation */
-    u8 pad_22[0x24 - 0x22];
-    s32 flags;               /* 0x24 done file requests: 0x80 read */
-    u8 pad_28[0x2A - 0x28];
-    u16 state;               /* 0x2A 9 reading the chunk, 10 reading its entity part, 0 idle */
+    s32 isOpen;
+    MapChunkData *data;       /* 0x10 the 0xB358-byte chunk buffer */
+    s32 size;                 /* 0x14 0xB358 once the buffer exists */
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;             /* 0x20 set to data != NULL at creation */
+    u16 pending;
+    u32 flags;                /* 0x24 done file requests: 0x80 read */
+    u16 direct;
+    u16 state;                /* 0x2A 9 reading the chunk, 10 reading its entity part, 0 idle */
     s16 loaded;              /* 0x2C 0 empty; non-zero once its data is in, 2 after StageMap_BuildTiles built its tiles */
     s16 entitiesLoaded;      /* 0x2E StageMap_PollLoads clears it and sends slot message 7 */
     s16 index;               /* 0x30 chunk index in the stage grid (row * cols + col), -1 when empty */

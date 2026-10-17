@@ -436,8 +436,8 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     Render_InitClipSlots(ctx->triClip.b, g_clipTriWork.b, 3);
     Render_InitClipSlots(ctx->quadClip.b, g_clipQuadWork.b, 4);
     remaining = object->tmd->primitiveCount;
-    packet.b = object->tmd->primitives;
-    ctx->vertices = object->tmd->vertices;
+    packet.b = (u8 *)object->tmd->primitives;
+    ctx->vertices = (u8 *)object->tmd->vertices;
     ctx->normals = object->tmd->normals;
     if (object->coord->super != NULL) {
         gte_ReadRotMatrix(&ctx->savedRot);

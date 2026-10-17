@@ -6,13 +6,19 @@
 
 /* A file object (file_base.h) whose data is a SEQ file. */
 typedef struct SeqFile {
-    FileVtbl *vtbl;
+    FileVtbl *vtbl;           /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    s32 data;               /* 0x10 the SEQ, given to SsSeqOpen */
-    s32 size;               /* 0x14 */
-    u8 pad_18[0x2C - 0x18];
+    s32 isOpen;
+    s32 data;                 /* 0x10 the SEQ, given to SsSeqOpen (an s32 there) */
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
     s32 loaded;             /* 0x2C set by SeqFile_OnLoaded */
 } SeqFile;
 

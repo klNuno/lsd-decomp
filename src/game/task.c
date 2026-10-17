@@ -13,9 +13,7 @@
 
 extern TaskVtbl g_taskVtbl;
 
-/* the vtable of screen.c through this file's view of its slots, so not from game/screen.h */
-TaskBaseVtbl *Screen_GetVtbl(void);
-/* not in game/task.h: each file that calls it reads the vtable through its own view of the slots */
+/* not in game/task.h: place.c still reads this vtable through its own view of the slots */
 TaskVtbl *Task_GetVtbl(void);
 
 static Task *Task_New(s8 *bankName, SoundBank *sound) {
@@ -68,7 +66,7 @@ void Task_OnPad(void) {
 }
 
 void Task_OnTick(Task *task, s32 sender, s32 message) {
-    Screen_GetVtbl()->onTick(task, sender, message);
+    Screen_GetVtbl()->onClock(task, sender, message);
     if (task->ticks > task->timeout) {
         task->vtbl->setState(task, TASK_STATE_TIMEOUT);
     }

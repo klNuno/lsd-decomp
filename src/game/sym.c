@@ -10,6 +10,7 @@
 #include "game/dream_sys.h"
 #include "game/dream_link.h"
 #include "game/entity.h"
+#include "game/model.h"
 #include "psyq/libc.h"
 
 /*
@@ -19,11 +20,6 @@
  */
 
 DreamSys *g_symDreamSys;
-/* The source record a spawned model is built from: a FileSource (file_base.h) for Mml_Create, the model at +0xC for Entity_Create. */
-typedef struct SpawnSource {
-    FileSource file;
-    Mom *model;
-} SpawnSource;
 extern s8 g_ruleColors[];
 /* g_spyModel: the model loaded from ETC\SYMSPY.MOM and the Grey Man entity built on it */
 typedef struct SpyModel {
@@ -56,7 +52,7 @@ extern s8 g_spawnGroupCounts[];
 
 static void Sym_EnableExtraListForType(s32 type);
 s32 Sym_CheckRule(s32 dayNumber, SpawnGroup *group);
-static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 place);
+static s32 Sym_SpawnAtPlace(s32 type, ModelSource *source, SpawnSlot *slot, s32 place);
 static s32 Sym_CheckColorRule(s32 rule);
 static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month);
 /* The 6-byte records of g_spawnPlaceOffsets: four bytes copied whole, then the height. */
@@ -108,7 +104,7 @@ void Sym_FreeModels(void) {
 }
 
 void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank, void *watched) {
-    SpawnSource source;
+    ModelSource source;
     SpyModel *entry;
     u32 i;
 
@@ -120,7 +116,7 @@ void Sym_InitStage(s32 stage, StageMap *map, DreamSys *dreamSys, void *soundBank
     g_symClock = watched;
     /* entity type 0x62 = 98, the Grey Man */
     for (i = 0; i < 1; i++) {
-        source.model = entry->model;
+        source.file = entry->model;
         entry->spy = Entity_Create(i + 0x62, &source, g_symSoundBank);
         entry++;
     }
@@ -154,7 +150,7 @@ void Sym_FreeSpy(void) {
 
     for (i = 0, entry = g_spyEntity; i < 1; i++) {
         if (entry->obj != NULL) {
-            entry->obj = entry->obj->vt->delete_(entry->obj);
+            entry->obj = entry->obj->vtbl->delete_(entry->obj);
         }
         entry++;
     }
@@ -224,14 +220,14 @@ static s32 Sym_CheckDayParity(s32 dayNumber, SpawnSlot *slot) {
 }
 
 static Mml *Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, u8 *square) {
-    SpawnSource source;
+    ModelSource source;
     Mml *squareObj;
     s8 *group;
     s8 *end;
     SpawnGroup *groups;
 
-    source.file.data = square;
-    squareObj = Mml_Create(&source.file);
+    source.source.data = square;
+    squareObj = Mml_Create(&source.source);
     if (squareObj != NULL) {
         group = slot->groups;
         end = slot->groups + 3;
@@ -246,7 +242,7 @@ static Mml *Sym_SpawnSlot(s32 dayNumber, SpawnSlot *slot, u8 *square) {
 }
 
 static s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml *squareObj) {
-    SpawnSource source;
+    ModelSource source;
     s8 *place;
     s8 *placesEnd;
     Mom *model;
@@ -255,7 +251,7 @@ static s32 Sym_SpawnGroup(s32 dayNumber, SpawnSlot *slot, SpawnGroup *group, Mml
         place = group->places;
         Sym_EnableExtraListForType(group->type);
         model = squareObj->vtbl->getMom(squareObj, group->model);
-        source.model = model;
+        source.file = model;
         placesEnd = group->places + 4;
         if (model != NULL) {
             for (; place < placesEnd && *place != -1; place++) {
@@ -364,7 +360,7 @@ static s32 Sym_CheckMonthRule(s32 dayNumber, s32 month) {
     return 0;
 }
 
-static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 place) {
+static s32 Sym_SpawnAtPlace(s32 type, ModelSource *source, SpawnSlot *slot, s32 place) {
     SpawnQuery query;
     s32 placement[4];
     Entity *entity;
@@ -379,8 +375,8 @@ static s32 Sym_SpawnAtPlace(s32 type, SpawnSource *source, SpawnSlot *slot, s32 
         recIndex = placeInfo->offsetIndex;
         query.offset = g_spawnPlaceOffsets[recIndex];
         g_symMap->vtbl->placeToWorld(g_symMap, placement, &query);
-        entity->vt->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->rotationIndex * 12]);
-        entity->vt->attach(entity, g_symDreamSys, g_symClock, g_symMap, placement);
+        entity->vtbl->rotate(entity, 1, &g_spawnPlaceRotations[placeInfo->rotationIndex * 12]);
+        entity->vtbl->attach(entity, g_symDreamSys, g_symClock, g_symMap, placement);
         return 0;
     }
     return 1;
@@ -392,9 +388,9 @@ static void Sym_SpawnSpy(SpyModel *spyModel) {
 
     spy = spyModel->spy;
     if (spy != NULL) {
-        spy->vt->detach(spy);
+        spy->vtbl->detach(spy);
         SceneNode_LocalToWorld(g_symDreamSys, placement, &spyModel->spawnOffset, 0);
-        spyModel->spy->vt->attach(spyModel->spy, g_symDreamSys, g_symClock, g_symMap, placement);
+        spyModel->spy->vtbl->attach(spyModel->spy, g_symDreamSys, g_symClock, g_symMap, placement);
         SceneNode_TurnToward(spyModel->spy, g_symDreamSys, 1, 0, 0);
     }
 }

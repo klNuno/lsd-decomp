@@ -23,19 +23,12 @@ typedef struct MapTileVtbl {
     void (*onActorMessage)();        /* 0xB8 MapTile_OnActorMessage */
 } MapTileVtbl;
 
-typedef struct MapTileModel {
-    u8 pad_00[0x10];
-    u32 *tmd;               /* 0x10 handed to GsLinkObject4 */
-} MapTileModel;
-
 typedef struct MapTile {
     MapTileVtbl *vtbl;
     u8 pad_04[0x10 - 0x04];
-    s32 attribute;          /* 0x10 GsDOBJ2.attribute; bit 31 (GsDOFF) hides the tile */
-    Coord2 *coord;          /* 0x14 GsDOBJ2.coord2 */
-    u32 *tmd;               /* 0x18 GsDOBJ2.tmd */
+    DObj2 object;           /* 0x10 SceneNode.object (render.h): attribute bit 31 (GsDOFF) hides the tile */
     u8 pad_1C[0x20 - 0x1C];
-    MapTileModel *model;    /* 0x20 */
+    ModelObject *model;     /* 0x20 SceneNode.model: its TMD object entry goes to GsLinkObject4 */
     u8 pad_24[0x34 - 0x24];
     s16 unk34;
     u16 flags;              /* 0x36 bit 0x80: told through slot 0x38 by MapTile_Tell */

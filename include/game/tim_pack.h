@@ -16,18 +16,22 @@ typedef struct TimPackVtbl {
 } TimPackVtbl;
 
 typedef struct TimPack {
-    TimPackVtbl *vtbl;
+    TimPackVtbl *vtbl;        /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
+    s32 isOpen;
     union {
         u8 *bytes;
         s32 *words;           /* count, then count offsets from the start */
     } data;                   /* 0x10 */
-    s32 size;                 /* 0x14 */
-    u8 pad_18[0x24 - 0x18];
-    s32 flags;                /* 0x24 0x200: a load request (slot 0x58) is done (File_ServiceQueue) */
-    u8 pad_28[0x2C - 0x28];
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;                /* 0x24 0x200: a load request (slot 0x58) is done (File_ServiceQueue) */
+    u16 direct;
+    u16 state;
     s32 count;                /* 0x2C TIM objects made */
     struct Tim **tims;     /* 0x30 */
     struct TixFade *fades;    /* 0x34 the owner's TixFade[4] (tix.h) */

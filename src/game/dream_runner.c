@@ -75,7 +75,7 @@ DreamRunner *DreamRunner_New(ScreenEnv *context, DreamSys *dreamSys, s32 useCdSe
 }
 
 /* The world constructor: dreamer model, spawn flags, music bank, the map, and DreamSys watched. */
-void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dreamSys, s32 useCdSearch) {
+void DreamRunner_Init(DreamRunner *runner, ScreenEnv *context, DreamSys *dreamSys, s32 useCdSearch) {
     FileSource modelFile;
     s8 *bankName;
     Tim *tim;
@@ -99,7 +99,7 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
     runner->context = context;
     context->view = DreamView_New();
     context->clock = Clock_Create();
-    context->map = StageMap_New(NULL, 1);
+    context->root = (SceneNode *)StageMap_New(NULL, 1);
     runner->dreamSys = dreamSys;
     runner->vtbl->watch(runner, dreamSys);
     dreamSys->vtbl->setSoundBank(dreamSys, runner->sound);
@@ -108,11 +108,11 @@ void DreamRunner_Init(DreamRunner *runner, RunnerContext *context, DreamSys *dre
 }
 
 void DreamRunner_Destroy(DreamRunner *runner) {
-    RunnerContext *context;
+    ScreenEnv *context;
 
     context = runner->context;
     runner->vtbl->unwatch(runner, runner->dreamSys);
-    context->map = context->map->vtbl->delete_(context->map);
+    context->root = context->root->vtbl->delete_(context->root);
     context->clock = context->clock->vtbl->delete_(context->clock);
     context->view = context->view->vtbl->delete_(context->view);
     runner->music->vtbl->delete_(runner->music);
@@ -161,9 +161,9 @@ void DreamRunner_Finish(DreamRunner *runner) {
 }
 
 void DreamRunner_Start(DreamRunner *runner) {
-    RunnerContextHead *head;
-    RunnerView *view;
-    RunnerViewSub *sub;
+    Display *head;
+    View *view;
+    Fade *sub;
 
     head = runner->context->display;
     view = runner->view;
@@ -177,7 +177,7 @@ void DreamRunner_Start(DreamRunner *runner) {
 }
 
 void DreamRunner_End(DreamRunner *runner) {
-    RunnerView *view;
+    View *view;
 
     view = runner->view;
     view->vtbl->freeOt(view);

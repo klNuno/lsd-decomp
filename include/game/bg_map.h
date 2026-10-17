@@ -13,11 +13,19 @@ typedef struct BgMapVtbl {
 } BgMapVtbl;
 
 typedef struct BgMap {
-    BgMapVtbl *vtbl;
+    BgMapVtbl *vtbl;          /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x2A - 0x0C];
-    u16 state;                /* 0x2A */
+    s32 isOpen;
+    u8 *data;
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
     u8 cellW;                 /* 0x2C GsMAP from here: cellw, cellh, ncellw, ncellh, base, index */
     u8 cellH;
     u16 cellsX;

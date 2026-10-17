@@ -6,6 +6,7 @@
 #include "game/label.h"
 #include "game/text.h"
 #include "game/screen_sprite.h"
+#include "game/sound_bank.h"
 #include "psyq/libc.h"
 
 /*
@@ -30,9 +31,10 @@ struct StringListVtbl {
     void (*onNotify)(StringList *, s32 **, s32);              /* 0x38 StringList_OnNotify */
     u8 pad_3C[0x40 - 0x3C];                  /* 0x3C not used by this file */
     void (*reset)(StringList *);                              /* 0x40 StringList_Reset */
-    u8 pad_44[0x48 - 0x44];
+    void (*open)();                                           /* 0x44 StringList_Open */
     void (*close)();                                          /* 0x48 StringList_Close */
-    u8 pad_4C[0x54 - 0x4C];
+    void (*watchPair)();                                      /* 0x4C StringList_WatchPair */
+    void (*unwatchPair)();                                    /* 0x50 StringList_UnwatchPair */
     void (*setState)();                                        /* 0x54 StringList_SetState */
     void (*tick)(StringList *, s32 **, s32);                /* 0x58 called by onNotify for sender tag 5 */
     void (*onKey)(StringList *, s32 **, s32);                /* 0x5C called by onNotify for sender tag 2 */
@@ -48,24 +50,31 @@ struct StringListVtbl {
     void (*moveCursor)();                                     /* 0x98 StringList_MoveHighlight */
 };
 
+/*
+ * The memory card file list window (the chooser of LOAD, Card_OpenChooser): background CARD\SELECT.TIM,
+ * up to 4 visible rows of 26 characters built by Label_Create, the selected row in g_stringListCursorColor
+ * (0x80, 0x80, 0), the others in g_stringListRowColor (0x50, 0x50, 0x50). Slots 0x7C to 0x88 scroll it,
+ * 0x8C to 0x98 draw it.
+ */
 struct StringList {
     StringListVtbl *vtbl;                    /* 0x00 */
     ListNode *watched;                       /* 0x04 base Object */
     ListNode *watchers;                      /* 0x08 base Object */
     s32 mode;                                /* 0x0C set by init (StringList_Init) */
-    s32 count;                               /* 0x10 set by init */
-    s32 maxLength;                           /* 0x14 set by init */
+    s32 count;                               /* 0x10 rows in the list, set by init */
+    s32 maxLength;                           /* 0x14 characters of the longest row, set by init */
     u8 **strings;                            /* 0x18 set by init: a copy of each string */
     s32 *lengths;                            /* 0x1C set by init */
-    s32 top;                              /* 0x20 cleared by reset (StringList_Reset) */
-    s32 column;                              /* 0x24 cleared by reset (StringList_Reset) */
-    s32 cursor;                              /* 0x28 cleared by reset (StringList_Reset) */
-    s32 state;                              /* 0x2C not referenced in this unit */
-    s32 stateTicks;                              /* 0x30 not referenced in this unit */
-    s32 **pad;                        /* 0x34 tag pointer used by watch and unwatch */
-    s32 **clock;                        /* 0x38 tag pointer used by watch and unwatch */
-    u8 pad_3C[0x50 - 0x3C];                  /* 0x3C to 0x4F not used by this unit */
-    s32 background;                              /* 0x50 written by ClearSenders (StringList_ClearSenders) and UnwatchAll (StringList_UnwatchAll) */
+    s32 top;                                 /* 0x20 first visible row, cleared by reset */
+    s32 column;                              /* 0x24 first visible character (text base for StringList_FormatRow) */
+    s32 cursor;                              /* 0x28 selected row */
+    s32 state;                               /* 0x2C 2 or 3 (setState) */
+    s32 stateTicks;                          /* 0x30 */
+    s32 **pad;                               /* 0x34 the watched pad (sender tag 2) */
+    s32 **clock;                             /* 0x38 the watched clock (sender tag 5) */
+    SoundBank *sound;                        /* 0x3C its slot 0x80 plays a tone */
+    Label *rows[4];                          /* 0x40 visible rows */
+    ScreenSprite *background;                /* 0x50 CARD\SELECT.TIM, NULL while closed */
 };
 
 static StringListVtbl *StringList_GetVtbl(void);
@@ -199,64 +208,12 @@ void StringList_Reset(StringList *list) {
     list->cursor = 0;
 }
 
-/*
- * The memory card file list window: background CARD\SELECT.TIM, up to 4 visible rows of
- * 26 characters built by Label_Create, the selected row in g_stringListCursorColor (0x80, 0x80, 0), the
- * others in g_stringListRowColor (0x50, 0x50, 0x50). Slots 0x7C to 0x88 scroll it, 0x8C to 0x98 draw it.
- */
-
-/* A row text, the background, a loaded file: the slots called on them here. */
-typedef struct CardTextVtbl {
-    u8 pad_00[0x04];
-    void *(*delete_)();   /* 0x04 Object_Delete */
-    u8 pad_08[0x4C - 0x08];
-    void (*attach)();      /* 0x4C (obj, parent, position) */
-    u8 pad_50[0x78 - 0x50];
-    void (*setZSort)();      /* 0x78 called on a file right after Tim_New */
-    u8 pad_7C[0xB8 - 0x7C];
-    void (*setColor)();   /* 0xB8 g_stringListCursorColor or g_stringListRowColor */
-    u8 pad_BC[0xCC - 0xBC];
-    void (*setText)();    /* 0xCC */
-} CardTextVtbl;
-
-typedef struct CardText {
-    CardTextVtbl *vt;
-} CardText;
-
-typedef struct CardListOwnerVtbl {
-    u8 pad_00[0x80];
-    void (*playTone)();
-} CardListOwnerVtbl;
-
-typedef struct CardListOwner {
-    CardListOwnerVtbl *vt;
-} CardListOwner;
-
-/* The StringList object as the window methods read it. */
-typedef struct CardList {
-    StringListVtbl *vt;
-    u8 pad_04[0x10 - 0x04];
-    s32 count;            /* 0x10 rows in the list */
-    s32 width;            /* 0x14 characters of the longest row */
-    u8 **strings;         /* 0x18 the rows (StringList.strings) */
-    u8 pad_1C[0x20 - 0x1C];
-    s32 top;              /* 0x20 first visible row */
-    s32 column;           /* 0x24 first visible character (text base for StringList_FormatRow) */
-    s32 cursor;           /* 0x28 selected row */
-    s32 state;             /* 0x2C 2 or 3 (setMode) */
-    s32 stateTicks;        /* 0x30 */
-    s32 pad;            /* 0x34 unwatched by setMode and the destructor */
-    s32 clock;
-    CardListOwner *sound; /* 0x3C its slot 0x80 plays a tone */
-    CardText *rows[4];    /* 0x40 visible rows */
-    CardText *background; /* 0x50 CARD\SELECT.TIM, 0 while closed */
-} CardList;
 extern u8 g_stringListCursorColor[];
 extern u8 g_stringListRowColor[];
 s32 g_stringListRowX;
 s32 g_stringListRowY;
-static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, s32 column);
-static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight);
+static u8 *StringList_FormatRow(StringList *list, u8 *out, s32 i, s32 top, s32 column);
+static void StringList_SetView(StringList *list, s32 top, s32 column, s32 cursor, s32 highlight);
 extern s8 g_selectTimName[];
 extern s8 g_cardDirName[];
 extern s8 g_timExtension[];
@@ -267,66 +224,66 @@ extern StringListVtbl g_stringListVtbl;
 INCLUDE_RODATA("asm/nonmatchings/game/string_list", g_stringListAlphabetText);
 
 /* Slot 0x44: open the list with background CARD\SELECT.TIM and the rows in FONTICON. */
-void StringList_Open(CardList *list, s32 parent) {
+void StringList_Open(StringList *list, s32 parent) {
     s8 path[0x20];
     Tim *file;
-    CardText *background;
+    ScreenSprite *background;
     Tim *iconFile;
 
     if ((parent != 0) && (list->background == NULL)) {
         file = Tim_New(File_JoinPath(path, g_selectTimName, g_cardDirName, g_timExtension));
         file->vtbl->upload(file);
-        list->background = (CardText *)ScreenSprite_Create(file, &g_stringListBgRect, 0);
+        list->background = ScreenSprite_Create(file, &g_stringListBgRect, 0);
         file->vtbl->base.delete_(file);
         background = list->background;
-        background->vt->attach(background, parent, g_stringListBgPos);
+        background->vtbl->attach(background, parent, g_stringListBgPos);
         iconFile = Tim_New(File_JoinPath(path, "FONTICON\0\0\0\0\0\0\0", g_cardDirName, g_timExtension));
         iconFile->vtbl->upload(iconFile);
-        list->vt->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
+        list->vtbl->createRows(list, parent, iconFile, list->top, list->column, list->cursor);
         iconFile->vtbl->base.delete_(iconFile);
     }
 }
 
 /* Slot 0x48: delete the rows and the background. */
-void StringList_Close(CardList *list) {
-    CardText *background;
+void StringList_Close(StringList *list) {
+    ScreenSprite *background;
 
     if (list->background != NULL) {
-        list->vt->deleteRows(list);
+        list->vtbl->deleteRows(list);
         background = list->background;
-        list->background = background->vt->delete_(background);
+        list->background = background->vtbl->delete_(background);
     }
 }
 
-void StringList_WatchPair(CardList *list, s32 pad, s32 clock, CardListOwner *sound) {
-    list->vt->watch(list, pad);
-    list->vt->watch(list, clock);
+void StringList_WatchPair(StringList *list, s32 pad, s32 clock, SoundBank *sound) {
+    list->vtbl->watch(list, pad);
+    list->vtbl->watch(list, clock);
     list->sound = sound;
     list->state = 0;
 }
 
-void StringList_UnwatchPair(CardList *list) {
-    list->vt->unwatch(list, list->pad);
-    list->vt->unwatch(list, list->clock);
+void StringList_UnwatchPair(StringList *list) {
+    list->vtbl->unwatch(list, list->pad);
+    list->vtbl->unwatch(list, list->clock);
     list->sound = 0;
 }
 
-void StringList_SetState(CardList *list, s32 mode) {
+void StringList_SetState(StringList *list, s32 mode) {
     list->stateTicks = 0;
     switch (mode) {
     case 2:
     case 3:
-        list->vt->unwatch(list, list->pad);
-        list->vt->close(list);
+        list->vtbl->unwatch(list, list->pad);
+        list->vtbl->close(list);
         list->state = mode;
         break;
     case 4:
-        list->vt->notify(list, list->state);
+        list->vtbl->notify(list, list->state);
         break;
     }
 }
 
-void StringList_Tick(CardList *list) {
+void StringList_Tick(StringList *list) {
     s32 mode;
     s32 ticks;
 
@@ -340,35 +297,35 @@ void StringList_Tick(CardList *list) {
     ticks = list->stateTicks;
     list->stateTicks = ticks + 1;
     if (ticks != 0) {
-        list->vt->setState(list, 4);
+        list->vtbl->setState(list, 4);
     }
 }
 
 /* Pad codes minus 4: 25 and 23 close the list (modes 2, 3), 5, 4, 18, 19 move and scroll it. */
-void StringList_OnKey(CardList *list, s32 sender, s32 code) {
-    void (*fn)(CardList *, s32, s32);
+void StringList_OnKey(StringList *list, s32 sender, s32 code) {
+    void (*fn)(StringList *, s32, s32);
     u32 idx = code - 4;
 
     switch (idx) {
     case 21:
-        list->vt->playTone(list, 0x10, idx);
-        list->vt->setState(list, 2);
+        list->vtbl->playTone(list, 0x10, idx);
+        list->vtbl->setState(list, 2);
         return;
     case 19:
-        list->vt->playTone(list, 0x10, idx);
-        list->vt->setState(list, 3);
+        list->vtbl->playTone(list, 0x10, idx);
+        list->vtbl->setState(list, 3);
         return;
     case 1:
-        fn = list->vt->scrollRight;
+        fn = list->vtbl->scrollRight;
         break;
     case 0:
-        fn = list->vt->scrollLeft;
+        fn = list->vtbl->scrollLeft;
         break;
     case 14:
-        fn = list->vt->moveUp;
+        fn = list->vtbl->moveUp;
         break;
     case 15:
-        fn = list->vt->moveDown;
+        fn = list->vtbl->moveDown;
         break;
     default:
         return;
@@ -376,53 +333,53 @@ void StringList_OnKey(CardList *list, s32 sender, s32 code) {
     fn(list, sender, idx);
 }
 
-void StringList_PlayTone(CardList *list, s32 tone) {
-    CardListOwner *owner = list->sound;
-    if (owner != NULL) {
-        owner->vt->playTone(owner, tone, 0x60, 0x60);
+void StringList_PlayTone(StringList *list, s32 tone) {
+    SoundBank *sound = list->sound;
+    if (sound != NULL) {
+        sound->vtbl->playTone(sound, tone, 0x60, 0x60);
     }
 }
 
 /* Slot 0x7C: show one more character on the right while the longest row goes past 26. */
-void StringList_ScrollRight(CardList *list) {
-    if (list->background != 0 && (list->column + 0x1A) < list->width) {
-        list->vt->drawRows(list, list->top, ++list->column, list->cursor, 1);
+void StringList_ScrollRight(StringList *list) {
+    if (list->background != 0 && (list->column + 0x1A) < list->maxLength) {
+        list->vtbl->drawRows(list, list->top, ++list->column, list->cursor, 1);
     }
 }
 
 /* Slot 0x80: back one character. */
-void StringList_ScrollLeft(CardList *list) {
+void StringList_ScrollLeft(StringList *list) {
     s32 column;
 
     if (list->background != 0) {
         column = list->column - 1;
         if (column >= 0) {
             list->column = column;
-            list->vt->drawRows(list, list->top, column, list->cursor, 1);
+            list->vtbl->drawRows(list, list->top, column, list->cursor, 1);
         }
     }
 }
 
 /* Slot 0x84: cursor up, scrolling when it is on the top row. */
-void StringList_CursorUp(CardList *list) {
+void StringList_CursorUp(StringList *list) {
     s32 top;
     s32 cursor;
 
     if (list->background != 0) {
         if (list->cursor - 1 >= 0) {
             if (list->cursor - list->top > 0) {
-                list->vt->moveCursor(list, 0, 1);
+                list->vtbl->moveCursor(list, 0, 1);
                 return;
             }
             top = --list->top;
             cursor = --list->cursor;
-            list->vt->drawRows(list, top, list->column, cursor, 1);
+            list->vtbl->drawRows(list, top, list->column, cursor, 1);
         }
     }
 }
 
 /* Slot 0x88: cursor down, scrolling past the fourth row. */
-void StringList_CursorDown(CardList *list) {
+void StringList_CursorDown(StringList *list) {
     s32 top;
     s32 cursor;
     s32 aboveTop;
@@ -433,24 +390,24 @@ void StringList_CursorDown(CardList *list) {
             top = list->top;
             aboveTop = top - 1;
             if ((cursor - aboveTop) < 4) {
-                list->vt->moveCursor(list, 1, 1);
+                list->vtbl->moveCursor(list, 1, 1);
                 return;
             }
             list->top = top + 1;
-            list->vt->drawRows(list, top + 1, list->column, ++list->cursor, 1);
+            list->vtbl->drawRows(list, top + 1, list->column, ++list->cursor, 1);
         }
     }
 }
 
 /* Slot 0x8C: build up to 4 row texts 10 pixels apart, then highlight the cursor row. */
-void StringList_CreateRows(CardList *list, s32 parent, Tim *font, s32 top, s32 column, s32 cursor) {
+void StringList_CreateRows(StringList *list, s32 parent, Tim *font, s32 top, s32 column, s32 cursor) {
     u8 text[0x1C];
     s32 pos[4];
     s32 i;
     s32 n;
-    CardText **row;
-    CardText *created;
-    CardText *obj;
+    Label **row;
+    Label *created;
+    Label *obj;
 
     if (list->background != 0) {
         pos[0] = g_stringListRowX;
@@ -464,12 +421,12 @@ void StringList_CreateRows(CardList *list, s32 parent, Tim *font, s32 top, s32 c
         if (n > 0) {
             do {
                 StringList_FormatRow(list, text, i, top, column);
-                created = (CardText *)Label_Create(font, 0x1A, text);
+                created = Label_Create(font, 0x1A, text);
                 *row = created;
-                created->vt->attach(created, parent, pos);
+                created->vtbl->show(created, parent, pos);
                 obj = *row;
                 i += 1;
-                obj->vt->setColor(obj, g_stringListRowColor);
+                obj->vtbl->setColor(obj, g_stringListRowColor);
                 pos[1] += 0xA;
                 row += 1;
             } while (i < n);
@@ -479,10 +436,10 @@ void StringList_CreateRows(CardList *list, s32 parent, Tim *font, s32 top, s32 c
 }
 
 /* Slot 0x90 */
-void StringList_DeleteRows(CardList *list) {
+void StringList_DeleteRows(StringList *list) {
     s32 i;
     s32 n;
-    CardText *obj;
+    Label *obj;
 
     if (list->background != 0) {
         n = list->count;
@@ -491,19 +448,19 @@ void StringList_DeleteRows(CardList *list) {
         }
         for (i = 0; i < n; i++) {
             obj = list->rows[i];
-            obj->vt->delete_(obj);
+            obj->vtbl->delete_(obj);
             list->rows[i] = NULL;
         }
     }
 }
 
 /* Slot 0x94: refill the row texts from top and column. */
-void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 notify) {
+void StringList_RedrawRows(StringList *list, s32 top, s32 column, s32 cursor, s32 notify) {
     u8 text[0x20];
     s32 i;
     s32 n;
-    CardText **row;
-    CardText *obj;
+    Label **row;
+    Label *obj;
 
     if (list->background != 0) {
         row = list->rows;
@@ -514,18 +471,18 @@ void StringList_RedrawRows(CardList *list, s32 top, s32 column, s32 cursor, s32 
         for (i = 0; i < n; i++) {
             StringList_FormatRow(list, text, i, top, column);
             obj = *row;
-            obj->vt->setText(obj, text);
+            obj->vtbl->setText(obj, text);
             row++;
         }
         StringList_SetView(list, top, column, cursor, 0);
         if (notify != 0) {
-            list->vt->playTone(list, 0);
+            list->vtbl->playTone(list, 0);
         }
     }
 }
 
 /* Copy row (top + i) from character column into out, padded with spaces to 26 characters. */
-static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, s32 column) {
+static u8 *StringList_FormatRow(StringList *list, u8 *out, s32 i, s32 top, s32 column) {
     s32 idx = top + i;
     s32 len;
     s32 j;
@@ -542,9 +499,9 @@ static u8 *StringList_FormatRow(CardList *list, u8 *out, s32 i, s32 top, s32 col
     return out;
 }
 
-static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, s32 highlight) {
+static void StringList_SetView(StringList *list, s32 top, s32 column, s32 cursor, s32 highlight) {
     s32 row;
-    CardText *obj;
+    Label *obj;
 
     list->top = top;
     list->column = column;
@@ -552,19 +509,19 @@ static void StringList_SetView(CardList *list, s32 top, s32 column, s32 cursor, 
     if (highlight != 0) {
         row = cursor - top;
         obj = list->rows[row];
-        obj->vt->setColor(obj, g_stringListCursorColor, column, row);
+        obj->vtbl->setColor(obj, g_stringListCursorColor, column, row);
     }
 }
 
 /* Slot 0x98: move the highlight one row down (down != 0) or up. */
-void StringList_MoveHighlight(CardList *list, s32 down, s32 notify) {
-    CardText **row;
-    CardText *obj;
+void StringList_MoveHighlight(StringList *list, s32 down, s32 notify) {
+    Label **row;
+    Label *obj;
 
     if (list->background != 0) {
         row = &list->rows[list->cursor - list->top];
         obj = *row;
-        obj->vt->setColor(obj, g_stringListRowColor);
+        obj->vtbl->setColor(obj, g_stringListRowColor);
         if (down != 0) {
             row++;
             list->cursor++;
@@ -573,14 +530,14 @@ void StringList_MoveHighlight(CardList *list, s32 down, s32 notify) {
             list->cursor--;
         }
         obj = *row;
-        obj->vt->setColor(obj, g_stringListCursorColor);
+        obj->vtbl->setColor(obj, g_stringListCursorColor);
         if (notify != 0) {
-            list->vt->playTone(list, 0);
+            list->vtbl->playTone(list, 0);
         }
     }
 }
 
-s32 StringList_GetCursor(CardList *list) {
+s32 StringList_GetCursor(StringList *list) {
     return list->cursor;
 }
 

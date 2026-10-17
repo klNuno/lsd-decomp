@@ -5,6 +5,10 @@
 #include "game/gs.h"
 #include "game/handler_node.h"
 #include "game/stage.h"
+#include "game/heap.h"
+#include "game/mom.h"
+#include "game/model_object.h"
+#include "game/render.h"
 
 /*
  * Characters ("entities"): the per-type record table, the spawn tables that place them,
@@ -54,7 +58,6 @@ typedef struct SpawnPlace {
 
 struct DreamSys;
 struct StageMap;
-struct ModelPart;
 struct Fade;
 
 /*
@@ -123,38 +126,46 @@ typedef struct EntityVtbl {
     void (*checkHandlerStop)(void *self);                     /* 0x180 Entity_CheckHandlerStop */
 } EntityVtbl;
 
-/* The entity, 0x108 bytes (Entity_Create). Fields up to +0x94 are the model base class's (Model in src/game/model.c). */
+/*
+ * The entity, 0x108 bytes (Entity_Create). Fields up to +0x94 are Model's (model.h) under the same
+ * names and types, with the vtable typed as EntityVtbl; Model.target is named dreamSys here, the
+ * object passed to attach (an entity's target is always the dreamer).
+ */
 typedef struct Entity {
-    EntityVtbl *vt;
-    u8 pad_04[0xC - 0x4];
-    s32 attached;            /* 0x0C attach runs only while it is 0, detach only while it is set */
-    u8 pad_10[0x14 - 0x10];
-    union {
-        u8 *bytes;
-        Coord2 *coord;
-    } pos;                   /* 0x14 its GsCOORDINATE2 (gs.h): position t, world position workT */
-    u8 pad_18[0x24 - 0x18];
-    u32 timer;               /* 0x24 cleared on waking; sleep mode >= 10 compares it with mode * 15 */
-    s32 contact;             /* 0x28 result of the ground test after moveZOnGround */
-    u8 pad_2C[0x44 - 0x2C];
+    EntityVtbl *vtbl;        /* 0x00 */
+    ListNode *watched;       /* 0x04 */
+    ListNode *watchers;      /* 0x08 */
+    struct SceneNode *parent; /* 0x0C attach runs only while it is 0, detach only while it is set */
+    DObj2 object;            /* 0x10 coord is its GsCOORDINATE2 (gs.h): position t, world position workT */
+    s32 id;                  /* 0x1C */
+    ModelObject *model;      /* 0x20 */
+    u32 ticks;               /* 0x24 cleared on waking; sleep mode >= 10 compares it with mode * 15 */
+    void *contact;           /* 0x28 result of the ground test after moveZOnGround */
+    s32 hitMask;             /* 0x2C */
+    NodeBoxList *boxList;    /* 0x30 */
+    u8 pad_34[0x44 - 0x34];
     s32 state;               /* 0x44 handler state; 1 stops Entity_CheckWake for good */
     s16 speed;               /* 0x48 last amount given to moveX, moveY or moveZ (Actor_MoveAxis) */
     u8 pad_4A[0x4C - 0x4A];
     struct StageMap *map;    /* 0x4C the map it stands on (stage_map.h): third argument of attach, cleared by detach; slot 0x110 ground query */
-    void *clock;             /* 0x50 Model.watched, the ticker Fade_StartIn and Fade_StartOut take */
-    u8 pad_54[0x58 - 0x54];
+    void *clock;             /* 0x50 Model.clock, the ticker Fade_StartIn and Fade_StartOut take */
+    s32 boxMargin;           /* 0x54 */
     SoundBank *soundBank;    /* 0x58 the handler node's voices play on it (HandlerNode_Start, HandlerNode_Run) */
-    u8 pad_5C[0x6C - 0x5C];
-    s32 partCount;           /* 0x6C model parts (Model in src/game/model.c) */
-    struct ModelPart **parts; /* 0x70 */
-    u8 pad_74[0x7C - 0x74];
+    Mom *file;               /* 0x5C */
+    s32 ownsFile;            /* 0x60 */
+    s32 forwardContact;      /* 0x64 */
+    struct SceneNode *part;  /* 0x68 */
+    s32 partCount;           /* 0x6C model parts (Model in model.h) */
+    struct SceneNode **parts; /* 0x70 */
+    u8 *partIds;             /* 0x74 */
+    void (*tickFn)(void *self); /* 0x78 */
     s32 animation;           /* 0x7C current animation (setAnimation) */
     s32 animLength;          /* 0x80 frames of the current animation */
     s32 animFrame;           /* 0x84 current frame, 0 to animLength - 1 */
     u8 *animData;            /* 0x88 the next frame's commands (applyFrame) */
     s32 tickEnabled;         /* 0x8C */
     s32 animPlaying;         /* 0x90 playAnimation sets it, stopAnimation clears it */
-    struct DreamSys *dreamSys; /* 0x94 the object passed to attach (g_symDreamSys); range tests measure from it */
+    struct DreamSys *dreamSys; /* 0x94 Model.target: the object passed to attach (g_symDreamSys); range tests measure from it */
     s32 type;                /* 0x98 entity type, index of EntityRecord */
     HandlerNode handlerNode; /* 0x9C the record's handler (handler_node.h); its fadeSteps divides slot 0x148's range */
     s32 awake;               /* 0xF0 set by wake, cleared by sleep */

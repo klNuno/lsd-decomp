@@ -42,18 +42,6 @@ typedef struct MenuFillRect {
     s32 h;
 } MenuFillRect;
 
-/* A picture object (Tim_New); slot 0x4 deletes it. */
-typedef struct MenuPictureVtbl {
-    u8 pad_00[0x4];
-    void (*delete_)(void *self);
-} MenuPictureVtbl;
-
-typedef struct MenuPicture {
-    MenuPictureVtbl *vt;
-    u8 pad_04[0x10 - 0x04];
-    struct CardIconTim *tim; /* 0x10 the TIM file: palette at +0x14, 16x16 4-bit frames from +0x40 (card.c) */
-} MenuPicture;
-
 struct Menu;
 
 struct Card;
@@ -88,7 +76,7 @@ typedef struct MenuVtbl {
     void (*setPicture)(struct Menu *, char *, s32);      /* 0x0D4 MenuScreen_SetPicture */
     void (*setMenu)(struct Menu *, MenuDef *);          /* 0x0D8 Menu_CreateTitleLabel */
     void (*freeMenu)(struct Menu *);                     /* 0x0DC Menu_FreeMenu */
-    void (*showItems)(struct Menu *, s32);               /* 0x0E0 Menu_ShowItems (menu, root) */
+    void (*showItems)(struct Menu *, SceneNode *);       /* 0x0E0 Menu_ShowItems (menu, root) */
     void (*setItemsColor)(struct Menu *, MenuRgb *);     /* 0x0E4 Menu_SetItemsColor */
     u8 pad_E8[0xF0 - 0xE8];
     void (*selectItem)(struct Menu *, s32, s32);         /* 0x0F0 MenuScreen_SelectItem (menu, item, playSound) */
@@ -103,31 +91,53 @@ typedef struct MenuVtbl {
     void (*onCardNotify)(struct Menu *, s32 **, s32);    /* 0x138 Menu_OnCardNotify */
 } MenuVtbl;
 
-/* The main menu object. Fields below 0xA4 are MenuScreen's (include/game/menu_screen.h, src/game/menu_screen.c). */
+/* The main menu object. The first 0xA4 bytes are MenuScreen's (menu_screen.h), field for field; the vtable is the Menu one. */
 typedef struct Menu {
     MenuVtbl *vtbl;
-    u8 pad_04[0x0C - 0x04];
-    ScreenEnv *env;       /* 0x0C display and pad (screen.h) */
-    void *clock;          /* 0x10 class 5, handed to the card with env->pad */
-    s32 root;             /* 0x14 the scene node the texts are shown under */
-    u8 pad_18[0x2C - 0x18];
-    s32 viewPacketCount;  /* 0x2C 0x190 here, 300 in the base reset */
-    u8 pad_30[0x34 - 0x30];
-    s32 clearOnEnd;       /* 0x34 the base end clears the screen when set; 0 here */
-    s32 result;           /* 0x38 what the screen returns: 0 START or FLASHBACK, 2 GRAPH */
-    s32 focus;            /* 0x3C 0 none, 1 items, 2 option list (menu_screen.h MENU_FOCUS_*) */
-    u8 pad_40[0x48 - 0x40];
-    SoundBank *sound;     /* 0x48 ETC\ETCSE, the menu sound effects */
-    MenuDef *desc;        /* 0x4C g_mainMenuDesc 0x80086D44 (menu_screen.h MenuDef): ETC\FONTICON.TIM; START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE */
-    u8 pad_50[0x58 - 0x50];
-    s32 selected;         /* 0x58 selected item, MENU_ITEM_* */
-    u8 pad_5C[0x60 - 0x5C];
-    s32 *optionSelected;  /* 0x60 chosen option per item (SHAKE: 0 Off, 1 On) */
-    u8 pad_64[0x93 - 0x64];
-    u8 endColor[3];       /* 0x93 */
-    u8 pad_96[0xA4 - 0x96];
+    ListNode *watched;
+    ListNode *watchers;
+    ScreenEnv *env;         /* 0x0C display and pad (screen.h) */
+    Clock *clock;           /* 0x10 class 5, handed to the card with env->pad */
+    SceneNode *root;        /* 0x14 the scene node the texts are shown under */
+    struct View *view;
+    s32 ticks;
+    s32 state;
+    s32 noLoop;
+    s32 viewOtBits;
+    s32 viewPacketCount;    /* 0x2C 0x190 here, 300 in the base reset */
+    s32 viewPacketSize;
+    s32 clearOnEnd;         /* 0x34 the base end clears the screen when set; 0 here */
+    s32 result;             /* 0x38 what the screen returns: 0 START or FLASHBACK, 2 GRAPH */
+    s32 focus;              /* 0x3C 0 none, 1 items, 2 option list (menu_screen.h MENU_FOCUS_*) */
+    s32 timeout;
+    char *soundPath;
+    SoundBank *sound;       /* 0x48 ETC\ETCSE, the menu sound effects */
+    MenuDef *menu;          /* 0x4C g_mainMenuDesc 0x80086D44: ETC\FONTICON.TIM; START, FLASHBACK, SAVE, LOAD, GRAPH, SHAKE */
+    s32 itemCount;
+    Widget **items;
+    s32 selected;           /* 0x58 selected item, MENU_ITEM_* */
+    s32 *optionCounts;
+    s32 *optionSelected;    /* 0x60 chosen option per item (SHAKE: 0 Off, 1 On) */
+    Widget ***options;
+    Widget *optionBox;
+    u8 pad_6C[0x70 - 0x6C];
+    char *picturePath;
+    struct Tim *picture;
+    struct Bg *bg;
+    struct BgMap *bgMap;
+    struct BgCells *bgCells;
+    s32 fadeSpeed;
+    s32 (*fadeInStep)();
+    s32 (*fadeOutStep)();
+    Color3 startColor;
+    Color3 endColor;        /* 0x93 */
+    Color3 unk96;
+    u8 pad_99[0x9C - 0x99];
+    void (*onClose)();
+    s32 onCloseArg;
+    /* Menu */
     DreamSys *dreamSys;   /* 0xA4 */
-    MenuPicture *fileIcon; /* 0xA8 CARD\FILEICN1.TIM, the icon of the save file */
+    Tim *fileIcon;        /* 0xA8 CARD\FILEICN1.TIM, the icon of the save file; its data is a CardIconTim (card.c) */
     struct Card *card;    /* 0xAC made on the first SAVE or LOAD */
     Label *titleLabel;    /* 0xB0 the save title drawn on the menu (label.h Label) */
     u8 pad_B4[0xBC - 0xB4];

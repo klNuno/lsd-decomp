@@ -5,6 +5,7 @@
 #include "game/gs.h"
 #include "game/heap.h"
 #include "game/model_object.h"
+#include "game/render.h"
 #include "game/entity.h"
 
 struct DreamSys;
@@ -71,9 +72,8 @@ typedef struct SceneNode {
     ListNode *watched;           /* 0x04 objects this one watches: its children among them */
     ListNode *watchers;          /* 0x08 */
     struct SceneNode *parent; /* 0x0C */
-    s32 attribute;               /* 0x10 GsDOBJ2.attribute: bit 31 GsDOFF hides the node */
-    Coord2 *coord;               /* 0x14 GsDOBJ2.coord2: a view watching the node takes it as super */
-    ModelEntry *tmd;             /* 0x18 GsDOBJ2.tmd: the model object's TMD object */
+    DObj2 object;                /* 0x10 GsDOBJ2 (render.h): attribute bit 31 GsDOFF hides the node; a view
+                                    watching the node takes coord as super; tmd is the model object's TMD object */
     s32 id;                      /* 0x1C GsDOBJ2.id */
     ModelObject *model;          /* 0x20 the watched model object (sender type 9) */
     s32 ticks;                   /* 0x24 cleared by reset */

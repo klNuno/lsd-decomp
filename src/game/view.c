@@ -17,18 +17,12 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* View_SetTwist's argument: rz = num / den in 4.12 fixed point. */
-typedef struct ViewRatio {
-    s16 num;
-    s16 den;
-} ViewRatio;
-
 /* not in game/view.h: each file that calls it reads the vtable through its own view of the slots */
 ViewVtbl *View_GetVtbl(void);
 static SceneNode *SceneNode_GetRoot(SceneNode *node);
 static void View_SetGeomScreen(s32 projection);
 extern ViewVtbl g_viewVtbl[];   /* View */
-extern s32 g_viewNoTwist;          /* ViewRatio (0, 1): no twist */
+extern Fraction g_viewNoTwist;     /* (0, 1): no twist */
 extern Color3 g_viewDefaultColor;       /* black */
 /* .sdata owned by this unit (config/splat.yaml), defined at the end of the file: read whole by View_Reset */
 extern ScreenPoint g_viewDefaultScreenSize;
@@ -79,7 +73,7 @@ void View_Watch(View *view, Object *other) {
     type = other->vtbl->classWord & 0xF;
     if (type == 4) {
         view->node = (SceneNode *)other;
-        view->super = ((SceneNode *)other)->coord;
+        view->super = ((SceneNode *)other)->object.coord;
     } else if (type == 1) {
         view->display = (Display *)other;
     }
@@ -183,9 +177,9 @@ void View_SetFogNear(View *view, s32 fogNear) {
 }
 
 /* Only when no node is watched yet: watches node, sets viewpoint, reference point and twist. */
-void View_SetCamera(View *view, SceneNode *node, ScreenVec *viewpoint, ScreenVec *refPoint, ViewRatio *twist) {
+void View_SetCamera(View *view, SceneNode *node, Vec3 *viewpoint, Vec3 *refPoint, Fraction *twist) {
     ViewVtbl *vtbl;
-    ViewRatio *ratio;
+    Fraction *ratio;
 
     vtbl = view->vtbl;
     if (view->node == 0) {
@@ -194,7 +188,7 @@ void View_SetCamera(View *view, SceneNode *node, ScreenVec *viewpoint, ScreenVec
         vtbl->setRefPoint(view, refPoint);
         ratio = twist;
         if (ratio == NULL) {
-            ratio = (ViewRatio *)&g_viewNoTwist;
+            ratio = &g_viewNoTwist;
         }
         vtbl->setTwist(view, ratio);
         GsSetRefView2(&view->viewpoint);
@@ -208,19 +202,19 @@ void View_Detach(View *view) {
     }
 }
 
-void View_SetViewpoint(View *view, ScreenVec *viewpoint) {
+void View_SetViewpoint(View *view, Vec3 *viewpoint) {
     if (view->node != 0) {
         view->viewpoint = *viewpoint;
     }
 }
 
-void View_SetRefPoint(View *view, ScreenVec *refPoint) {
+void View_SetRefPoint(View *view, Vec3 *refPoint) {
     if (view->node != 0) {
         view->refPoint = *refPoint;
     }
 }
 
-void View_SetTwist(View *view, ViewRatio *ratio) {
+void View_SetTwist(View *view, Fraction *ratio) {
     s16 num;
     s16 den;
 

@@ -3,6 +3,7 @@
 
     tools/name_levels.py merge OUT.tsv IN.tsv [IN.tsv ...]
     tools/name_levels.py comments LEVELS.tsv [--dry-run]
+    tools/name_levels.py check LEVELS.tsv
 
 An audit TSV has a header line and the columns NAME KIND FILE LEVEL NEW EVIDENCE (tab separated).
 KIND is func, global, lsd, type or field (FILE is then include/game/x.h:Type); LEVEL is game (seen in
@@ -17,6 +18,10 @@ comments: rewrites the evidence comment of each func and global row in config/sy
 its EVIDENCE, keeping splat's attributes and the notes other tools rely on ("string reached from
 data", "object start of") and the docs/ and work/ paths it cited. Colons and semicolons would be read by splat, so they become commas.
 After it: make split && make check (comments never change the build).
+
+check: every func and global row names a symbol of config/symbol_addrs.txt, every type row a type
+defined in include/ or src/, every field row a member of its struct; every name of ours in
+config/symbol_addrs.txt has a row. Exits 1 and lists what is off.
 """
 import argparse
 import collections
@@ -72,6 +77,7 @@ def merge(out, inputs):
 
 
 def clean(text):
+    text = re.sub(r'"([^"]*):"', r'"\1" plus a colon', text)  # "bu00:" keeps its meaning without the colon
     return re.sub(r"\s+", " ", text.replace("//", "/").replace(";", ",").replace(":", ",")).strip()
 
 
@@ -100,6 +106,51 @@ def comments(levels, dry_run):
         print(f"{len(missing)} rated names have no line in {SYMS.relative_to(ROOT)}: {' '.join(missing[:20])}")
 
 
+def struct_bodies():
+    """Type name -> list of bodies (comments stripped) of the struct, union or enum it names."""
+    out = collections.defaultdict(list)
+    for path in list((ROOT / "include").rglob("*.h")) + list((ROOT / "src").rglob("*.c")):
+        text = re.sub(r"/\*.*?\*/|//[^\n]*", " ", path.read_text(encoding="utf-8", errors="replace"), flags=re.S)
+        for m in re.finditer(r"\b(?:struct|union|enum)\s*(\w*)\s*\{", text):
+            depth, i = 0, m.end() - 1
+            while i < len(text):
+                depth += {"{": 1, "}": -1}.get(text[i], 0)
+                if depth == 0:
+                    break
+                i += 1
+            body = text[m.end():i]
+            tail = re.match(r"\s*(\w+)\s*;", text[i + 1:])
+            for name in {m.group(1), tail.group(1) if tail and text[m.start():m.start() + 7] != "" and
+                         re.search(r"typedef\s+$", text[max(0, m.start() - 40):m.start()]) else ""} - {""}:
+                out[name].append(body)
+        for m in re.finditer(r"typedef\s+[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?\s*;", text):
+            out.setdefault(m.group(1), [])
+        for m in re.finditer(r"typedef\s+[^;{}]*\(\s*\*\s*(\w+)\s*\)", text):
+            out.setdefault(m.group(1), [])
+    return out
+
+
+def check(levels):
+    ours = {m.group(1) for m in re.finditer(r"^(\w+) = 0x", SYMS.read_text(encoding="utf-8"), re.M)
+            if not re.match(r"^(func|D|jtbl)_[0-9A-F]{8}$", m.group(1))}
+    bodies, bad, seen = struct_bodies(), [], set()
+    for r in read_rows(levels):
+        kind, name = r["KIND"], r["NAME"]
+        if kind in ("func", "global"):
+            seen.add(name)
+            if name not in ours:
+                bad.append(f"{kind} {name}: not in config/symbol_addrs.txt")
+        elif kind == "type" and name not in bodies:
+            bad.append(f"type {name}: no definition in include/ or src/")
+        elif kind == "field":
+            st = r["FILE"].rsplit(":", 1)[-1]
+            if not any(re.search(r"\b" + re.escape(name) + r"\b", b) for b in bodies.get(st, [])):
+                bad.append(f"field {st}.{name}: not a member of {st}")
+    bad += [f"no row for {n}" for n in sorted(ours - seen)]
+    print("\n".join(bad) if bad else "every row matches the code")
+    sys.exit(1 if bad else 0)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -109,9 +160,13 @@ def main():
     c = sub.add_parser("comments")
     c.add_argument("levels")
     c.add_argument("--dry-run", action="store_true")
+    k = sub.add_parser("check")
+    k.add_argument("levels")
     args = ap.parse_args()
     if args.cmd == "merge":
         merge(args.out, args.inputs)
+    elif args.cmd == "check":
+        check(args.levels)
     else:
         comments(args.levels, args.dry_run)
 

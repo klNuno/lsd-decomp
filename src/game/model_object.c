@@ -208,7 +208,7 @@ void ModelBox_ShiftList(ModelBoxList *list, s32 alongX, s32 side, s32 delta) {
                     rec->v[j].x += delta;
                 }
             } else {
-                ModelBoxCorner *p = rec->v;
+                ModelVec *p = rec->v;
                 s32 j;
 
                 for (j = 0; j < 4; j++) {
@@ -223,7 +223,7 @@ void ModelBox_ShiftList(ModelBoxList *list, s32 alongX, s32 side, s32 delta) {
                     rec->v[j].z += delta;
                 }
             } else {
-                ModelBoxCorner *p = rec->v;
+                ModelVec *p = rec->v;
                 s32 j;
 
                 for (j = 0; j < 4; j++) {

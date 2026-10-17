@@ -14,32 +14,9 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-typedef struct RootNodeVtbl {
-    u8 pad_00[0x08];
-    void (*init)(void *);                     /* 0x08 RootNode_Init */
-    u8 pad_0C[0x10 - 0x0C];
-    void (*watch)(void *, void *);            /* 0x10 SceneNode_Watch */
-    u8 pad_14[0x40 - 0x14];
-    void (*setup)(void *);                    /* 0x40 RootNode_Setup */
-    u8 pad_44[0xB8 - 0x44];
-    FlatLight *(*getLight)(void *, s32);      /* 0xB8 RootNode_GetLight */
-} RootNodeVtbl;
-
-typedef struct RootNode {
-    RootNodeVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    s32 parent;             /* 0x0C */
-    s32 unk10;
-    s32 *coord;             /* 0x14 its GsCOORDINATE2, the first word is flg */
-    u8 pad_18[0x44 - 0x18];
-    FlatLight *lights[3];   /* 0x44 FlatLight_New(0 to 2), watched by the node */
-    Color3 ambient;         /* 0x50 GsSetAmbient takes it times 16 */
-} RootNode;
-
-/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
-ObjectVtbl *SceneNode_GetVtbl(void);
-/* not in game/root_node.h: each file that calls it reads the vtable through its own view of the slots */
+/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
+/* not in game/root_node.h: stage_map.c still reads this vtable through its own view of the slots */
 RootNodeVtbl *RootNode_GetVtbl(void);
 extern RootNodeVtbl g_rootNodeVtbl;
 

@@ -59,6 +59,27 @@ typedef struct Coord2 {
     struct Coord2 *sub;     /* 0x4C */
 } Coord2;
 
+/* PSY-Q GsSPRITE, 0x24 bytes: the sprite of every sprite node (SpriteNode +0x64), drawn by GsSortSprite. */
+typedef struct Sprite {
+    s32 attribute;  /* 0x00 bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend rate, 24-25 color mode */
+    s16 x;          /* 0x04 */
+    s16 y;          /* 0x06 */
+    u16 w;          /* 0x08 */
+    u16 h;          /* 0x0A */
+    u16 tpage;      /* 0x0C */
+    u8 u;           /* 0x0E */
+    u8 v;           /* 0x0F */
+    u16 cx;         /* 0x10 CLUT */
+    u16 cy;         /* 0x12 */
+    Color3 color;   /* 0x14 0x80 neutral */
+    u8 pad_17;
+    s16 mx;         /* 0x18 rotation and scaling center, added to x and y by the draw */
+    s16 my;         /* 0x1A */
+    u16 scaleX;     /* 0x1C 0x1000 = 1 */
+    u16 scaleY;     /* 0x1E */
+    s32 rotate;     /* 0x20 degrees, 20.12 */
+} Sprite;
+
 /* PSY-Q GsOT, the ordering table header. */
 typedef struct GsOT {
     u32 length;  /* log2 of the entry count */

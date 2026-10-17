@@ -1902,8 +1902,6 @@ BoxSize	type	include/game/box.h	code	two words read as u16 low halves by Box_Ini
 Card	type	include/game/card.h	code	0x84 bytes (Card_New), an Object subclass, vtable g_cardVtbl
 CardDialog	type	include/game/card.h	code	The keyboard (CommentObject_New) or the chooser (StringList_New) the card opens
 CardDialogVtbl	type	include/game/card.h	code	One view of two vtables: CommentObject 0x80086ED0 and StringList 0x80086F88; slot names match both at 0x44..0x50
-CardMessage	type	include/game/card.h	code	The ScreenSprite of the current card picture at Card +0x70
-CardMessageVtbl	type	include/game/card.h	code	View of g_screenSpriteVtbl 0x8006ED4C, the message picture made by ScreenSprite_Create
 CardTitle	type	include/game/card.h	code	The layout of the string g_cardTitle points to: LSD, mark, day digits, comment
 CardTitleMark	type	include/game/card.h	code	12 bytes at title +0x06 copied whole by Card_SetTitleLetter from g_titleLetters[15]
 CardVtbl	type	include/game/card.h	code	g_cardVtbl 0x80086DC4, class word 0xB; field names checked against the vtable dump
@@ -1916,20 +1914,9 @@ ScreenRect	type	include/game/display.h	code	s16 x, y and s32 w, h as Display_Get
 ScreenSize	type	include/game/display.h	code	s32 w, h: Display.size and App.screenSize, filled from GsInitGraph's arguments
 DreamRunner	type	include/game/dream_runner.h	code	0x50 bytes (DreamRunner_New), Task fields up to 0x38 then its own; vtable g_dreamRunnerVtbl
 DreamRunnerVtbl	type	include/game/dream_runner.h	code	g_dreamRunnerVtbl 0x800865C8, class word 0x1F230; field names checked against the vtable dump
-RunnerContext	type	include/game/dream_runner.h	code	The ScreenEnv the scene passes (DreamRunner_New takes ScreenEnv *); same 5 fields, duplicate of ScreenEnv (screen.h)
-RunnerContextHead	type	include/game/dream_runner.h	code	ScreenEnv.display, a Display; duplicates Display
-RunnerContextHeadVtbl	type	include/game/dream_runner.h	code	View of the Display vtable: slot 0x7C Display_GetScreenRect; duplicates DisplayVtbl
-RunnerStage	type	include/game/dream_runner.h	code	The Place made by DreamRunner_CreatePlace (Place_New); duplicates Place
-RunnerStageVtbl	type	include/game/dream_runner.h	code	View of the Place vtable 0x80087034 (class 0x2F230); Stage is the 0..13 index in the glossary
-RunnerView	type	include/game/dream_runner.h	code	Screen.view at DreamRunner +0x18, the DreamView of the env; duplicates View
-RunnerViewSub	type	include/game/dream_runner.h	code	The view overlay, a Fade (View.overlay); DreamRunner_Start makes it visible
-RunnerViewSubVtbl	type	include/game/dream_runner.h	code	View of the overlay Fade vtable 0x8006E99C (View_GetOverlay result); duplicates the Fade/Widget views
-RunnerViewVtbl	type	include/game/dream_runner.h	code	View of the DreamView vtable 0x800869D8: slots match View_SetScreenSize to View_GetOverlay; duplicates ViewVtbl (view.h)
 CineRef	type	include/game/dream_sys.h	code	the 4 bytes {category, variant} DreamSys_GetCinematic returns whole; its fields b0 to b3 are placeholders
-DreamCamera	type	include/game/dream_sys.h	code	the View at DreamSys +0x5C seen through two words; duplicates View (view.h), whose GsRVIEW2 viewpoint is at +0x14
 DreamRotation	type	include/game/dream_sys.h	code	12 bytes copied from SceneNode_GetRotation into a flashback and given back to setRotation by EnterMap
 DreamSys	type	include/game/dream_sys.h	game	one object at 0x80091530, vtable 0x80087BDC, 0x928 bytes; found in RAM with J01 at +0x178; also the dreamer actor (walk, look, camera)
-DreamSysObj28	type	include/game/dream_sys.h	code	the ground contact at DreamSys +0x28 (Actor contact from Actor_SnapToGround), a MapTile; duplicates MapTile of map_tile.h
 DreamSysVtbl	type	include/game/dream_sys.h	code	the 139 words of g_dreamSysVtbl (class word 0x1F34, then slots), checked slot by slot against asm/data/main.data.s
 Flashback	type	include/game/dream_sys.h	code	0x24-byte entries at save +0x2F8 written by DreamSys_AddFlashback and read by LoadNextFlashback and EnterMap
 MoodAccum	type	include/game/dream_sys.h	game	{last, sumX, sumY, count} that Mood_Log fills and Mood_Resolve reads; both accumulators read in RAM in the Grey Man run
@@ -1940,7 +1927,7 @@ EntityVtbl	type	include/game/entity.h	code	the layout of g_entityVtbl (0x80089AD
 SpawnGroup	type	include/game/entity.h	code	8-byte element of g_spawnGroups[stage]; Sym_CheckRule and Sym_SpawnGroup read rule, model, type and places
 SpawnPlace	type	include/game/entity.h	code	4-byte element of g_spawnPlaces; Sym_SpawnAtPlace builds the StagePlace query from it with the slot chunkKey
 SpawnSlot	type	include/game/entity.h	code	6-byte element of g_spawnSlots[stage]; Sym_FindSlot matches chunkKey, Sym_CheckDayParity reads dayParity
-Fade	type	include/game/fade.h	code	0xA0 bytes from Fade_Create with g_fadeVtbl; repeats the Box fields up to +0x68 instead of embedding Box
+Fade	type	include/game/fade.h	code	0xA0 bytes from Fade_Create with g_fadeVtbl; its first 0x6C bytes name the Box fields one for one (FadeVtbl is not BoxVtbl, so not embedded)
 FadeSaved	type	include/game/fade.h	code	a size word written as s32 by Fade_SaveAndSetRect and read as u16 by Fade_RestoreRect
 FadeStep	type	include/game/fade.h	code	the s32 step at +0x74 that Fade_Step reads as its low byte
 FadeVtbl	type	include/game/fade.h	code	the slot layout of g_fadeVtbl as Fade, Place and Entity call it
@@ -1971,14 +1958,11 @@ MapChunk	type	include/game/map_chunk.h	code	0x3C bytes from MapChunk_New with g_
 MapChunkData	type	include/game/map_chunk.h	code	the header of an LBD chunk file at the start of the 0xB358 buffer
 MapChunkVtbl	type	include/game/map_chunk.h	code	slot layout of g_mapChunkVtbl
 MapModels	type	include/game/map_models.h	code	0x34-byte File subclass made by MapModels_New; StageMap points data at the chunk's square table (chunk data + modelsOffset) and sets tmd
-MapModelsVtbl	type	include/game/map_models.h	code	The view of g_mapModelsVtbl StageMap reads; map_models.c uses a second view ModelSetVtbl of the same table
+MapModelsVtbl	type	include/game/map_models.h	code	Layout of g_mapModelsVtbl: init, loadAsync and nextModel (slot 0x78); map_models.c and StageMap read it (ModelSetVtbl merged into it)
 MapTile	type	include/game/map_tile.h	code	0x3C bytes (MapTile_New): a SceneNode (GsDOBJ2 at +0x10) plus flags and next
-MapTileModel	type	include/game/map_tile.h	code	The model MapModels slot 0x78 returns, a ModelObject (entry at +0x10); duplicates ModelObject
 MapTileVtbl	type	include/game/map_tile.h	code	g_mapTileVtbl 0x80086AA0; field names checked against the vtable dump
 Menu	type	include/game/menu.h	code	0xC4 bytes (Menu_New): MenuScreen fields to 0xA4 then its own; vtable g_menuVtbl
 MenuFillRect	type	include/game/menu.h	code	The 12-byte records of g_menuFillRects given to Display clearImage
-MenuPicture	type	include/game/menu.h	code	The Tim_New result of CARD\FILEICN1.TIM (Menu.fileIcon); duplicates Tim (tim.h)
-MenuPictureVtbl	type	include/game/menu.h	code	View of g_timVtbl 0x8006E558: slot 0x04 File_Delete; duplicates the Tim vtable
 MenuRgb	type	include/game/menu.h	code	Three s8 colour bytes passed to the setItemsColor slot and Label setColor
 MenuVtbl	type	include/game/menu.h	code	g_menuVtbl 0x80086B60, class word 0x1F130; field names checked against the vtable dump
 MenuDef	type	include/game/menu_screen.h	code	Static menu data given to MenuScreen_SetMenu and init (g_mainMenuDesc)
@@ -1987,7 +1971,6 @@ OptionListDef	type	include/game/menu_screen.h	code	Per-item option list of a Men
 Mml	type	include/game/mml.h	code	0x3C bytes from Mml_Create: a Mom with no parts and a Mom count at +0x38
 MmlHeader	type	include/game/mml.h	code	{unk, count, offsets[count]} start of an MML, offsets replaced by Mom pointers
 ModelBox	type	include/game/model_object.h	code	min and max ModelVec corners, written by ModelObject_ComputeBox
-ModelBoxCorner	type	include/game/model_object.h	code	u16 x, y, z: a NodeBoxList corner as ModelBox_ShiftList reads it
 ModelBoxList	type	include/game/model_object.h	code	count then ModelBoxRecord: the NodeBoxList seen by ModelBox_ShiftList (same bytes, Actor_SendBoxes passes a union)
 ModelBoxRecord	type	include/game/model_object.h	code	8 ModelBoxCorner, one box of the list
 ModelEntry	type	include/game/model_object.h	code	TMD object table entry, 0x1C bytes; the same struct as TmdModel in render.h (see report)
@@ -2012,10 +1995,8 @@ PlaceObjVtbl	type	include/game/place.h	guess	one view mixing slots of five class
 PlaceRefs	type	include/game/place.h	code	Place +0x6C to +0x7B, the four pointers Scenery_Begin keeps as g_placeRefs
 PlaceVtbl	type	include/game/place.h	code	view of g_placeVtbl
 DObj2	type	include/game/render.h	code	PSY-Q GsDOBJ2 {attribute, coord2, tmd} named like gs.h Coord2, the glossary and ModelObject call the TMD object table entry (TmdModel, ModelEntry) a TMD object
-TmdModel	type	include/game/render.h	code	an object entry of a TMD's object table (vertex, normal and primitive tables with counts) as Render_SortModel reads it through DObj2.model
-Scene	type	include/game/scene.h	code	the 0x2C object Scene_New allocates with vtable g_sceneVtbl; it repeats App's fields instead of embedding App
+Scene	type	include/game/scene.h	code	the 0x2C object Scene_New allocates with vtable g_sceneVtbl (AppVtbl layout); its first 0x20 bytes are App's field for field
 SceneSettings	type	include/game/scene.h	code	the 6-word record main passes to Scene_New (g_sceneSettings); Scene slots test its flags
-SceneVtbl	type	include/game/scene.h	code	every slot of g_sceneVtbl as read in the data
 Fraction	type	include/game/scene_node.h	code	{num, den} s16 pair turned into fixed point by Fraction_ToFixed for rotations in degrees and scales
 SceneNode	type	include/game/scene_node.h	code	the 0x44-byte object SceneNode_New allocates, vtable g_sceneNodeVtbl, sender type 4
 SceneNodeVtbl	type	include/game/scene_node.h	code	every slot of g_sceneNodeVtbl as read in the data, 0x00 to 0xB4
@@ -2023,8 +2004,8 @@ Ambience	type	include/game/scenery.h	code	the record Place reads, colours, fog d
 AmbienceRecord	type	include/game/scenery.h	code	4-byte per stage or family record read by Ambience_Fill
 Scenery	type	include/game/scenery_obj.h	code	0x98 bytes from Scenery_New, vtable g_sceneryVtbl class 0xEF34, an Actor; the objects made at a place's first tick
 SceneryParams	type	include/game/scenery_obj.h	code	0x24 bytes of g_sceneryParams copied whole to Scenery +0x58
-SceneryPart	type	include/game/scenery_obj.h	code	the part pointer type; for kinds 2 and 3 a SceneryPart (scenery_part.c names it TextPart), for kind 0 an Actor
-SceneryPartVtbl	type	include/game/scenery_obj.h	guess	used both on SceneryPart sprites and on the Actor parts of kind 0, whose slots 0xB8 and 0xBC differ
+SceneryPart	type	include/game/scenery_part.h	code	the part pointer type; for kinds 2 and 3 a SceneryPart (scenery_part.c names it TextPart), for kind 0 an Actor
+SceneryPartVtbl	type	include/game/scenery_part.h	guess	used both on SceneryPart sprites and on the Actor parts of kind 0, whose slots 0xB8 and 0xBC differ
 SceneryVtbl	type	include/game/scenery_obj.h	code	view of g_sceneryVtbl
 Screen	type	include/game/screen.h	code	Base screen object, vtable g_screenVtbl; MenuScreen and VideoScreen repeat its fields
 ScreenEnv	type	include/game/screen.h	code	0x14-byte record App_Start allocates and Screen_Run reads: display, pad, then clock, root, view or NULL
@@ -2041,10 +2022,8 @@ StageGrid	type	include/game/stage.h	code	8-byte records of g_stageGrids read as 
 StagePlace	type	include/game/stage.h	code	10 bytes turned into world coordinates by Stage_PlaceToWorld and filled by StageMap_Locate; DreamSys keeps one at +place
 ChunkRequest	type	include/game/stage_map.h	code	12-byte record filled by StageMap_RequestNeighbor, read by StageMap_AssignChunks
 HexNeighbor	type	include/game/stage_map.h	code	Records of g_chunkNeighborSteps; odd rows shift half a chunk, so each chunk has 6 neighbours as on a hex grid
-MapActor	type	include/game/stage_map.h	code	The followed target and the message senders, read only at +0x0C and +0x14: a view of SceneNode (scene_node.h)
 MapLocation	type	include/game/stage_map.h	code	0x2C bytes written by StageMap_Locate; StageMap keeps one at +0xBC
 MapSlot	type	include/game/stage_map.h	code	0x1C-byte record, 7 at StageMap +0xEC, one loaded chunk with its models and tiles (StageMap_Init)
-MapTileStep	type	include/game/stage_map.h	code	12 bytes of g_tileStretch*, a Fraction[3] scale step (num, den pairs) handed to SceneNode_SetScale
 MapView	type	include/game/stage_map.h	code	12-byte rectangle of tiles in one slot; 4 at StageMap +0x8C, walked by StageMap_ShowView and TellViewTiles
 MapViewSave	type	include/game/stage_map.h	code	16-byte raw copy unit: StageMap_TellNearTiles saves and restores 3 of them (48 bytes of views) and uses 3 as a MapLocation buffer
 NeighborUse	type	include/game/stage_map.h	code	2-byte pairs of g_allNeighbors and g_neighborLoadLists read by StageMap_LoadAround
@@ -2053,13 +2032,12 @@ StageMapVtbl	type	include/game/stage_map.h	code	g_stageMapVtbl 0x800866E8, class
 Stream	type	include/game/stream.h	code	0x5C bytes from Stream_New with g_streamVtbl
 StreamFile	type	include/game/stream.h	code	PSY-Q CdlFILE filled by CdSearchFile in Stream_Open
 StreamVtbl	type	include/game/stream.h	code	slot layout of g_streamVtbl
-Task	type	include/game/task.h	code	0x38 bytes (Task_New); Screen fields to 0x24, then result, timeout, bankName, sound
-TaskBaseVtbl	type	include/game/task.h	code	View of g_screenVtbl 0x8006E878 with the slots Task chains to; duplicates ScreenVtbl
+Task	type	include/game/task.h	code	0x38 bytes (Task_New); Screen fields to 0x28 field for field, then result, timeout, bankName, sound
 TaskVtbl	type	include/game/task.h	code	g_taskVtbl 0x80086668, class word 0x230; field names checked against the vtable dump
 SjisChar	type	include/game/text.h	code	two bytes of one fullwidth character, the unit of CardTitle.comment and g_titleLetters
 SjisChar3	type	include/game/text.h	code	three fullwidth characters copied as one, CardTitle.day from Text_FormatNumber(..., 3, 0)
 Tim	type	include/game/tim.h	code	0x50-byte File subclass holding one TIM (Tim_New), vtable g_timVtbl
-TimImage	type	include/game/tim.h	code	PSY-Q GsIMAGE filled by GsGetTimInfo in Tim_GetInfo; tim_pack.c has a second copy GsImage with other field types
+TimImage	type	include/game/tim.h	code	PSY-Q GsIMAGE filled by GsGetTimInfo in Tim_GetInfo; the one GsIMAGE type (GsImage of tim_pack.c merged into it)
 TimVtbl	type	include/game/tim.h	code	Layout of g_timVtbl: FileVtbl then 0x78 to 0x9C
 TimPack	type	include/game/tim_pack.h	code	0x3C bytes from TimPack_Create: File fields, then the TIM list at +0x2C
 TimPackVtbl	type	include/game/tim_pack.h	code	FileVtbl then slot 0x78 of g_timPackVtbl
@@ -2077,61 +2055,41 @@ TodPacket	type	include/game/tod.h	code	a TOD packet header word and the u16 TMD 
 TodVtbl	type	include/game/tod.h	code	FileVtbl then slots 0x78 to 0x80 of g_todVtbl and g_todPackVtbl
 TodPack	type	include/game/tod_pack.h	code	0x2C bytes from TodPack_Create, a Tod subclass over a TOD list
 TodPackHeader	type	include/game/tod_pack.h	code	{unk, count, offsets[count]} start of a TOD list, offsets replaced by Tod pointers
-VideoScreen	type	include/game/video_screen.h	code	0xDC bytes (VideoScreen_New); restates every MenuScreen field instead of embedding MenuScreen; those fields are rated under MenuScreen
-ScreenVec	type	include/game/view.h	wrong	three s32 copied to GsRVIEW2 vpx..vpz or vrx..vrz: world positions of eye and target, not screen ones; same layout as gs.h Vec3, merge into it
+VideoScreen	type	include/game/video_screen.h	code	0xDC bytes (VideoScreen_New); embeds MenuScreen as menuScreen, then its own fields from +0xA4
 View	type	include/game/view.h	code	0xBC bytes allocated by View_New with g_viewVtbl; GsRVIEW2 at +0x14, ordering tables at +0x78
 ViewVtbl	type	include/game/view.h	code	the slot layout of g_viewVtbl; View_ functions fill slots 0x08 to 0xB4
-Actor	type	src/game/actor.c	code	0x58 bytes from Actor_New, a SceneNode subclass, class word 0x34
-ActorBaseVtbl	type	src/game/actor.c	code	SceneNode_GetVtbl's vtable as Actor calls it
-ActorVtbl	type	src/game/actor.c	code	view of g_actorVtbl; scenery_obj.c defines a second typedef ActorVtbl of its own
-GridActor	type	src/game/actor.c	guess	the Actor again as Actor_SnapToGround reads it, with contact typed MapTile; a second type for Actor
-GridActorVtbl	type	src/game/actor.c	code	slots 0x88 and 0xBC as Actor_SnapToGround calls them
+Actor	type	include/game/actor.h	code	0x58 bytes from Actor_New, a SceneNode subclass, class word 0x34
+ActorVtbl	type	include/game/actor.h	code	view of g_actorVtbl; scenery_obj.c defines a second typedef ActorVtbl of its own
 GridRect	type	src/game/actor.c	code	a rectangle of tiles in a slot's 20 x 20 grid for the ground search
-BgAngle	type	src/game/bg.c	code	bg.c's view of the base slot 0x44 angles, z fraction at +8; the same as NodeAngles of sprite_node.c
 BgMapView	type	src/game/bg.c	code	bg.c's view of BgMap's GsMAP fields with cellsY unsigned
 Bgm	type	src/game/bgm.c	code	0x24-byte music object (Bgm_New), "WBgm" in its SsSeqOpen error string; a SoundBank and a SeqFile played with SsSeq calls
 BgmVtbl	type	src/game/bgm.c	code	Layout of g_bgmVtbl: Object slots then 0x40 to 0x60 Bgm functions
-BaseNodeVtbl	type	src/game/box.c	code	box.c's view of the SceneNode vtable: slots 0x08 init and 0x4C show
-Box	type	src/game/box.c	code	0x6C bytes from Box_Create with g_boxVtbl: a scene node with a GsBOXF at +0x58
-BoxVtbl	type	src/game/box.c	code	slot layout of g_boxVtbl; declared twice, in box.c and again in fade.c
+Box	type	include/game/box.h	code	0x6C bytes from Box_Create with g_boxVtbl: a scene node with a GsBOXF at +0x58
+BoxVtbl	type	include/game/box.h	code	slot layout of g_boxVtbl, used by box.c and fade.c
 CommentObject	type	src/game/comment_object.c	code	0x4C bytes made by CommentObject_New, vtable g_commentVtbl class 0x10; the save comment keyboard Card_OpenKeyboard opens
 CommentVtbl	type	src/game/comment_object.c	code	view of g_commentVtbl with the slots this file calls
-CommentWidget	type	src/game/comment_object.c	guess	the three widgets (ScreenSprite, Label, Glyph) but the file also types the sound bank at +0x3C with it, which is a SoundBank
-CommentWidgetVtbl	type	src/game/comment_object.c	guess	mixes widget slots (0x4C, 0xB8, 0xBC, 0xC4) with Sound_PlayTone at 0x80 and Tim_Upload at 0x78 of other classes
 FallLocation	type	src/game/dream_link.c	code	the map location as Link_PickFallStage reads it: tile word, x and y offsets
 LinkEntry	type	src/game/dream_link.c	code	one entry of a stage link list matched by Link_Find
 PlaceOut	type	src/game/dream_link.c	code	a StagePlace as the link and spawn pickers write it: tile then offset
 PlaceTile	type	src/game/dream_link.c	code	first 4 bytes of a StagePlace copied as one: chunk column, row, tile x, y (Link_Find, spawn pickers)
 ScriptedTarget	type	src/game/dream_link.c	code	a scripted link target as Link_GetStepScript reads it
 SpawnPoint	type	src/game/dream_link.c	code	6-byte spawn point or link target: tile, offset index, navigation flag (Link_Find, spawn pickers)
-SpecialCine	type	src/game/dream_link.c	code	DreamSys +0x168 as Day_FindSpecial writes it; duplicates the cinematic.id of DreamSys
 TileOffset	type	src/game/dream_link.c	code	one 6-byte g_tileOffsets entry copied into StagePlace +4; its xy member reuses PlaceTile, whose col and row names do not fit offsets
-ActorVtblView	type	src/game/dream_sys.c	code	this file view of g_actorVtbl (Actor_GetVtbl): the slots DreamSys chains to; one of several views of that vtable
-RotationYaw	type	src/game/dream_sys.c	code	a SceneNode_GetRotation result read for its yaw at +4; defined again in dream_link.c, one type twice
-Glyph	type	src/game/glyph.c	code	0xAC bytes from Glyph_Create, a ScreenSprite with the character at +0xA8
-GlyphVtbl	type	src/game/glyph.c	code	slot layout of g_glyphVtbl: 0x08 Glyph_Init, 0x40 Glyph_Setup, 0xC4 Glyph_SetCode
-ScreenSprite	type	src/game/glyph.c	code	glyph.c's copy of the ScreenSprite struct of screen_sprite.c
-ScreenSpriteVtbl	type	src/game/glyph.c	code	glyph.c's copy of the screen sprite slots 0x08, 0x40, 0xBC
-Sprite	type	src/game/glyph.c	code	libgs GsSPRITE layout, filled by SpriteNode_FillSprite; also declared in screen_sprite.c, sprite_node.c and scene_draw.c
+RotationYaw	type	include/game/dream_link.h	code	a SceneNode_GetRotation result read for its yaw at +4; defined again in dream_link.c, one type twice
+Glyph	type	include/game/glyph.h	code	0xAC bytes from Glyph_Create, a ScreenSprite with the character at +0xA8
+GlyphVtbl	type	include/game/glyph.h	code	slot layout of g_glyphVtbl: 0x08 Glyph_Init, 0x40 Glyph_Setup, 0xC4 Glyph_SetCode
 Graph	type	src/game/graph.c	code	the graph screen object, 0x244 bytes (Graph_New), MenuScreen base, g_graphVtbl
 GraphColor	type	src/game/graph.c	code	three s8 colour bytes Graph_CreateBoxes steps down, from g_graphOldColor
 GraphVtbl	type	src/game/graph.c	code	union view of g_graphVtbl: the ScreenVtbl slots plus the slot 0x124 of its own
 ReelPoint	type	src/game/graph.c	code	a MoodPoint read as one s16 for the whole compare of Graph_CheckReel
 ReelSave	type	src/game/graph.c	code	SaveBlock as Graph_CheckReel reads it; duplicates SaveBlock of dream_sys.h with s16 points and a signed reelSeen
-Glyph	type	src/game/label.c	code	label.c's one-field view of the glyph class; glyph.c defines the full Glyph
-GlyphVtbl	type	src/game/label.c	code	label.c's view of g_glyphVtbl; glyph.c declares another GlyphVtbl with other slot names
-Model	type	src/game/model.c	code	the model base class, 0x98 bytes (Model_New), vtable g_modelVtbl; Entity derives from it (class word 0x234)
-ModelBaseVtbl	type	src/game/model.c	code	second view of g_modelVtbl in model.c, the type Model_GetVtbl returns for Entity; one vtable, two structs
-ModelParentVtbl	type	src/game/model.c	code	this file view of g_actorVtbl, the slots Model chains to; another view of the Actor vtable
-ModelSource	type	src/game/model.c	code	what Model_LoadFile loads from: a FileSource, or a ready Mom at +0xC
-ModelVtbl	type	src/game/model.c	code	the Model vtable 0x8008A6C4 as Model methods call it; slots match asm/data; ModelBaseVtbl of the same file is a second view
+Model	type	include/game/model.h	code	the model base class, 0x98 bytes (Model_New), vtable g_modelVtbl; Entity derives from it (class word 0x234)
+ModelSource	type	include/game/model.h	code	what Model_LoadFile loads from: a FileSource, or a ready Mom at +0xC
+ModelVtbl	type	include/game/model.h	code	the Model vtable 0x8008A6C4 as Model methods call it; slots match asm/data; ModelBaseVtbl of the same file is a second view
 MovieSliceView	type	src/game/movie.c	code	movie.c's u16 view of the Movie rects for Movie_OnSlice
 CineChoice	type	src/game/path_table.c	code	the {category, variant} pair of DreamSys +0x168 Cine_GetPath takes as one word
-PlaceOwner	type	src/game/place.c	wrong	DreamRunner_CreatePlace passes runner->context to slot 0x44, the ScreenEnv (RunnerContext), not the runner; its +0xC is env->root
-PlaceOwnerObj	type	src/game/place.c	wrong	env->root is the StageMap (StageMap_New in DreamRunner_Init), whose slot 0xC8 is StageMap_SetChunkLoader
-PlaceOwnerObjVtbl	type	src/game/place.c	wrong	view of the StageMap vtable slot 0xC8
-RootNode	type	src/game/root_node.c	code	0x54 bytes from RootNode_Create: scene node, 3 lights at +0x44, ambient at +0x50
-RootNodeVtbl	type	src/game/root_node.c	code	root_node.c's view of g_rootNodeVtbl slots 0x08, 0x10, 0x40, 0xB8
+RootNode	type	include/game/root_node.h	code	0x54 bytes from RootNode_Create: scene node, 3 lights at +0x44, ambient at +0x50
+RootNodeVtbl	type	include/game/root_node.h	code	root_node.c's view of g_rootNodeVtbl slots 0x08, 0x10, 0x40, 0xB8
 AmbienceBand	type	src/game/scenery.c	code	a Box (Box_Create) used as a band or as the tint
 AmbienceBandVtbl	type	src/game/scenery.c	code	Box slots this file calls on the bands and the tint
 ParamWord	type	src/game/scenery.c	code	one s32 of g_sceneryParams as CreateKind2 writes color and the next word
@@ -2142,38 +2100,23 @@ SpotRecord	type	src/game/scenery.c	code	8-byte record of g_stageSoundSpots
 SpotSlot	type	src/game/scenery.c	code	one of the two 0x68-byte slots holding a spot and its HandlerNode
 SpotTile	type	src/game/scenery.c	guess	the first 4 bytes of the StagePlace given to placeToWorld (col, row, tileX, tileY); a copy of part of StagePlace
 SceneryPartClut	type	src/game/scenery_part.c	code	a {x, y} CLUT position of g_sceneryPartCluts
-TextPart	type	src/game/scenery_part.c	wrong	the SceneryPart class (g_sceneryPartVtbl, 0xA8 bytes); it draws a 16x16 sprite, no text, and scenery_obj.h already types the same object SceneryPart
-TextPartBaseVtbl	type	src/game/scenery_part.c	code	the SpriteNode vtable as scenery_part.c reads it (SpriteNode_GetVtbl), rename refused, it goes to the merge list (SpriteNodeVtbl)
-TextPartVtbl	type	src/game/scenery_part.c	wrong	view of g_sceneryPartVtbl, slots 0x08 and 0x40
-ScreenSprite	type	src/game/screen_sprite.c	code	0xA8 bytes from ScreenSprite_Create with g_screenSpriteVtbl, a SpriteNode with a 2D position at +0xA0
-ScreenSpriteVtbl	type	src/game/screen_sprite.c	code	slot layout of g_screenSpriteVtbl as this file calls it
-Sprite	type	src/game/screen_sprite.c	code	copy of the libgs GsSPRITE struct of sprite_node.c
-SpriteNodeVtbl	type	src/game/screen_sprite.c	code	screen_sprite.c's view of g_spriteNodeVtbl slots 0x08, 0x40, 0x4C
-NodeAngles	type	src/game/sprite_node.c	code	three Fractions, the angles argument of the base slot 0x44; SpriteNode_SetRotation reads z
-Sprite	type	src/game/sprite_node.c	code	libgs GsSPRITE: attribute, x y w h, tpage, u v, cx cy, r g b, mx my, scalex scaley, rotate
-SpriteNode	type	src/game/sprite_node.c	code	0xA0 bytes from SpriteNode_Create with g_spriteNodeVtbl: scene node, image, rect, GsSPRITE at +0x64
-SpriteNodeVtbl	type	src/game/sprite_node.c	code	sprite_node.c's view of g_spriteNodeVtbl slots 0x08, 0x40, 0x4C
+ScreenSprite	type	include/game/screen_sprite.h	code	0xA8 bytes from ScreenSprite_Create with g_screenSpriteVtbl, a SpriteNode with a 2D position at +0xA0
+ScreenSpriteVtbl	type	include/game/screen_sprite.h	code	slot layout of g_screenSpriteVtbl as this file calls it
+Sprite	type	include/game/gs.h	code	libgs GsSPRITE: attribute, x y w h, tpage, u v, cx cy, r g b, mx my, scalex scaley, rotate
+SpriteNode	type	include/game/sprite_node.h	code	0xA0 bytes from SpriteNode_Create with g_spriteNodeVtbl: scene node, image, rect, GsSPRITE at +0x64
+SpriteNodeVtbl	type	include/game/sprite_node.h	code	sprite_node.c's view of g_spriteNodeVtbl slots 0x08, 0x40, 0x4C
 SpriteRectBytes	type	src/game/sprite_node.c	code	the SpriteRect read by SpriteNode_FillSprite with byte loads for u and v
-SpriteTim	type	src/game/sprite_node.c	code	the start of a GsIMAGE as SpriteNode_FillSprite reads it
 StreamSectorHeader	type	src/game/stream.c	code	PSY-Q StHEADER as StGetNext hands it out
 StreamSpuAttr	type	src/game/stream.c	code	the first 0x24 bytes of a PSY-Q SpuCommonAttr, filled by Stream_EnableCdAudio
-CardList	type	src/game/string_list.c	guess	the StringList again as the window methods read it; a second type for one class (StringList), with width for maxLength
-CardListOwner	type	src/game/string_list.c	wrong	what +0x3C holds is card->sound, the sound bank, whose slot 0x80 is Sound_PlayTone; use the SoundBank type of sound_bank.h
-CardListOwnerVtbl	type	src/game/string_list.c	wrong	view of the sound bank vtable slot 0x80 Sound_PlayTone
-CardText	type	src/game/string_list.c	code	the row labels and the background sprite as this file calls them (Label, ScreenSprite)
-CardTextVtbl	type	src/game/string_list.c	code	slots of Label and ScreenSprite this file calls
 StringList	type	src/game/string_list.c	code	0x54 bytes from StringList_New, vtable g_stringListVtbl class 0x20; the scrolling file chooser of LOAD (Card_OpenChooser), not only a list
 StringListVtbl	type	src/game/string_list.c	code	view of g_stringListVtbl
 SpawnPlaceOffset	type	src/game/sym.c	code	6-byte g_spawnPlaceOffsets record: four bytes copied whole, then the height
 SpawnQuery	type	src/game/sym.c	code	the place query StageMap placeToWorld reads in Sym_SpawnAtPlace
-SpawnSource	type	src/game/sym.c	code	the source a spawned model is built from: FileSource for Mml_Create, Mom at +0xC for Entity_Create; same layout as ModelSource of model.c
 SpyEntityRef	type	src/game/sym.c	code	the spy field of g_spyModel seen alone by Sym_FreeSpy through g_spyEntity; duplicates SpyModel
 SpyModel	type	src/game/sym.c	game	the one g_spyModel entry: SYMSPY.MOM model, the Grey Man entity, the spawn offset; his model and spawn spot seen in game
-GsImage	type	src/game/tim_pack.c	code	libgs GsIMAGE filled by the Tim getInfo slot; sprite_node.c reads the same struct as SpriteTim
 ClutRect	type	src/game/tix.c	code	a VRAM RECT given to StoreImage and LoadImage by Tix_BuildFade
 ClutRows	type	src/game/tix.c	code	Tix_BuildFade's stack work area: two RECTs and two 256-color rows
-TixHeaderBytes	type	src/game/tix.c	code	the 0x24-byte header copied as bytes by Tix_OnReadDone
-ViewRatio	type	src/game/view.c	code	{num, den} s16 pair View_SetTwist turns into num / den in 4.12; g_viewNoTwist is (0, 1)
+TixHeaderBytes	type	include/game/tix.h	code	the 0x24-byte header copied as bytes by Tix_OnReadDone
 env	field	include/game/app.h:App	code	0x14-byte ScreenEnv {display, pad, clock, root, view} App_Start allocates
 screenSize	field	include/game/app.h:App	code	g_appScreenSize (320, 240) stored by App_SetScreenMode, given to initGraph
 started	field	include/game/app.h:App	code	Set by App_Start; App_Start and App_Run do nothing before or after accordingly
@@ -2279,10 +2222,6 @@ getChoice	field	include/game/card.h:CardDialogVtbl	code	Slot 0x9C StringList_Get
 open	field	include/game/card.h:CardDialogVtbl	code	Slot 0x44 CommentObject_Open and StringList_Open (dialog, root)
 unwatchPair	field	include/game/card.h:CardDialogVtbl	code	Slot 0x50 CommentObject_UnwatchPair and StringList_UnwatchPair
 watchPair	field	include/game/card.h:CardDialogVtbl	code	Slot 0x4C CommentObject_WatchPair and StringList_WatchPair (pad, clock, sound)
-vt	field	include/game/card.h:CardMessage	code	Vtable pointer at +0
-attach	field	include/game/card.h:CardMessageVtbl	code	Slot 0x4C ScreenSprite_Attach (sprite, root, position) in Card_ShowMessage
-delete_	field	include/game/card.h:CardMessageVtbl	code	Slot 0x04 Object_Delete, called by Card_HideMessage
-setZSort	field	include/game/card.h:CardMessageVtbl	code	slot 0x78 of g_screenSpriteVtbl is SceneNode_SetZSort, Card_ShowMessage uploads through the Tim vtable (Tim_Upload) and never through this field
 comment	field	include/game/card.h:CardTitle	code	+0x18 blanked by Menu_CreateTitleLabel; comment[0] is the space Card_SetTitleLetter writes, the keyboard edits from char 13 (title + 26)
 day	field	include/game/card.h:CardTitle	game	+0x12 three digits Menu_SetTitleDay writes; Day042 seen on the emulator card
 game	field	include/game/card.h:CardTitle	code	+0x00 full-width LSD of g_cardTitleText
@@ -2410,39 +2349,15 @@ start	field	include/game/dream_runner.h:DreamRunnerVtbl	code	Slot 0x4C holds Dre
 unwatch	field	include/game/dream_runner.h:DreamRunnerVtbl	code	Slot 0x14 holds Object_Unwatch
 update	field	include/game/dream_runner.h:DreamRunnerVtbl	code	Slot 0x54 holds DreamRunner_Update
 watch	field	include/game/dream_runner.h:DreamRunnerVtbl	code	Slot 0x10 holds Object_Watch
-clock	field	include/game/dream_runner.h:RunnerContext	code	+0x08 ScreenEnv.clock, Clock_Create() in DreamRunner_Init
-display	field	include/game/dream_runner.h:RunnerContext	code	+0x00 ScreenEnv.display; DreamRunner_Start asks it the screen rect
-map	field	include/game/dream_runner.h:RunnerContext	code	+0x0C ScreenEnv.root: StageMap_New(NULL, 1), a RootNode subclass, so the map is the screen root
-pad	field	include/game/dream_runner.h:RunnerContext	code	+0x04 ScreenEnv.pad; DreamSys watches it in DreamRunner_Run
-view	field	include/game/dream_runner.h:RunnerContext	code	+0x10 ScreenEnv.view, DreamView_New() in DreamRunner_Init
-vtbl	field	include/game/dream_runner.h:RunnerContextHead	code	Vtable pointer at +0
-getScreenRect	field	include/game/dream_runner.h:RunnerContextHeadVtbl	code	Slot 0x7C holds Display_GetScreenRect
-vtbl	field	include/game/dream_runner.h:RunnerStage	code	Vtable pointer at +0
-attach	field	include/game/dream_runner.h:RunnerStageVtbl	code	slot 0x44 holds Place_Attach (Task run with noLoop 1), place.h PlaceVtbl calls it attach
-delete_	field	include/game/dream_runner.h:RunnerStageVtbl	code	Slot 0x04 Object_Delete
-detach	field	include/game/dream_runner.h:RunnerStageVtbl	code	slot 0x48 holds Place_Detach, place.h PlaceVtbl calls it detach
-vtbl	field	include/game/dream_runner.h:RunnerView	code	Vtable pointer at +0
-vtbl	field	include/game/dream_runner.h:RunnerViewSub	code	Vtable pointer at +0
-setVisible	field	include/game/dream_runner.h:RunnerViewSubVtbl	code	Slot 0x60 holds Box_SetVisible in the Fade vtable
-allocOt	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x8C holds View_AllocOt in the DreamView vtable
-detach	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x74 holds View_Detach in the DreamView vtable
-freeOt	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x90 holds View_FreeOt in the DreamView vtable
-getOverlay	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0xAC holds View_GetOverlay in the DreamView vtable
-setCamera	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x70 holds View_SetCamera in the DreamView vtable
-setPacketCount	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x4C holds View_SetPacketCount in the DreamView vtable
-setScreenSize	field	include/game/dream_runner.h:RunnerViewVtbl	code	Slot 0x44 holds View_SetScreenSize in the DreamView vtable
-refPointY	field	include/game/dream_sys.h:DreamCamera	code	+0x24 = View reference point y (GsRVIEW2 vry); TickPitch, TickFall and TickStep move it
-viewpointY	field	include/game/dream_sys.h:DreamCamera	code	+0x18 = View viewpoint y (GsRVIEW2 vpy at +0x14); TickStep moves it for SHAKE
 arrivalHeading	field	include/game/dream_sys.h:DreamSys	code	rotation Link_Check* return for the arrival; EnterMap applies it under auto walk
 autoWalk	field	include/game/dream_sys.h:DreamSys	code	SetAutoWalk: 1 facing link fade, 2 fall, 0 normal; TickMove and OnPad read it
 camera	field	include/game/dream_sys.h:DreamSys	code	+0x5C the DreamView from SetCamera; pitch, fall and SHAKE move its reference point
-category	field	include/game/dream_sys.h:DreamSys	game	special day index % 12, or -1 for an entity video; category 1 traced in game
+category	field	include/game/dream_sys.h:CineId	game	special day index % 12, or -1 for an entity video; category 1 traced in game
 chunkMood	field	include/game/dream_sys.h:DreamSys	game	MoodAccum of chunks walked through (LogChunkMood); read in RAM
 cinematic	field	include/game/dream_sys.h:DreamSys	game	+0x168 {category, variant} Day_FindSpecial and OnEntityEvent write, GetCinematic returns; traced in game
 circlePressed	field	include/game/dream_sys.h:DreamSys	code	OnPad sets it on pad code 25 (CIRCLE pressed), TickBegin clears it, WasCirclePressed returns it
 contact	field	include/game/dream_sys.h:DreamSys	code	Actor contact at +0x28 written by Actor_SnapToGround, the MapTile under the dreamer; OnGroundProbe reads its flags
 controlsLocked	field	include/game/dream_sys.h:DreamSys	code	LockControls sets it, StartPlace clears it; OnPad, TickWalk, TickBegin test it
-coord	field	include/game/dream_sys.h:DreamSys	code	Coord2 view of pos: Walk reads coord.t, Save and RestorePosition copy it
 coordCopy	field	include/game/dream_sys.h:DreamSys	code	GsCOORDINATE2 copy of SavePosition, restored by RestorePosition
 dynamicLinkOn	field	include/game/dream_sys.h:DreamSys	game	OnWallTouch links dynamically only while set; TickBegin sets it 1 tick in linkPeriod; seen in hunt 8 f9.log
 entityMood	field	include/game/dream_sys.h:DreamSys	game	MoodAccum of entities touched (LogEntityMood, message 9); read in RAM
@@ -2468,13 +2383,12 @@ moveHandler	field	include/game/dream_sys.h:DreamSys	code	slot 0x154 or 0x178 pic
 moveMode	field	include/game/dream_sys.h:DreamSys	code	mode stored by SetMoveMode: 0 none, 1 walk, 2 fall
 neverSaved	field	include/game/dream_sys.h:DreamSys	code	+0x878 set by Init and an erase, cleared by ClearNeverSaved on a card save or load; Menu_Save reads it
 nextFlashback	field	include/game/dream_sys.h:DreamSys	code	playback index LoadNextFlashback reads and EnterMap increments
-obj	field	include/game/dream_sys.h:DreamSys	code	DreamCamera view of camera used by the pitch, fall and step code
 paramCopy	field	include/game/dream_sys.h:DreamSys	code	coordinate param copy of SavePosition, restored by RestorePosition
 parent	field	include/game/dream_sys.h:DreamSys	code	SceneNode parent at +0x0C (glossary SceneNode); TestPointAhead uses the coordinate only when it is set; Model calls the same field attached
 pitch	field	include/game/dream_sys.h:DreamSys	code	sum of the refPointY steps TickPitch applied, sprung back to 0
 pitchInput	field	include/game/dream_sys.h:DreamSys	code	1 TRIANGLE or 2 SQUARE from OnPad, the link steps set 2; TickPitch consumes it
 place	field	include/game/dream_sys.h:DreamSys	code	where the dreamer is or arrives: OnWallTouch writes the touched location, the link finders overwrite it with the target
-pos	field	include/game/dream_sys.h:DreamSys	code	+0x14 the GsCOORDINATE2 pointer of the node (SceneNode +0x14); Model and SceneNode call it coord
+object	field	include/game/dream_sys.h:DreamSys	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
 ref	field	include/game/dream_sys.h:DreamSys	code	CineRef view of cinematic returned whole
 save	field	include/game/dream_sys.h:DreamSys	game	+0x178 SaveBlock that GetSaveBlock returns; found in RAM
 savedDay	field	include/game/dream_sys.h:DreamSys	game	day kept by StartDay and restored by EndDay; +0x88C poked in the day counter test
@@ -2487,16 +2401,14 @@ stepSound	field	include/game/dream_sys.h:DreamSys	code	ground sound from contact
 stepTick	field	include/game/dream_sys.h:DreamSys	code	counts the 4 ticks of a step in TickStep
 stepVoice	field	include/game/dream_sys.h:DreamSys	code	voice PlayStepSound keeps for ground sound 0x16, stopped by StopStepSound
 timeLimit	field	include/game/dream_sys.h:DreamSys	game	seconds x 15 from SwapTimeLimit; 3600 and 7200 read in game
-timer	field	include/game/dream_sys.h:DreamSys	game	dream ticks counted by TickTimer on clock message 2; forced to the limit to end days in game; a tick is a game frame, not 1/15 s
+ticks	field	include/game/dream_sys.h:DreamSys	game	dream ticks counted by TickTimer on clock message 2; forced to the limit to end days in game; a tick is a game frame, not 1/15 s
 tmd	field	include/game/dream_sys.h:DreamSys	code	the dreamer TMD given to DreamSys_New; DreamSys_Init watches its model 0
 transition	field	include/game/dream_sys.h:DreamSys	game	link or event code while one runs (0xB to 0x11, 0xE flashback), 0 idle; transition 16 logged in hunt 8 f1.log
 turnInput	field	include/game/dream_sys.h:DreamSys	code	1 LEFT or 2 RIGHT from OnPad, index of g_turnRotations; TickTurn consumes it
-variant	field	include/game/dream_sys.h:DreamSys	game	rand() % 6 on a special day or the entity video; variant 1 and 2 traced in game
-view	field	include/game/dream_sys.h:DreamSys	code	View view of camera; Behavior_Type74 sets its clear colour
+variant	field	include/game/dream_sys.h:CineId	game	rand() % 6 on a special day or the entity video; variant 1 and 2 traced in game
 vtbl	field	include/game/dream_sys.h:DreamSys	code	g_dreamSysVtbl set by DreamSys_Init
 walkDirection	field	include/game/dream_sys.h:DreamSys	code	1 forward UP, 2 back DOWN, 3 L2, 4 R2 side steps from OnPad; index of g_walkSigns and g_walkMoves
 walkingForward	field	include/game/dream_sys.h:DreamSys	code	walkDirection == 1 from TickLookBack, cleared by ReverseDirection; facing and scripted links require it
-flags	field	include/game/dream_sys.h:DreamSysObj28	code	+0x36 = MapTile flags: OnGroundProbe takes & 0x7F as the step sound; bit 0x80 is the wall bit
 addActorWatchers	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x0B4 holds SceneNode_AddActorWatchers in g_dreamSysVtbl (asm/data/main.data.s)
 addFlashback	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x214 holds DreamSys_AddFlashback in g_dreamSysVtbl (asm/data/main.data.s)
 addWatcher	field	include/game/dream_sys.h:DreamSysVtbl	code	slot 0x020 holds Object_AddWatcher in g_dreamSysVtbl (asm/data/main.data.s)
@@ -2657,7 +2569,7 @@ animFrame	field	include/game/entity.h:Entity	code	+0x84 current frame; Behavior_
 animLength	field	include/game/entity.h:Entity	code	+0x80 frame count of the current animation; handlers compare handlerTicks and animFrame with it
 animPlaying	field	include/game/entity.h:Entity	code	+0x90 playAnimation sets it, stopAnimation clears it; Behavior_Type78 tests it
 animation	field	include/game/entity.h:Entity	code	+0x7C current animation index; Behavior_Type77, 92, 93, 94 test it after setAnimation
-attached	field	include/game/entity.h:Entity	code	+0xC: Entity_Attach runs only while 0, Entity_Detach only while set; Model.attached in model.c
+parent	field	include/game/entity.h:Entity	code	+0xC: Entity_Attach runs only while 0, Entity_Detach only while set; Model.attached in model.c
 awake	field	include/game/entity.h:Entity	code	+0xF0 set by Entity_Wake, cleared by Entity_Sleep; returned by Entity_CheckWake and CheckSleep
 clock	field	include/game/entity.h:Entity	code	+0x50 the watched clock (Model_Attach watch, sym.c passes g_symClock); handlers give it to Fade startIn
 contact	field	include/game/entity.h:Entity	code	+0x28 the tile Actor_SnapToGround found after moveZOnGround; typed s32 here but a MapTile pointer in actor.c
@@ -2669,16 +2581,16 @@ handlerTicks	field	include/game/entity.h:Entity	code	+0xFC cleared by Entity_Sta
 map	field	include/game/entity.h:Entity	code	+0x4C set by Entity_Attach, cleared by Entity_Detach; handlers call its startTileStretch
 partCount	field	include/game/entity.h:Entity	code	+0x6C Model.partCount, model parts made by Model_CreateParts
 parts	field	include/game/entity.h:Entity	code	+0x70 Model.parts; Behavior_Type58 hides parts[1] through slot 0x60
-pos	field	include/game/entity.h:Entity	code	+0x14 the GsCOORDINATE2 pointer; coord.t is the position, workm.t the world one. Same field is Model.coord and Actor.posBlock
+object	field	include/game/entity.h:Entity	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
 secondEffect	field	include/game/entity.h:Entity	guess	+0x104 only cleared by Entity_Construct and deleted by Entity_Destruct; nothing in entity.c creates it, so Fade is unproven
 soundBank	field	include/game/entity.h:Entity	code	+0x58 HandlerNode_Start, HandlerNode_Run and HandlerNode_Stop play the handler voices on it
 speed	field	include/game/entity.h:Entity	code	+0x48 Actor_MoveAxis stores the last move amount there; Behavior_WalkingGeisha and Type68 store their own speed
 state	field	include/game/entity.h:Entity	code	+0x44 the handlers script state; 1 means done and blocks Entity_CheckWake and handler start
 tickEnabled	field	include/game/entity.h:Entity	code	+0x8C Model.tickEnabled, set by startTick and cleared by stopTick (model.c)
-timer	field	include/game/entity.h:Entity	code	+0x24 cleared by Entity_Wake; Entity_CheckSleep compares it with sleepMode*15; Model.timer counts it
+ticks	field	include/game/entity.h:Entity	code	+0x24 cleared by Entity_Wake; Entity_CheckSleep compares it with sleepMode*15; Model.timer counts it
 touched	field	include/game/entity.h:Entity	code	+0xF4 set by Entity_SetTouched (event 9) when the entity is in the box at touchRange ahead of the dreamer; no contact needed
 type	field	include/game/entity.h:Entity	code	+0x98 index into g_entityRecords, stored by Entity_Construct
-vt	field	include/game/entity.h:Entity	code	+0: Entity_Construct stores Entity_GetVtbl() there
+vtbl	field	include/game/entity.h:Entity	code	+0: Entity_Construct stores Entity_GetVtbl() there
 boxSize	field	include/game/entity.h:EntityRecord	code	last argument of every Entity_IsAtPointAhead: half side of the box (<<11, or 0x800/-n when negative) in DreamSys_TestPointAhead
 handler	field	include/game/entity.h:EntityRecord	code	Entity_StartHandler passes it to HandlerNode_Start; every Behavior_ function sits in one (exe dump)
 handlerRange	field	include/game/entity.h:EntityRecord	code	Entity_CheckHandlerStart starts the handler in the box at |range|; negative also stops it out of the box; 0 at attach starts at once
@@ -2955,13 +2867,10 @@ size	field	include/game/map_models.h:MapModels	code	File.size; StageMap sets 0 s
 tmd	field	include/game/map_models.h:MapModels	code	Tmd_Create on the bytes after the square table (stage_map.c); MapModels_NextModel asks it getModel for each square
 delete_	field	include/game/map_models.h:MapModelsVtbl	code	Slot 0x04 File_Delete
 nextModel	field	include/game/map_models.h:MapModelsVtbl	code	Slot 0x78 MapModels_NextModel, called by StageMap for each square until it returns NULL
-attribute	field	include/game/map_tile.h:MapTile	code	+0x10 GsDOBJ2.attribute; bit 31 GsDOFF hides the tile (StageMap_ShowView, HideSlot)
-coord	field	include/game/map_tile.h:MapTile	code	+0x14 GsDOBJ2.coord2, given the model position and yaw by StageMap_BuildTiles
 flags	field	include/game/map_tile.h:MapTile	code	+0x36 copied from the map record flags; MapTile_Tell passes messages only with 0x80 (walls, checked in memory)
 model	field	include/game/map_tile.h:MapTile	code	+0x20 SceneNode.model, the model object of the square
 next	field	include/game/map_tile.h:MapTile	code	+0x38 the next tile stacked on the same square (extras from index 400), walked by ShowView and TellViewTiles
-tmd	field	include/game/map_tile.h:MapTile	code	+0x18 GsDOBJ2.tmd, set from model->tmd by StageMap_BuildTiles
-tmd	field	include/game/map_tile.h:MapTileModel	code	+0x10 ModelObject.entry, the TMD object GsLinkObject4 links; ModelObject calls it entry
+object	field	include/game/map_tile.h:MapTile	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
 attach	field	include/game/map_tile.h:MapTileVtbl	code	Slot 0x4C holds SceneNode_Attach
 checkContact	field	include/game/map_tile.h:MapTileVtbl	code	Slot 0xA0 holds SceneNode_CheckContact
 delete_	field	include/game/map_tile.h:MapTileVtbl	code	Slot 0x04 holds Object_Delete
@@ -2973,7 +2882,7 @@ setScale	field	include/game/map_tile.h:MapTileVtbl	code	Slot 0x48 holds SceneNod
 card	field	include/game/menu.h:Menu	code	+0xAC Card_New(1, 0) of the first SAVE or LOAD, deleted by Menu_Destroy
 clearOnEnd	field	include/game/menu.h:Menu	code	+0x34 MenuScreen.clearOnEnd, 0 in Menu_Reset
 clock	field	include/game/menu.h:Menu	code	+0x10 Screen.clock, handed to the card and watched again by Menu_CloseCard
-desc	field	include/game/menu.h:Menu	code	+0x4C MenuScreen.menu (the MenuDef), g_mainMenuDesc; MenuScreen names the same field menu
+menu	field	include/game/menu.h:Menu	code	+0x4C MenuScreen.menu (the MenuDef), g_mainMenuDesc; MenuScreen names the same field menu
 dreamSys	field	include/game/menu.h:Menu	code	+0xA4 the DreamSys of Menu_Init
 endColor	field	include/game/menu.h:Menu	code	+0x93 MenuScreen.endColor, the colour Menu_End clears with
 env	field	include/game/menu.h:Menu	code	+0x0C Screen.env; Menu_End clears through env->display, Menu_OpenCard hands env->pad to the card
@@ -2991,9 +2900,6 @@ viewPacketCount	field	include/game/menu.h:Menu	code	+0x2C MenuScreen.viewPacketC
 h	field	include/game/menu.h:MenuFillRect	code	240
 w	field	include/game/menu.h:MenuFillRect	code	320
 xy	field	include/game/menu.h:MenuFillRect	code	x low half, y high half: 0 and 0xF00000 (y 240)
-tim	field	include/game/menu.h:MenuPicture	code	+0x10 the loaded TIM file; Card_WriteFileOnce copies its palette (+0x14) and three frames (+0x40)
-vt	field	include/game/menu.h:MenuPicture	code	Vtable pointer at +0
-delete_	field	include/game/menu.h:MenuPictureVtbl	code	Slot 0x04 holds File_Delete in g_timVtbl
 b	field	include/game/menu.h:MenuRgb	code	Colour byte; Menu_SetItemsColor indexes the three as channels 0..2
 g	field	include/game/menu.h:MenuRgb	code	Colour byte; Menu_SetItemsColor indexes the three as channels 0..2
 r	field	include/game/menu.h:MenuRgb	code	Colour byte; Menu_SetItemsColor indexes the three as channels 0..2
@@ -3080,9 +2986,6 @@ offsets	field	include/game/mml.h:MmlHeader	code	each MOM's offset from the start
 table	field	include/game/mml.h:MmlHeader	code	offsets, then the Moms written over them
 max	field	include/game/model_object.h:ModelBox	code	largest x, y, z of ModelObject_ComputeBox
 min	field	include/game/model_object.h:ModelBox	code	smallest x, y, z of ModelObject_ComputeBox
-x	field	include/game/model_object.h:ModelBoxCorner	code	moved by ModelBox_ShiftList along x
-y	field	include/game/model_object.h:ModelBoxCorner	code	copied whole with the corner
-z	field	include/game/model_object.h:ModelBoxCorner	code	moved by ModelBox_ShiftList along z
 count	field	include/game/model_object.h:ModelBoxList	code	box count ModelBox_ShiftList loops on
 recs	field	include/game/model_object.h:ModelBoxList	code	the boxes ModelBox_ShiftList moves
 v	field	include/game/model_object.h:ModelBoxRecord	code	8 corners of one box, permuted by ModelBox_ShiftList
@@ -3261,12 +3164,6 @@ watch	field	include/game/place.h:PlaceVtbl	code	slot 0x10 Object_Watch
 attribute	field	include/game/render.h:DObj2	code	GsDOBJ2 attribute: bit 31 skips, bits 3-6 and 9-11 read by Render_SortModel
 coord	field	include/game/render.h:DObj2	code	GsDOBJ2 coord2; Render_SortModel multiplies by super->workm, View_DrawNode passes it to GsGetLws
 tmd	field	include/game/render.h:DObj2	code	GsDOBJ2 tmd, the TmdModel entry Render_SortModel walks, SceneNode calls the same word tmd and keeps model for its ModelObject
-normalCount	field	include/game/render.h:TmdModel	code	TMD object table n_normal, not read by the renderer
-normals	field	include/game/render.h:TmdModel	code	Render_SortModel copies it to ctx->normals, gte_ldv0 reads normal * 8
-primitiveCount	field	include/game/render.h:TmdModel	code	Render_SortModel's remaining count, decreased by each group's count
-primitives	field	include/game/render.h:TmdModel	code	the start of the face groups Render_SortModel walks
-vertexCount	field	include/game/render.h:TmdModel	code	TMD object table n_vert, not read by the renderer
-vertices	field	include/game/render.h:TmdModel	code	Render_SortModel copies it to ctx->vertices, faces index it by 8 bytes
 dreamSys	field	include/game/scene.h:Scene	code	DreamSys_New(Tmd_Create(ETC\DREAME5.TMD)) in Scene_Init, passed to every screen and the runner
 env	field	include/game/scene.h:Scene	code	the ScreenEnv App_Start allocates (display, pad, clock, root, view); every Scene screen runs with it
 screenSize	field	include/game/scene.h:Scene	code	App_SetScreenMode copies g_appScreenSize here, App_Start passes it to the display's initGraph
@@ -3282,30 +3179,16 @@ logos	field	include/game/scene.h:SceneSettings	code	tested by Scene_ShowLogos on
 title	field	include/game/scene.h:SceneSettings	code	tested by Scene_RunTitle: 0 skips the graph and the menu and returns 2 (straight to the dream)
 useCdSearch	field	include/game/scene.h:SceneSettings	code	DreamRunner_Init calls File_EnableWait(useCdSearch == 0, 1, 1); g_fileEnabled 0 sends File_OpenByName to CdSearchFile
 videos	field	include/game/scene.h:SceneSettings	code	tested by Scene_PlayOpening, Scene_PlayReel, Scene_PlayCinematic and Scene_PlayEnding before playing a video
-classWord	field	include/game/scene.h:SceneVtbl	code	0x1F60 in g_sceneVtbl
-delete_	field	include/game/scene.h:SceneVtbl	code	slot 0x04 Object_Delete in g_sceneVtbl
-destroy	field	include/game/scene.h:SceneVtbl	code	slot 0x0C App_Destroy (empty) in g_sceneVtbl
-init	field	include/game/scene.h:SceneVtbl	code	slot 0x08 Scene_Init, called by Scene_New
-playEnding	field	include/game/scene.h:SceneVtbl	code	slot 0x64 Scene_PlayEnding, called by App_Run when runDream returns non-zero
-playOpening	field	include/game/scene.h:SceneVtbl	code	slot 0x54 Scene_PlayOpening, called by App_Run
-run	field	include/game/scene.h:SceneVtbl	code	slot 0x4C App_Run, called by main
-runDream	field	include/game/scene.h:SceneVtbl	code	slot 0x60 Scene_RunDream, called by App_Run on a title result of 2
-runTitle	field	include/game/scene.h:SceneVtbl	code	slot 0x58 Scene_RunTitle, called by App_Run
-seedRandom	field	include/game/scene.h:SceneVtbl	code	slot 0x40 Scene_SeedRandom, called by Scene_Init; the same slot is setScreenMode in AppVtbl
-showLogos	field	include/game/scene.h:SceneVtbl	code	slot 0x50 Scene_ShowLogos, called by App_Run
-start	field	include/game/scene.h:SceneVtbl	code	slot 0x44 Scene_Start, AppVtbl calls the same slot start (App_Start)
 den	field	include/game/scene_node.h:Fraction	code	denominator in Fraction_ToFixed; SceneNode_GetRotation writes 1
 num	field	include/game/scene_node.h:Fraction	code	numerator in Fraction_ToFixed; SceneNode_GetRotation writes degrees here
-attribute	field	include/game/scene_node.h:SceneNode	code	GsDOBJ2 attribute at 0x10, the bits the SetVisible to SetBackfaceClip slots write; Render_SortModel reads it
 boxList	field	include/game/scene_node.h:SceneNode	code	the box list being sent by SceneNode_SendShape, NULL once notify returns; SceneNode_CheckContact reads the sender's
 contact	field	include/game/scene_node.h:SceneNode	code	the last node that sent NODE_MSG_CONTACT (SceneNode_OnNode) or that this node hit (SceneNode_CheckContact)
-coord	field	include/game/scene_node.h:SceneNode	code	GsDOBJ2 coord2, the Coord2 SceneNode_Init allocates
 hitMask	field	include/game/scene_node.h:SceneNode	code	SceneNode_RayTestBoxes sets bit i for model box i hit, or the sender's box bits through senderHits
 id	field	include/game/scene_node.h:SceneNode	code	GsDOBJ2 id, Sony's layout; nothing in scene_node.c reads it
 model	field	include/game/scene_node.h:SceneNode	code	the watched ModelObject (sender type 9), set by SceneNode_LinkModel
 parent	field	include/game/scene_node.h:SceneNode	code	set by SceneNode_Attach, cleared by SceneNode_Detach; SceneNode_NextChild compares it
 ticks	field	include/game/scene_node.h:SceneNode	guess	cleared by SceneNode_Reset and never counted in scene_node.c; ticks comes from subclasses using +0x24 (Entity calls it timer), unproven for the base
-tmd	field	include/game/scene_node.h:SceneNode	code	GsDOBJ2 tmd, set to the model object's entry by SceneNode_LinkModel
+object	field	include/game/scene_node.h:SceneNode	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
 vtbl	field	include/game/scene_node.h:SceneNode	code	g_sceneNodeVtbl or a subclass vtable, set by SceneNode_Init
 watched	field	include/game/scene_node.h:SceneNode	code	Object list; SceneNode_Attach makes the parent watch the child, SceneNode_NextChild walks it
 watchers	field	include/game/scene_node.h:SceneNode	code	Object list SceneNode_SendShape notifies with the box list
@@ -3384,15 +3267,13 @@ variant	field	include/game/scenery_obj.h:SceneryParams	guess	rand() % 7 or % 6, 
 x	field	include/game/scenery_obj.h:SceneryParams	code	offset x from the origin
 y	field	include/game/scenery_obj.h:SceneryParams	code	offset y, the height
 z	field	include/game/scenery_obj.h:SceneryParams	code	offset z
-angle	field	include/game/scenery_obj.h:SceneryPart	code	+0x84, the GsSPRITE rotate of the SpriteNode (sprite +0x20), degrees in 20.12
-attach	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x4C SceneNode_Attach
-movePos	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0xBC is called only on the kind 0 parts made by Actor_New (Scenery_UpdateKind0), where it is Actor_MovePos
-setBlendRate	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x68 SpriteNode_SetBlendRate
-setColor	field	include/game/scenery_obj.h:SceneryPartVtbl	guess	slot 0xB8 is SpriteNode_SetColor on sprite parts but Actor_SetPos on kind 0 parts, where PlaceKind0Parts calls it with a position
-setRotation	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x44 SpriteNode_SetRotation or SceneNode_SetRotation
-setScale	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x48 SceneryPart_SetScale or SceneNode_SetScale
-setSemiTrans	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x64 SpriteNode_SetSemiTrans
-setVisible	field	include/game/scenery_obj.h:SceneryPartVtbl	code	slot 0x60 SpriteNode_SetVisible
+attach	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x4C SceneNode_Attach
+setBlendRate	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x68 SpriteNode_SetBlendRate
+setColor	field	include/game/scenery_part.h:SceneryPartVtbl	guess	slot 0xB8 is SpriteNode_SetColor on sprite parts but Actor_SetPos on kind 0 parts, where PlaceKind0Parts calls it with a position
+setRotation	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x44 SpriteNode_SetRotation or SceneNode_SetRotation
+setScale	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x48 SceneryPart_SetScale or SceneNode_SetScale
+setSemiTrans	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x64 SpriteNode_SetSemiTrans
+setVisible	field	include/game/scenery_part.h:SceneryPartVtbl	code	slot 0x60 SpriteNode_SetVisible
 attach	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x4C SceneNode_Attach
 construct	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x08 Scenery_Construct
 destruct	field	include/game/scenery_obj.h:SceneryVtbl	code	slot 0x0C Scenery_Destruct
@@ -3507,7 +3388,7 @@ state	field	include/game/sound_bank.h:SoundBank	code	File.state: 1 header reques
 toneData	field	include/game/sound_bank.h:SoundBank	code	Heap block of toneCount 0x20-byte VagAtr records, filled by Sound_LoadProgramTable
 transferDone	field	include/game/sound_bank.h:SoundBank	code	Set by Sound_PollTransfer after SsVabTransCompleted; Sound_LoadProgramTable needs it
 transferring	field	include/game/sound_bank.h:SoundBank	code	Set when SsVabTransBody succeeds, cleared by Sound_PollTransfer
-vabBuffer	field	include/game/sound_bank.h:SoundBank	code	File.data at 0x10 under another name: SsVabOpenHead and SsVabTransBody read it
+data	field	include/game/sound_bank.h:SoundBank	code	File.data at 0x10 under another name: SsVabOpenHead and SsVabTransBody read it (File.data, renamed from vabBuffer)
 vabId	field	include/game/sound_bank.h:SoundBank	code	From SsVabOpenHead and SsVabTransBody, passed to SsUtKeyOn and SsVabClose
 delete_	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x04 File_Delete; the comment "Object_Delete" is stale
 freeData	field	include/game/sound_bank.h:SoundBankVtbl	code	Slot 0x5C File_FreeData; Sound_LoadProgramTable frees the body after the transfer
@@ -3543,8 +3424,6 @@ neighbor	field	include/game/stage_map.h:ChunkRequest	code	Neighbour position 0..
 colStepEven	field	include/game/stage_map.h:HexNeighbor	code	Column delta on an even row
 colStepOdd	field	include/game/stage_map.h:HexNeighbor	code	Column delta on an odd row, also the only delta when rowStep is 0
 rowStep	field	include/game/stage_map.h:HexNeighbor	code	Row delta: index delta = rowStep*cols + column step (StageMap_RequestNeighbor)
-coord	field	include/game/stage_map.h:MapActor	code	+0x14 SceneNode.coord (GsCOORDINATE2): workm.t and coord.t are read as the position
-parent	field	include/game/stage_map.h:MapActor	code	+0x0C is SceneNode.parent, StageMap_TellNearTiles reads coord->workm only when it is set
 at	field	include/game/stage_map.h:MapLocation	code	Union at +0: the StagePlace and its first s16 read as a chunk key
 chunkCenter	field	include/game/stage_map.h:MapLocation	code	+0x0C origin of slotById(chunk id) + 0x5000 on x and z, written by StageMap_Locate
 chunkIndex	field	include/game/stage_map.h:MapLocation	code	+0x28 slot->chunk->index, used by ComputeStackedView and SetNearViewStacked
@@ -3560,7 +3439,6 @@ models	field	include/game/stage_map.h:MapSlot	code	+0x08 MapModels_New(0), fille
 root	field	include/game/stage_map.h:MapSlot	code	+0x0C the MapTile whose coord is the chunk corner; tiles attach to it, StageMap_LoadAround moves it
 spawned	field	include/game/stage_map.h:MapSlot	code	+0x14 Sym_SpawnOrSpy result stored by Place_SpawnCell, deleted by StageMap_OnSlotMessage on message 6
 tiles	field	include/game/stage_map.h:MapSlot	code	+0x10 Heap_Alloc(0x668): 410 MapTile pointers, row-major 20 per row, extras from 400
-ticks	field	include/game/stage_map.h:MapTileStep	code	+0x06 the y fraction denominator (64 or 4), used by StageMap_StartTileStretch as ticks per count so the steps add 1 per count
 cols	field	include/game/stage_map.h:MapView	code	Tiles per row of the rectangle
 rows	field	include/game/stage_map.h:MapView	code	Rows of the rectangle
 slot	field	include/game/stage_map.h:MapView	code	Slot index into map->slots (slotIndexById, slotIndexByChunk)
@@ -3683,12 +3561,6 @@ sound	field	include/game/task.h:Task	code	+0x34 the SoundBank Task_PlayTone play
 state	field	include/game/task.h:Task	code	+0x20 Screen.state, set by Screen_SetState
 ticks	field	include/game/task.h:Task	code	+0x1C Screen.ticks, compared with timeout by Task_OnTick
 timeout	field	include/game/task.h:Task	code	+0x2C ticks before state 4, written by Task_SetTimeout, -1 never
-destroy	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x0C holds Object_Destroy
-finish	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x48 holds Screen_Finish
-init	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x08 holds Screen_Init
-onTick	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x5C holds Screen_OnClock (ScreenVtbl calls it onClock)
-run	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x44 holds Screen_Run
-setState	field	include/game/task.h:TaskBaseVtbl	code	Slot 0x60 holds Screen_SetState
 classWord	field	include/game/task.h:TaskVtbl	code	Slot 0x00 holds 0x230
 delete_	field	include/game/task.h:TaskVtbl	code	Slot 0x04 holds Object_Delete
 destroy	field	include/game/task.h:TaskVtbl	code	Slot 0x0C holds Task_Destroy
@@ -3744,7 +3616,7 @@ bufferSize	field	include/game/tix.h:Tix	code	size of the part buffer, the read l
 fades	field	include/game/tix.h:Tix	code	four TixFade, one per palette; each TimPack gets a pointer to them
 failed	field	include/game/tix.h:Tix	game	set when an allocation fails; forced to 1 in game (work/hunt4/B-texfail.lua) the room came up untextured and the limit became 30 s ("Glitch textures")
 flags	field	include/game/tix.h:Tix	code	File done-request flags; Tix_OnReadDone waits for 0x80 (read)
-header	field	include/game/tix.h:Tix	code	File data: the 0x24-byte {count, offsets[4], sizes[4]} copied from the first read
+data	field	include/game/tix.h:Tix	code	File data: the 0x24-byte {count, offsets[4], sizes[4]} copied from the first read (File.data, a union: header words, or the 0x24 bytes copied whole; renamed from header)
 loaded	field	include/game/tix.h:Tix	code	set after the last part is uploaded; Place_CheckTextureLoad reads it as done
 partIndex	field	include/game/tix.h:Tix	code	next part to read; Tix_Destroy deletes that many TimPacks
 parts	field	include/game/tix.h:Tix	code	header[0] TimPack pointers made by Tix_OnReadDone
@@ -3818,9 +3690,6 @@ movieLoops	field	include/game/video_screen.h:VideoScreen	code	-1 from Reset, pas
 movieRepeat	field	include/game/video_screen.h:VideoScreen	code	0 from Reset, passed to Movie open as repeat (Movie +0x54)
 path	field	include/game/video_screen.h:VideoScreen	code	STR path from VideoScreen_Play, passed to Movie open
 skippable	field	include/game/video_screen.h:VideoScreen	code	1 from Reset; VideoScreen_OnCircle skips the video only when set
-x	field	include/game/view.h:ScreenVec	code	first word of the GsRVIEW2 vector View_SetViewpoint and View_SetRefPoint copy (vpx or vrx)
-y	field	include/game/view.h:ScreenVec	code	second word of the GsRVIEW2 vector (vpy or vry)
-z	field	include/game/view.h:ScreenVec	code	third word of the GsRVIEW2 vector (vpz or vrz)
 buffer	field	include/game/view.h:View	code	index into ot and packets; View_Present reads it from the display and flips it
 clearColor	field	include/game/view.h:View	code	given to GsSortClear by View_Present
 clockCount	field	include/game/view.h:View	code	incremented on every clock message by View_OnClock, cleared by View_Reset
@@ -3892,46 +3761,32 @@ setViewpoint	field	include/game/view.h:ViewVtbl	code	slot 0x78 of g_viewVtbl hol
 unwatch	field	include/game/view.h:ViewVtbl	code	slot 0x14 of g_viewVtbl holds View_Unwatch
 unwatchAll	field	include/game/view.h:ViewVtbl	code	slot 0x18 of g_viewVtbl holds View_UnwatchAll
 watch	field	include/game/view.h:ViewVtbl	code	slot 0x10 of g_viewVtbl holds View_Watch
-boxMargin	field	src/game/actor.c:Actor	code	slot 0xEC, added to the speed when SendBoxes shifts the boxes, per stage through g_stageBoxMargins
-clock	field	src/game/actor.c:Actor	code	watched sender of tag 5, the clock
-contact	field	src/game/actor.c:Actor	code	SceneNode.contact, the node that hit it or the tile Actor_SnapToGround found
-coord	field	src/game/actor.c:Actor	code	SceneNode.coord (+0x14), the GsCOORDINATE2 pointer Actor_ApplyPos writes
-map	field	src/game/actor.c:Actor	code	watched sender of class 0x114, the StageMap Actor_SnapToGround locates in
-model	field	src/game/actor.c:Actor	code	SceneNode.model, tested by ModelObject_GetBoxCount in SendBoxes
-speed	field	src/game/actor.c:Actor	code	0x12C at init, the last move step set by Actor_MoveAxis and slot 0xE4; shifts the box list
-state	field	src/game/actor.c:Actor	code	cleared by Actor_Construct and Scenery_Construct; no reader in these files
-construct	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x08 of the SceneNode vtable
-onNode	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x9C SceneNode_OnNode
-sendBoxes	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x88 SceneNode_SendBoxes
-unwatch	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x14 SceneNode_Unwatch
-unwatchAll	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x18 SceneNode_UnwatchAll
-watch	field	src/game/actor.c:ActorBaseVtbl	code	slot 0x10 SceneNode_Watch
-afterTouch	field	src/game/actor.c:ActorVtbl	guess	slot 0xE8, empty for Actor, run by SendBoxes on a contact of class byte 0x34 after the boxes are sent
-checkContact	field	src/game/actor.c:ActorVtbl	code	slot 0xA0 SceneNode_CheckContact
-classByte	field	src/game/actor.c:ActorVtbl	code	low byte of the class word, 0x34 for the Actor family
-construct	field	src/game/actor.c:ActorVtbl	code	slot 0x08 Actor_Construct
-destruct	field	src/game/actor.c:ActorVtbl	code	slot 0x0C SceneNode_Destroy
-getBoxList	field	src/game/actor.c:ActorVtbl	code	slot 0x8C SceneNode_GetBoxList
-init	field	src/game/actor.c:ActorVtbl	code	slot 0x40 Actor_Init
-moveLocal	field	src/game/actor.c:ActorVtbl	code	slot 0xC0 Actor_MoveLocal
-movePos	field	src/game/actor.c:ActorVtbl	code	slot 0xBC Actor_MovePos
-moveX	field	src/game/actor.c:ActorVtbl	code	slot 0xC8 Actor_MoveX
-moveZ	field	src/game/actor.c:ActorVtbl	code	slot 0xC4 Actor_MoveZ
-onTouch24	field	src/game/actor.c:ActorVtbl	guess	slot 0xE0 Actor_OnNode24, a MapTile sender
-onTouch34	field	src/game/actor.c:ActorVtbl	guess	slot 0xDC Actor_OnNode34; its comment calls 0x34 a message byte, it is the sender's class byte; touch is a reading of the SceneNode contact messages
-sendBoxes	field	src/game/actor.c:ActorVtbl	code	slot 0x88 Actor_SendBoxes
-sendShape	field	src/game/actor.c:ActorVtbl	code	slot 0x90 SceneNode_SendShape
-contact	field	src/game/actor.c:GridActor	code	SceneNode.contact, the MapTile found
-coord	field	src/game/actor.c:GridActor	code	SceneNode.coord (+0x14), Actor_SnapToGround reads the position at +0x18 of it
-map	field	src/game/actor.c:GridActor	code	Actor.map, the StageMap
-movePos	field	src/game/actor.c:GridActorVtbl	code	slot 0xBC Actor_MovePos with the probe delta
-sendBoxes	field	src/game/actor.c:GridActorVtbl	code	slot 0x88, sent -1 (ground found) or -2 (none)
+boxMargin	field	include/game/actor.h:Actor	code	slot 0xEC, added to the speed when SendBoxes shifts the boxes, per stage through g_stageBoxMargins
+clock	field	include/game/actor.h:Actor	code	watched sender of tag 5, the clock
+contact	field	include/game/actor.h:Actor	code	SceneNode.contact, the node that hit it or the tile Actor_SnapToGround found
+object	field	include/game/actor.h:Actor	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
+map	field	include/game/actor.h:Actor	code	watched sender of class 0x114, the StageMap Actor_SnapToGround locates in
+model	field	include/game/actor.h:Actor	code	SceneNode.model, tested by ModelObject_GetBoxCount in SendBoxes
+speed	field	include/game/actor.h:Actor	code	0x12C at init, the last move step set by Actor_MoveAxis and slot 0xE4; shifts the box list
+state	field	include/game/actor.h:Actor	code	cleared by Actor_Construct and Scenery_Construct; no reader in these files
+afterTouch	field	include/game/actor.h:ActorVtbl	guess	slot 0xE8, empty for Actor, run by SendBoxes on a contact of class byte 0x34 after the boxes are sent
+checkContact	field	include/game/actor.h:ActorVtbl	code	slot 0xA0 SceneNode_CheckContact
+classByte	field	include/game/actor.h:ActorVtbl	code	low byte of the class word, 0x34 for the Actor family
+init	field	include/game/actor.h:ActorVtbl	code	slot 0x08 Actor_Construct
+destroy	field	include/game/actor.h:ActorVtbl	code	slot 0x0C SceneNode_Destroy
+getBoxList	field	include/game/actor.h:ActorVtbl	code	slot 0x8C SceneNode_GetBoxList
+moveLocal	field	include/game/actor.h:ActorVtbl	code	slot 0xC0 Actor_MoveLocal
+movePos	field	include/game/actor.h:ActorVtbl	code	slot 0xBC Actor_MovePos
+moveX	field	include/game/actor.h:ActorVtbl	code	slot 0xC8 Actor_MoveX
+moveZ	field	include/game/actor.h:ActorVtbl	code	slot 0xC4 Actor_MoveZ
+onTouch24	field	include/game/actor.h:ActorVtbl	guess	slot 0xE0 Actor_OnNode24, a MapTile sender
+onTouch34	field	include/game/actor.h:ActorVtbl	guess	slot 0xDC Actor_OnNode34; its comment calls 0x34 a message byte, it is the sender's class byte; touch is a reading of the SceneNode contact messages
+sendBoxes	field	include/game/actor.h:ActorVtbl	code	slot 0x88 Actor_SendBoxes
+sendShape	field	include/game/actor.h:ActorVtbl	code	slot 0x90 SceneNode_SendShape
 height	field	src/game/actor.c:GridRect	code	rows to walk
 left	field	src/game/actor.c:GridRect	code	first tile column
 top	field	src/game/actor.c:GridRect	code	first tile row
 width	field	src/game/actor.c:GridRect	code	columns to walk
-den	field	src/game/bg.c:BgAngle	code	z denominator
-num	field	src/game/bg.c:BgAngle	code	z numerator
 cellH	field	src/game/bg.c:BgMapView	code	GsMAP cellh
 cellW	field	src/game/bg.c:BgMapView	code	GsMAP cellw
 cellsX	field	src/game/bg.c:BgMapView	code	GsMAP ncellw
@@ -3952,26 +3807,24 @@ setBank	field	src/game/bgm.c:BgmVtbl	code	Slot 0x60 Bgm_SetBank
 setSeq	field	src/game/bgm.c:BgmVtbl	code	Slot 0x5C Bgm_SetSeq
 setVolume	field	src/game/bgm.c:BgmVtbl	code	Slot 0x54 Bgm_SetVolume
 stop	field	src/game/bgm.c:BgmVtbl	code	Slot 0x48 Bgm_Stop
-init	field	src/game/box.c:BaseNodeVtbl	code	slot 0x08 of g_sceneNodeVtbl, SceneNode_Init
-show	field	src/game/box.c:BaseNodeVtbl	code	slot 0x4C of g_sceneNodeVtbl, attaches the node under a parent
-attribute	field	src/game/box.c:Box	code	GsBOXF attribute: bit 31 hidden, bit 30 semi-transparent, bits 28 and 29 the rate
-color	field	src/game/box.c:Box	code	GsBOXF r g b, written by Box_SetColor
-height	field	src/game/box.c:Box	code	GsBOXF h, from BoxSize
-mask	field	src/game/box.c:Box	guess	(1 << bits) - 1 from Box_SetMask; no reader treats it as a mask
-parent	field	src/game/box.c:Box	code	scene node parent at +0xC; Box_Show attaches only when 0, the setters act only when set
-position	field	src/game/box.c:Box	code	ScreenPoint View_DrawNode turns into GsBOXF x and y
-priority	field	src/game/box.c:Box	code	given to GsSortBoxFill by View_DrawNode, set by Box_Init and Box_SetPriority
-relative	field	src/game/box.c:Box	code	when set View_DrawNode takes position as a percent of half the screen; Box_ShowAbsolute clears it
-vtbl	field	src/game/box.c:Box	code	Object header word 0, set by Box_Construct
-width	field	src/game/box.c:Box	code	GsBOXF w, from BoxSize
-x	field	src/game/box.c:Box	code	GsBOXF x written by View_DrawNode from position
-y	field	src/game/box.c:Box	code	GsBOXF y written by View_DrawNode from position
-init	field	src/game/box.c:BoxVtbl	code	slot 0x08 of g_boxVtbl holds Box_Construct
-reset	field	src/game/box.c:BoxVtbl	code	slot 0x40 of g_boxVtbl holds Box_Init
-setColor	field	src/game/box.c:BoxVtbl	code	slot 0xB8 of g_boxVtbl holds Box_SetColor
-setMask	field	src/game/box.c:BoxVtbl	guess	slot 0xCC of g_boxVtbl holds Box_SetMask, whose role is unproven
-setPosition	field	src/game/box.c:BoxVtbl	code	slot 0xBC of g_boxVtbl holds Box_SetPosition
-show	field	src/game/box.c:BoxVtbl	code	slot 0x4C of g_boxVtbl holds Box_Show
+attribute	field	include/game/box.h:Box	code	GsBOXF attribute: bit 31 hidden, bit 30 semi-transparent, bits 28 and 29 the rate
+color	field	include/game/box.h:Box	code	GsBOXF r g b, written by Box_SetColor
+height	field	include/game/box.h:Box	code	GsBOXF h, from BoxSize
+mask	field	include/game/box.h:Box	guess	(1 << bits) - 1 from Box_SetMask; no reader treats it as a mask
+parent	field	include/game/box.h:Box	code	scene node parent at +0xC; Box_Show attaches only when 0, the setters act only when set
+position	field	include/game/box.h:Box	code	ScreenPoint View_DrawNode turns into GsBOXF x and y
+priority	field	include/game/box.h:Box	code	given to GsSortBoxFill by View_DrawNode, set by Box_Init and Box_SetPriority
+relative	field	include/game/box.h:Box	code	when set View_DrawNode takes position as a percent of half the screen; Box_ShowAbsolute clears it
+vtbl	field	include/game/box.h:Box	code	Object header word 0, set by Box_Construct
+width	field	include/game/box.h:Box	code	GsBOXF w, from BoxSize
+x	field	include/game/box.h:Box	code	GsBOXF x written by View_DrawNode from position
+y	field	include/game/box.h:Box	code	GsBOXF y written by View_DrawNode from position
+init	field	include/game/box.h:BoxVtbl	code	slot 0x08 of g_boxVtbl holds Box_Construct
+reset	field	include/game/box.h:BoxVtbl	code	slot 0x40 of g_boxVtbl holds Box_Init
+setColor	field	include/game/box.h:BoxVtbl	code	slot 0xB8 of g_boxVtbl holds Box_SetColor
+setMask	field	include/game/box.h:BoxVtbl	guess	slot 0xCC of g_boxVtbl holds Box_SetMask, whose role is unproven
+setPosition	field	include/game/box.h:BoxVtbl	code	slot 0xBC of g_boxVtbl holds Box_SetPosition
+show	field	include/game/box.h:BoxVtbl	code	slot 0x4C of g_boxVtbl holds Box_Show
 alphabetLength	field	src/game/comment_object.c:CommentObject	code	length of g_alphabet counted by Init, bounds charIndex
 caret	field	src/game/comment_object.c:CommentObject	code	text position, moved by CaretRight and CaretLeft, multiplied by 7 for the caret glyph x
 caretGlyph	field	src/game/comment_object.c:CommentObject	code	Glyph_Create(FONTICON, '_'), moved by SetCaretPos
@@ -4014,13 +3867,6 @@ unwatchAll	field	src/game/comment_object.c:CommentVtbl	code	slot 0x18 CommentObj
 unwatchPair	field	src/game/comment_object.c:CommentVtbl	code	slot 0x50 CommentObject_UnwatchPair
 watch	field	src/game/comment_object.c:CommentVtbl	code	slot 0x10 CommentObject_Watch
 watchPair	field	src/game/comment_object.c:CommentVtbl	code	slot 0x4C CommentObject_WatchPair
-attach	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0x4C, ScreenSprite_Attach for the sprite and glyph, Label_Show for the label (parent, position)
-delete_	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0x04 Object_Delete of the widget classes
-playTone	field	src/game/comment_object.c:CommentWidgetVtbl	guess	slot 0x80 is Sound_PlayTone of the sound bank it is called on (+0x3C), but SceneNode_SetBackfaceClip on the widgets this type names
-setChar	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0xC4 Label_SetChar on the text label
-setColor	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0xB8 Label_SetColor on the text label
-setPosition	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0xBC ScreenSprite_SetPosition on the caret glyph
-setZSort	field	src/game/comment_object.c:CommentWidgetVtbl	code	slot 0x78 of Label, Glyph and ScreenSprite is SceneNode_SetZSort, the uploads in this file go through tim.h TimVtbl
 tile	field	src/game/dream_link.c:FallLocation	code	compared with g_fallPlace5
 x	field	src/game/dream_link.c:FallLocation	code	x offset in the tile, not read
 y	field	src/game/dream_link.c:FallLocation	code	height offset: stage 5 needs below -0xFFF, stage 9 at least 0x800
@@ -4038,26 +3884,15 @@ stepScript	field	src/game/dream_link.c:ScriptedTarget	code	byte 5, the index int
 navFlag	field	src/game/dream_link.c:SpawnPoint	code	index Link_Find sets in g_navFlags when asked
 offsetIndex	field	src/game/dream_link.c:SpawnPoint	code	index into g_tileOffsets
 tile	field	src/game/dream_link.c:SpawnPoint	code	copied into the place by Link_Find and the pickers
-category	field	src/game/dream_link.c:SpecialCine	game	index % 12; category 1 traced in game
-variant	field	src/game/dream_link.c:SpecialCine	game	rand() % 6; variants 1 and 2 traced in game
 xy	field	src/game/dream_link.c:TileOffset	code	x and y offsets copied as one word (StagePlace +4)
 z	field	src/game/dream_link.c:TileOffset	code	z offset (StagePlace +8)
-attach	field	src/game/dream_sys.c:ActorVtblView	code	slot 0x4C holds SceneNode_Attach in g_actorVtbl (asm/data)
-detach	field	src/game/dream_sys.c:ActorVtblView	code	slot 0x50 holds SceneNode_Detach in g_actorVtbl (asm/data)
-init	field	src/game/dream_sys.c:ActorVtblView	code	slot 0x08 holds Actor_Construct in g_actorVtbl (asm/data)
-onNode	field	src/game/dream_sys.c:ActorVtblView	code	slot 0x9C holds Actor_OnNode in g_actorVtbl (asm/data)
-onNode24	field	src/game/dream_sys.c:ActorVtblView	code	slot 0xE0 holds Actor_OnNode24 in g_actorVtbl (asm/data)
-onNode34	field	src/game/dream_sys.c:ActorVtblView	code	slot 0xDC holds Actor_OnNode34 in g_actorVtbl (asm/data)
-sendBoxes	field	src/game/dream_sys.c:ActorVtblView	code	slot 0x88 holds Actor_SendBoxes in g_actorVtbl (asm/data)
-yaw	field	src/game/dream_sys.c:RotationYaw	code	rotation[1] numerator, degrees: Link_IsFacing wraps it at 180 and 360
-setForwardContact	field	src/game/entity.c:ModelBaseVtbl	code	same slot 0xF0 of g_modelVtbl seen from entity.c, follows the model.c rename
-tick	field	src/game/entity.c:ModelBaseVtbl	code	same slot 0x108 of g_modelVtbl seen from entity.c, follows the model.c rename
-code	field	src/game/glyph.c:Glyph	code	the character Glyph_SetCode stores and Glyph_GetCode returns
-sprite	field	src/game/glyph.c:Glyph	code	the GsSPRITE at +0x64 whose u v Glyph_SetCode moves
-vtbl	field	src/game/glyph.c:Glyph	code	Object header word 0
-init	field	src/game/glyph.c:GlyphVtbl	code	slot 0x08 of g_glyphVtbl holds Glyph_Init
-setCode	field	src/game/glyph.c:GlyphVtbl	code	slot 0xC4 of g_glyphVtbl holds Glyph_SetCode
-setup	field	src/game/glyph.c:GlyphVtbl	code	slot 0x40 of g_glyphVtbl holds Glyph_Setup
+yaw	field	include/game/dream_link.h:RotationYaw	code	rotation[1] numerator, degrees: Link_IsFacing wraps it at 180 and 360
+code	field	include/game/glyph.h:Glyph	code	the character Glyph_SetCode stores and Glyph_GetCode returns
+sprite	field	include/game/glyph.h:Glyph	code	the GsSPRITE at +0x64 whose u v Glyph_SetCode moves
+vtbl	field	include/game/glyph.h:Glyph	code	Object header word 0
+init	field	include/game/glyph.h:GlyphVtbl	code	slot 0x08 of g_glyphVtbl holds Glyph_Init
+setCode	field	include/game/glyph.h:GlyphVtbl	code	slot 0xC4 of g_glyphVtbl holds Glyph_SetCode
+setup	field	include/game/glyph.h:GlyphVtbl	code	slot 0x40 of g_glyphVtbl holds Glyph_Setup
 boxes	field	src/game/graph.c:Graph	code	100 Box widgets from Box_Create, [0] newest; Graph_Draw places them
 dreamSys	field	src/game/graph.c:Graph	code	Graph_Init argument; the save block comes from its slot 0x1B0
 reelDays	field	src/game/graph.c:Graph	code	4 bytes: days back of each matched reel point, written by Graph_CheckReel, read by Graph_BlinkReel
@@ -4075,80 +3910,56 @@ day	field	src/game/graph.c:ReelSave	code	save +0x008 day
 graph	field	src/game/graph.c:ReelSave	code	save +0x018 graph points as s16
 reelSeen	field	src/game/graph.c:ReelSave	game	save +0x467, set by Graph_CheckReel; went 0 to 1 in game
 year	field	src/game/graph.c:ReelSave	code	save +0x004 year
-vtbl	field	src/game/label.c:Glyph	code	Object header word 0
-destroy	field	src/game/label.c:GlyphVtbl	code	slot 0x0C of g_glyphVtbl holds SceneNode_Destroy
-hide	field	src/game/label.c:GlyphVtbl	code	slot 0x50 of g_glyphVtbl holds SceneNode_Detach, the inverse of show
-init	field	src/game/label.c:GlyphVtbl	code	slot 0x08 of g_glyphVtbl holds Glyph_Init
-setCode	field	src/game/label.c:GlyphVtbl	code	slot 0xC4 of g_glyphVtbl holds Glyph_SetCode, glyph.c GlyphVtbl names the same slot setCode
-setColor	field	src/game/label.c:GlyphVtbl	code	slot 0xB8 of g_glyphVtbl holds SpriteNode_SetColor
-setPosition	field	src/game/label.c:GlyphVtbl	code	slot 0xBC of g_glyphVtbl holds ScreenSprite_SetPosition
-setVisible	field	src/game/label.c:GlyphVtbl	code	slot 0x60 of g_glyphVtbl holds SpriteNode_SetVisible
-show	field	src/game/label.c:GlyphVtbl	code	slot 0x4C of g_glyphVtbl holds ScreenSprite_Attach
-animData	field	src/game/model.c:Model	code	+0x88 next TOD frame for applyFrame
-animFrame	field	src/game/model.c:Model	code	+0x84 current frame, wrapped at animLength
-animLength	field	src/game/model.c:Model	code	+0x80 frameCount of that TOD
-animPlaying	field	src/game/model.c:Model	code	+0x90 Play and StopAnimation; frames advance only while set
-animation	field	src/game/model.c:Model	code	+0x7C TOD index of SetAnimation in the Mom motions
-attached	field	src/game/model.c:Model	code	+0x0C, the SceneNode parent pointer; Model_Attach and Detach use it as a flag; DreamSys calls it parent, one field two names
-clock	field	src/game/model.c:Model	code	+0x50 the object Model_Attach watches: Entity_Attach passes g_symClock, the place clock
-coord	field	src/game/model.c:Model	code	+0x14 GsCOORDINATE2 pointer; TickAnimation clears its flg
-file	field	src/game/model.c:Model	code	+0x5C the Mom, borrowed or loaded by Model_LoadFile
-forwardContact	field	src/game/model.c:Model	code	+0x64 set by slot 0xF0, Model_TickForward then sends the current part sendBoxes(6), no animation
-ownsFile	field	src/game/model.c:Model	code	+0x60 1 when Model_LoadFile created the Mom, 0 when borrowed; FreeFile and OnNotify test it
-part	field	src/game/model.c:Model	code	+0x68 parts[current], the part scanFirstFrame names; Model_Init and TickForward use it
-partCount	field	src/game/model.c:Model	code	+0x6C parts made by Model_BuildParts
-partIds	field	src/game/model.c:Model	code	+0x74 the TOD object id of each part, searched by Model_FindPart
-parts	field	src/game/model.c:Model	code	+0x70 one Actor_New per TOD object id of the first frame
-soundBank	field	src/game/model.c:Model	code	+0x58 from Model_Construct; Model_PlaySound plays on it
-target	field	src/game/model.c:Model	code	+0x94 the model it and its target watch both ways (SetTarget); Entity_Attach passes the DreamSys
-tickEnabled	field	src/game/model.c:Model	code	+0x8C StartTick and StopTick; TickAnimation runs tickFn only while set
-tickFn	field	src/game/model.c:Model	code	+0x78 slot 0x118, 0x11C or 0x120 from SetTickMode, run by TickAnimation while tickEnabled
-timer	field	src/game/model.c:Model	code	+0x24 ticks counted by Model_Tick; the Grey Man leaves after 180 x 15 of them (code)
-vt	field	src/game/model.c:Model	code	g_modelVtbl set by Model_Construct
-attach	field	src/game/model.c:ModelBaseVtbl	code	slot 0x4C holds Model_Attach in g_modelVtbl
-construct	field	src/game/model.c:ModelBaseVtbl	code	slot 0x08 holds Model_Construct in g_modelVtbl
-destruct	field	src/game/model.c:ModelBaseVtbl	code	slot 0x0C holds Model_Destruct in g_modelVtbl
-detach	field	src/game/model.c:ModelBaseVtbl	code	slot 0x50 holds Model_Detach in g_modelVtbl
-onActorTouch	field	src/game/model.c:ModelBaseVtbl	code	slot 0xDC holds Actor_OnNode34 in g_modelVtbl
-onWallTouch	field	src/game/model.c:ModelBaseVtbl	code	slot 0xE0 holds Actor_OnNode24 in g_modelVtbl
-update	field	src/game/model.c:ModelBaseVtbl	code	slot 0x98 holds Model_Update in g_modelVtbl
-attach	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x4C Model chains to
-construct	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x08 Model chains to
-destroy	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x0C Model chains to
-detach	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x50 Model chains to
-onNotify	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x38 Model chains to
-setLightFlags	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x70 Model chains to
-setVisible	field	src/game/model.c:ModelParentVtbl	code	Actor vtable slot 0x60 Model chains to
-file	field	src/game/model.c:ModelSource	code	ready Mom Model_LoadFile borrows (ownsFile 0)
-source	field	src/game/model.c:ModelSource	code	FileSource given to Mom_Create when file is NULL
-applyCommand	field	src/game/model.c:ModelVtbl	code	slot 0x138 holds Model_ApplyCommand in g_modelVtbl (asm/data/main.data.s)
-applyFrame	field	src/game/model.c:ModelVtbl	code	slot 0x134 holds Model_ApplyFrame in g_modelVtbl (asm/data/main.data.s)
-clearTarget	field	src/game/model.c:ModelVtbl	code	slot 0x140 holds Model_ClearTarget in g_modelVtbl (asm/data/main.data.s)
-construct	field	src/game/model.c:ModelVtbl	code	slot 0x08 holds Model_Construct in g_modelVtbl (asm/data/main.data.s)
-createParts	field	src/game/model.c:ModelVtbl	code	slot 0x100 holds Model_CreateParts in g_modelVtbl (asm/data/main.data.s)
-delete_	field	src/game/model.c:ModelVtbl	code	slot 0x04 holds Object_Delete in g_modelVtbl (asm/data/main.data.s)
-freeParts	field	src/game/model.c:ModelVtbl	code	slot 0x104 holds Model_FreeParts in g_modelVtbl (asm/data/main.data.s)
-init	field	src/game/model.c:ModelVtbl	code	slot 0x40 holds Model_Init in g_modelVtbl (asm/data/main.data.s)
-load	field	src/game/model.c:ModelVtbl	code	slot 0xF4 holds Model_Load in g_modelVtbl (asm/data/main.data.s)
-moveZ	field	src/game/model.c:ModelVtbl	code	slot 0xC4 holds Actor_MoveZ in g_modelVtbl (asm/data/main.data.s)
-onActorTouch	field	src/game/model.c:ModelVtbl	code	slot 0xDC holds Actor_OnNode34 in g_modelVtbl (asm/data/main.data.s)
-onWallTouch	field	src/game/model.c:ModelVtbl	code	slot 0xE0 holds Actor_OnNode24 in g_modelVtbl (asm/data/main.data.s)
-setAnimation	field	src/game/model.c:ModelVtbl	code	slot 0x128 holds Model_SetAnimation in g_modelVtbl (asm/data/main.data.s)
-setForwardContact	field	src/game/model.c:ModelVtbl	code	slot 0xF0 Model_SetForwardContact, gates the part contact message 6 in Model_TickForward
-setSpeed	field	src/game/model.c:ModelVtbl	code	slot 0xE4 holds Actor_SetSpeed in g_modelVtbl (asm/data/main.data.s)
-setTarget	field	src/game/model.c:ModelVtbl	code	slot 0x13C holds Model_SetTarget in g_modelVtbl (asm/data/main.data.s)
-setTickMode	field	src/game/model.c:ModelVtbl	code	slot 0x10C holds Model_SetTickMode in g_modelVtbl (asm/data/main.data.s)
-startTick	field	src/game/model.c:ModelVtbl	code	slot 0x110 holds Model_StartTick in g_modelVtbl (asm/data/main.data.s)
-stopAnimation	field	src/game/model.c:ModelVtbl	code	slot 0x130 holds Model_StopAnimation in g_modelVtbl (asm/data/main.data.s)
-stopTick	field	src/game/model.c:ModelVtbl	code	slot 0x114 holds Model_StopTick in g_modelVtbl (asm/data/main.data.s)
-tick	field	src/game/model.c:ModelVtbl	code	slot 0x108 Model_Tick, runs tickFn (the entity behaviour) before the frame
-tickA	field	src/game/model.c:ModelVtbl	code	slot 0x118 holds Model_TickForward in g_modelVtbl (asm/data/main.data.s)
-tickB	field	src/game/model.c:ModelVtbl	code	slot 0x11C holds Model_TickB in g_modelVtbl (asm/data/main.data.s)
-tickC	field	src/game/model.c:ModelVtbl	code	slot 0x120 holds Model_TickC in g_modelVtbl (asm/data/main.data.s)
-unload	field	src/game/model.c:ModelVtbl	code	slot 0xF8 holds Model_Unload in g_modelVtbl (asm/data/main.data.s)
-unwatch	field	src/game/model.c:ModelVtbl	code	slot 0x14 holds Actor_Unwatch in g_modelVtbl (asm/data/main.data.s)
-update	field	src/game/model.c:ModelVtbl	code	slot 0x98 holds Model_Update in g_modelVtbl (asm/data/main.data.s)
-watch	field	src/game/model.c:ModelVtbl	code	slot 0x10 holds Actor_Watch in g_modelVtbl (asm/data/main.data.s)
+animData	field	include/game/model.h:Model	code	+0x88 next TOD frame for applyFrame
+animFrame	field	include/game/model.h:Model	code	+0x84 current frame, wrapped at animLength
+animLength	field	include/game/model.h:Model	code	+0x80 frameCount of that TOD
+animPlaying	field	include/game/model.h:Model	code	+0x90 Play and StopAnimation; frames advance only while set
+animation	field	include/game/model.h:Model	code	+0x7C TOD index of SetAnimation in the Mom motions
+parent	field	include/game/model.h:Model	code	+0x0C, the SceneNode parent pointer; Model_Attach and Detach use it as a flag; DreamSys calls it parent, one field two names
+clock	field	include/game/model.h:Model	code	+0x50 the object Model_Attach watches: Entity_Attach passes g_symClock, the place clock
+object	field	include/game/model.h:Model	code	the GsDOBJ2 head (DObj2, render.h) embedded at +0x10 (types dedupe D3)
+file	field	include/game/model.h:Model	code	+0x5C the Mom, borrowed or loaded by Model_LoadFile
+forwardContact	field	include/game/model.h:Model	code	+0x64 set by slot 0xF0, Model_TickForward then sends the current part sendBoxes(6), no animation
+ownsFile	field	include/game/model.h:Model	code	+0x60 1 when Model_LoadFile created the Mom, 0 when borrowed; FreeFile and OnNotify test it
+part	field	include/game/model.h:Model	code	+0x68 parts[current], the part scanFirstFrame names; Model_Init and TickForward use it
+partCount	field	include/game/model.h:Model	code	+0x6C parts made by Model_BuildParts
+partIds	field	include/game/model.h:Model	code	+0x74 the TOD object id of each part, searched by Model_FindPart
+parts	field	include/game/model.h:Model	code	+0x70 one Actor_New per TOD object id of the first frame
+soundBank	field	include/game/model.h:Model	code	+0x58 from Model_Construct; Model_PlaySound plays on it
+target	field	include/game/model.h:Model	code	+0x94 the model it and its target watch both ways (SetTarget); Entity_Attach passes the DreamSys
+tickEnabled	field	include/game/model.h:Model	code	+0x8C StartTick and StopTick; TickAnimation runs tickFn only while set
+tickFn	field	include/game/model.h:Model	code	+0x78 slot 0x118, 0x11C or 0x120 from SetTickMode, run by TickAnimation while tickEnabled
+ticks	field	include/game/model.h:Model	code	+0x24 ticks counted by Model_Tick; the Grey Man leaves after 180 x 15 of them (code)
+vtbl	field	include/game/model.h:Model	code	g_modelVtbl set by Model_Construct
+file	field	include/game/model.h:ModelSource	code	ready Mom Model_LoadFile borrows (ownsFile 0)
+source	field	include/game/model.h:ModelSource	code	FileSource given to Mom_Create when file is NULL
+applyCommand	field	include/game/model.h:ModelVtbl	code	slot 0x138 holds Model_ApplyCommand in g_modelVtbl (asm/data/main.data.s)
+applyFrame	field	include/game/model.h:ModelVtbl	code	slot 0x134 holds Model_ApplyFrame in g_modelVtbl (asm/data/main.data.s)
+clearTarget	field	include/game/model.h:ModelVtbl	code	slot 0x140 holds Model_ClearTarget in g_modelVtbl (asm/data/main.data.s)
+init	field	include/game/model.h:ModelVtbl	code	slot 0x08 holds Model_Construct in g_modelVtbl (asm/data/main.data.s)
+createParts	field	include/game/model.h:ModelVtbl	code	slot 0x100 holds Model_CreateParts in g_modelVtbl (asm/data/main.data.s)
+delete_	field	include/game/model.h:ModelVtbl	code	slot 0x04 holds Object_Delete in g_modelVtbl (asm/data/main.data.s)
+freeParts	field	include/game/model.h:ModelVtbl	code	slot 0x104 holds Model_FreeParts in g_modelVtbl (asm/data/main.data.s)
+load	field	include/game/model.h:ModelVtbl	code	slot 0xF4 holds Model_Load in g_modelVtbl (asm/data/main.data.s)
+moveZ	field	include/game/model.h:ModelVtbl	code	slot 0xC4 holds Actor_MoveZ in g_modelVtbl (asm/data/main.data.s)
+onTouch34	field	include/game/model.h:ModelVtbl	code	slot 0xDC holds Actor_OnNode34 in g_modelVtbl (asm/data/main.data.s)
+onTouch24	field	include/game/model.h:ModelVtbl	code	slot 0xE0 holds Actor_OnNode24 in g_modelVtbl (asm/data/main.data.s)
+setAnimation	field	include/game/model.h:ModelVtbl	code	slot 0x128 holds Model_SetAnimation in g_modelVtbl (asm/data/main.data.s)
+setForwardContact	field	include/game/model.h:ModelVtbl	code	slot 0xF0 Model_SetForwardContact, gates the part contact message 6 in Model_TickForward
+setSpeed	field	include/game/model.h:ModelVtbl	code	slot 0xE4 holds Actor_SetSpeed in g_modelVtbl (asm/data/main.data.s)
+setTarget	field	include/game/model.h:ModelVtbl	code	slot 0x13C holds Model_SetTarget in g_modelVtbl (asm/data/main.data.s)
+setTickMode	field	include/game/model.h:ModelVtbl	code	slot 0x10C holds Model_SetTickMode in g_modelVtbl (asm/data/main.data.s)
+startTick	field	include/game/model.h:ModelVtbl	code	slot 0x110 holds Model_StartTick in g_modelVtbl (asm/data/main.data.s)
+stopAnimation	field	include/game/model.h:ModelVtbl	code	slot 0x130 holds Model_StopAnimation in g_modelVtbl (asm/data/main.data.s)
+stopTick	field	include/game/model.h:ModelVtbl	code	slot 0x114 holds Model_StopTick in g_modelVtbl (asm/data/main.data.s)
+tick	field	include/game/model.h:ModelVtbl	code	slot 0x108 Model_Tick, runs tickFn (the entity behaviour) before the frame
+tickA	field	include/game/model.h:ModelVtbl	code	slot 0x118 holds Model_TickForward in g_modelVtbl (asm/data/main.data.s)
+tickB	field	include/game/model.h:ModelVtbl	code	slot 0x11C holds Model_TickB in g_modelVtbl (asm/data/main.data.s)
+tickC	field	include/game/model.h:ModelVtbl	code	slot 0x120 holds Model_TickC in g_modelVtbl (asm/data/main.data.s)
+unload	field	include/game/model.h:ModelVtbl	code	slot 0xF8 holds Model_Unload in g_modelVtbl (asm/data/main.data.s)
+unwatch	field	include/game/model.h:ModelVtbl	code	slot 0x14 holds Actor_Unwatch in g_modelVtbl (asm/data/main.data.s)
+onClock	field	include/game/model.h:ModelVtbl	code	slot 0x98 holds Model_Update in g_modelVtbl (asm/data/main.data.s)
+watch	field	include/game/model.h:ModelVtbl	code	slot 0x10 holds Actor_Watch in g_modelVtbl (asm/data/main.data.s)
 frameDone	field	src/game/movie.c:MovieSliceView	code	Movie.frameDone
 frameW	field	src/game/movie.c:MovieSliceView	code	Movie.frame.w
 frameX	field	src/game/movie.c:MovieSliceView	code	Movie.frame.x
@@ -4163,19 +3974,17 @@ stopped	field	src/game/movie.c:MovieSliceView	code	Movie.stopped
 streamEnded	field	src/game/movie.c:MovieSliceView	code	Movie.streamEnded
 category	field	src/game/path_table.c:CineChoice	code	special-day category, negative for an event video
 variant	field	src/game/path_table.c:CineChoice	code	0 and 1 videos A and B, 2 to 5 pictures, or the event number
-root	field	src/game/place.c:PlaceOwner	code	+0xC of the ScreenEnv the runner passes to Place_Attach is ScreenEnv.root, the StageMap
-setChunkLoader	field	src/game/place.c:PlaceOwnerObjVtbl	code	slot 0xC8 StageMap_SetChunkLoader, as stage_map.h names it (the type itself goes to the merge list)
-ambient	field	src/game/root_node.c:RootNode	code	the Color3 RootNode_SetAmbient stores and gives GsSetAmbient times 16
-coord	field	src/game/root_node.c:RootNode	code	scene node GsCOORDINATE2 pointer at +0x14; RootNode_Setup clears its first word flg
-lights	field	src/game/root_node.c:RootNode	code	FlatLight_New(0..2) in RootNode_Init, returned by RootNode_GetLight
-parent	field	src/game/root_node.c:RootNode	code	scene node parent at +0xC
-vtbl	field	src/game/root_node.c:RootNode	code	Object header word 0
-watched	field	src/game/root_node.c:RootNode	code	Object header +0x4
-watchers	field	src/game/root_node.c:RootNode	code	Object header +0x8
-getLight	field	src/game/root_node.c:RootNodeVtbl	code	slot 0xB8 of g_rootNodeVtbl holds RootNode_GetLight
-init	field	src/game/root_node.c:RootNodeVtbl	code	slot 0x08 of g_rootNodeVtbl holds RootNode_Init
-setup	field	src/game/root_node.c:RootNodeVtbl	code	slot 0x40 of g_rootNodeVtbl holds RootNode_Setup
-watch	field	src/game/root_node.c:RootNodeVtbl	code	slot 0x10 of g_rootNodeVtbl holds SceneNode_Watch
+ambient	field	include/game/root_node.h:RootNode	code	the Color3 RootNode_SetAmbient stores and gives GsSetAmbient times 16
+coord	field	include/game/root_node.h:RootNode	code	scene node GsCOORDINATE2 pointer at +0x14; RootNode_Setup clears its first word flg
+lights	field	include/game/root_node.h:RootNode	code	FlatLight_New(0..2) in RootNode_Init, returned by RootNode_GetLight
+parent	field	include/game/root_node.h:RootNode	code	scene node parent at +0xC
+vtbl	field	include/game/root_node.h:RootNode	code	Object header word 0
+watched	field	include/game/root_node.h:RootNode	code	Object header +0x4
+watchers	field	include/game/root_node.h:RootNode	code	Object header +0x8
+getLight	field	include/game/root_node.h:RootNodeVtbl	code	slot 0xB8 of g_rootNodeVtbl holds RootNode_GetLight
+init	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x08 of g_rootNodeVtbl holds RootNode_Init
+setup	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x40 of g_rootNodeVtbl holds RootNode_Setup
+watch	field	include/game/root_node.h:RootNodeVtbl	code	slot 0x10 of g_rootNodeVtbl holds SceneNode_Watch
 boxX	field	src/game/scene_draw.c:DrawNode	code	+0x50 is Box.position (box.c), View_DrawNode stores it into GsBOXF x, a position and not a width
 boxY	field	src/game/scene_draw.c:DrawNode	code	+0x54 Box.position y, stored into GsBOXF y
 spriteX	field	src/game/scene_draw.c:DrawNode	code	+0xA0 is ScreenSprite.position x in percent of the half screen, View_DrawNode turns it into the sprite x, not a scale
@@ -4206,64 +4015,45 @@ b2	field	src/game/scenery.c:SpotTile	guess	tileX
 b3	field	src/game/scenery.c:SpotTile	guess	tileY
 x	field	src/game/scenery_part.c:SceneryPartClut	code	CLUT x in VRAM
 y	field	src/game/scenery_part.c:SceneryPartClut	code	CLUT y in VRAM
-clutX	field	src/game/scenery_part.c:TextPart	code	+0x74, GsSPRITE cx of the SpriteNode's sprite (+0x64 + 0x10)
-clutY	field	src/game/scenery_part.c:TextPart	code	+0x76, GsSPRITE cy
-index	field	src/game/scenery_part.c:TextPart	code	+0xA0, the part index of New and Init
-scaleX	field	src/game/scenery_part.c:TextPart	code	+0x80, GsSPRITE scaleX (sprite + 0x1C)
-scaleY	field	src/game/scenery_part.c:TextPart	code	+0x82, GsSPRITE scaleY
-construct	field	src/game/scenery_part.c:TextPartBaseVtbl	code	slot 0x08 SpriteNode_Init (node, image, blend rate, rect, two unused)
-construct	field	src/game/scenery_part.c:TextPartVtbl	code	slot 0x08 SceneryPart_Construct
-init	field	src/game/scenery_part.c:TextPartVtbl	code	slot 0x40 SceneryPart_Init
-parent	field	src/game/screen_sprite.c:ScreenSprite	code	scene node parent at +0xC; Attach acts when 0, SetPosition and SetPivot when set
-position	field	src/game/screen_sprite.c:ScreenSprite	code	ScreenPoint at +0xA0; View_DrawNode places the sprite at half screen times it / 100, a percent position
-sprite	field	src/game/screen_sprite.c:ScreenSprite	code	the GsSPRITE at +0x64 whose mx my SetPivot writes
-vtbl	field	src/game/screen_sprite.c:ScreenSprite	code	Object header word 0
-watched	field	src/game/screen_sprite.c:ScreenSprite	code	Object header +0x4 watched list
-watchers	field	src/game/screen_sprite.c:ScreenSprite	code	Object header +0x8 watcher list
-init	field	src/game/screen_sprite.c:ScreenSpriteVtbl	code	slot 0x08 of g_screenSpriteVtbl holds ScreenSprite_Init
-setPosition	field	src/game/screen_sprite.c:ScreenSpriteVtbl	code	slot 0xBC of g_screenSpriteVtbl holds ScreenSprite_SetPosition
-setup	field	src/game/screen_sprite.c:ScreenSpriteVtbl	code	slot 0x40 of g_screenSpriteVtbl holds ScreenSprite_Setup
-attach	field	src/game/screen_sprite.c:SpriteNodeVtbl	code	slot 0x4C of g_spriteNodeVtbl holds the SceneNode attach (show) slot
-init	field	src/game/screen_sprite.c:SpriteNodeVtbl	code	slot 0x08 of g_spriteNodeVtbl holds SpriteNode_Init
-setImage	field	src/game/screen_sprite.c:SpriteNodeVtbl	code	slot 0x40 of g_spriteNodeVtbl holds SpriteNode_SetImage
-x	field	src/game/sprite_node.c:NodeAngles	code	x angle fraction, unused by SpriteNode_SetRotation
-y	field	src/game/sprite_node.c:NodeAngles	code	y angle fraction, unused by SpriteNode_SetRotation
-z	field	src/game/sprite_node.c:NodeAngles	code	z angle fraction SpriteNode_SetRotation turns into GsSPRITE rotate
-attribute	field	src/game/sprite_node.c:Sprite	code	GsSPRITE attribute: color mode bits 24 and 25 from FillSprite, bits 28 to 31 from the SetBlendRate, SetSemiTrans, SetVisible slots
-color	field	src/game/sprite_node.c:Sprite	code	GsSPRITE r g b, 0x80 neutral
-cx	field	src/game/sprite_node.c:Sprite	code	GsSPRITE cx, the TIM CLUT x
-cy	field	src/game/sprite_node.c:Sprite	code	GsSPRITE cy, the TIM CLUT y
-h	field	src/game/sprite_node.c:Sprite	code	GsSPRITE h, from the rect
-mx	field	src/game/sprite_node.c:Sprite	code	GsSPRITE mx, the rotation and scale center; ScreenSprite_SetPivot writes it
-my	field	src/game/sprite_node.c:Sprite	code	GsSPRITE my
-rotate	field	src/game/sprite_node.c:Sprite	code	GsSPRITE rotate in 4.12 degrees, SpriteNode_SetRotation
-scaleX	field	src/game/sprite_node.c:Sprite	code	GsSPRITE scalex, 0x1000 is 1
-scaleY	field	src/game/sprite_node.c:Sprite	code	GsSPRITE scaley
-tpage	field	src/game/sprite_node.c:Sprite	code	GsSPRITE tpage from GetTPage
-u	field	src/game/sprite_node.c:Sprite	code	GsSPRITE u
-v	field	src/game/sprite_node.c:Sprite	code	GsSPRITE v
-w	field	src/game/sprite_node.c:Sprite	code	GsSPRITE w, from the rect
-x	field	src/game/sprite_node.c:Sprite	code	GsSPRITE x, written by View_DrawNode
-y	field	src/game/sprite_node.c:Sprite	code	GsSPRITE y, written by View_DrawNode
-parent	field	src/game/sprite_node.c:SpriteNode	code	scene node parent at +0xC
-rect	field	src/game/sprite_node.c:SpriteNode	code	the SpriteRect SpriteNode_SetImage copies
-sprite	field	src/game/sprite_node.c:SpriteNode	code	the GsSPRITE View_DrawNode sorts with GsSortSprite
-tim	field	src/game/sprite_node.c:SpriteNode	code	&image->image, the GsIMAGE of the Tim object, kept by SpriteNode_SetImage
-vtbl	field	src/game/sprite_node.c:SpriteNode	code	Object header word 0
-watched	field	src/game/sprite_node.c:SpriteNode	code	Object header +0x4
-watchers	field	src/game/sprite_node.c:SpriteNode	code	Object header +0x8
-attach	field	src/game/sprite_node.c:SpriteNodeVtbl	code	slot 0x4C, the SceneNode attach slot
-init	field	src/game/sprite_node.c:SpriteNodeVtbl	code	slot 0x08 of g_spriteNodeVtbl holds SpriteNode_Init
-setImage	field	src/game/sprite_node.c:SpriteNodeVtbl	code	slot 0x40 of g_spriteNodeVtbl holds SpriteNode_SetImage
+parent	field	include/game/screen_sprite.h:ScreenSprite	code	scene node parent at +0xC; Attach acts when 0, SetPosition and SetPivot when set
+position	field	include/game/screen_sprite.h:ScreenSprite	code	ScreenPoint at +0xA0; View_DrawNode places the sprite at half screen times it / 100, a percent position
+sprite	field	include/game/screen_sprite.h:ScreenSprite	code	the GsSPRITE at +0x64 whose mx my SetPivot writes
+vtbl	field	include/game/screen_sprite.h:ScreenSprite	code	Object header word 0
+watched	field	include/game/screen_sprite.h:ScreenSprite	code	Object header +0x4 watched list
+watchers	field	include/game/screen_sprite.h:ScreenSprite	code	Object header +0x8 watcher list
+init	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0x08 of g_screenSpriteVtbl holds ScreenSprite_Init
+setPosition	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0xBC of g_screenSpriteVtbl holds ScreenSprite_SetPosition
+setup	field	include/game/screen_sprite.h:ScreenSpriteVtbl	code	slot 0x40 of g_screenSpriteVtbl holds ScreenSprite_Setup
+attribute	field	include/game/gs.h:Sprite	code	GsSPRITE attribute: color mode bits 24 and 25 from FillSprite, bits 28 to 31 from the SetBlendRate, SetSemiTrans, SetVisible slots
+color	field	include/game/gs.h:Sprite	code	GsSPRITE r g b, 0x80 neutral
+cx	field	include/game/gs.h:Sprite	code	GsSPRITE cx, the TIM CLUT x
+cy	field	include/game/gs.h:Sprite	code	GsSPRITE cy, the TIM CLUT y
+h	field	include/game/gs.h:Sprite	code	GsSPRITE h, from the rect
+mx	field	include/game/gs.h:Sprite	code	GsSPRITE mx, the rotation and scale center; ScreenSprite_SetPivot writes it
+my	field	include/game/gs.h:Sprite	code	GsSPRITE my
+rotate	field	include/game/gs.h:Sprite	code	GsSPRITE rotate in 4.12 degrees, SpriteNode_SetRotation
+scaleX	field	include/game/gs.h:Sprite	code	GsSPRITE scalex, 0x1000 is 1
+scaleY	field	include/game/gs.h:Sprite	code	GsSPRITE scaley
+tpage	field	include/game/gs.h:Sprite	code	GsSPRITE tpage from GetTPage
+u	field	include/game/gs.h:Sprite	code	GsSPRITE u
+v	field	include/game/gs.h:Sprite	code	GsSPRITE v
+w	field	include/game/gs.h:Sprite	code	GsSPRITE w, from the rect
+x	field	include/game/gs.h:Sprite	code	GsSPRITE x, written by View_DrawNode
+y	field	include/game/gs.h:Sprite	code	GsSPRITE y, written by View_DrawNode
+parent	field	include/game/sprite_node.h:SpriteNode	code	scene node parent at +0xC
+rect	field	include/game/sprite_node.h:SpriteNode	code	the SpriteRect SpriteNode_SetImage copies
+sprite	field	include/game/sprite_node.h:SpriteNode	code	the GsSPRITE View_DrawNode sorts with GsSortSprite
+tim	field	include/game/sprite_node.h:SpriteNode	code	&image->image, the GsIMAGE of the Tim object, kept by SpriteNode_SetImage
+vtbl	field	include/game/sprite_node.h:SpriteNode	code	Object header word 0
+watched	field	include/game/sprite_node.h:SpriteNode	code	Object header +0x4
+watchers	field	include/game/sprite_node.h:SpriteNode	code	Object header +0x8
+attach	field	include/game/sprite_node.h:SpriteNodeVtbl	code	slot 0x4C, the SceneNode attach slot
+init	field	include/game/sprite_node.h:SpriteNodeVtbl	code	slot 0x08 of g_spriteNodeVtbl holds SpriteNode_Init
+setImage	field	include/game/sprite_node.h:SpriteNodeVtbl	code	slot 0x40 of g_spriteNodeVtbl holds SpriteNode_SetImage
 h	field	src/game/sprite_node.c:SpriteRectBytes	code	low half of SpriteRect.h
 u	field	src/game/sprite_node.c:SpriteRectBytes	code	low byte of SpriteRect.u
 v	field	src/game/sprite_node.c:SpriteRectBytes	code	low byte of SpriteRect.v
 w	field	src/game/sprite_node.c:SpriteRectBytes	code	low half of SpriteRect.w
-cx	field	src/game/sprite_node.c:SpriteTim	code	GsIMAGE cx copied to the sprite
-cy	field	src/game/sprite_node.c:SpriteTim	code	GsIMAGE cy copied to the sprite
-pmode	field	src/game/sprite_node.c:SpriteTim	code	GsIMAGE pmode, low 2 bits the color mode
-px	field	src/game/sprite_node.c:SpriteTim	code	GsIMAGE px given to GetTPage
-py	field	src/game/sprite_node.c:SpriteTim	code	GsIMAGE py given to GetTPage
 frameNumber	field	src/game/stream.c:StreamSectorHeader	code	StHEADER frameCount at +8, the frame number Stream_GetFrame compares
 cdLeft	field	src/game/stream.c:StreamSpuAttr	code	cd.volume.left, 0x7FFF
 cdMix	field	src/game/stream.c:StreamSpuAttr	code	cd.mix, 1 turns the CD audio on
@@ -4276,25 +4066,6 @@ masterLeft	field	src/game/stream.c:StreamSpuAttr	code	mvol.left
 masterMode	field	src/game/stream.c:StreamSpuAttr	code	mvolmode pair
 masterRight	field	src/game/stream.c:StreamSpuAttr	code	mvol.right
 masterX	field	src/game/stream.c:StreamSpuAttr	code	mvolx pair
-background	field	src/game/string_list.c:CardList	code	CARD\SELECT.TIM ScreenSprite, 0 while closed
-clock	field	src/game/string_list.c:CardList	code	tag 5 sender
-column	field	src/game/string_list.c:CardList	code	first visible character
-count	field	src/game/string_list.c:CardList	code	StringList.count
-cursor	field	src/game/string_list.c:CardList	code	selected row
-pad	field	src/game/string_list.c:CardList	code	tag 2 sender
-rows	field	src/game/string_list.c:CardList	code	the up to 4 Label_Create rows
-sound	field	src/game/string_list.c:CardList	code	card->sound, slot 0x80 Sound_PlayTone
-state	field	src/game/string_list.c:CardList	code	2 or 3 after SetState
-stateTicks	field	src/game/string_list.c:CardList	code	Tick counter
-strings	field	src/game/string_list.c:CardList	code	StringList.strings
-top	field	src/game/string_list.c:CardList	code	first visible row
-width	field	src/game/string_list.c:CardList	code	StringList.maxLength, longest row; two names for one field
-playTone	field	src/game/string_list.c:CardListOwnerVtbl	code	slot 0x80 Sound_PlayTone
-attach	field	src/game/string_list.c:CardTextVtbl	code	slot 0x4C, Label_Show or ScreenSprite_Attach (parent, position)
-delete_	field	src/game/string_list.c:CardTextVtbl	code	slot 0x04 Object_Delete
-setColor	field	src/game/string_list.c:CardTextVtbl	code	slot 0xB8 Label_SetColor
-setText	field	src/game/string_list.c:CardTextVtbl	code	slot 0xCC Label_SetText
-setZSort	field	src/game/string_list.c:CardTextVtbl	code	slot 0x78 of Label and ScreenSprite is SceneNode_SetZSort, StringList_Open uploads through tim.h TimVtbl
 background	field	src/game/string_list.c:StringList	code	the CARD\SELECT.TIM sprite at +0x50 (CardList.background), cleared by ClearSenders and UnwatchAll
 clock	field	src/game/string_list.c:StringList	code	tag 5 sender kept by Watch
 column	field	src/game/string_list.c:StringList	code	first visible character, zeroed by reset
@@ -4334,23 +4105,10 @@ height	field	src/game/sym.c:SpawnPlaceOffset	code	s16 at +4 copied into the quer
 chunkKey	field	src/game/sym.c:SpawnQuery	code	the slot chunk key
 offset	field	src/game/sym.c:SpawnQuery	code	the g_spawnPlaceOffsets record
 placeWord	field	src/game/sym.c:SpawnQuery	code	SpawnPlace tile word, the tile in the chunk
-file	field	src/game/sym.c:SpawnSource	code	FileSource whose data Sym_SpawnSlot points at the chunk entity bytes for Mml_Create
-model	field	src/game/sym.c:SpawnSource	code	Mom at +0xC Model_LoadFile borrows (ModelSource.file)
 obj	field	src/game/sym.c:SpyEntityRef	code	= SpyModel.spy, deleted by Sym_FreeSpy
 model	field	src/game/sym.c:SpyModel	code	Mom from ETC\SYMSPY.MOM (Sym_ResetGroupsAndLoadSpy), freed by Sym_FreeModels
 spawnOffset	field	src/game/sym.c:SpyModel	game	first word of the vector (0, -200, 8000) Sym_SpawnSpy turns to world; measured in work/unknowns/U3/bspy.log
 spy	field	src/game/sym.c:SpyModel	game	the type 98 entity Sym_InitStage creates; the Grey Man seen in game
-ch	field	src/game/tim_pack.c:GsImage	code	GsIMAGE ch
-clut	field	src/game/tim_pack.c:GsImage	code	GsIMAGE clut
-cw	field	src/game/tim_pack.c:GsImage	code	GsIMAGE cw
-cx	field	src/game/tim_pack.c:GsImage	code	GsIMAGE cx
-cy	field	src/game/tim_pack.c:GsImage	code	GsIMAGE cy, the CLUT row TimPack_OnLoaded maps to a palette
-ph	field	src/game/tim_pack.c:GsImage	code	GsIMAGE ph
-pixel	field	src/game/tim_pack.c:GsImage	code	GsIMAGE pixel
-pmode	field	src/game/tim_pack.c:GsImage	code	GsIMAGE pmode
-pw	field	src/game/tim_pack.c:GsImage	code	GsIMAGE pw
-px	field	src/game/tim_pack.c:GsImage	code	GsIMAGE px
-py	field	src/game/tim_pack.c:GsImage	code	GsIMAGE py
 h	field	src/game/tix.c:ClutRect	code	RECT h
 w	field	src/game/tix.c:ClutRect	code	RECT w
 x	field	src/game/tix.c:ClutRect	code	RECT x
@@ -4360,5 +4118,8 @@ faded	field	src/game/tix.c:ClutRows	code	the blended row Tix_BuildFade writes an
 source	field	src/game/tix.c:ClutRows	code	the palette row StoreImage reads back
 src	field	src/game/tix.c:ClutRows	code	RECT of the palette row given to StoreImage
 bytes	field	src/game/tix.c:TixHeaderBytes	code	the 0x24 header bytes
-den	field	src/game/view.c:ViewRatio	code	denominator of View_SetTwist's 4.12 division
-num	field	src/game/view.c:ViewRatio	code	numerator of View_SetTwist's 4.12 division
+CineId	type	include/game/dream_sys.h	code	DreamSys.cinematic.id: {category, variant}, written by Day_FindSpecial (ex SpecialCine) and DreamSys_Update
+sprite	field	include/game/scenery_part.h:SceneryPart	code	SpriteNode.sprite, the GsSPRITE at +0x64: cx, cy from g_sceneryPartCluts, scaleX, scaleY by slot 0x48, rotate for kind 3
+index	field	include/game/scenery_part.h:SceneryPart	code	set by SceneryPart_Init, indexes g_sceneryPartCluts and g_sceneryPartRects
+reset	field	include/game/actor.h:ActorVtbl	code	slot 0x40 Actor_Init, the override of SceneNode_Reset (ex init)
+reset	field	include/game/model.h:ModelVtbl	code	slot 0x40 holds Model_Init in g_modelVtbl (asm/data/main.data.s), ex init

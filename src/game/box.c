@@ -11,53 +11,8 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The base scene node class (SceneNode_GetVtbl, src/game/scene_node.c), as Box calls it */
-typedef struct BaseNodeVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *box);                  /* 0x08 */
-    u8 pad_0C[0x4C - 0xC];
-    void (*show)(void *box, s32 root, s32 position); /* 0x4C */
-} BaseNodeVtbl;
-/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
-BaseNodeVtbl *SceneNode_GetVtbl(void);
-
-/*
- * Box (vtable g_boxVtbl at 0x8006EAC0, class word 0x64, 0x6C bytes): a scene node holding a PSY-Q
- * GsBOXF at +0x58. The scene draw (View_DrawNode, kind 0x64) places it at +0x50, in percent of the
- * half screen when +0x48 is set, and sorts it with GsSortBoxFill at the priority +0x44.
- */
-typedef struct BoxVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Construct */
-    u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Init */
-    u8 pad_44[0x4C - 0x44];
-    void (*show)();                           /* 0x4C Box_Show (box, root, position) */
-    u8 pad_50[0xB8 - 0x50];
-    void (*setColor)(void *box, s32 copy, u8 *color); /* 0xB8 */
-    void (*setPosition)(void *box, s32 position);    /* 0xBC */
-    u8 pad_C0[0xCC - 0xC0];
-    void (*setMask)(void *box, s32 bits);     /* 0xCC */
-} BoxVtbl;
-
-typedef struct Box {
-    BoxVtbl *vtbl;
-    u8 pad_04[0xC - 0x4];
-    s32 parent;             /* 0x0C SceneNode *, set while the box is shown */
-    u8 pad_10[0x44 - 0x10];
-    s32 priority;           /* 0x44 ordering table priority given to GsSortBoxFill */
-    s32 relative;           /* 0x48 position in percent of the half screen */
-    s32 unk_4C;
-    ScreenPoint position;       /* 0x50 */
-    s32 attribute;          /* 0x58 GsBOXF: bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend mode */
-    u16 x;                  /* 0x5C GsBOXF, written by the draw from position */
-    u16 y;                  /* 0x5E */
-    u16 width;              /* 0x60 */
-    u16 height;             /* 0x62 */
-    Color3 color;              /* 0x64 */
-    u8 pad_67;
-    s32 mask;               /* 0x68 (1 << bits) - 1, 13 bits by default */
-} Box;
+/* not in game/scene_node.h: actor.c still reads this vtable through its own view of the slots */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
 
 extern u8 g_boxDefaultColor[];     /* the default box color, (128, 128, 128) */
 static void Rgb_CopyOrAdd(void *box, Color3 *dst, Color3 *src, s32 copy);
@@ -108,7 +63,7 @@ void Box_Init(Box *box, BoxSize *size, u8 *color, s32 priority) {
 /* Slot 0x4C: attaches the box under root once, then places it */
 void Box_Show(Box *box, s32 root, s32 position) {
     if (box->parent == 0) {
-        SceneNode_GetVtbl()->show(box, root, 0);
+        SceneNode_GetVtbl()->attach(box, root, 0);
         box->vtbl->setPosition(box, position);
     }
 }

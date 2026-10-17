@@ -14,46 +14,15 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/*
- * The base class of the scenery objects and their kind 0 parts: vtable g_actorVtbl (Actor_GetVtbl),
- * constructor Actor_Construct, 0x58 bytes. The scenery vtable and DreamSys's reuse its slots
- * 0x10 to 0x18 and 0xB8 to 0xE8; its methods end this unit.
- */
-typedef struct ActorVtbl {
-    u8 pad_00[0x08];
-    s32 (*construct)();   /* 0x08 Actor_Construct */
-    void (*destruct)();   /* 0x0C SceneNode_Destroy */
-    u8 pad_10[0x40 - 0x10];
-    void (*init)();       /* 0x40 Actor_Init */
-    u8 pad_44[0x88 - 0x44];
-    void (*sendBoxes)();      /* 0x88 Actor_SendBoxes */
-    void (*getBoxList)();
-    void (*sendShape)();
-    u8 pad_94[0xA0 - 0x94];
-    void (*checkContact)();
-    u8 pad_A4[0xBC - 0xA4];
-    void (*movePos)();    /* 0xBC Actor_MovePos */
-    void (*moveLocal)();
-    void (*moveZ)();
-    void (*moveX)();
-    u8 pad_CC[0xDC - 0xCC];
-    void (*onTouch34)();  /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
-    void (*onTouch24)();  /* 0xE0 Actor_OnNode24: on message byte 0x24 */
-    u8 pad_E4[0xE8 - 0xE4];
-    void (*afterTouch)();
-} ActorVtbl;
-
 static void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s16 *scale);
 static void Scenery_Follow();
 static void Scenery_DeleteParts();
 static void Scenery_DeleteKind0Parts(Scenery *scenery);
 static void Scenery_DeleteKind2Parts(Scenery *scenery);
 static void Scenery_DeleteKind3Parts(Scenery *scenery);
-/* not from game/actor.h: other files read this vtable through their own views of the slots */
-ActorVtbl *Actor_GetVtbl(void);
 extern s32 g_sceneryModelIndexes[];
 extern struct ClutPos g_sceneryModelClut;
-PlaceObj *g_sceneryModels;
+Tmd *g_sceneryModels;
 void *g_sceneryEtcTim;
 View *g_sceneryView;
 SceneryVtbl *Scenery_GetVtbl(void);
@@ -97,7 +66,7 @@ Scenery *Scenery_New(s32 kind, SceneryParams *params, StageMap *map, Vec3 *origi
 
 /* Slot 0x08 */
 Scenery *Scenery_Construct(Scenery *scenery, s32 kind, SceneryParams *params, StageMap *map, Vec3 *origin) {
-    if (Actor_GetVtbl()->construct(scenery) != 0) {
+    if (Actor_GetVtbl()->init(scenery) != 0) {
         scenery->vt = Scenery_GetVtbl();
         scenery->state = 0;
         scenery->kind = kind;
@@ -111,7 +80,7 @@ Scenery *Scenery_Construct(Scenery *scenery, s32 kind, SceneryParams *params, St
 /* Slot 0x0C (Scenery_DeleteParts is called without the object; a0 still holds it). */
 void Scenery_Destruct(s32 scenery) {
     Scenery_DeleteParts();
-    Actor_GetVtbl()->destruct(scenery);
+    Actor_GetVtbl()->destroy(scenery);
 }
 
 /* Slot 0x40: copy the parameters to +0x58. */
@@ -137,7 +106,7 @@ static void Scenery_Build(void *self, StageMap *map, Vec3 *origin) {
     Scenery_AttachPart(scenery, map, &pos, scenery->rotation, scenery->scale);
     kind = scenery->kind;
     if (kind < 2) {
-        SceneNode_LinkModel(self, g_sceneryModels->vt->getModel(g_sceneryModels, g_sceneryModelIndexes[kind]));
+        SceneNode_LinkModel(self, g_sceneryModels->vtbl->getModel(g_sceneryModels, g_sceneryModelIndexes[kind]));
     }
     switch (scenery->kind) {
     case 0:
@@ -197,9 +166,9 @@ static void Scenery_AddOffset(Vec3 *out, Vec3 *a, Vec3 *b) {
 static void Scenery_AttachPart(void *self, void *parent, Vec3 *pos, u8 *rotation, s16 *scale) {
     SceneryPart *obj = self;
 
-    obj->vt->attach(obj, parent);
-    obj->vt->setRotation(obj, 1, rotation);
-    obj->vt->setScale(obj, 1, scale);
+    obj->vtbl->attach(obj, parent);
+    obj->vtbl->setRotation(obj, 1, rotation);
+    obj->vtbl->setScale(obj, 1, scale);
 }
 
 /* Kind 0: make (move == 0) or move its two parts, set apart along direction unk6C (1 to 4). */
@@ -207,7 +176,7 @@ static void Scenery_PlaceKind0Parts(void *self, s32 move) {
     Scenery *scenery = self;
     Vec3 pos;
     s32 dir;
-    SceneryPart **part;
+    Actor **part;
     s32 i;
 
     dir = scenery->direction;
@@ -221,8 +190,8 @@ static void Scenery_PlaceKind0Parts(void *self, s32 move) {
                 pos.y += g_sceneryPartSpacing[dir];
             }
             if (move != 0) {
-                SceneryPart *obj = *part;
-                obj->vt->setColor(obj, &pos);
+                Actor *obj = *part;
+                obj->vtbl->setPos(obj, &pos);
             } else {
                 *part = Actor_New();
                 SceneNode_LinkModel((SceneNode *)*part, scenery->model);
@@ -236,7 +205,7 @@ static void Scenery_PlaceKind0Parts(void *self, s32 move) {
 /* Kind 0 tick: past 500 ticks, with a speed in g_sceneryKind0Speeds[unk70], move the parts every 0x5FB4 / speed ticks. */
 static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
     Scenery *scenery = self;
-    SceneryPart **part;
+    Actor **part;
     Vec3 pos;
     s32 *speed;
     s32 idx;
@@ -257,10 +226,10 @@ static void Scenery_UpdateKind0(void *self, Vec3 *origin) {
                 do {
                     pos = g_sceneryKind0SpinOrigin;
                     pos.z += off + *speed;
-                    (*part)->vt->movePos(*part, &pos);
+                    (*part)->vtbl->movePos(*part, &pos);
                     i++;
                     off += 3;
-                    (*part)->vt->setRotation(*part, 0, &g_sceneryKind0Spin);
+                    (*part)->vtbl->setRotation(*part, 0, &g_sceneryKind0Spin);
                     part++;
                 } while (i < 2);
                 period = 0x5FB4 / g_sceneryKind0Speeds[idx];
@@ -308,23 +277,23 @@ static void Scenery_BuildKind2(Scenery *scenery, s32 unused) {
         value->x = g_sceneryKind2Offsets[scenery->variant];
         Actor_MovePos(part, value);
         arg = scenery->altColor;
-        vt = part->vt;
+        vt = part->vtbl;
         if (arg == 0) {
             arg = scenery->color;
         }
         vt->setColor(part, arg);
     } else {
         part = scenery->u.many.parts[1];
-        part->vt->setSemiTrans(part, 1);
-        part->vt->setBlendRate(part, 0);
-        vt = part->vt;
+        part->vtbl->setSemiTrans(part, 1);
+        part->vtbl->setBlendRate(part, 0);
+        vt = part->vtbl;
         scale = g_sceneryKind2ScaleC;
         if (coin != 0) {
             scale = g_sceneryKind2ScaleA;
         }
         vt->setScale(part, 1, scale);
     }
-    scenery->u.many.parts[2]->vt->setVisible(scenery->u.many.parts[2], 0);
+    scenery->u.many.parts[2]->vtbl->setVisible(scenery->u.many.parts[2], 0);
 }
 
 /* Kinds 2 and 3: five parts of class g_sceneryPartVtbl in the place's font. */
@@ -335,10 +304,10 @@ static void Scenery_CreateSpriteParts(Scenery *scenery, s32 unused, s32 index, s
     part = scenery->u.many.parts;
     for (i = 0; i < 5; i++) {
         *part = SceneryPart_New(index, 0, g_sceneryEtcTim);
-        (*part)->vt->attach(*part, scenery, 0);
-        (*part)->vt->setColor(*part, scenery->color);
+        (*part)->vtbl->attach(*part, scenery, 0);
+        (*part)->vtbl->setColor(*part, scenery->color);
         if (scale != 0) {
-            (*part)->vt->setScale(*part, 1, scale);
+            (*part)->vtbl->setScale(*part, 1, scale);
         }
         part++;
     }
@@ -362,8 +331,8 @@ static void Scenery_UpdateKind3(Scenery *scenery, Vec3 *origin) {
 
     part = &scenery->u.many.parts[1];
     for (i = 0; i < 4; i++) {
-        (*part)->vt->setScale(*part, 1, g_sceneryKind3Scales + ((u32)rand() % 6) * 12);
-        (*part)->angle = (rand() % 360) << 12;
+        (*part)->vtbl->setScale(*part, 1, g_sceneryKind3Scales + ((u32)rand() % 6) * 12);
+        (*part)->sprite.rotate = (rand() % 360) << 12;
         part++;
     }
 }
@@ -377,13 +346,13 @@ SceneryVtbl *Scenery_GetVtbl(void) {
 }
 
 /* Keep the place's models, font and view for the scenery, and prepare models g_sceneryModelIndexes[0..1]. */
-void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view) {
+void Scenery_SetPlaceRefs(s32 family, Tmd *models, void *font, View *view) {
     s32 i;
 
     g_sceneryModels = models;
     g_sceneryEtcTim = font;
     g_sceneryView = view;
     for (i = 0; i < 2; i++) {
-        ModelObject_SetClut(models->vt->getModel(models, g_sceneryModelIndexes[i]), &g_sceneryModelClut);
+        ModelObject_SetClut(models->vtbl->getModel(models, g_sceneryModelIndexes[i]), &g_sceneryModelClut);
     }
 }

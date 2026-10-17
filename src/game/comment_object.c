@@ -7,6 +7,7 @@
 #include "game/text.h"
 #include "game/glyph.h"
 #include "game/screen_sprite.h"
+#include "game/sound_bank.h"
 #include "psyq/libc.h"
 
 /*
@@ -16,30 +17,6 @@
 /* Comment keyboard object (0x4C bytes). Its vtable is g_commentVtbl. */
 typedef struct CommentObject CommentObject;
 typedef struct CommentVtbl CommentVtbl;
-/* Widget owned by the comment object (FONTICON glyphs and COMINPUT). */
-typedef struct CommentWidget CommentWidget;
-typedef struct CommentWidgetVtbl CommentWidgetVtbl;
-
-struct CommentWidgetVtbl {
-    s32 classWord;
-    void *(*delete_)(CommentWidget *);       /* 0x04 same slot as screen.h WidgetVtbl delete_ */
-    u8 pad_08[0x4C - 0x08];
-    void (*attach)(CommentWidget *, s32, void *); /* 0x4C SceneNode_Attach and its overrides (ScreenSprite_Attach, Label_Show): parent, position */
-    u8 pad_50[0x78 - 0x50];
-    void (*setZSort)(CommentWidget *);         /* 0x78 called on each widget right after it is created */
-    u8 pad_7C[0x80 - 0x7C];
-    void (*playTone)(CommentWidget *, s32, s32, s32);  /* 0x80 called on the box object at CommentObject 0x3C */
-    u8 pad_84[0xB8 - 0x84];
-    void (*setColor)(CommentWidget *, void *);   /* 0xB8 same slot as screen.h setColor, called with g_glyphColor */
-    void (*setPosition)(CommentWidget *, void *);  /* 0xBC same slot as screen.h setPosition */
-    u8 pad_C0[0xC4 - 0xC0];
-    void (*setChar)(CommentWidget *, s32, s32);  /* 0xC4 Label_SetChar: one glyph of g_alphabet at the caret */
-};
-
-struct CommentWidget {
-    CommentWidgetVtbl *vtbl;                 /* 0x00 */
-};
-
 struct CommentVtbl {
     s32 classWord;                              /* 0x00 first word, value 0x10 in the data, meaning unknown */
     u8 pad_04[0x08 - 0x04];                  /* 0x04 base Object slot, not used in this unit */
@@ -56,7 +33,7 @@ struct CommentVtbl {
     void (*setText)(CommentObject *, u8 *, s32);              /* 0x40 CommentObject_SetText */
     void (*open)(CommentObject *, s32);               /* 0x44 CommentObject_Open */
     void (*close)(CommentObject *);                      /* 0x48 CommentObject_Close, deletes the three widgets */
-    void (*watchPair)(CommentObject *, s32 **, s32 **, CommentWidget *);  /* 0x4C CommentObject_WatchPair */
+    void (*watchPair)(CommentObject *, s32 **, s32 **, SoundBank *);  /* 0x4C CommentObject_WatchPair */
     void (*unwatchPair)(CommentObject *);                      /* 0x50 CommentObject_UnwatchPair */
     void (*setState)(CommentObject *, s32);                    /* 0x54 CommentObject_SetState */
     void (*tick)(CommentObject *, s32 **, s32);                /* 0x58 CommentObject_Tick, called for sender tag 5 */
@@ -90,10 +67,10 @@ struct CommentObject {
     s32 tickCount;                           /* 0x30 ticks spent in states 2 and 3, zeroed by setState */
     s32 **pad;                        /* 0x34 sender stored by watch when its tag is 2, key codes go to slot 0x5C */
     s32 **clock;                        /* 0x38 sender stored by watch when its tag is 5, slot 0x58 */
-    CommentWidget *sound;                /* 0x3C box object, its slot 0x80 is called with 0x60 */
-    CommentWidget *caretGlyph;              /* 0x40 Glyph_Create(font, '_'), moved by SetCaretPos */
-    CommentWidget *textLabel;               /* 0x44 Label_Create from the FONTICON font, showing textBuf */
-    CommentWidget *inputBox;                /* 0x48 ScreenSprite of the COMINPUT image, NULL until BuildWidgets */
+    SoundBank *sound;                        /* 0x3C the card's sound bank, slot 0x80 plays the tones */
+    Glyph *caretGlyph;                       /* 0x40 Glyph_Create(font, '_'), moved by SetCaretPos */
+    Label *textLabel;                        /* 0x44 Label_Create from the FONTICON font, showing textBuf */
+    ScreenSprite *inputBox;                  /* 0x48 the COMINPUT image, NULL until Open */
 };
 
 static CommentVtbl *CommentObject_GetVtbl(void);
@@ -221,44 +198,48 @@ INCLUDE_RODATA("asm/nonmatchings/game/comment_object", g_alphabetText);
 void CommentObject_Open(CommentObject *obj, s32 enable) {
     s8 nameBuf[0x20];
     Tim *inputWidget;
-    CommentWidget *widget;
+    ScreenSprite *box;
+    Label *label;
+    Glyph *glyph;
     Tim *fontWidget;
 
     if ((enable != 0) && (obj->inputBox == NULL)) {
         inputWidget = Tim_New(File_JoinPath(nameBuf, "COMINPUT", g_widgetPrefix, g_widgetSuffix));
         inputWidget->vtbl->upload(inputWidget);
-        obj->inputBox = (CommentWidget *)ScreenSprite_Create(inputWidget, &g_inputBoxRect, 0);
+        obj->inputBox = ScreenSprite_Create(inputWidget, &g_inputBoxRect, 0);
         inputWidget->vtbl->base.delete_(inputWidget);
-        widget = obj->inputBox;
-        widget->vtbl->attach(widget, enable, g_inputBoxPos);
+        box = obj->inputBox;
+        box->vtbl->attach(box, enable, g_inputBoxPos);
         fontWidget = Tim_New(File_JoinPath(nameBuf, "FONTICON", g_widgetPrefix, g_widgetSuffix));
         fontWidget->vtbl->upload(fontWidget);
-        obj->textLabel = (CommentWidget *)Label_Create(fontWidget, obj->textLength, obj->textBuf);
-        obj->caretGlyph = (CommentWidget *)Glyph_Create(fontWidget, 0x5F);
+        obj->textLabel = Label_Create(fontWidget, obj->textLength, obj->textBuf);
+        obj->caretGlyph = Glyph_Create(fontWidget, 0x5F);
         fontWidget->vtbl->base.delete_(fontWidget);
-        widget = obj->textLabel;
-        widget->vtbl->attach(widget, enable, g_commentTextPos);
-        widget = obj->textLabel;
-        widget->vtbl->setColor(widget, g_glyphColor);
-        widget = obj->caretGlyph;
-        widget->vtbl->attach(widget, enable, &g_commentOriginX);
+        label = obj->textLabel;
+        label->vtbl->show(label, enable, g_commentTextPos);
+        label = obj->textLabel;
+        label->vtbl->setColor(label, g_glyphColor);
+        glyph = obj->caretGlyph;
+        glyph->vtbl->attach(glyph, enable, &g_commentOriginX);
     }
 }
 
 void CommentObject_Close(CommentObject *obj) {
-    CommentWidget *widget;
+    ScreenSprite *box;
+    Label *label;
+    Glyph *glyph;
 
-    widget = obj->inputBox;
-    if (widget != NULL) {
-        obj->inputBox = widget->vtbl->delete_(widget);
-        widget = obj->textLabel;
-        widget->vtbl->delete_(widget);
-        widget = obj->caretGlyph;
-        widget->vtbl->delete_(widget);
+    box = obj->inputBox;
+    if (box != NULL) {
+        obj->inputBox = box->vtbl->delete_(box);
+        label = obj->textLabel;
+        label->vtbl->delete_(label);
+        glyph = obj->caretGlyph;
+        glyph->vtbl->delete_(glyph);
     }
 }
 
-void CommentObject_WatchPair(CommentObject *obj, s32 **pad, s32 **clock, CommentWidget *sound) {
+void CommentObject_WatchPair(CommentObject *obj, s32 **pad, s32 **clock, SoundBank *sound) {
     obj->vtbl->watch(obj, pad);
     obj->vtbl->watch(obj, clock);
     obj->sound = sound;
@@ -373,11 +354,11 @@ void CommentObject_OnKey(CommentObject *obj, s32 sender, s32 keyCode) {
 }
 
 void CommentObject_PlayTone(CommentObject *obj, s32 tone) {
-    CommentWidget *box;
+    SoundBank *sound;
 
-    box = obj->sound;
-    if (box != NULL) {
-        box->vtbl->playTone(box, tone, 0x60, 0x60);
+    sound = obj->sound;
+    if (sound != NULL) {
+        sound->vtbl->playTone(sound, tone, 0x60, 0x60);
     }
 }
 
@@ -469,13 +450,13 @@ void CommentObject_ClearText(CommentObject *obj) {
 
 void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 refresh) {
     s32 pos[2];
-    CommentWidget *widget;
+    Glyph *glyph;
 
     if (obj->inputBox != 0) {
         pos[1] = g_commentOriginY;
         pos[0] = caret * 7 + g_commentOriginX;
-        widget = obj->caretGlyph;
-        widget->vtbl->setPosition(widget, pos);
+        glyph = obj->caretGlyph;
+        glyph->vtbl->setPosition(glyph, pos);
         obj->caret = caret;
         if (refresh != 0) {
             obj->vtbl->playTone(obj, 0);
@@ -484,12 +465,12 @@ void CommentObject_SetCaretPos(CommentObject *obj, s32 caret, s32 refresh) {
 }
 
 void CommentObject_SetChar(CommentObject *obj, s32 caret, s32 charIndex, s32 refresh) {
-    CommentWidget *glyph;
+    Label *label;
 
     if (obj->inputBox != 0) {
         obj->textBuf[caret] = g_alphabet[charIndex];
-        glyph = obj->textLabel;
-        glyph->vtbl->setChar(glyph, g_alphabet[charIndex], caret);
+        label = obj->textLabel;
+        label->vtbl->setChar(label, g_alphabet[charIndex], caret);
         obj->caret = caret;
         obj->charIndex = charIndex;
         if (refresh != 0) {

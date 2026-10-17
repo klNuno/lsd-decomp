@@ -86,15 +86,9 @@ typedef struct NodeBoxList {
     s32 pad_34;
 } NodeBoxList;
 
-/* The same box list as ModelBox_ShiftList reads it: u16 corners, one 0x30-byte record per box */
-typedef struct ModelBoxCorner {
-    u16 x;
-    u16 y;
-    u16 z;
-} ModelBoxCorner;
-
+/* The same box list as ModelBox_ShiftList reads it: one 0x30-byte record of 8 corners per box */
 typedef struct ModelBoxRecord {
-    ModelBoxCorner v[8];
+    ModelVec v[8];
 } ModelBoxRecord;
 
 typedef struct ModelBoxList {

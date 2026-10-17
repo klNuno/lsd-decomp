@@ -1,6 +1,7 @@
 #include "common.h"
 #include "game/dream_link.h"
 #include "game/stage.h"
+#include "game/dream_sys.h"
 #include "psyq/libc.h"
 
 /*
@@ -40,18 +41,8 @@ s32 g_extraListOn;
 extern u8 g_scriptedLinkCounts[];
 extern LinkEntry *g_scriptedLinkLists[];
 extern u16 g_linkHeadingYaws[];
-/* A rotation in degrees (three Fractions, SceneNode_GetRotation) read for its yaw numerator. */
-typedef struct RotationYaw {
-    u8 pad_00[4];
-    u16 yaw;
-} RotationYaw;
 extern s16 g_specialDays[42];
 extern MoodPoint g_specialDayPoint;
-/* DreamSys +0x168 as Day_FindSpecial writes it: {category, variant} (dream_sys.h cinematic.id). */
-typedef struct SpecialCine {
-    s16 category;
-    s16 variant;
-} SpecialCine;
 extern u8 g_linkHeadings[];
 extern u8 *g_facingArrivalHeadings[];
 extern u8 *g_facingLinkHeadings[];
@@ -313,7 +304,7 @@ found:
 }
 
 MoodPoint *Day_FindSpecial(void *cinematic, s32 dayNumber) {
-    SpecialCine *o = cinematic;
+    CineId *o = cinematic;
     s32 i;
 
     for (i = 0; i < sizeof(g_specialDays) / sizeof(g_specialDays[0]); i++) {

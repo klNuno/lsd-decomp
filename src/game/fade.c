@@ -11,25 +11,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/*
- * Box (vtable g_boxVtbl at 0x8006EAC0, class word 0x64, 0x6C bytes): a scene node holding a PSY-Q
- * GsBOXF at +0x58. The scene draw (View_DrawNode, kind 0x64) places it at +0x50, in percent of the
- * half screen when +0x48 is set, and sorts it with GsSortBoxFill at the priority +0x44.
- */
-typedef struct BoxVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x08 Box_Construct */
-    u8 pad_0C[0x40 - 0xC];
-    void (*reset)(void *box, BoxSize *size, u8 *color, s32 priority); /* 0x40 Box_Init */
-    u8 pad_44[0x4C - 0x44];
-    void (*show)();                           /* 0x4C Box_Show (box, root, position) */
-    u8 pad_50[0xB8 - 0x50];
-    void (*setColor)(void *box, s32 copy, u8 *color); /* 0xB8 */
-    void (*setPosition)(void *box, s32 position);    /* 0xBC */
-    u8 pad_C0[0xCC - 0xC0];
-    void (*setMask)(void *box, s32 bits);     /* 0xCC */
-} BoxVtbl;
-
 extern u8 g_fadePalette[][3];
 extern u8 g_fadeBlackPalette[3];    /* eight black RGB triples, read like g_fadePalette */
 static FadeVtbl *Fade_GetVtbl(void);

@@ -11,21 +11,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* Psy-Q GsIMAGE, as slot 0x9C of a TIM fills it (0x1C bytes, 4 more reserved) */
-typedef struct GsImage {
-    u32 pmode;
-    s16 px;
-    s16 py;
-    u16 pw;
-    u16 ph;
-    u32 *pixel;
-    s16 cx;
-    s16 cy;                    /* the CLUT's VRAM row */
-    u16 cw;
-    u16 ch;
-    u32 *clut;
-    u8 pad_1C[0x20 - 0x1C];
-} GsImage;
 extern TimPackVtbl g_timPackVtbl;
 s16 g_clutPaletteShift;                /* 3: CLUT row - 0x1E0 >> this = palette index */
 
@@ -62,7 +47,7 @@ void TimPack_Destroy(TimPack *timPack) {
  * its palette, fades + ((CLUT row - 0x1E0) >> 3) * sizeof(TixFade).
  */
 void TimPack_OnLoaded(TimPack *timPack) {
-    GsImage info;
+    TimImage info;
     Tim **tims;
     Tim *tim;
     Tim **slot;
@@ -79,7 +64,7 @@ void TimPack_OnLoaded(TimPack *timPack) {
             for (i = 0; i < timPack->count; i++) {
                 tim = Tim_New(NULL);
                 *slot = tim;
-                tim->data = (u32 *)(timPack->data.bytes + *offset);
+                tim->data.bytes = timPack->data.bytes + *offset;
                 (*slot)->size = 0;
                 offset++;
                 (*slot)->vtbl->getInfo(*slot, &info);

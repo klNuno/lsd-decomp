@@ -6,6 +6,9 @@
 #include "game/sound_bank.h"
 #include "game/stage.h"
 #include "game/handler_node.h"
+#include "game/heap.h"
+#include "game/model_object.h"
+#include "game/render.h"
 
 /*
  * DreamSys: the game-state object, one instance at 0x80091530, class vtable
@@ -17,6 +20,7 @@
 
 struct DreamSys;
 struct StageMap;
+struct View;
 struct Tmd;
 struct Tim;
 
@@ -32,6 +36,12 @@ typedef struct MoodAccum {
 typedef struct CineRef {
     u8 b0, b1, b2, b3;
 } CineRef;
+
+/* The same word as two shorts (DreamSys.cinematic.id, written by Day_FindSpecial and DreamSys_Update). */
+typedef struct CineId {
+    s16 category;   /* -1: an entity's video */
+    s16 variant;
+} CineId;
 
 /* The 12 bytes a flashback keeps next to its place (DreamSys_AddFlashback). */
 typedef struct DreamRotation {
@@ -50,20 +60,6 @@ typedef struct Flashback {
     s16 unk1C;
     s32 day;
 } Flashback;
-
-/* The camera object at +0x5C: the SHAKE option moves +0x18 and +0x24. */
-typedef struct DreamCamera {
-    u8 pad_00[0x18];
-    u32 viewpointY;
-    u8 pad_1C[0x24 - 0x1C];
-    u32 refPointY;
-} DreamCamera;
-
-/* The object at +0x28: only its u16 at +0x36 is read. */
-typedef struct DreamSysObj28 {
-    u8 pad_00[0x36];
-    u16 flags;
-} DreamSysObj28;
 
 /* The 0x700-byte block the memory card saves and loads: DreamSys +0x178 to +0x878 (DreamSys_GetSaveBlock,
    Menu_Save, menu.h Menu +0xBC). Offsets below are from the block; add 0x178 for DreamSys. */
@@ -94,7 +90,7 @@ typedef struct SaveBlock {
 typedef struct DreamSysVtbl {
     s32 classWord;                                                        /* 0x1F34 */
     void (*delete_)();                                                  /* 0x004 Object_Delete */
-    void (*init)(struct DreamSys *, struct Tmd *, SoundBank *, DreamCamera *);              /* 0x008 DreamSys_Init */
+    void (*init)(struct DreamSys *, struct Tmd *, SoundBank *, struct View *);              /* 0x008 DreamSys_Init */
     void (*destroy)();                                                  /* 0x00C SceneNode_Destroy */
     void (*watch)(struct DreamSys *, void *);                        /* 0x010 Actor_Watch: Actor watch, keeps a watched map at +0x4C */
     void (*unwatch)(struct DreamSys *, void *);                      /* 0x014 Actor_Unwatch: Actor unwatch */
@@ -234,28 +230,24 @@ typedef struct DreamSysVtbl {
 } DreamSysVtbl;
 
 typedef struct DreamSys {
-    DreamSysVtbl *vtbl;
-    u8 pad_04[0x0C - 0x04];
-    void *parent;
-    u8 pad_10[0x14 - 0x10];
-    union {
-        Coord2 *coord;
-        u8 *bytes;
-    } pos;                  /* 0x14 its GsCOORDINATE2 (gs.h), as for entities */
-    u8 pad_18[0x24 - 0x18];
-    u32 timer;              /* ticks of the dream, 15 per second (DreamSys_OnClock) */
-    DreamSysObj28 *contact;
-    u8 pad_2C[0x44 - 0x2C];
-    s32 transition;         /* link or event code while one runs, 0 when idle */
+    DreamSysVtbl *vtbl;     /* 0x00 to 0x57: Actor's fields (actor.h) under Actor's names, except transition */
+    ListNode *watched;      /* 0x04 */
+    ListNode *watchers;     /* 0x08 */
+    struct SceneNode *parent; /* 0x0C */
+    DObj2 object;           /* 0x10 coord is its GsCOORDINATE2 (gs.h), as for entities */
+    s32 id;                 /* 0x1C */
+    ModelObject *model;     /* 0x20 */
+    u32 ticks;              /* 0x24 ticks of the dream, 15 per second (DreamSys_OnClock) */
+    struct MapTile *contact; /* 0x28 the MapTile under the dreamer (Actor_SnapToGround): its flags give the step sound */
+    s32 hitMask;            /* 0x2C */
+    NodeBoxList *boxList;   /* 0x30 */
+    u8 pad_34[0x44 - 0x34];
+    s32 transition;         /* 0x44 Actor.state: link or event code while one runs, 0 when idle */
     u8 pad_48[0x4C - 0x48];
     struct StageMap *map;   /* 0x4C the stage map it walks on (stage_map.h), watched while attached */
     u8 pad_50[0x58 - 0x50];
     SoundBank *soundBank;      /* 0x58 the model's sound bank (sound_bank.h, Model +0x58), DreamSys_New's second argument */
-    union {
-        DreamCamera *obj;
-        struct View *view;  /* the DreamView (g_viewVtbl): Behavior_Type74 sets its clear color */
-        u8 *bytes;
-    } camera;
+    struct View *camera;    /* the DreamView (view.h): the SHAKE option moves viewpoint.y and refPoint.y; Behavior_Type74 sets its clear color */
     struct Tmd *tmd;        /* the dreamer's TMD (tmd.h); model 0 is watched */
     struct Tim *etcTim;     /* ETC\ETC.TIM, set by the dream runner (DreamSys_SetEtcTim) */
     s32 flashbackMode;      /* DreamSys_SetFlashbackMode */
@@ -297,10 +289,7 @@ typedef struct DreamSys {
     union {
         u8 bytes[4];
         CineRef ref;        /* returned whole by DreamSys_GetCinematic */
-        struct {
-            s16 category;   /* -1: an entity's video */
-            s16 variant;
-        } id;
+        CineId id;
     } cinematic;
     StagePlace place;       /* where the player stands or arrives */
     u8 pad_176[0x178 - 0x176];
@@ -323,6 +312,6 @@ typedef struct DreamSys {
 } DreamSys;
 
 /* Functions of src/game/dream_sys.c that other files call or reference (docs/naming.md, Prototypes) */
-DreamSys *DreamSys_New(struct Tmd *tmd, SoundBank *soundBank, DreamCamera *camera);
+DreamSys *DreamSys_New(struct Tmd *tmd, SoundBank *soundBank, struct View *camera);
 
 #endif

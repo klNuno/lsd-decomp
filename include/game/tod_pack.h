@@ -16,17 +16,23 @@ typedef struct TodPackHeader {
 } TodPackHeader;
 
 typedef struct TodPack {
-    TodVtbl *vtbl;
+    TodVtbl *vtbl;            /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
+    s32 isOpen;
     union {
         TodPackHeader *header;
         u32 *words;
         u8 *bytes;
     } data;                   /* 0x10 */
-    s32 size;                 /* 0x14 */
-    u8 pad_18[0x2C - 0x18];
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
 } TodPack;
 
 /* Functions of src/game/tod_pack.c that other files call or reference (docs/naming.md, Prototypes) */

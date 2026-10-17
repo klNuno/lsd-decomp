@@ -38,7 +38,7 @@ typedef struct CardSaveHeader {
     CardIconFrame frames[3];   /* 0x80 */
 } CardSaveHeader;
 
-/* The icon TIM (menu.h MenuPicture.tim, CARD\FILEICN1.TIM): its palette and three 16x16 4-bit frames. */
+/* The icon TIM (the data of menu.h Menu.fileIcon, CARD\FILEICN1.TIM): its palette and three 16x16 4-bit frames. */
 struct CardIconTim {
     u8 pad_00[0x14];
     CardIconPalette palette;   /* 0x14 */
@@ -77,7 +77,7 @@ extern s8 g_cardPictureDir[];
 extern s8 g_timSuffix[];
 extern CardVtbl g_cardVtbl;
 SjisChar *g_titleLetters;
-static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size);
+static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, Tim *icon, void *data, s32 size);
 
 /* Allocates a Card (0x84 bytes) and runs Card_Init. */
 Card *Card_New(s32 sharePad, s32 port) {
@@ -419,7 +419,7 @@ static s32 Card_ReadFileOnce(Card *card, char *name, void *buf, s32 size) {
 }
 
 /* Card slot 0x68: sets the title letter from the file name; clears it again when the write fails. */
-s32 Card_WriteFile(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+s32 Card_WriteFile(Card *card, char *name, char *title, u8 iconFrames, Tim *icon, void *data, s32 size) {
     s32 ok;
     s32 tries;
 
@@ -444,7 +444,7 @@ INCLUDE_RODATA("asm/nonmatchings/game/card", D_80011524);
  * Writes a save file: the header ("SC", 0x10 + icon frames, blocks, the title, the icon
  * palette and frames from the TIM) then the data, rounded up to 128 bytes.
  */
-static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames, Tim *icon, void *data, s32 size) {
     char pathBuf[0x20];
     char *path;
     s32 fd;
@@ -463,7 +463,7 @@ static s32 Card_WriteFileOnce(Card *card, char *name, char *title, u8 iconFrames
     if (fd == -1) {
         return 0;
     }
-    tim = icon->tim;
+    tim = (struct CardIconTim *)icon->data.bytes;
     header = Heap_Alloc(0x200);
     header->magic[0] = 'S';
     header->magic[1] = 'C';
@@ -543,7 +543,7 @@ static s32 Card_WaitAnyEvent(s32 *events, s32 count) {
 }
 
 /* Card slot 0x6C: the file name parts, the menu's pad, clock, root and sounds. */
-void Card_Open(Card *card, char *prefix, char **suffixes, void *pad, void *clock, s32 root, SoundBank *sound) {
+void Card_Open(Card *card, char *prefix, char **suffixes, void *pad, void *clock, SceneNode *root, SoundBank *sound) {
     card->prefix = prefix;
     card->suffixes = suffixes;
     card->titles = 0;
@@ -632,7 +632,7 @@ static void Card_FreeFileList(Card *card) {
  * Card slot 0x78: an existing file asks to overwrite first; then the comment keyboard, then
  * SAVING. No room for a new file: CARD_STATE_FULL.
  */
-void Card_Save(Card *card, char *fileName, char *title, s32 commentStart, u8 iconFrames, MenuPicture *icon, void *data, s32 size) {
+void Card_Save(Card *card, char *fileName, char *title, s32 commentStart, u8 iconFrames, Tim *icon, void *data, s32 size) {
     s32 next;
 
     card->fileName = fileName;
@@ -789,7 +789,7 @@ void Card_ShowMessage(Card *card, s32 state) {
     s8 *dst;
     s8 *name;
     Tim *picture;
-    CardMessage *message;
+    ScreenSprite *message;
 
     if (state < 0x11 && card->root != 0 && card->message == NULL) {
         dst = path;
@@ -800,18 +800,18 @@ void Card_ShowMessage(Card *card, s32 state) {
         strcat(dst, g_timSuffix);
         picture = Tim_New(dst);
         picture->vtbl->upload(picture);
-        message = (CardMessage *)ScreenSprite_Create(picture, &g_cardMessageRect, 0);
+        message = ScreenSprite_Create(picture, &g_cardMessageRect, 0);
         card->message = message;
         picture->vtbl->base.delete_(picture);
-        message->vt->attach(message, card->root, g_cardMessagePos);
+        message->vtbl->attach(message, card->root, g_cardMessagePos);
     }
 }
 
 /* Card slot 0x84 */
 void Card_HideMessage(Card *card) {
-    CardMessage *message = card->message;
+    ScreenSprite *message = card->message;
     if (message != NULL) {
-        card->message = message->vt->delete_(message);
+        card->message = message->vtbl->delete_(message);
     }
 }
 

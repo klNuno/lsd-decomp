@@ -41,7 +41,7 @@ typedef struct ReelStack {
     s32 pad_0C;
 } ReelStack;
 
-static SceneVtbl *Scene_GetVtbl(void);
+static AppVtbl *Scene_GetVtbl(void);
 /* not from game/path_table.h */
 s32 Cine_GetVideoFrames(s32 videoId); /* defined as s16 in src/game/path_table.c; the callers here take the word as is */
 static void Scene_ShowLogo(Scene *scene, void *path);
@@ -49,7 +49,7 @@ static void Scene_OnLogoClosed(void);
 static void Scene_PlayCinematic(Scene *scene);
 static s32 Scene_RunScreen(Screen *(*create)(), DreamSys *dreamSys, ScreenEnv *env);
 static void Scene_PlayReel(Scene *scene);
-extern SceneVtbl g_sceneVtbl[];
+extern AppVtbl g_sceneVtbl[];
 
 /* main makes the one scene with g_sceneSettings. */
 Scene *Scene_New(SceneSettings *settings) {
@@ -58,7 +58,7 @@ Scene *Scene_New(SceneSettings *settings) {
     scene = Heap_Alloc(0x2C);
     /* No return on the NULL path: v0 still holds scene (NULL) from the allocator. */
     if (scene != NULL) {
-        Scene_GetVtbl()->init(scene, settings);
+        Scene_GetVtbl()->base.init(scene, settings);
         return scene;
     }
 }
@@ -75,7 +75,7 @@ void Scene_Init(Scene *scene, SceneSettings *settings) {
     scene->dreamSys = DreamSys_New(Tmd_Create(&model), NULL, NULL);
     scene->skipGraph = 0;
     scene->dreamSys->vtbl->unk228(scene->dreamSys, settings->unk14);
-    scene->vtbl->seedRandom(scene);
+    scene->vtbl->setScreenMode(scene); /* Scene_SeedRandom in the Scene vtable */
 }
 
 /* Slot 0x40: the only non-zero seed of the game (docs/discoveries.md, random numbers). */
@@ -101,8 +101,8 @@ void Scene_ShowLogos(Scene *scene) {
         Scene_ShowLogo(scene, "ETC\\ASMKLOGO.TIM");
         video = VideoScreen_New(0, 0, 0, 0);
         path = Cine_GetLogoPath(&videoId);
-        video->vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
-        video->vtbl->delete_(video);
+        video->menuScreen.vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
+        video->menuScreen.vtbl->delete_(video);
         Scene_ShowLogo(scene, "ETC\\OSDLOGO.TIM");
     }
 }
@@ -134,8 +134,8 @@ void Scene_PlayOpening(Scene *scene) {
         File_EnableWait(0, 0, 0);
         video = VideoScreen_New(0, 0, 0, 0);
         path = Cine_PickOpeningPath(&videoId, 0);
-        video->vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
-        video->vtbl->delete_(video);
+        video->menuScreen.vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
+        video->menuScreen.vtbl->delete_(video);
     }
 }
 
@@ -187,10 +187,10 @@ static void Scene_PlayReel(Scene *scene) {
         File_EnableWait(0, 0, 0);
         video = VideoScreen_New(0, 0, 0, 0);
         path = Cine_GetSpecialDayRun(&reel.frames, 0, 0xA);
-        video->vtbl->setTimeout(video, (u32)reel.frames / 15);
-        video->vtbl->setSkippable(video, 0);
-        video->vtbl->run(video, scene->env, path, -1, 1);
-        video->vtbl->delete_(video);
+        video->menuScreen.vtbl->setTimeout(video, (u32)reel.frames / 15);
+        video->menuScreen.vtbl->setSkippable(video, 0);
+        video->menuScreen.vtbl->run(video, scene->env, path, -1, 1);
+        video->menuScreen.vtbl->delete_(video);
     }
 }
 
@@ -270,13 +270,13 @@ void Scene_PlayEnding(Scene *scene) {
     if (scene->settings->videos != 0) {
         File_EnableWait(0, 0, 0);
         video = VideoScreen_New(0, 0, 0, 0);
-        video->vtbl->setSkippable(video, 0);
+        video->menuScreen.vtbl->setSkippable(video, 0);
         path = Cine_GetEndingPath(&videoId, 0);
-        video->vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
-        video->vtbl->delete_(video);
+        video->menuScreen.vtbl->run(video, scene->env, path, Cine_GetVideoFrames(videoId), 1);
+        video->menuScreen.vtbl->delete_(video);
     }
 }
 
-static SceneVtbl *Scene_GetVtbl(void) {
+static AppVtbl *Scene_GetVtbl(void) {
     return g_sceneVtbl;
 }

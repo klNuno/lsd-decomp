@@ -31,7 +31,7 @@ VideoScreen *VideoScreen_New(MenuDef *menu, char *soundPath, SoundBank *sound, S
 
 void VideoScreen_Init(VideoScreen *video, MenuDef *menu, char *soundPath, SoundBank *sound, ScreenRect *area) {
     MenuScreen_GetVtbl()->init(video, menu, soundPath, sound);
-    video->vtbl = VideoScreen_GetVtbl();
+    video->menuScreen.vtbl = VideoScreen_GetVtbl();
     if (area != NULL) {
         video->area = *area;
     } else {
@@ -39,7 +39,7 @@ void VideoScreen_Init(VideoScreen *video, MenuDef *menu, char *soundPath, SoundB
     }
     video->movie = Movie_Create(MenuScreen_GetPictureRect(), 0, 0);
     video->path = NULL;
-    video->vtbl->reset(video);
+    video->menuScreen.vtbl->reset(video);
 }
 
 void VideoScreen_Destroy(VideoScreen *video) {
@@ -73,7 +73,7 @@ void VideoScreen_Begin(VideoScreen *video) {
     movie->vtbl->setAutoStart(movie, video->autoStart);
     if (video->movie->vtbl->open(video->movie, video->path, video->frameCount, video->movieRepeat, video->movieLoops) != 0) {
         /* the video does not open: time out at once */
-        video->vtbl->setTimeout(video, 0);
+        video->menuScreen.vtbl->setTimeout(video, 0);
     }
 }
 
@@ -87,7 +87,7 @@ void VideoScreen_OnClock(VideoScreen *video, Clock *clock, s32 message) {
         finished = movie->vtbl->update(movie);
         video->finished = finished;
         if ((finished != 0) && (video->closing == 0)) {
-            video->vtbl->setState(video, SCREEN_CLOSING);
+            video->menuScreen.vtbl->setState(video, SCREEN_CLOSING);
         }
     }
 }
@@ -107,24 +107,24 @@ void VideoScreen_SetState(VideoScreen *video, s32 state) {
         }
         break;
     case SCREEN_SKIP:
-        video->vtbl->close(video);
+        video->menuScreen.vtbl->close(video);
         break;
     }
 }
 
 /* 15 ticks per second here, 20 in MenuScreen_SetTimeout */
 void VideoScreen_SetTimeout(VideoScreen *video, s32 seconds) {
-    video->timeout = seconds;
+    video->menuScreen.timeout = seconds;
     if (seconds >= 0) {
-        video->timeout = seconds * 15;
+        video->menuScreen.timeout = seconds * 15;
     }
 }
 
 void VideoScreen_OnCircle(VideoScreen *video) {
     MenuScreen_GetVtbl()->onCircle(video);
     if (video->skippable != 0) {
-        video->result = 2;
-        video->vtbl->setState(video, SCREEN_SKIP);
+        video->menuScreen.result = 2;
+        video->menuScreen.vtbl->setState(video, SCREEN_SKIP);
     }
 }
 
@@ -147,7 +147,7 @@ void VideoScreen_Close(VideoScreen *video) {
         video->movie->vtbl->stop(video->movie);
         return;
     }
-    video->vtbl->setState(video, SCREEN_CLOSING);
+    video->menuScreen.vtbl->setState(video, SCREEN_CLOSING);
 }
 
 void VideoScreen_SetMovieRepeat(VideoScreen *video, s32 value) {

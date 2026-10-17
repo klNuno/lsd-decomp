@@ -19,18 +19,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The dream runner's object at +0xC (src/game/dream_runner.c): slot 0xC8 registers a callback with an argument. */
-typedef struct PlaceOwnerObjVtbl {
-    u8 pad_00[0xC8];
-    void (*setChunkLoader)(void *, void (*)(Place *, s32, s32, s32), void *);
-} PlaceOwnerObjVtbl;
-typedef struct PlaceOwnerObj {
-    PlaceOwnerObjVtbl *vt;
-} PlaceOwnerObj;
-typedef struct PlaceOwner {
-    u8 pad_00[0xC];
-    PlaceOwnerObj *root;
-} PlaceOwner;
 static void Place_CheckTextureLoad(Place *place, Tix *loader);
 /* the vtable of task.c through this file's view of its slots, so not from game/task.h */
 PlaceBaseVtbl *Task_GetVtbl();
@@ -61,9 +49,9 @@ void *Place_New(SoundBank *handlerList, void *music, void *font, void *models, s
 }
 
 /* Slot 0x08 */
-void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void *font, PlaceObj *models, s32 stage) {
+void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void *font, Tmd *models, s32 stage) {
     Task_GetVtbl()->construct(place, 0, handlerList);
-    place->vt = Place_GetVtbl();
+    place->vtbl = Place_GetVtbl();
     place->ready = 0;
     place->started = 0;
     place->texLoading = 1;
@@ -74,7 +62,7 @@ void Place_Construct(Place *place, SoundBank *handlerList, PlaceObj *music, void
     place->refs.models = models;
     place->pauseOpen = 0;
     place->exitArmed = 0;
-    place->vt->reset(place);
+    place->vtbl->reset(place);
 }
 
 /* Slot 0x0C */
@@ -93,11 +81,11 @@ void Place_OnNotify(Place *place, s32 **sender, s32 message) {
     Task_GetVtbl()->onNotify(place, sender, message);
     classId = **sender;
     if ((classId & 0xFFF) == 0x114) {
-        place->vt->onMapNotify(place, sender, message);
+        place->vtbl->onMapNotify(place, sender, message);
     } else if ((classId & 0xFFF) == 0x164) {
-        place->vt->onFaderNotify(place, sender, message);
+        place->vtbl->onFaderNotify(place, sender, message);
     } else if ((classId & 0xFFFF) == 0x1F34) {
-        place->vt->onDreamSysNotify(place, sender, message);
+        place->vtbl->onDreamSysNotify(place, sender, message);
     }
 }
 
@@ -105,14 +93,14 @@ void Place_EmptySlot40(void) {
 }
 
 /* Slot 0x44: keep the DreamSys and register Place_GetChunkPath with the runner's object. */
-void Place_Attach(Place *place, PlaceOwner *owner, DreamSys *dreamSys) {
-    PlaceOwnerObj *obj;
+void Place_Attach(Place *place, ScreenEnv *owner, DreamSys *dreamSys) {
+    StageMap *obj;
 
-    obj = owner->root;
-    obj->vt->setChunkLoader(obj, &Place_GetChunkPath, place);
+    obj = (StageMap *)owner->root;
+    obj->vtbl->setChunkLoader(obj, &Place_GetChunkPath, place);
     place->dreamSys = dreamSys;
     Task_GetVtbl()->attach(place, owner, 1);
-    place->vt->watch(place, dreamSys);
+    place->vtbl->watch(place, dreamSys);
 }
 
 static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
@@ -125,7 +113,7 @@ static void Place_GetChunkPath(Place *place, s32 result, s32 col, s32 row) {
 
 /* Slot 0x48 */
 void Place_Detach(Place *place) {
-    place->vt->unwatch(place, place->dreamSys);
+    place->vtbl->unwatch(place, place->dreamSys);
     Task_GetVtbl()->detach(place);
 }
 
@@ -180,7 +168,7 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
 void Place_Unload(Place *place) {
     PlaceObj *music;
 
-    place->vt->teardown();
+    place->vtbl->teardown();
     Sym_FreeSpy();
     Scenery_Teardown();
     music = place->music;
@@ -208,7 +196,7 @@ static void Place_CheckTextureLoad(Place *place, Tix *loader) {
         if (loader->failed != 0) {
             loader->vtbl->base.delete_(loader);
             place->texLoading = 0;
-            place->vt->setup(place);
+            place->vtbl->setup(place);
             place->dreamSys->vtbl->swapTimeLimit(place->dreamSys, place->dreamSys->vtbl->getElapsedSeconds(place->dreamSys) + 0x1E);
         } else if (loader->loaded != 0) {
             ambience = place->ambience;
@@ -221,7 +209,7 @@ static void Place_CheckTextureLoad(Place *place, Tix *loader) {
             vt->setFadeColorAll(loader, color);
             loader->vtbl->base.delete_(loader);
             place->texLoading = 0;
-            place->vt->setup(place);
+            place->vtbl->setup(place);
         }
         if (place->texLoading != 0) {
             return;
@@ -229,7 +217,7 @@ static void Place_CheckTextureLoad(Place *place, Tix *loader) {
     }
     if (place->map->pendingSlots == 0 && place->started == 0) {
         place->ready = 1;
-        place->vt->start(place);
+        place->vtbl->start(place);
     }
 }
 
@@ -238,7 +226,7 @@ void Place_OnPad(Place *place, s32 sender, s32 code) {
     PlaceVtbl *vt;
     void (*fn)();
 
-    vt = place->vt;
+    vt = place->vtbl;
     if (place->started != 0) {
         switch (code) {
         case 33:
@@ -265,9 +253,9 @@ void Place_Tick(Place *place) {
     if (place->started != 0) {
         place->ticks = place->ticks + 1;
         if (place->pauseOpen != 0) {
-            place->vt->updatePause(place);
+            place->vtbl->updatePause(place);
         } else {
-            place->vt->update(place);
+            place->vtbl->update(place);
         }
     }
 }
@@ -276,7 +264,7 @@ void Place_Tick(Place *place) {
 void Place_TogglePause(Place *place) {
     PlaceVtbl *vt;
 
-    vt = place->vt;
+    vt = place->vtbl;
     if (place->pauseOpen != 0) {
         vt->disarmExit(place);
         vt->closePause(place);
@@ -293,18 +281,18 @@ void Place_Setup(Place *place) {
     View *view;
     StageMap *map;
     Ambience *ambience;
-    PlaceObj *first;
+    Display *first;
     DreamSys *dreamSys;
 
     view = place->view;
     ambience = place->ambience;
     view->vtbl->detach(view);
-    first = *place->env;
-    view->vtbl->setProjection(view, (((*first->vt->getScreenRect(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
+    first = place->env->display;
+    view->vtbl->setProjection(view, (((*first->vtbl->getScreenRect(first, 0) / 2) * 5) / 3) + g_placeProjectionOffset);
     view->vtbl->setCamera(view, place->dreamSys, g_placeViewpoint, g_placeRefPoint, 0);
     Sym_InitStage(place->stage, place->map, place->dreamSys, place->sound, place->clock);
     map = place->map;
-    place->vt->watch(place, map);
+    place->vtbl->watch(place, map);
     map->vtbl->setAmbient(map, ambience->ambient, 0);
     map->vtbl->setLights(map, 3, ambience->lightVectors, ambience->lightColors);
     map->vtbl->setGrid(map, Stage_GetGrid(place->stage));
@@ -316,11 +304,11 @@ void Place_Setup(Place *place) {
 
 /* Slot 0x84 */
 void Place_Teardown(Place *place) {
-    place->vt->closePause(place);
+    place->vtbl->closePause(place);
     place->dreamSys->vtbl->lockControls(place->dreamSys);
     place->dreamSys->vtbl->leaveMap(place->dreamSys);
     place->view->vtbl->detach(place->view);
-    place->vt->unwatch(place, place->map);
+    place->vtbl->unwatch(place, place->map);
 }
 
 /* Slot 0x88: the place starts; the view takes the ambience colours and the fader the day's colour. */
@@ -346,7 +334,7 @@ void Place_Start(Place *place) {
     view->vtbl->setExtraSwap(view, 0);
     view->vtbl->setPresentEnabled(view, 1);
     fader = view->vtbl->getOverlay(view);
-    place->vt->watch(place, fader);
+    place->vtbl->watch(place, fader);
     dreamSys = place->dreamSys;
     flashbackMode = dreamSys->vtbl->setFlashbackMode(dreamSys, &color, -1);
     fader->vtbl->setTint(fader, flashbackMode, flashbackMode != 0 ? 3 : 0);
@@ -367,27 +355,27 @@ void Place_OnDreamSysNotify(Place *place, s32 sender, s32 message) {
         event = message - 10;
         switch (event) {
             case 0:
-                place->vt->onTimeUp(place, sender, event);
+                place->vtbl->onTimeUp(place, sender, event);
                 break;
             case 1:
                 break;
             case 2:
-                place->vt->onLinkDynamic(place, sender, event);
+                place->vtbl->onLinkDynamic(place, sender, event);
                 break;
             case 3:
-                place->vt->onLinkStatic(place, sender, event);
+                place->vtbl->onLinkStatic(place, sender, event);
                 break;
             case 4:
-                place->vt->onNextFlashback(place, sender, event);
+                place->vtbl->onNextFlashback(place, sender, event);
                 break;
             case 5:
-                place->vt->onLinkFacing(place, sender, event);
+                place->vtbl->onLinkFacing(place, sender, event);
                 break;
             case 6:
-                place->vt->onLinkFall(place, sender, event);
+                place->vtbl->onLinkFall(place, sender, event);
                 break;
             case 7:
-                place->vt->onLinkExtra(place, sender, event);
+                place->vtbl->onLinkExtra(place, sender, event);
                 break;
         }
     } else if (message >= 9) {
@@ -411,7 +399,7 @@ void Place_OnTimeUp(Place *place) {
         phase = (place->ticks + place->stage) & 3;
         pick = phase;
         if (phase == 0) {
-            place->vt->notify(place, 4);
+            place->vtbl->notify(place, 4);
             return;
         }
         duration = 0xA;
@@ -438,7 +426,7 @@ void Place_OnLinkDynamic(Place *place) {
     DreamSys *dreamSys;
 
     if (place->dreamSys->stage < 0) {
-        place->vt->onLinkStatic(place);
+        place->vtbl->onLinkStatic(place);
     } else {
         place->state = 5;
         dreamSys = place->dreamSys;
@@ -489,7 +477,7 @@ void Place_OnLinkFall(Place *place) {
 
 /* Slot 0xAC */
 void Place_OnLinkExtra(Place *place) {
-    place->vt->notify(place, 0xB);
+    place->vtbl->notify(place, 0xB);
 }
 
 /* Start the view's fader towards a colour index (0 to 7), watched when asked. */
@@ -503,7 +491,7 @@ void Place_StartFade(Place *place, s32 color, s32 holdMode, s32 duration, s32 wa
         fader->vtbl->setStep(fader, duration);
     }
     if (watch != 0) {
-        place->vt->watch(place, fader);
+        place->vtbl->watch(place, fader);
     }
     fader->vtbl->startOut(fader, place->clock, color, holdMode);
 }
@@ -514,12 +502,12 @@ void Place_OnFaderNotify(Place *place, Fade *fader, s32 message) {
 
     switch (message) {
     case 5:
-        place->vt->unwatch(place, fader);
+        place->vtbl->unwatch(place, fader);
         place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 0);
         place->state = 0;
         break;
     case 6:
-        place->vt->unwatch(place, fader);
+        place->vtbl->unwatch(place, fader);
         color = fader->vtbl->getColor(fader);
         place->view->vtbl->setClearColor(place->view, color);
         if (place->state == 5 || place->state == 8) {
@@ -528,7 +516,7 @@ void Place_OnFaderNotify(Place *place, Fade *fader, s32 message) {
             place->dreamSys->vtbl->setAutoWalk(place->dreamSys, 0);
             place->state = 4;
         }
-        place->vt->notify(place, place->state);
+        place->vtbl->notify(place, place->state);
         break;
     }
 }
@@ -536,7 +524,7 @@ void Place_OnFaderNotify(Place *place, Fade *fader, s32 message) {
 /* Slot 0xB4: map message 7 runs slot 0xB8 (called without arguments; a0 still holds the place). */
 void Place_OnMapNotify(Place *place, s32 sender, s32 message) {
     if (message == 7) {
-        place->vt->spawnCell();
+        place->vtbl->spawnCell();
     }
 }
 
@@ -582,16 +570,16 @@ void Place_DisarmExit(Place *place) {
 /* Slot 0xC8, TRIANGLE: when armed, close the pause and send 0xD (DreamSys_EndDay(2), a new game). */
 void Place_ConfirmExit(Place *place) {
     if (place->exitArmed != 0) {
-        place->vt->closePause(place);
-        place->vt->notify(place, 0xD);
+        place->vtbl->closePause(place);
+        place->vtbl->notify(place, 0xD);
     }
 }
 
 /* Slot 0xCC, never called: send 0xC (DreamSys_EndDay(1), the day is restored). */
 void Place_ExitNoRecord(Place *place) {
     if (place->exitArmed != 0) {
-        place->vt->closePause(place);
-        place->vt->notify(place, 0xC);
+        place->vtbl->closePause(place);
+        place->vtbl->notify(place, 0xC);
     }
 }
 
@@ -609,7 +597,7 @@ void Place_UpdatePause(Place *place) {
     place->pauseOpen = ticks + 1;
     if (ticks == 4) {
         place->view->vtbl->setPresentEnabled(place->view, 0);
-        place->clock->vt->pause(place->clock);
+        place->clock->vtbl->pause(place->clock);
         place->music->vt->pause(place->music);
         place->sound->vt->muteBank(place->sound);
     }
@@ -622,7 +610,7 @@ void Place_ClosePause(Place *place) {
     }
     place->sound->vt->unmuteBank(place->sound);
     place->music->vt->resume(place->music);
-    place->clock->vt->resume(place->clock);
+    place->clock->vtbl->resume(place->clock);
     place->view->vtbl->setPresentEnabled(place->view, 1);
     place->pauseOpen = 0;
 }

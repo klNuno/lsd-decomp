@@ -26,29 +26,38 @@ typedef struct TimVtbl {
     void (*getInfo)(void *, void *); /* 0x9C Tim_GetInfo: GsGetTimInfo into a GsIMAGE */
 } TimVtbl;
 
-/* PSY-Q GsIMAGE as Tim_Upload reads it (GsImage in src/game/tim_pack.c has s16 positions and pointers) */
+/* PSY-Q GsIMAGE, filled by GsGetTimInfo (slot 0x9C); the one GsIMAGE type of the game C */
 typedef struct TimImage {
     u32 pmode;                /* 0x00 bit 3: the TIM has a CLUT */
-    u16 px;
-    u16 py;
+    s16 px;                   /* 0x04 VRAM position of the pixels */
+    s16 py;
     u16 pw;
     u16 ph;
-    s32 pixel;                /* 0x0C */
-    u16 cx;
-    u16 cy;
+    u32 *pixel;               /* 0x0C */
+    s16 cx;                   /* 0x10 VRAM position of the CLUT; cy is its row */
+    s16 cy;
     u16 cw;
     u16 ch;
-    s32 clut;                 /* 0x18 */
+    u32 *clut;                /* 0x18 */
 } TimImage;
 
 typedef struct Tim {
-    TimVtbl *vtbl;
+    TimVtbl *vtbl;            /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
-    u32 *data;                /* 0x10 the TIM file: id word, then the TIM */
-    s32 size;                 /* 0x14 File.size: 0 when the TIM is borrowed from a TimPack */
-    u8 pad_18[0x2C - 0x18];   /* the other File fields */
+    s32 isOpen;
+    union {
+        u8 *bytes;
+        u32 *words;           /* the TIM file: id word, then the TIM */
+    } data;                   /* 0x10 */
+    s32 size;                 /* 0x14 0 when the TIM is borrowed from a TimPack */
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
     TimImage image;           /* 0x2C filled by getInfo before each upload */
     s32 unk48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
     struct TixFade *fade;     /* 0x4C the TixFade of its palette row (tix.h), NULL at init */

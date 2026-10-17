@@ -49,6 +49,7 @@ typedef struct MenuDef {
     OptionListDef **options; /* 0x24 per item, NULL when the item has none */
 } MenuDef;
 
+/* The first 0x28 bytes are the screen's (screen.h Screen), field for field. */
 typedef struct MenuScreen {
     ScreenVtbl *vtbl;
     ListNode *watched;

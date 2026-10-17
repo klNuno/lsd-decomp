@@ -31,12 +31,10 @@
 #define PAD_PRESSED_CIRCLE (PAD_PRESSED + 7)
 #define PAD_PRESSED_START (PAD_PRESSED + 15)
 
-/* not from game/screen.h: other files read this vtable through their own views of the slots */
-ScreenVtbl *Screen_GetVtbl(void);
 extern ScreenVtbl g_menuScreenVtbl[]; /* MenuScreen */
 extern s32 g_pictureRect[];        /* ScreenRect (640, 0) 320 x 240: the VRAM area of pictures and videos */
 extern u8 g_menuScreenColors[];         /* MenuScreen_Reset colors: (0, 0, 0), (0, 0, 0), (128, 128, 128) */
-extern s32 g_screenZeroVec[];        /* ScreenVec (0, 0, 0) */
+extern s32 g_screenZeroVec[];        /* Vec3 (0, 0, 0) */
 extern BoxSize g_optionBoxSize[];    /* option box: (320, 240) */
 extern u8 g_optionBoxColor[];        /* option box: "  @" */
 

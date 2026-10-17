@@ -16,16 +16,25 @@ typedef struct MmlHeader {
 } MmlHeader;
 
 typedef struct Mml {
-    MomVtbl *vtbl;
+    MomVtbl *vtbl;            /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
+    s32 isOpen;
     union {
         MmlHeader *header;
         u8 *bytes;
     } data;                   /* 0x10 */
-    s32 size;                 /* 0x14 */
-    u8 pad_18[0x38 - 0x18];   /* Mom's tmd and motions stay NULL, hasParts 0 */
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
+    Tmd *tmd;                 /* 0x2C to 0x37: Mom's fields (mom.h), NULL and 0 in an MML */
+    TodPack *motions;
+    s32 hasParts;
     s32 momCount;             /* 0x38 Mom objects made */
 } Mml;
 

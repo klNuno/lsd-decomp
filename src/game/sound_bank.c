@@ -8,37 +8,10 @@
 
 /*
  * Sound: the PSY-Q sound bank (VAB) that a model holds at +0x58 and its tone table (vtable
- * g_soundBankVtbl). Several functions see the bank through a view struct where a field has another
- * type or width there.
+ * g_soundBankVtbl).
  *
  * File boundaries: likely (docs/layout.md)
  */
-
-/* Sound_LoadProgramTable view of the bank: the VAB header at 0x2C and the tables built from it. */
-typedef struct SoundBankVab {
-    SoundBankVtbl *vt;
-    u8 pad_04[0xC];
-    u8 *vabBuffer;
-    u8 pad_14[0x18];
-    u8 vabHeader[0x12];        /* 0x2C, filled by SsUtGetVabHdr (ps at +0x12, ts at +0x14) */
-    u16 programCount;          /* 0x3E */
-    u16 toneCount;             /* 0x40 */
-    u8 pad_42[0xA];
-    u8 *toneData;              /* 0x4C */
-    u8 **programTones;         /* 0x50 */
-    s16 vabId;                 /* 0x54 */
-    u8 pad_56[0x2];
-    u16 transferDone;          /* 0x58 */
-} SoundBankVab;
-
-/* Sound_PlayTone view of the bank: the tone table pointers and the note shift (u16 there). */
-typedef struct SoundBankTones {
-    u8 pad_00[0x50];
-    SoundTone **programTones;  /* 0x50 */
-    s16 vabId;                 /* 0x54 */
-    u8 pad_56[0xA];
-    u16 noteShift;             /* 0x60 */
-} SoundBankTones;
 
 extern SoundBankVtbl g_soundBankVtbl;
 s32 g_spuReady;
@@ -127,11 +100,11 @@ void Sound_OnBankLoaded(SoundBank *bank) {
             break;
         case 1:
             if (bank->flags & 0x200) {
-                bank->vabId = SsVabOpenHead(bank->vabBuffer, -1);
+                bank->vabId = SsVabOpenHead(bank->data, -1);
                 File_JoinPath(fullPath, bank->path, NULL, g_vabBodyExt);
                 bank->state = 6;
-                oldVabBuffer = bank->vabBuffer;
-                bank->vabBuffer = 0;
+                oldVabBuffer = bank->data;
+                bank->data = 0;
                 g_vabBuffer = oldVabBuffer;
                 bank->vtbl->load(bank, fullPath, oldVabBuffer);
                 if (bank->path != 0) {
@@ -142,7 +115,7 @@ void Sound_OnBankLoaded(SoundBank *bank) {
             break;
         case 6:
             if (bank->flags & 0x200) {
-                ret = SsVabTransBody(bank->vabBuffer, bank->vabId);
+                ret = SsVabTransBody(bank->data, bank->vabId);
                 bank->vabId = ret;
                 if (ret != -1) {
                     bank->transferring = 1;
@@ -168,7 +141,7 @@ s32 Sound_PollTransfer(SoundBank *bank, s32 allowFinish) {
     return ret;
 }
 
-void Sound_LoadProgramTable(SoundBankVab *bank) {
+void Sound_LoadProgramTable(SoundBank *bank) {
     s32 i;
     s32 j;
     u8 *vagp;
@@ -177,8 +150,8 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
     if (bank->transferDone == 0) {
         return;
     }
-    bank->vt->freeData();
-    bank->vabBuffer = g_vabBuffer;
+    bank->vtbl->freeData();
+    bank->data = g_vabBuffer;
     if (SsUtGetVabHdr(bank->vabId, &bank->vabHeader) == -1) {
         return;
     }
@@ -192,7 +165,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
     }
     vagp = bank->toneData;
     for (i = 0; i < bank->programCount; i++) {
-        bank->programTones[i] = vagp;
+        bank->programTones[i] = (SoundTone *)vagp;
         if (SsUtGetProgAtr(bank->vabId, i, progAtr) == -1) {
             return;
         }
@@ -210,7 +183,7 @@ void Sound_LoadProgramTable(SoundBankVab *bank) {
     }
 }
 
-s16 Sound_PlayTone(SoundBankTones *bank, s32 sound, s16 volume, s16 endVolume) {
+s16 Sound_PlayTone(SoundBank *bank, s32 sound, s16 volume, s16 endVolume) {
     s32 program;
     SoundTone *tone;
     s16 voice;
@@ -221,7 +194,7 @@ s16 Sound_PlayTone(SoundBankTones *bank, s32 sound, s16 volume, s16 endVolume) {
     program = sound >> 4;
     tone = bank->programTones[program];
     tone += sound - (program << 4);
-    voice = SsUtKeyOn(bank->vabId, program, sound - (program << 4), tone->center + bank->noteShift, tone->fine, volume, volume);
+    voice = SsUtKeyOn(bank->vabId, program, sound - (program << 4), tone->center + bank->noteShift.low, tone->fine, volume, volume);
     if (voice < 0) {
         return -1;
     }
@@ -262,7 +235,7 @@ void Sound_EmptySlot98(void) {
 }
 
 void Sound_SetOctave(SoundBank *bank, s32 octave) {
-    bank->noteShift = octave * 12 - 24;
+    bank->noteShift.word = octave * 12 - 24;
 }
 
 SoundBankVtbl *Sound_GetBankClass(void) {

@@ -31,16 +31,22 @@ typedef struct MomHeader {
 } MomHeader;
 
 typedef struct Mom {
-    MomVtbl *vtbl;
+    MomVtbl *vtbl;            /* 0x00 to 0x2B: the File header (file_base.h) */
     ListNode *watched;
     ListNode *watchers;
-    u8 pad_0C[0x10 - 0x0C];
+    s32 isOpen;
     union {
         u8 *bytes;
         MomHeader *header;
     } data;                   /* 0x10 */
-    s32 size;                 /* 0x14 */
-    u8 pad_18[0x2C - 0x18];
+    s32 size;
+    CdlLocDir cdPos;
+    u32 cdSize;
+    u16 keepData;
+    u16 pending;
+    u32 flags;
+    u16 direct;
+    u16 state;
     Tmd *tmd;                 /* 0x2C */
     TodPack *motions;         /* 0x30 */
     s32 hasParts;             /* 0x34 1 from Mom_Create, 0 for an MML */

@@ -21,28 +21,6 @@
 static s32 Mood_GetColor(MoodPoint *point);
 static s32 DreamSys_ExecuteLink();
 extern u8 g_turnRotations[];
-/* g_actorVtbl (0x800878D4), the Actor base class (src/game/actor.c), as the DreamSys methods call it. */
-typedef struct ActorVtblView {
-    u8 pad_00[0x8];
-    void (*init)(void *);                       /* 0x08 Actor_Construct */
-    u8 pad_0C[0x4C - 0x0C];
-    void (*attach)(void *, void *, void *);     /* 0x4C SceneNode_Attach, called with the map and the start position */
-    void (*detach)(void *);                     /* 0x50 SceneNode_Detach */
-    u8 pad_54[0x88 - 0x54];
-    void (*sendBoxes)(void *, s32);             /* 0x88 Actor_SendBoxes */
-    u8 pad_8C[0x9C - 0x8C];
-    void (*onNode)(void *, s32 **, s32);        /* 0x9C Actor_OnNode */
-    u8 pad_A0[0xDC - 0xA0];
-    void (*onNode34)(void *, s32 **, s32);      /* 0xDC Actor_OnNode34 */
-    void (*onNode24)(void *, s32 **, s32);      /* 0xE0 Actor_OnNode24 */
-} ActorVtblView;
-/* the vtable of actor.c through this file's view of its slots, so not from game/actor.h */
-ActorVtblView *Actor_GetVtbl(void);
-/* A rotation in degrees (three Fractions, SceneNode_GetRotation) read for its yaw numerator. */
-typedef struct RotationYaw {
-    u8 pad_00[4];
-    u16 yaw;
-} RotationYaw;
 s32 g_saveMagic;
 static DreamSysVtbl *DreamSys_GetVtable(void);
 extern s32 g_dreamerStartRotation[];
@@ -53,7 +31,7 @@ extern s16 g_linkStep2Start[];
 extern u8 g_yawPlus45[];
 static void DreamSys_MoveToTileOffset(DreamSys *, s16 *, s16 *);
 extern s32 g_pointAheadZ[];
-static s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos);
+static s32 DreamSys_GetSightHeight(Vec3 *start, Vec3 *end, s32 pos);
 extern s16 g_linkStep0Start[];
 extern s32 g_pitchSteps[];
 extern s32 g_pitchLimits[];
@@ -72,7 +50,7 @@ extern s8 g_walkSigns[];
 extern void (*g_walkMoves[])(void *, s32, s32);
 extern s32 (*g_linkSteps[])(DreamSys *);
 
-DreamSys *DreamSys_New(Tmd *tmd, SoundBank *soundBank, DreamCamera *camera) {
+DreamSys *DreamSys_New(Tmd *tmd, SoundBank *soundBank, View *camera) {
     DreamSys *dreamSys;
 
     dreamSys = Heap_Alloc(0x928);
@@ -83,11 +61,11 @@ DreamSys *DreamSys_New(Tmd *tmd, SoundBank *soundBank, DreamCamera *camera) {
     return NULL;
 }
 
-void DreamSys_Init(DreamSys *dreamSys, Tmd *tmd, SoundBank *soundBank, DreamCamera *camera) {
+void DreamSys_Init(DreamSys *dreamSys, Tmd *tmd, SoundBank *soundBank, View *camera) {
     Actor_GetVtbl()->init(dreamSys);
     dreamSys->vtbl = DreamSys_GetVtable();
     dreamSys->soundBank = soundBank;
-    dreamSys->camera.obj = camera;
+    dreamSys->camera = camera;
     dreamSys->etcTim = 0;
     dreamSys->tmd = tmd;
     dreamSys->vtbl->watch(dreamSys, tmd->vtbl->getModel(tmd, 0));
@@ -166,7 +144,7 @@ void DreamSys_OnGroundProbe(DreamSys *dreamSys, s32 message) {
         return;
     case -2:
         map2 = dreamSys->map;
-        if (map2->vtbl->slotAt(map2, dreamSys->pos.bytes + 0x18)->chunk->loaded == 2) {
+        if (map2->vtbl->slotAt(map2, &dreamSys->object.coord->coord.t)->chunk->loaded == 2) {
             map = dreamSys->map;
             dreamSys->vtbl->linkFall(dreamSys, map->vtbl->getLocation(map, 0, 0));
         } else {
@@ -233,13 +211,13 @@ void DreamSys_OnClock(DreamSys *dreamSys, s32 sender, s32 message) {
     u32 ticks;
 
     if (message == 2) {
-        ticks = dreamSys->timer;
-        dreamSys->timer = ticks + 1;
+        ticks = dreamSys->ticks;
+        dreamSys->ticks = ticks + 1;
         if (ticks >= (u32) dreamSys->timeLimit) {
             if (dreamSys->flashbackMode != 0) {
                 if (dreamSys->transition != 0 || dreamSys->vtbl->loadNextFlashback(dreamSys, 0) != 0) {
                 reset:
-                    dreamSys->timer = 0;
+                    dreamSys->ticks = 0;
                     return;
                 }
             } else {
@@ -261,7 +239,7 @@ void DreamSys_RouteMapMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
 }
 
 void DreamSys_RouteEntityMessage(DreamSys *dreamSys, s32 **sender, s32 message) {
-    Actor_GetVtbl()->onNode34(dreamSys, sender, message);
+    Actor_GetVtbl()->onTouch34(dreamSys, sender, message);
     if ((**sender & 0xFFFFF) == 0x1F234) {
         dreamSys->vtbl->onEntityEvent(dreamSys, sender, message);
     }
@@ -271,7 +249,7 @@ void DreamSys_OnWallTouch(DreamSys *dreamSys, s32 **sender, s32 message) {
     StageMap *map;
     StagePlace *touched;
 
-    Actor_GetVtbl()->onNode24(dreamSys, sender, message);
+    Actor_GetVtbl()->onTouch24(dreamSys, sender, message);
     if (message == 4 && dreamSys->transition == 0) {
         map = dreamSys->map;
         touched = map->vtbl->getTellKey(map, sender);
@@ -367,15 +345,15 @@ s32 DreamSys_SwapTimeLimit(DreamSys *dreamSys, s32 seconds) {
 }
 
 u32 DreamSys_GetElapsedSeconds(DreamSys *dreamSys) {
-    return dreamSys->timer / 15;
+    return dreamSys->ticks / 15;
 }
 
 void DreamSys_SetSoundBank(DreamSys *dreamSys, SoundBank *value) {
     dreamSys->soundBank = value;
 }
 
-void DreamSys_SetCamera(DreamSys *dreamSys, DreamCamera *value) {
-    dreamSys->camera.obj = value;
+void DreamSys_SetCamera(DreamSys *dreamSys, View *value) {
+    dreamSys->camera = value;
 }
 
 void DreamSys_SetEtcTim(DreamSys *dreamSys, struct Tim *value) {
@@ -385,7 +363,7 @@ void DreamSys_SetEtcTim(DreamSys *dreamSys, struct Tim *value) {
 void DreamSys_TickBegin(DreamSys *dreamSys) {
     if (dreamSys->controlsLocked == 0) {
         dreamSys->circlePressed = 0;
-        dreamSys->dynamicLinkOn = dreamSys->timer % dreamSys->linkPeriod == 0;
+        dreamSys->dynamicLinkOn = dreamSys->ticks % dreamSys->linkPeriod == 0;
     }
 }
 
@@ -405,9 +383,9 @@ s32 DreamSys_TestPointAhead(DreamSys *dreamSys, Vec3 *pointOut, s32 distance, s3
 
     g_pointAheadZ[0] = distance;
     SceneNode_LocalToWorld(dreamSys, &point, &g_pointAheadZ[-2], 0);
-    height = DreamSys_GetSightHeight((ScreenVec *)(dreamSys->camera.bytes + 0x14), (ScreenVec *)(dreamSys->camera.bytes + 0x20), distance);
+    height = DreamSys_GetSightHeight(&dreamSys->camera->viewpoint, &dreamSys->camera->refPoint, distance);
     if (dreamSys->parent != 0) {
-        worldPos = &dreamSys->pos.coord->workm.t;
+        worldPos = &dreamSys->object.coord->workm.t;
     } else {
         worldPos = NULL;
     }
@@ -421,7 +399,7 @@ s32 DreamSys_TestPointAhead(DreamSys *dreamSys, Vec3 *pointOut, s32 distance, s3
     return 0;
 }
 
-static s32 DreamSys_GetSightHeight(ScreenVec *start, ScreenVec *end, s32 pos) {
+static s32 DreamSys_GetSightHeight(Vec3 *start, Vec3 *end, s32 pos) {
     s32 span;
 
     pos /= 1024;
@@ -516,8 +494,8 @@ void DreamSys_TickPitch(DreamSys *dreamSys) {
     s32 step;
     s32 pitch;
     s32 limit;
-    DreamCamera *camera2;
-    DreamCamera *camera;
+    View *camera2;
+    View *camera;
     s32 input;
 
     input = dreamSys->pitchInput;
@@ -526,8 +504,8 @@ void DreamSys_TickPitch(DreamSys *dreamSys) {
         limit = g_pitchLimits[input];
         newPitch = step + dreamSys->pitch;
         if ((newPitch < 0 ? ~newPitch + 1 : newPitch) < limit) {
-            camera = dreamSys->camera.obj;
-            camera->refPointY = (u32) (step + camera->refPointY);
+            camera = dreamSys->camera;
+            camera->refPoint.y = (u32) (step + camera->refPoint.y);
             dreamSys->pitch = newPitch;
         }
         dreamSys->pitchInput = 0;
@@ -539,8 +517,8 @@ void DreamSys_TickPitch(DreamSys *dreamSys) {
         if (pitch < 0) {
             step = 0x258;
         }
-        camera2 = dreamSys->camera.obj;
-        camera2->refPointY = (u32) (step + camera2->refPointY);
+        camera2 = dreamSys->camera;
+        camera2->refPoint.y = (u32) (step + camera2->refPoint.y);
         dreamSys->pitch = (s32) (step + dreamSys->pitch);
     }
 }
@@ -629,7 +607,7 @@ s32 DreamSys_TickStep(DreamSys *dreamSys, void *allowShake) {
     s32 tick;
     s32 bit;
     s32 step;
-    DreamCamera *camera = allowShake;
+    View *camera = allowShake;
 
     direction = 0;
     if (dreamSys->walkDirection != 0) {
@@ -648,14 +626,14 @@ s32 DreamSys_TickStep(DreamSys *dreamSys, void *allowShake) {
         if (playSound != 0) {
             dreamSys->vtbl->playStepSound(dreamSys);
         }
-        camera = dreamSys->camera.obj;
+        camera = dreamSys->camera;
         if (camera != 0 && dreamSys->save.shake != 0 && allowShake != 0) {
             step = -0x32;
             if (dreamSys->stepTick >= 3) {
                 step = 0x32;
             }
-            camera->viewpointY += step;
-            camera->refPointY += step;
+            camera->viewpoint.y += step;
+            camera->refPoint.y += step;
         }
         if (dreamSys->walkDirection == 0) {
             dreamSys->stepTick = 0;
@@ -716,13 +694,13 @@ void DreamSys_Walk(DreamSys *dreamSys, s32 direction) {
             dreamSys->vtbl->savePosition(dreamSys);
             g_walkMoves[direction](dreamSys, distance, dreamSys->skipMoveBoxes == 0);
             if (dreamSys->stage == 0) {
-                coord = dreamSys->pos.coord;
+                coord = dreamSys->object.coord;
                 if (coord->coord.t.y < -0x7D0 && coord->coord.t.x >= -0x1F3) {
                     dreamSys->vtbl->onWallTouch(dreamSys, dreamSys, 4);
                 }
             }
         }
-        dreamSys->pos.coord->flg = 0;
+        dreamSys->object.coord->flg = 0;
     }
 }
 
@@ -737,12 +715,12 @@ void DreamSys_TickTurn(DreamSys *dreamSys) {
 }
 
 void DreamSys_TickFall(DreamSys *dreamSys) {
-    DreamCamera *camera;
+    View *camera;
 
     if (dreamSys->falling != 0) {
         dreamSys->vtbl->move(dreamSys, g_fallStep);
-        camera = dreamSys->camera.obj;
-        camera->refPointY = camera->refPointY - 0x258;
+        camera = dreamSys->camera;
+        camera->refPoint.y = camera->refPoint.y - 0x258;
     }
     if (dreamSys->fallSoundOn != 0) {
         HandlerNode_Run(dreamSys->soundBank, &dreamSys->fallSound);
@@ -873,7 +851,7 @@ s32 DreamSys_StartDay(DreamSys *dreamSys) {
     MoodPoint *specialPoint;
 
     dreamSys->nextFlashback = 0;
-    dreamSys->timer = 0;
+    dreamSys->ticks = 0;
     dreamSys->savedDay = dreamSys->save.day;
     if (dreamSys->flashbackMode != 0) {
         dreamSys->vtbl->loadNextFlashback(dreamSys, 1);
@@ -917,7 +895,7 @@ void DreamSys_ChooseStart(DreamSys *dreamSys) {
 
 void DreamSys_LinkDynamic(DreamSys *dreamSys) {
     if (dreamSys->transition == 0) {
-        DreamSys_ExecuteLink(dreamSys, Spawn_PickRandom(&dreamSys->place, dreamSys->stage, dreamSys->timer), 0xC, 1);
+        DreamSys_ExecuteLink(dreamSys, Spawn_PickRandom(&dreamSys->place, dreamSys->stage, dreamSys->ticks), 0xC, 1);
     }
 }
 
@@ -980,7 +958,7 @@ s32 DreamSys_LinkFall(DreamSys *dreamSys, StagePlace *location) {
     s32 newStage;
 
     if (dreamSys->transition == 0) {
-        newStage = Link_PickFallStage(&dreamSys->place, dreamSys->stage, location, dreamSys->timer);
+        newStage = Link_PickFallStage(&dreamSys->place, dreamSys->stage, location, dreamSys->ticks);
         if (newStage >= 0) {
             dreamSys->fallTurn = Link_GetFallTurn();
             dreamSys->linkHeading = 0;
@@ -1021,7 +999,7 @@ static s32 DreamSys_ExecuteLink(DreamSys *dreamSys, s32 newStage, s32 transition
     }
     dreamSys->stage = newStage;
     if (dreamSys->flashbackMode != 0) {
-        dreamSys->timer = 0;
+        dreamSys->ticks = 0;
     }
     if (playSound != 0) {
         SoundBank *bank = dreamSys->soundBank;
@@ -1205,19 +1183,19 @@ void DreamSys_OnEntityEvent(DreamSys *dreamSys, Entity *entity, s32 message) {
     if (dreamSys->transition == 0) {
         switch (message) {
         case 4:
-            entity->vt->onNotify(entity, dreamSys, message);
+            entity->vtbl->onNotify(entity, dreamSys, message);
             return;
         case 9:
             if (dreamSys->flashbackMode == 0) {
-                dreamSys->vtbl->logEntityMood(dreamSys, &entity->vt->getRecord(entity)->mood);
-                dreamSys->save.instanceScore = entity->vt->getPoints(entity) + dreamSys->save.instanceScore;
+                dreamSys->vtbl->logEntityMood(dreamSys, &entity->vtbl->getRecord(entity)->mood);
+                dreamSys->save.instanceScore = entity->vtbl->getPoints(entity) + dreamSys->save.instanceScore;
                 dreamSys->vtbl->maybeSaveFlashback(dreamSys, 0, 0x10);
                 return;
             }
             break;
         case 10:
             oldStage = dreamSys->stage;
-            dreamSys->stage = -entity->vt->getLinkStage(entity);
+            dreamSys->stage = -entity->vtbl->getLinkStage(entity);
             dreamSys->vtbl->linkDynamic(dreamSys);
             if (dreamSys->stage < 0) {
                 dreamSys->stage = oldStage;
@@ -1227,14 +1205,14 @@ void DreamSys_OnEntityEvent(DreamSys *dreamSys, Entity *entity, s32 message) {
         case 11:
             if (dreamSys->flashbackMode == 0) {
                 dreamSys->cinematic.id.category = -1;
-                dreamSys->timer = dreamSys->timeLimit;
-                dreamSys->cinematic.id.variant = entity->vt->getVideo(entity);
+                dreamSys->ticks = dreamSys->timeLimit;
+                dreamSys->cinematic.id.variant = entity->vtbl->getVideo(entity);
                 return;
             }
             break;
         case 12:
             if (dreamSys->flashbackMode == 0) {
-                dreamSys->timer = dreamSys->timeLimit;
+                dreamSys->ticks = dreamSys->timeLimit;
             }
             break;
         }
@@ -1395,7 +1373,7 @@ void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, Dre
         dreamSys->save.flashbackCount = n + 1;
         ent += n;
     } else {
-        ent += dreamSys->timer % 9;
+        ent += dreamSys->ticks % 9;
     }
     ent->stage = stage;
     ent->place = *place;
@@ -1425,14 +1403,14 @@ void DreamSys_ClearFlashbacks(DreamSys *dreamSys) {
 }
 
 void DreamSys_SavePosition(DreamSys *dreamSys) {
-    Coord2 *src = dreamSys->pos.coord;
+    Coord2 *src = dreamSys->object.coord;
 
     dreamSys->coordCopy = *src;
     dreamSys->paramCopy = *src->param;
 }
 
 void DreamSys_RestorePosition(DreamSys *dreamSys) {
-    Coord2 *dst = dreamSys->pos.coord;
+    Coord2 *dst = dreamSys->object.coord;
 
     *dst = dreamSys->coordCopy;
     *dst->param = dreamSys->paramCopy;

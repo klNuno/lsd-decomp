@@ -12,11 +12,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* The TIX header, copied as bytes (alignment 1) */
-typedef struct TixHeaderBytes {
-    u8 bytes[0x24];
-} TixHeaderBytes;
-
 /* The palette rows Tix_BuildFade reads and writes */
 typedef struct ClutRect {
     u16 x;
@@ -85,7 +80,7 @@ void Tix_Init(Tix *tix, char *path) {
         tix->buffer = buffer;
         if (buffer != NULL) {
             tix->size = 0x24;
-            tix->header = header;
+            tix->data.header = header;
             tix->state = 9;
             tix->failed = 0;
             tix->vtbl->base.open(tix, path, 1, 0);
@@ -115,13 +110,13 @@ void Tix_OnReadDone(Tix *tix) {
     switch (tix->state) {
     case 9:
         if (tix->flags & 0x80) {
-            *(TixHeaderBytes *)tix->header = *(TixHeaderBytes *)tix->buffer;
+            *tix->data.copy = *(TixHeaderBytes *)tix->buffer;
             Heap_Free(tix->buffer);
             maxSize = Tix_GetMaxPartSize(tix);
-            if (((tix->parts = Heap_Alloc(tix->header[0] * 4)) != NULL)
+            if (((tix->parts = Heap_Alloc(tix->data.header[0] * 4)) != NULL)
                 && ((tix->buffer = Heap_Alloc(maxSize)) != NULL)) {
                 tix->bufferSize = maxSize;
-                tix->vtbl->base.seek(tix, tix->header[1], 0);
+                tix->vtbl->base.seek(tix, tix->data.header[1], 0);
                 tix->vtbl->base.read(tix, tix->buffer, maxSize);
                 tix->state = 0xA;
             } else {
@@ -141,8 +136,8 @@ void Tix_OnReadDone(Tix *tix) {
             (*slot)->vtbl->base.onLoaded(*slot);
             (*slot)->vtbl->uploadAll(*slot);
             tix->partIndex = index;
-            if (index < tix->header[0]) {
-                tix->vtbl->base.seek(tix, tix->header[index + 1], 0);
+            if (index < tix->data.header[0]) {
+                tix->vtbl->base.seek(tix, tix->data.header[index + 1], 0);
                 tix->vtbl->base.read(tix, tix->buffer, tix->bufferSize);
                 tix->state = 0xA;
             } else {
@@ -169,7 +164,7 @@ static u32 Tix_GetMaxPartSize(Tix *tix) {
     u32 i;
     u32 max;
 
-    header = tix->header;
+    header = tix->data.header;
     i = 0;
     max = 0;
 

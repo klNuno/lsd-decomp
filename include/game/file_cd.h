@@ -14,7 +14,7 @@ typedef struct CdlLocDir {
 typedef struct DirEntry {
     s8 name[0x14];
     CdlLocDir pos;
-    s32 size;
+    u32 size;
 } DirEntry;
 
 struct FileVtbl;

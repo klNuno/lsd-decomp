@@ -5,6 +5,8 @@
 #include "game/view.h"
 #include "game/place.h"
 #include "game/stage_map.h"
+#include "game/actor.h"
+#include "game/scenery_part.h"
 
 /* The parameters g_sceneryParams holds for the next scenery object (copied whole by its init, Scenery_Init). */
 typedef struct SceneryParams {
@@ -18,27 +20,6 @@ typedef struct SceneryParams {
     u8 *color;    /* 0x1C 3-byte entry of g_sceneryKind3Colors or g_sceneryKind2Colors */
     s32 altColor;    /* 0x20 kind 2: day number % 20, or g_sceneryKind2AltColor */
 } SceneryParams;
-
-/* A part of a scenery object (classes g_actorVtbl for kind 0, g_sceneryPartVtbl for kinds 2 and 3). */
-typedef struct SceneryPartVtbl {
-    u8 pad_00[0x44];
-    void (*setRotation)();
-    void (*setScale)();
-    void (*attach)();
-    u8 pad_50[0x60 - 0x50];
-    void (*setVisible)();
-    void (*setSemiTrans)();
-    void (*setBlendRate)();
-    u8 pad_6C[0xB8 - 0x6C];
-    void (*setColor)();
-    void (*movePos)();
-} SceneryPartVtbl;
-
-typedef struct SceneryPart {
-    SceneryPartVtbl *vt;
-    u8 pad_04[0x84 - 0x04];
-    s32 angle;    /* 0x84 random angle (rand() % 360) << 12 for kind 3 */
-} SceneryPart;
 
 /*
  * A scenery object (class g_sceneryVtbl returned by Scenery_GetVtbl, 0x98 bytes, made by Scenery_New):
@@ -80,13 +61,13 @@ typedef struct Scenery {
     s32 color;            /* 0x74 params color (an RGB entry); kind 2 hands it to the same slot as dayMark */
     s32 altColor;
     union {
-        SceneryPart *pair[2];                                 /* 0x7C kind 0 */
+        Actor *pair[2];                                       /* 0x7C kind 0: Actors (Actor_New) */
         struct { u8 pad_7C[0x84 - 0x7C]; SceneryPart *parts[5]; } many; /* 0x84 kinds 2 and 3 */
     } u;
 } Scenery;
 
 /* Functions of src/game/scenery_obj.c that other files call or reference (docs/naming.md, Prototypes) */
 Scenery *Scenery_New(s32 kind, SceneryParams *params, StageMap *map, Vec3 *origin);
-void Scenery_SetPlaceRefs(s32 family, PlaceObj *models, void *font, View *view);
+void Scenery_SetPlaceRefs(s32 family, Tmd *models, void *font, View *view);
 
 #endif

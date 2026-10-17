@@ -10,28 +10,6 @@
  * File boundaries: likely (docs/layout.md)
  */
 
-/* A glyph (vtable g_glyphVtbl, src/game/glyph.c): one character sprite, and the base of Label */
-typedef struct Glyph Glyph;
-typedef struct GlyphVtbl {
-    u8 pad_00[0x8];
-    void (*init)(void *glyph, Tim *font, s32 c); /* 0x08 */
-    void (*destroy)(void *glyph);             /* 0x0C */
-    u8 pad_10[0x4C - 0x10];
-    void (*show)();                           /* 0x4C (glyph, root, position) */
-    void (*hide)(void *glyph);                /* 0x50 */
-    u8 pad_54[0x60 - 0x54];
-    s32 (*setVisible)(Glyph *glyph, void *visible, s32 previous); /* 0x60 */
-    u8 pad_64[0xB8 - 0x64];
-    void (*setColor)(void *glyph, s32 color); /* 0xB8 */
-    void (*setPosition)(void *glyph, void *position); /* 0xBC */
-    u8 pad_C0[0xC4 - 0xC0];
-    void (*setCode)(Glyph *glyph, u8 c, Glyph **slot); /* 0xC4 */
-} GlyphVtbl;
-
-struct Glyph {
-    GlyphVtbl *vtbl;
-};
-
 static LabelVtbl *Label_GetVtbl(void);
 extern LabelVtbl g_labelVtbl;
 
@@ -88,14 +66,14 @@ void Label_Show(Label *label, s32 root, ScreenPoint *origin) {
     s32 i;
 
     if (label->parent == 0) {
-        Glyph_GetVtbl()->show(label, root, origin);
+        Glyph_GetVtbl()->attach(label, root, origin);
         pos = *origin;
         p = &label->glyphs[label->firstShown];
         for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
             if (label->gapAt != 0 && i == label->gapAt) {
                 pos.x += 0x10;
             }
-            (*p)->vtbl->show(*p, label, &pos);
+            (*p)->vtbl->attach(*p, label, &pos);
             pos.x += label->spacing;
             p++;
         }
@@ -113,10 +91,10 @@ void Label_Hide(Label *label) {
             p = &label->glyphs[label->firstShown];
             for (i = label->firstShown; i < label->firstShown + label->shownCount; i++) {
                 glyph = *p++;
-                glyph->vtbl->hide(glyph);
+                glyph->vtbl->detach(glyph);
             }
         }
-        Glyph_GetVtbl()->hide(label);
+        Glyph_GetVtbl()->detach(label);
     }
 }
 
@@ -168,10 +146,9 @@ void Label_SetPosition(Label *label, ScreenPoint *origin) {
 
 /* Slot 0xC4: the character of one glyph */
 void Label_SetChar(Label *label, s32 c, s32 index) {
-    Glyph **slot = &label->glyphs[index];
-    Glyph *glyph = *slot;
+    Glyph *glyph = label->glyphs[index];
 
-    glyph->vtbl->setCode(glyph, c, slot);
+    glyph->vtbl->setCode(glyph, c);
 }
 
 void Label_EmptySlotC8(void) {
@@ -185,7 +162,7 @@ void Label_SetText(Label *label, u8 *text) {
         while (*text != 0) {
             Glyph *glyph = *p;
 
-            ((void (*)(Glyph *, u8))glyph->vtbl->setCode)(glyph, *text++);
+            glyph->vtbl->setCode(glyph, *text++);
             p++;
         }
     }

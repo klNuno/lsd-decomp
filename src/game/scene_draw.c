@@ -25,17 +25,6 @@ typedef struct BoxFill {
     s16 y;              /* 0x06 */
 } BoxFill;
 
-/* A sprite as GsSortSprite takes it: the attribute word, x and y, then the offsets mx and my. */
-typedef struct Sprite {
-    u32 attribute;      /* 0x00 */
-    s16 x;              /* 0x04 */
-    s16 y;              /* 0x06 */
-    u8 pad_08[0x10];
-    s16 mx;             /* 0x18 added to x */
-    s16 my;             /* 0x1A added to y */
-    u8 pad_1C[0x8];
-} Sprite;
-
 /* Any scene node as View_DrawNode reads it (scene_node.h SceneNode, then the fields of the kind it draws:
    Box at +0x44 to +0x58 with a u16 priority, Sprite at +0x64, ScreenSprite's scale at +0xA0). */
 typedef struct DrawNode {

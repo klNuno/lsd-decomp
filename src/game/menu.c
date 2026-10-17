@@ -89,13 +89,13 @@ static void Menu_SetTitleDay(s32 dayNumber) {
 /* Menu slot 0x0C: deletes the card and the file icon, then the base destructor. */
 void Menu_Destroy(Menu *menu) {
     Card *card;
-    MenuPicture *icon;
+    Tim *icon;
 
     card = menu->card;
     if (card != NULL) {
         card->vtbl->delete_(card);
         icon = menu->fileIcon;
-        icon->vt->delete_(icon);
+        icon->vtbl->base.delete_(icon);
     }
     MenuScreen_GetVtbl()->destroy(menu);
 }
@@ -125,7 +125,7 @@ void Menu_End(Menu *menu) {
     u32 i;
 
     for (i = 0; i < 2; i++) {
-        menu->env->display->vtbl->clearImage(menu->env->display, menu->endColor, &g_menuFillRects[i]);
+        menu->env->display->vtbl->clearImage(menu->env->display, &menu->endColor, &g_menuFillRects[i]);
     }
 }
 
@@ -140,7 +140,7 @@ void Menu_SetState(Menu *menu, s32 state) {
     }
     if (state == 0xA) {
         menu->vtbl->onCross(menu);
-        menu->vtbl->selectItem(menu, menu->desc->initialItem, 1);
+        menu->vtbl->selectItem(menu, menu->menu->initialItem, 1);
         menu->vtbl->onCircle(menu);
     }
 }
@@ -218,7 +218,7 @@ void Menu_FreeMenu(Menu *menu) {
 }
 
 /* Menu slot 0xE0 (showItems) */
-void Menu_ShowItems(Menu *menu, s32 root) {
+void Menu_ShowItems(Menu *menu, SceneNode *root) {
     Label *label;
 
     MenuScreen_GetVtbl()->showItems(menu, root);
@@ -274,7 +274,7 @@ void Menu_RefreshFromSave(Menu *menu) {
     Text_Decode(text, g_cardTitle);
     menu->titleLabel->vtbl->setText(menu->titleLabel, text);
     Heap_Free(text);
-    Menu_UpdateFlashbackItem(menu, menu->desc, menu->dreamSys);
+    Menu_UpdateFlashbackItem(menu, menu->menu, menu->dreamSys);
     menu->vtbl->showItems(menu, menu->root);
     menu->dreamSys->vtbl->swapShake(menu->dreamSys, &shake);
     menu->selected = MENU_ITEM_SHAKE;
@@ -288,7 +288,7 @@ void Menu_RefreshFromSave(Menu *menu) {
 /* Menu slot 0x128: makes the card (first time) and hands it the pad and the clock. */
 void Menu_OpenCard(Menu *menu) {
     if (menu->card == NULL) {
-        menu->fileIcon = (MenuPicture *)Tim_New("CARD\\FILEICN1.TIM");
+        menu->fileIcon = Tim_New("CARD\\FILEICN1.TIM");
         menu->card = Card_New(1, 0);
     }
     menu->card->vtbl->open(menu->card, g_cardFilePrefix, g_cardFileSuffixes, menu->env->pad, menu->clock, menu->root, menu->sound);

@@ -6,6 +6,7 @@
 #include "game/sound_bank.h"
 #include "game/text.h"
 #include "game/menu.h"
+#include "game/screen_sprite.h"
 
 /*
  * Card (src/game/card.c): class vtable g_cardVtbl 0x80086DC4 (class word 0xB), 0x84 bytes (Card_New).
@@ -60,14 +61,12 @@ typedef struct CardTitle {
 
 struct CardDialog;
 
-struct CardMessage;
-
 /* The keyboard (class 0x10) and the file chooser (class 0x20) the card opens. */
 typedef struct CardDialogVtbl {
     u8 pad_00[0x4];
     void (*delete_)(struct CardDialog *);
     u8 pad_08[0x44 - 0x08];
-    void (*open)(struct CardDialog *, s32);
+    void (*open)(struct CardDialog *, SceneNode *);
     void (*close)(struct CardDialog *);
     void (*watchPair)(struct CardDialog *, void *, void *, void *);
     void (*unwatchPair)(struct CardDialog *);
@@ -78,20 +77,6 @@ typedef struct CardDialogVtbl {
 typedef struct CardDialog {
     CardDialogVtbl *vt;
 } CardDialog;
-
-/* The picture of the current message (CARD\<name>.TIM). */
-typedef struct CardMessageVtbl {
-    u8 pad_00[0x4];
-    void *(*delete_)(struct CardMessage *);
-    u8 pad_08[0x4C - 0x08];
-    void (*attach)(struct CardMessage *, s32, s32 *); /* 0x4C ScreenSprite_Attach (sprite, parent, 2D position) */
-    u8 pad_50[0x78 - 0x50];
-    void (*setZSort)(struct CardMessage *);
-} CardMessageVtbl;
-
-typedef struct CardMessage {
-    CardMessageVtbl *vt;
-} CardMessage;
 
 /* g_cardVtbl. Slots 0x1C to 0x34 are the Object ones. */
 typedef struct CardVtbl {
@@ -117,11 +102,11 @@ typedef struct CardVtbl {
     s32 (*listFiles)(struct Card *, char **, char **, char *, char **); /* 0x5C Card_ListFiles */
     s32 (*hasSpace)(struct Card *, s32, s32);                           /* 0x60 Card_HasSpace */
     s32 (*readFile)(struct Card *, char *, void *, s32);                /* 0x64 Card_ReadFile */
-    s32 (*writeFile)(struct Card *, char *, char *, u8, MenuPicture *, void *, s32); /* 0x68 Card_WriteFile */
-    void (*open)(struct Card *, char *, char **, void *, void *, s32, SoundBank *); /* 0x6C Card_Open */
+    s32 (*writeFile)(struct Card *, char *, char *, u8, Tim *, void *, s32); /* 0x68 Card_WriteFile */
+    void (*open)(struct Card *, char *, char **, void *, void *, SceneNode *, SoundBank *); /* 0x6C Card_Open */
     void (*close)(struct Card *);                                       /* 0x70 Card_Close */
     void (*load)(struct Card *, char *, char *, void *, s32);           /* 0x74 Card_Load */
-    void (*save)(struct Card *, char *, char *, s32, s32, MenuPicture *, void *, s32); /* 0x78 Card_Save */
+    void (*save)(struct Card *, char *, char *, s32, s32, Tim *, void *, s32); /* 0x78 Card_Save */
     void (*setState)(struct Card *, s32);                               /* 0x7C Card_SetState */
     void (*showMessage)(struct Card *, s32);                            /* 0x80 Card_ShowMessage */
     void (*hideMessage)(struct Card *);                                 /* 0x84 Card_HideMessage */
@@ -157,15 +142,15 @@ typedef struct Card {
     char *title;            /* 0x44 */
     s32 commentStart;              /* 0x48 0xD from Menu_Save; the keyboard gets title + 2 x this */
     u8 iconFrames;          /* 0x4C 3 */
-    MenuPicture *icon;      /* 0x50 the file icon, CARD\FILEICN1.TIM */
+    Tim *icon;      /* 0x50 the file icon, CARD\FILEICN1.TIM */
     void *data;             /* 0x54 */
     s32 size;               /* 0x58 */
     s32 ticks;              /* 0x5C counted by Card_OnTick */
     void *pad;              /* 0x60 class 2, the menu's env->pad */
     void *clock;            /* 0x64 class 5, the menu's clock */
-    s32 root;               /* 0x68 the menu's root, where the pictures and dialogs are shown */
+    SceneNode *root;        /* 0x68 the menu's root, where the pictures and dialogs are shown */
     SoundBank *sound;       /* 0x6C */
-    CardMessage *message;   /* 0x70 */
+    ScreenSprite *message;  /* 0x70 the picture of the current message (CARD\<name>.TIM) */
     s32 ownsDialog;         /* 0x74 the keyboard or chooser was made here and is deleted on close */
     CardDialog *keyboard;   /* 0x78 class 0x10 */
     CardDialog *chooser;    /* 0x7C class 0x20 */

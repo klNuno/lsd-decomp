@@ -12,67 +12,6 @@
  */
 
 /*
- * The base class of the scenery objects and their kind 0 parts: vtable g_actorVtbl (Actor_GetVtbl),
- * constructor Actor_Construct, 0x58 bytes. The scenery vtable and DreamSys's reuse its slots
- * 0x10 to 0x18 and 0xB8 to 0xE8; its methods end this unit.
- */
-typedef struct ActorVtbl {
-    u8 classByte;         /* 0x00 low byte of the class word: 0x34 runs afterTouch on contact */
-    u8 pad_01[0x08 - 0x01];
-    s32 (*construct)();   /* 0x08 Actor_Construct */
-    void (*destruct)();   /* 0x0C SceneNode_Destroy */
-    u8 pad_10[0x40 - 0x10];
-    void (*init)();       /* 0x40 Actor_Init */
-    u8 pad_44[0x88 - 0x44];
-    void (*sendBoxes)();      /* 0x88 Actor_SendBoxes */
-    void (*getBoxList)();
-    void (*sendShape)();
-    u8 pad_94[0xA0 - 0x94];
-    void (*checkContact)();
-    u8 pad_A4[0xBC - 0xA4];
-    void (*movePos)();    /* 0xBC Actor_MovePos */
-    void (*moveLocal)();
-    void (*moveZ)();
-    void (*moveX)();
-    u8 pad_CC[0xDC - 0xCC];
-    void (*onTouch34)();  /* 0xDC Actor_OnNode34: Actor_OnNode on message byte 0x34 */
-    void (*onTouch24)();  /* 0xE0 Actor_OnNode24: on message byte 0x24 */
-    u8 pad_E4[0xE8 - 0xE4];
-    void (*afterTouch)();
-} ActorVtbl;
-
-/* The vtable of the class SceneNode_GetVtbl returns (src/game/scene_node.c), base of Actor. */
-typedef struct ActorBaseVtbl {
-    u8 pad_00[0x08];
-    s32 (*construct)();   /* 0x08 */
-    u8 pad_0C[0x10 - 0x0C];
-    void (*watch)();      /* 0x10 */
-    void (*unwatch)();    /* 0x14 */
-    void (*unwatchAll)(); /* 0x18 */
-    u8 pad_1C[0x88 - 0x1C];
-    void (*sendBoxes)();
-    u8 pad_8C[0x9C - 0x8C];
-    void (*onNode)();
-} ActorBaseVtbl;
-
-typedef struct Actor {
-    ActorVtbl *vt;
-    u8 pad_04[0x14 - 0x04];
-    Coord2 *coord;     /* 0x14 its GsCOORDINATE2 (gs.h): flg cleared after each move */
-    u8 pad_18[0x20 - 0x18];
-    ModelObject *model;   /* 0x20 tested by ModelObject_GetBoxCount */
-    u8 pad_24[0x28 - 0x24];
-    struct Actor *contact; /* 0x28 the object found by Actor_SnapToGround, 0 when none */
-    u8 pad_2C[0x44 - 0x2C];
-    s32 state;            /* 0x44 cleared by the constructor */
-    s16 speed;            /* 0x48 0x12C at init */
-    u8 pad_4A[0x4C - 0x4A];
-    void *map;            /* 0x4C the watched object whose class id ends in 0x114 (the stage map, GridActor.map) */
-    void *clock;          /* 0x50 the watched object whose class id ends in 5 (a clock) */
-    s32 boxMargin;            /* 0x54 slot 0xEC */
-} Actor;
-
-/*
  * The contact search of Actor_SnapToGround over the map's grid: 20 x 20 tiles per slot
  * (MapSlot.tiles), each a chain of tiles (MapTile.next); a rect gives the slot's tiles to walk.
  */
@@ -83,37 +22,16 @@ typedef struct GridRect {
     s32 height;
 } GridRect;
 
-typedef struct GridActor GridActor;
-
-typedef struct GridActorVtbl {
-    u8 pad_00[0x88];
-    void (*sendBoxes)(GridActor *, s32);  /* -1 contact found, -2 none */
-    u8 pad_8C[0xBC - 0x8C];
-    void (*movePos)(GridActor *, void *);
-} GridActorVtbl;
-
-/* An Actor as Actor_SnapToGround reads it. */
-struct GridActor {
-    GridActorVtbl *vt;
-    u8 pad_04[0x14 - 0x04];
-    u8 *coord;
-    u8 pad_18[0x28 - 0x18];
-    MapTile *contact;     /* 0x28 */
-    u8 pad_2C[0x4C - 0x2C];
-    StageMap *map;        /* 0x4C */
-};
 static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec);
 extern s16 g_actorMoveVecZ[];
 void Actor_MoveAxis(void *self, s16 *field, s32 value, s32 notify, s32 message);
 extern s16 g_actorMoveVec[];
-/* not in game/actor.h: each file that calls it reads the vtable through its own view of the slots */
-ActorVtbl *Actor_GetVtbl(void);
-/* the vtable of scene_node.c through this file's view of its slots, so not from game/scene_node.h */
-ActorBaseVtbl *SceneNode_GetVtbl(void);
+/* the vtable of scene_node.c, not in game/scene_node.h: other files read it through their own views */
+SceneNodeVtbl *SceneNode_GetVtbl(void);
 s32 Actor_SnapToGround();
-static MapTile *Actor_FindGroundInCells(GridActor *actor, s32 *delta, u8 *pos, s32 count, GridRect *rects, MapSlot **cells);
-static MapTile *Actor_FindGroundInRect(GridActor *actor, s32 *delta, u8 *pos, GridRect *r, MapSlot *cell);
-static s32 Actor_GetGroundRects(GridActor *actor, GridRect *rects, MapSlot **cells, MapLocation *in, s32 size);
+static MapTile *Actor_FindGroundInCells(Actor *actor, s32 *delta, u8 *pos, s32 count, GridRect *rects, MapSlot **cells);
+static MapTile *Actor_FindGroundInRect(Actor *actor, s32 *delta, u8 *pos, GridRect *r, MapSlot *cell);
+static s32 Actor_GetGroundRects(Actor *actor, GridRect *rects, MapSlot **cells, MapLocation *in, s32 size);
 static MapTile *Actor_ProbeGroundAt();
 extern ActorVtbl g_actorVtbl;
 static void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32 value, s32 notify);
@@ -126,7 +44,7 @@ void *Actor_New(void) {
     if (part == 0) {
         return 0;
     }
-    if (Actor_GetVtbl()->construct(part) != 0) {
+    if (Actor_GetVtbl()->init(part) != 0) {
         return part;
     }
     Heap_Free(part);
@@ -135,12 +53,12 @@ void *Actor_New(void) {
 
 /* Slot 0x08 of the base class g_actorVtbl */
 void *Actor_Construct(Actor *actor) {
-    if (SceneNode_GetVtbl()->construct(actor) != 0) {
-        actor->vt = Actor_GetVtbl();
+    if (SceneNode_GetVtbl()->init(actor) != 0) {
+        actor->vtbl = Actor_GetVtbl();
         actor->state = 0;
         actor->map = 0;
         actor->clock = 0;
-        actor->vt->init(actor);
+        actor->vtbl->reset(actor);
         return actor;
     }
     return 0;
@@ -153,7 +71,7 @@ void Actor_Watch(Actor *actor, s32 **other) {
     SceneNode_GetVtbl()->watch(actor, other);
     classId = **other;
     if ((classId & 0xFFF) == 0x114) {
-        actor->map = other;
+        actor->map = (StageMap *)other;
         return;
     }
     if ((classId & 0xF) == 5) {
@@ -199,16 +117,16 @@ void Actor_SendBoxes(Actor *actor, s32 message) {
     if (message < 9) {
         if (message >= 5) {
             if ((actor->model != 0) && (ModelObject_GetBoxCount(actor->model) != 0)) {
-                actor->vt->getBoxList(actor, &buf.node);
+                actor->vtbl->getBoxList(actor, &buf.node);
                 if (message != 5) {
                     ModelBox_ShiftList(&buf.shift, message == 7, actor->speed >= 0,
                                   actor->speed >= 0 ? actor->speed + actor->boxMargin : actor->speed - actor->boxMargin);
                 }
-                actor->vt->sendShape(actor, &buf.node, message);
+                actor->vtbl->sendShape(actor, &buf.node, message);
                 contact = actor->contact;
                 if (contact != NULL) {
-                    if (contact->vt->classByte == 0x34) {
-                        contact->vt->afterTouch(contact, contact->vt);
+                    if (contact->vtbl->classByte == 0x34) {
+                        contact->vtbl->afterTouch(contact, contact->vtbl);
                     }
                 }
             }
@@ -221,9 +139,9 @@ void Actor_OnNode(Actor *actor, u8 **message) {
     u8 c = **message;
 
     if (c == 0x34) {
-        actor->vt->onTouch34();
+        actor->vtbl->onTouch34();
     } else if (c == 0x24) {
-        actor->vt->onTouch24();
+        actor->vtbl->onTouch24();
     }
 }
 
@@ -239,7 +157,7 @@ void Actor_MovePos(void *actor, Vec3 *delta) {
 
 static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec) {
     Actor *actor = self;
-    Coord2 *block = actor->coord;
+    Coord2 *block = actor->object.coord;
     if (set != 0) {
         block->coord.t = *vec;
     } else {
@@ -247,7 +165,7 @@ static void Actor_ApplyPos(void *self, s32 set, Vec3 *vec) {
         block->coord.t.y += vec->y;
         block->coord.t.z += vec->z;
     }
-    actor->coord->flg = 0;
+    actor->object.coord->flg = 0;
 }
 
 /* Slot 0xC0 */
@@ -255,7 +173,7 @@ void Actor_MoveLocal(Actor *actor, ModelVec *local) {
     Vec3 delta;
 
     SceneNode_RotateVector((SceneNode *)actor, &delta, local);
-    actor->vt->movePos(actor, &delta);
+    actor->vtbl->movePos(actor, &delta);
 }
 
 /* Slots 0xC4 to 0xCC: one of the three s16 of g_actorMoveVec/g_actorMoveVecZ set for slot 0xC0, then message 6, 7 or 8. */
@@ -275,21 +193,21 @@ void Actor_MoveAxis(void *self, s16 *field, s32 value, s32 notify, s32 message) 
     Actor *actor = self;
 
     actor->speed = *field = value;
-    actor->vt->moveLocal(actor, g_actorMoveVec);
+    actor->vtbl->moveLocal(actor, g_actorMoveVec);
     *field = 0;
     if (notify != 0) {
-        actor->vt->sendBoxes(actor, message);
+        actor->vtbl->sendBoxes(actor, message);
     }
 }
 
 /* Slot 0xD0 */
 void Actor_MoveZOnGround(Actor *actor, s32 value, s32 notify) {
-    Actor_MoveThenSnap(actor, actor->vt->moveZ, value, notify);
+    Actor_MoveThenSnap(actor, actor->vtbl->moveZ, value, notify);
 }
 
 /* Slot 0xD4 */
 void Actor_MoveXOnGround(Actor *actor, s32 value, s32 notify) {
-    Actor_MoveThenSnap(actor, actor->vt->moveX, value, notify);
+    Actor_MoveThenSnap(actor, actor->vtbl->moveX, value, notify);
 }
 
 void Actor_EmptySlotD8(void) {
@@ -305,7 +223,7 @@ static void Actor_MoveThenSnap(Actor *actor, void (*move)(void *, s32, s32), s32
 }
 
 /* Look for an object in the map cells around the actor's position (+0x14 block, +0x18). */
-s32 Actor_SnapToGround(GridActor *actor) {
+s32 Actor_SnapToGround(Actor *actor) {
     MapLocation cell;
     GridRect rects[4];
     MapSlot *cells[4];
@@ -315,24 +233,24 @@ s32 Actor_SnapToGround(GridActor *actor) {
     MapTile *found;
 
     if (actor->map != NULL) {
-        pos = actor->coord + 0x18;
+        pos = (u8 *)actor->object.coord + 0x18;
         if (actor->map->vtbl->locate(actor->map, &cell, pos) == 0) {
             count = Actor_GetGroundRects(actor, rects, cells, &cell, 1);
             found = Actor_FindGroundInCells(actor, delta, pos, count, rects, cells);
             actor->contact = found;
             if (found != 0) {
-                actor->vt->movePos(actor, delta);
-                actor->vt->sendBoxes(actor, -1);
+                actor->vtbl->movePos(actor, delta);
+                actor->vtbl->sendBoxes(actor, -1);
                 return 1;
             }
-            actor->vt->sendBoxes(actor, -2);
+            actor->vtbl->sendBoxes(actor, -2);
         }
     }
     return 0;
 }
 
 /* The rectangles of cells to search: the cell itself and the slots above and below it (n == 1), else the n x n square clipped to the 20 x 20 grid. */
-static s32 Actor_GetGroundRects(GridActor *actor, GridRect *rects, MapSlot **cells, MapLocation *in, s32 size) {
+static s32 Actor_GetGroundRects(Actor *actor, GridRect *rects, MapSlot **cells, MapLocation *in, s32 size) {
     s32 n = size;
     s32 x = in->at.place.tileX;
     s32 y = in->at.place.tileY;
@@ -401,7 +319,7 @@ static s32 Actor_GetGroundRects(GridActor *actor, GridRect *rects, MapSlot **cel
     return 1;
 }
 
-static MapTile *Actor_FindGroundInCells(GridActor *actor, s32 *delta, u8 *pos, s32 count, GridRect *rects, MapSlot **cells) {
+static MapTile *Actor_FindGroundInCells(Actor *actor, s32 *delta, u8 *pos, s32 count, GridRect *rects, MapSlot **cells) {
     MapTile *found;
     MapSlot *cell;
     s32 i;
@@ -423,7 +341,7 @@ static MapTile *Actor_FindGroundInCells(GridActor *actor, s32 *delta, u8 *pos, s
 }
 
 /* Walk a rectangle of a cell's 20-wide tile grid (MapSlot.tiles) and each tile's chain (MapTile.next). */
-static MapTile *Actor_FindGroundInRect(GridActor *actor, s32 *delta, u8 *pos, GridRect *r, MapSlot *cell) {
+static MapTile *Actor_FindGroundInRect(Actor *actor, s32 *delta, u8 *pos, GridRect *r, MapSlot *cell) {
     MapTile *entry;
     s32 col;
     s32 row;
@@ -463,7 +381,7 @@ void Actor_OnNode34(Actor *actor, void *sender, s32 message) {
     SceneNode_GetVtbl()->onNode(actor, sender, message);
     if (message < 9) {
         if (message >= 5) {
-            actor->vt->checkContact(actor, sender, message);
+            actor->vtbl->checkContact(actor, sender, message);
         }
     }
 }

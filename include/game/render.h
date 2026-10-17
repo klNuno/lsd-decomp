@@ -3,21 +3,15 @@
 
 #include "common.h"
 #include "game/gs.h"
+#include "game/model_object.h"
 
-/* The scene node's model reference: same layout as the coordinate system that
-   View_DrawNode passes to GsGetLs, and the model's vertex, normal and primitive tables */
-typedef struct TmdModel {
-    u8 *vertices;
-    s32 vertexCount;         /* ModelEntry.vertexCount, not read by the renderer */
-    u8 *normals;
-    s32 normalCount;         /* ModelEntry.normalCount, not read by the renderer */
-    u8 *primitives;          /* groups: u16 count, u16 type, then count faces */
-    s32 primitiveCount;
-} TmdModel;
+/* The first three words of a GsDOBJ2 (libgs): the part of a scene node (SceneNode.object) and of
+   a map tile that Render_SortModel reads. The renderer walks the TMD object's vertex, normal and
+   primitive tables byte by byte (primitive groups: u16 count, u16 type, then count faces). */
 typedef struct DObj2 {
     u32 attribute;           /* bit 31 skips the object; bits 3-4, 5, 6, 9-11 read below */
     Coord2 *coord;
-    TmdModel *tmd;
+    ModelEntry *tmd;
 } DObj2;
 
 /* Functions of src/game/render.c that other files call or reference (docs/naming.md, Prototypes) */

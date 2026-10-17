@@ -29,8 +29,9 @@ extern s8 g_neighborLayoutById[];         /* per chunk id: which g_neighborLoadL
 extern NeighborUse g_allNeighbors[];
 extern NeighborUse *g_neighborLoadLists[];
 extern MapView g_wholeChunkView;      /* {slot -1, 0, 0, 20, 20}: a whole chunk */
-extern MapTileStep g_tileStretchSlowUp, g_tileStretchFastUp, g_tileStretchSlowDown, g_tileStretchFastDown;
-extern s32 g_tileScaleOne;
+/* Fraction[3] scale steps {x, y, z}: y is 1/64 or 1/4 (slow or fast), up or down; the y denominator is the ticks per step */
+extern Fraction g_tileStretchSlowUp[3], g_tileStretchFastUp[3], g_tileStretchSlowDown[3], g_tileStretchFastDown[3];
+extern Fraction g_tileScaleOne[3];
 
 extern Matrix GsIDMATRIX;    /* in .bss; StageMap_ComputeFlatView copies it, RotMatrix fills the rotation */
 
@@ -44,19 +45,6 @@ typedef struct MapChildVtbl {
 typedef struct MapChild {
     MapChildVtbl *vtbl;
 } MapChild;
-
-/* The record MapModels slot 0x78 fills for each model, 0x40 bytes. */
-typedef struct MapModelRecord {
-    u8 pad_00[0x0C];
-    Vec3 pos;                   /* 0x0C position in the chunk */
-    u8 pad_18[0x1A - 0x18];
-    u16 rotY;                   /* 0x1A yaw, into the tile's rotate[1] */
-    u8 pad_1C[0x2E - 0x1C];
-    u16 flags;                  /* 0x2E into MapTile.flags */
-    s32 extra;                  /* 0x30 placed from tile 400 on instead of on its square */
-    s32 chained;                /* 0x34 the next model stacks on the same square */
-    u8 pad_38[0x40 - 0x38];
-} MapModelRecord;
 
 /* The box +0x1DC points to (StageMap_IsOutsideBounds): tiles x0..x1, y0..y1. */
 typedef struct MapBox {
@@ -75,10 +63,10 @@ SceneNodeVtbl *SceneNode_GetVtbl(void);
 SceneNodeVtbl *RootNode_GetVtbl(void);
 static s32 Stage_PlaceToWorld(Vec3 *pos, Vec3 *chunkCenter, StageGrid *grid, Vec3 *origin, StagePlace *place);
 static s32 StageMap_CountLoading(StageMap *map);
-static void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message);
+static void MapTile_Tell(MapTile *tile, SceneNode *sender, s32 message);
 static void StageMap_SetNearView();
 static void StageMap_SetNearViewStacked();
-static void StageMap_TellViewTiles(StageMap *map, MapActor *sender, s32 message);
+static void StageMap_TellViewTiles(StageMap *map, SceneNode *sender, s32 message);
 static s32 StageMap_GetNeighborMask(StageMap *map, s32 chunkIndex, s32 oddRow);
 static s32 StageMap_RequestNeighbor(StageMap *map, ChunkRequest *request, s32 cols, s32 oddRow, s32 chunkIndex, s32 mask, s32 neighbor);
 static void StageMap_ChunkColRow(StageMap *map, StagePlace *place, s32 chunkIndex);
@@ -164,7 +152,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 loadEntities) {
             tile = *p;
             tile->vtbl->setLightFlags(tile, 1);
             tile = *p;
-            tile->attribute = (s32)(tile->attribute | MAP_TILE_HIDDEN);
+            tile->object.attribute = (s32)(tile->object.attribute | MAP_TILE_HIDDEN);
         }
     }
     map->vtbl->watch(map, Display_GetCurrent());
@@ -327,7 +315,7 @@ void StageMap_FilterMessage(StageMap *map, s32 **sender, s32 message) {
 }
 
 /* Tells the tiles around the sender (3 x 3 tiles, or its whole floor on a stacked stage), keeping the view. */
-s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
+s32 StageMap_TellNearTiles(StageMap *map, SceneNode *sender, s32 message) {
     MapViewSave saved[3];
     MapViewSave location[3]; /* a MapLocation, in a 48-byte buffer */
     MapViewSave *src;
@@ -337,7 +325,7 @@ s32 StageMap_TellNearTiles(StageMap *map, MapActor *sender, s32 message) {
     Vec3 *pos;
 
     if (sender->parent != 0) {
-        pos = &sender->coord->workm.t;
+        pos = &sender->object.coord->workm.t;
     } else {
         pos = NULL;
     }
@@ -411,7 +399,7 @@ static void StageMap_SetNearViewStacked(StageMap *map, MapLocation *location, s3
     map->v.views[0].rows = rows;
 }
 
-static void StageMap_TellViewTiles(StageMap *map, MapActor *sender, s32 message) {
+static void StageMap_TellViewTiles(StageMap *map, SceneNode *sender, s32 message) {
     MapView *view;
     MapSlot *slot;
     MapTile **row;
@@ -445,7 +433,7 @@ static void StageMap_TellViewTiles(StageMap *map, MapActor *sender, s32 message)
     }
 }
 
-static void MapTile_Tell(MapTile *tile, MapActor *sender, s32 message) {
+static void MapTile_Tell(MapTile *tile, SceneNode *sender, s32 message) {
     if ((tile != NULL) && (tile->flags & 0x80)) {
         tile->vtbl->onNotify(tile);
     }
@@ -471,7 +459,7 @@ void StageMap_SetGrid(StageMap *map, StageGrid *grid) {
 }
 
 /* Puts the target at a place: its world position into pos, then loads the chunk there and its 6 neighbours. */
-void StageMap_SetTarget(StageMap *map, Vec3 *pos, MapActor *target, StagePlace *place) {
+void StageMap_SetTarget(StageMap *map, Vec3 *pos, SceneNode *target, StagePlace *place) {
     Vec3 chunkCenter;
 
     map->target = target;
@@ -585,7 +573,7 @@ void StageMap_LoadAround(StageMap *map, s32 chunkIndex, Vec3 *center, NeighborUs
             slot->index = use->neighbor;
             if (use->enabled != 0) {
                 offset = &g_chunkNeighborOffsets[use->neighbor];
-                coord = slot->root->coord;
+                coord = slot->root->object.coord;
                 if (map->grid->stacked == 0) {
                     coord->coord.t.x = center->x + offset->x;
                     coord->coord.t.y = center->y;
@@ -595,7 +583,7 @@ void StageMap_LoadAround(StageMap *map, s32 chunkIndex, Vec3 *center, NeighborUs
                     coord->coord.t.y = center->y + offset->y;
                     coord->coord.t.z = center->z - 0x5000;
                 }
-                slot->root->coord->flg = 0;
+                slot->root->object.coord->flg = 0;
                 StageMap_RequestNeighbor(map, &requests[count], cols, oddRow, chunkIndex, mask, use->neighbor);
                 count++;
             }
@@ -796,9 +784,9 @@ void StageMap_BuildTiles(StageMap *map, MapSlot *slot) {
         }
         if (model == (void *)-1) {
             tile = &slot->tiles[i];
-            (*tile)->attribute |= MAP_TILE_HIDDEN;
+            (*tile)->object.attribute |= MAP_TILE_HIDDEN;
             (*tile)->model = NULL;
-            (*tile)->tmd = 0;
+            (*tile)->object.tmd = 0;
         } else {
             tiles = slot->tiles;
             if (record.extra != 0) {
@@ -807,16 +795,16 @@ void StageMap_BuildTiles(StageMap *map, MapSlot *slot) {
                 tile = &tiles[i];
             }
             (*tile)->model = model;
-            (*tile)->tmd = (*tile)->model->tmd;
-            GsLinkObject4((*tile)->model->tmd, &(*tile)->attribute, 0);
-            (*tile)->coord->coord.t = record.pos;
-            param = (*tile)->coord->param;
+            (*tile)->object.tmd = (*tile)->model->entry;
+            GsLinkObject4((u32 *)(*tile)->model->entry, &(*tile)->object.attribute, 0);
+            (*tile)->object.coord->coord.t = record.pos;
+            param = (*tile)->object.coord->param;
             param->rotate.axis[0] = 0;
             param->rotate.axis[1] = record.rotY;
             param->rotate.axis[2] = 0;
             (*tile)->flags = record.flags;
-            (*tile)->coord->flg = 0;
-            (*tile)->attribute |= MAP_TILE_HIDDEN;
+            (*tile)->object.coord->flg = 0;
+            (*tile)->object.attribute |= MAP_TILE_HIDDEN;
         }
         if (record.chained != 0) {
             (*tile)->next = slot->tiles[j];
@@ -835,16 +823,16 @@ void StageMap_HideSlot(StageMap *map, MapSlot *slot) {
         slot->chunk->vtbl->clear(slot->chunk);
         end = slot->tiles + MAP_SLOT_TILES;
         for (p = slot->tiles; p < end; p++) {
-            (*p)->attribute = (*p)->attribute | MAP_TILE_HIDDEN;
+            (*p)->object.attribute = (*p)->object.attribute | MAP_TILE_HIDDEN;
             (*p)->model = 0;
-            (*p)->tmd = 0;
+            (*p)->object.tmd = 0;
         }
     }
 }
 
 /* The kept location; with out, first locates the target into out and returns NULL when that fails. */
 void *StageMap_GetLocation(StageMap *map, MapLocation *out, s32 **outPos) {
-    s32 *pos = &map->target->coord->coord.t.x;
+    s32 *pos = &map->target->object.coord->coord.t.x;
 
     if (outPos != NULL) {
         *outPos = pos;
@@ -870,11 +858,11 @@ s32 StageMap_Locate(StageMap *map, MapLocation *out, s32 *pos) {
         out->chunkIndex = chunkIndex;
         StageMap_ChunkColRow(map, &out->at.place, chunkIndex);
         idSlot = map->vtbl->slotById(map, slot->chunk->id);
-        coord = idSlot->root->coord;
+        coord = idSlot->root->object.coord;
         out->chunkCenter.x = coord->coord.t.x + 0x5000;
         out->chunkCenter.y = coord->coord.t.y;
         out->chunkCenter.z = coord->coord.t.z + 0x5000;
-        slotCoord = slot->root->coord;
+        slotCoord = slot->root->object.coord;
         out->offset.x = pos[0] - out->chunkCenter.x;
         out->offset.y = pos[1];
         out->offset.z = pos[2] - out->chunkCenter.z;
@@ -918,7 +906,7 @@ MapSlot *StageMap_SlotAt(StageMap *map, s32 *pos) {
 
     for (i = 0; i < 7; i++) {
         MapSlot *slot = map->vtbl->slotById(map, i);
-        Coord2 *coord = slot->root->coord;
+        Coord2 *coord = slot->root->object.coord;
         if (pos[0] >= coord->coord.t.x && pos[0] < coord->coord.t.x + 0xA000 && pos[2] >= coord->coord.t.z && pos[2] < coord->coord.t.z + 0xA000) {
             if (map->grid->stacked == 0) {
                 return slot;
@@ -992,7 +980,7 @@ static void StageMap_ComputeFlatView(StageMap *map, s32 width, s32 depth) {
     s32 d;
     s32 alongX;
 
-    param = map->target->coord->param;
+    param = map->target->object.coord->param;
     rot = param->rotate.axis;
     map->vtbl->getLocation(map, location, 0);
     x = location[2];
@@ -1212,20 +1200,20 @@ static void StageMap_ShowView(StageMap *map, s32 show) {
                 for (col = 0; col < rows[-1]; col++) {
                     if (show != 0) {
                         tile = *p;
-                        attribute = tile->attribute & 0x7FFFFFFF;
+                        attribute = tile->object.attribute & 0x7FFFFFFF;
                     } else {
                         tile = *p;
-                        attribute = tile->attribute | MAP_TILE_HIDDEN;
+                        attribute = tile->object.attribute | MAP_TILE_HIDDEN;
                     }
-                    tile->attribute = attribute;
+                    tile->object.attribute = attribute;
                     next = (*p)->next;
                     while (next != NULL) {
                         if (show != 0) {
-                            attribute = next->attribute & 0x7FFFFFFF;
+                            attribute = next->object.attribute & 0x7FFFFFFF;
                         } else {
-                            attribute = next->attribute | MAP_TILE_HIDDEN;
+                            attribute = next->object.attribute | MAP_TILE_HIDDEN;
                         }
-                        next->attribute = attribute;
+                        next->object.attribute = attribute;
                         next = next->next;
                     }
                     p++;
@@ -1248,22 +1236,22 @@ void StageMap_SetBounds(StageMap *map, void *bounds) {
 
 /* Picks the tile step record by sign and fast; +0x1E0 = its ticks x |count|. */
 void StageMap_StartTileStretch(StageMap *map, s32 count, s32 fast) {
-    MapTileStep *step;
+    Fraction *step;
     if (count > 0) {
-        step = &g_tileStretchSlowUp;
+        step = g_tileStretchSlowUp;
         if (fast != 0) {
-            map->stretchStep = &g_tileStretchFastUp;
+            map->stretchStep = g_tileStretchFastUp;
         } else {
             map->stretchStep = step;
         }
     } else {
-        step = &g_tileStretchSlowDown;
+        step = g_tileStretchSlowDown;
         if (fast != 0) {
-            step = &g_tileStretchFastDown;
+            step = g_tileStretchFastDown;
         }
         map->stretchStep = step;
     }
-    map->stretchTicks = map->stretchStep->ticks * (count < 0 ? ~count + 1 : count);
+    map->stretchTicks = map->stretchStep[1].den * (count < 0 ? ~count + 1 : count);
 }
 
 void StageMap_StepTileStretch(StageMap *map) {
@@ -1287,7 +1275,7 @@ static void StageMap_AddTileStretchStep(StageMap *map, MapTile *tile) {
 }
 
 static void StageMap_ResetOneTileScale(s32 map, MapTile *tile) {
-    tile->vtbl->setScale(tile, 1, &g_tileScaleOne);
+    tile->vtbl->setScale(tile, 1, g_tileScaleOne);
 }
 
 /* Calls perTile(map, tile) on the tiles of the 7 slots, after perSlot(map, slot) when given. */

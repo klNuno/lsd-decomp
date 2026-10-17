@@ -17,49 +17,7 @@
  * special days).
  */
 typedef struct VideoScreen {
-    ScreenVtbl *vtbl;
-    ListNode *watched;
-    ListNode *watchers;
-    ScreenEnv *env;
-    Clock *clock;
-    SceneNode *root;
-    struct View *view;
-    s32 ticks;
-    s32 state;
-    s32 noLoop;
-    s32 viewOtBits;
-    s32 viewPacketCount;
-    s32 viewPacketSize;
-    s32 clearOnEnd;
-    s32 result;
-    s32 focus;
-    s32 timeout;            /* 0x40 set in seconds x 15, the video rate */
-    char *soundPath;
-    struct SoundBank *sound;
-    MenuDef *menu;
-    s32 itemCount;
-    Widget **items;
-    s32 selected;
-    s32 *optionCounts;
-    s32 *optionSelected;
-    Widget ***options;
-    Widget *optionBox;
-    u8 pad_6C[0x70 - 0x6C];
-    char *picturePath;
-    struct Tim *picture;  
-    struct Bg *bg;
-    struct BgMap *bgMap;
-    struct BgCells *bgCells;
-    s32 fadeSpeed;
-    s32 (*fadeInStep)();
-    s32 (*fadeOutStep)();
-    Color3 startColor;
-    Color3 endColor;
-    Color3 unk96;
-    u8 pad_99[0x9C - 0x99];
-    void (*onClose)();
-    s32 onCloseArg;
-    /* VideoScreen */
+    MenuScreen menuScreen;  /* 0x00 the base (menu_screen.h); its timeout is set in seconds x 15, the video rate */
     s32 finished;           /* 0xA4 the movie reported the end */
     ScreenRect area;        /* 0xA8 VRAM rect the video goes to, default MenuScreen_GetPictureRect: (640, 0) 320 x 240 */
     struct Movie *movie;    /* 0xB4 the Movie of Movie_Create (include/game/movie.h) */

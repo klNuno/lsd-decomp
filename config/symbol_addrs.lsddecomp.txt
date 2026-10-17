@@ -181,4 +181,3 @@ SsUtGetVabHdr = 0x8003317c;
 new_GameManager = 0x80058774;
 new_DreamEntity = 0x8005cfdc;
 GameManager__GameManager = 0x800587f0;
-CalcNavigationScore = 0x8005ba7c;
