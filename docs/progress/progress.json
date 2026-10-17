@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "commit": "090caab",
+ "commit": "64f36da",
  "tracked_tree_dirty": false,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
@@ -28,7 +28,7 @@
    "unk_types": 0,
    "d_globals": 1
   },
-  "functions_in_findings": 265,
+  "functions_in_findings": 281,
   "name_levels": {
    "func": {
     "code": 1325,
@@ -41,15 +41,14 @@
     "game": 28
    },
    "type": {
-    "code": 263,
+    "code": 216,
     "game": 4,
-    "guess": 11,
-    "wrong": 8
+    "guess": 5
    },
    "field": {
-    "code": 2084,
-    "guess": 36,
-    "game": 68
+    "code": 1889,
+    "guess": 34,
+    "game": 66
    }
   },
   "sony_symbols": 638,
@@ -2217,7 +2216,7 @@
      "name_level": "code"
     },
     {
-     "name": "Render_TransformVectors",
+     "name": "Vec_TransformShort",
      "address": "0x8001EE04",
      "bytes": 148,
      "unk_fields": 0,
@@ -2229,7 +2228,7 @@
      "name_level": "code"
     },
     {
-     "name": "Render_TransformLongVectors",
+     "name": "Vec_TransformLong",
      "address": "0x8001EE98",
      "bytes": 124,
      "unk_fields": 0,
@@ -4137,7 +4136,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -4710,7 +4709,7 @@
      "name_level": "code"
     },
     {
-     "name": "File_GetVtable",
+     "name": "File_GetVtbl",
      "address": "0x80027E68",
      "bytes": 16,
      "unk_fields": 0,
@@ -5058,7 +5057,7 @@
      "name_level": "code"
     },
     {
-     "name": "File_InitSync",
+     "name": "File_SyncInit",
      "address": "0x80028898",
      "bytes": 72,
      "unk_fields": 0,
@@ -5070,7 +5069,7 @@
      "name_level": "code"
     },
     {
-     "name": "File_DestroySync",
+     "name": "File_SyncDestroy",
      "address": "0x800288E0",
      "bytes": 56,
      "unk_fields": 0,
@@ -5093,7 +5092,7 @@
      "in_findings": false
     },
     {
-     "name": "File_Locate",
+     "name": "File_SyncOpen",
      "address": "0x80028920",
      "bytes": 172,
      "unk_fields": 0,
@@ -5117,7 +5116,7 @@
      "name_level": "code"
     },
     {
-     "name": "File_CloseSync",
+     "name": "File_SyncClose",
      "address": "0x80028A34",
      "bytes": 28,
      "unk_fields": 0,
@@ -5129,7 +5128,7 @@
      "name_level": "code"
     },
     {
-     "name": "File_GetSize",
+     "name": "File_SyncSeek",
      "address": "0x80028A50",
      "bytes": 44,
      "unk_fields": 0,
@@ -5152,7 +5151,7 @@
      "in_findings": false
     },
     {
-     "name": "File_ReadSync",
+     "name": "File_SyncRead",
      "address": "0x80028A84",
      "bytes": 224,
      "unk_fields": 0,
@@ -9535,11 +9534,11 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
-     "name": "Fade_Construct",
+     "name": "Fade_Init",
      "address": "0x8003FE2C",
      "bytes": 172,
      "unk_fields": 0,
@@ -9551,7 +9550,7 @@
      "name_level": "code"
     },
     {
-     "name": "Fade_Init",
+     "name": "Fade_Reset",
      "address": "0x8003FED8",
      "bytes": 108,
      "unk_fields": 0,
@@ -9715,7 +9714,7 @@
      "name_level": "code"
     },
     {
-     "name": "Box_Construct",
+     "name": "Box_Init",
      "address": "0x8004054C",
      "bytes": 132,
      "unk_fields": 0,
@@ -9727,7 +9726,7 @@
      "name_level": "code"
     },
     {
-     "name": "Box_Init",
+     "name": "Box_Reset",
      "address": "0x800405D0",
      "bytes": 148,
      "unk_fields": 1,
@@ -9903,7 +9902,7 @@
      "name_level": "code"
     },
     {
-     "name": "Label_Construct",
+     "name": "Label_Init",
      "address": "0x80040948",
      "bytes": 232,
      "unk_fields": 0,
@@ -9927,7 +9926,7 @@
      "name_level": "code"
     },
     {
-     "name": "Label_Init",
+     "name": "Label_Reset",
      "address": "0x80040A88",
      "bytes": 96,
      "unk_fields": 0,
@@ -10179,7 +10178,7 @@
      "name_level": "code"
     },
     {
-     "name": "Glyph_Setup",
+     "name": "Glyph_Reset",
      "address": "0x80041BAC",
      "bytes": 48,
      "unk_fields": 0,
@@ -10271,7 +10270,7 @@
      "name_level": "code"
     },
     {
-     "name": "ScreenSprite_Setup",
+     "name": "ScreenSprite_Reset",
      "address": "0x80041DA4",
      "bytes": 8,
      "unk_fields": 0,
@@ -10747,7 +10746,7 @@
      "name_level": "code"
     },
     {
-     "name": "RootNode_Setup",
+     "name": "RootNode_Reset",
      "address": "0x80042814",
      "bytes": 12,
      "unk_fields": 0,
@@ -10991,7 +10990,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -13707,7 +13706,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -13971,7 +13970,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -13983,7 +13982,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -14103,7 +14102,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -14654,7 +14653,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -16372,7 +16371,7 @@
      "name_level": "code"
     },
     {
-     "name": "Place_Construct",
+     "name": "Place_Init",
      "address": "0x80052C10",
      "bytes": 200,
      "unk_fields": 0,
@@ -16728,7 +16727,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -17384,7 +17383,7 @@
      "name_level": "code"
     },
     {
-     "name": "Scenery_Construct",
+     "name": "Scenery_Init",
      "address": "0x800563C0",
      "bytes": 164,
      "unk_fields": 0,
@@ -17408,7 +17407,7 @@
      "name_level": "code"
     },
     {
-     "name": "Scenery_Init",
+     "name": "Scenery_Reset",
      "address": "0x800564A4",
      "bytes": 80,
      "unk_fields": 0,
@@ -17656,7 +17655,7 @@
      "name_level": "code"
     },
     {
-     "name": "Actor_Construct",
+     "name": "Actor_Init",
      "address": "0x80057044",
      "bytes": 112,
      "unk_fields": 0,
@@ -17704,7 +17703,7 @@
      "name_level": "code"
     },
     {
-     "name": "Actor_Init",
+     "name": "Actor_Reset",
      "address": "0x800571E8",
      "bytes": 16,
      "unk_fields": 0,
@@ -17760,7 +17759,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -17796,7 +17795,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -17832,7 +17831,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -17944,7 +17943,7 @@
      "name_level": "code"
     },
     {
-     "name": "Actor_OnNode34",
+     "name": "Actor_OnActorContact",
      "address": "0x80057B90",
      "bytes": 132,
      "unk_fields": 0,
@@ -17956,7 +17955,7 @@
      "name_level": "code"
     },
     {
-     "name": "Actor_OnNode24",
+     "name": "Actor_OnTileContact",
      "address": "0x80057C14",
      "bytes": 88,
      "unk_fields": 0,
@@ -18036,7 +18035,7 @@
      "name_level": "code"
     },
     {
-     "name": "SceneryPart_Construct",
+     "name": "SceneryPart_Init",
      "address": "0x80057D10",
      "bytes": 172,
      "unk_fields": 1,
@@ -18048,7 +18047,7 @@
      "name_level": "code"
     },
     {
-     "name": "SceneryPart_Init",
+     "name": "SceneryPart_Reset",
      "address": "0x80057DBC",
      "bytes": 56,
      "unk_fields": 0,
@@ -18272,7 +18271,7 @@
      "name_level": "game"
     },
     {
-     "name": "Graph_GetVtable",
+     "name": "Graph_GetVtbl",
      "address": "0x80058764",
      "bytes": 16,
      "unk_fields": 0,
@@ -18400,7 +18399,7 @@
      "name_level": "code"
     },
     {
-     "name": "DreamSys_RouteEntityMessage",
+     "name": "DreamSys_OnActorContact",
      "address": "0x80058F18",
      "bytes": 148,
      "unk_fields": 0,
@@ -18412,7 +18411,7 @@
      "name_level": "code"
     },
     {
-     "name": "DreamSys_OnWallTouch",
+     "name": "DreamSys_OnTileContact",
      "address": "0x80058FAC",
      "bytes": 308,
      "unk_fields": 0,
@@ -19318,7 +19317,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "game"
     },
     {
@@ -19501,7 +19500,7 @@
      "in_findings": true
     },
     {
-     "name": "DreamSys_GetVtable",
+     "name": "DreamSys_GetVtbl",
      "address": "0x8005BA40",
      "bytes": 16,
      "unk_fields": 0,
@@ -19981,7 +19980,7 @@
      "name_level": "code"
     },
     {
-     "name": "Entity_Construct",
+     "name": "Entity_Init",
      "address": "0x8005D068",
      "bytes": 160,
      "unk_fields": 0,
@@ -20017,7 +20016,7 @@
      "name_level": "code"
     },
     {
-     "name": "Entity_Init",
+     "name": "Entity_Reset",
      "address": "0x8005D278",
      "bytes": 156,
      "unk_fields": 0,
@@ -20025,7 +20024,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -20049,7 +20048,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "code"
     },
     {
@@ -20065,7 +20064,7 @@
      "name_level": "code"
     },
     {
-     "name": "Entity_OnActorTouch",
+     "name": "Entity_OnActorContact",
      "address": "0x8005D560",
      "bytes": 248,
      "unk_fields": 0,
@@ -20077,7 +20076,7 @@
      "name_level": "code"
     },
     {
-     "name": "Entity_OnWallTouch",
+     "name": "Entity_OnTileContact",
      "address": "0x8005D658",
      "bytes": 124,
      "unk_fields": 0,
@@ -20085,7 +20084,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false,
+     "in_findings": true,
      "name_level": "guess"
     },
     {
@@ -21693,7 +21692,7 @@
      "name_level": "code"
     },
     {
-     "name": "Model_Construct",
+     "name": "Model_Init",
      "address": "0x80065650",
      "bytes": 236,
      "unk_fields": 0,
@@ -21729,7 +21728,7 @@
      "name_level": "code"
     },
     {
-     "name": "Model_Init",
+     "name": "Model_Reset",
      "address": "0x80065830",
      "bytes": 232,
      "unk_fields": 0,
