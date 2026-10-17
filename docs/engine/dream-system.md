@@ -112,11 +112,13 @@ A mood is a MoodPoint, two s8 axes from -9 to 9 ([`include/game/stage.h`](../../
 | Step | Function | What it does |
 | --- | --- | --- |
 | Reset | `DreamSys_ResetMoodAccumulators` | clears both accumulators; on a special day logs (0, 0) in both |
-| Chunk entered | `DreamSys_OnMapMessage` (map message 5), `DreamSys_LogChunkMood` | logs the new chunk's mood in `chunkMood` |
+| Chunk entered | `DreamSys_OnMapMessage` (map message 5), `DreamSys_LogChunkMood` | logs the new chunk's mood in `chunkMood`; each square change logs again, so stepping back and forth counts every crossing |
 | Entity touched | `DreamSys_OnEntityEvent` (message 9), `DreamSys_LogEntityMood` | logs the record's mood in `entityMood` |
 | Log | `Mood_Log` | keeps the last point, adds each axis to its sum, counts |
 | Resolve | `Mood_Resolve`, `Mood_CalcAxis` | per axis `sum / count + last / 3`; above 9 becomes -9, below -9 becomes 9 |
 | Day point | `DreamSys_ComputeDayPoint` | mean of the chunk and entity results; the chunk result alone when nothing was touched |
+
+The chunks around the dreamer load in the same tick as that log, so the characters of a square are made with the colour of the step onto its neighbour, before the square's own mood is logged ([characters](characters.md#rules)); checked in the emulator, where 23 logged squares in the Natural World made the day exactly cyan, (4, -4), as the lions' square loaded ([the lions](../discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)).
 
 The colour of the day so far is `DreamSys_GetDreamColor`: the day point banded by `Mood_GetColor` (an axis below -3 is band 0, -3 to 3 band 1, 4 and up band 2) and looked up in `g_moodColors[x band][y band]`:
 
@@ -128,7 +130,7 @@ The colour of the day so far is `DreamSys_GetDreamColor`: the day point banded b
 
 The names lsddecomp gives these indexes are 0 black, 1 blue, 2 green, 3 cyan, 4 red, 5 pink, 6 yellow, 7 white; the code itself only uses the numbers. The colour drives the link fades, the colour rules of the spawn tables ([characters](characters.md)) and `DreamSys_SetFlashbackMode(-1)`, which returns the colour of the stored day point for the flashback veil.
 
-Where tomorrow starts: `DreamSys_ChooseStart` reads yesterday's point (`DreamSys_GetPreviousPoint` with 1; (0, 0) on the very first day), then `Spawn_PickFromMood` finds the first chunk with that mood ([links](links.md#where-a-dream-starts)). With 0 instead of 1, `DreamSys_GetPreviousPoint` averages all stored points; no code in the game calls it that way. On day 0 of year 1 and later it reads the two bytes before `graph[0]`: [the first dream of a new year](../discoveries.md#-the-first-dream-of-a-new-year-starts-from-the-wrong-data).
+Where tomorrow starts: `DreamSys_ChooseStart` reads yesterday's point (`DreamSys_GetPreviousPoint` with 1; (0, 0) on the very first day), then `Spawn_PickFromMood` finds the first chunk with that mood (`Stage_FindChunkByMood`); the dream starts there only when that chunk is one of its stage's arrival points (`g_spawnPoints`), otherwise at arrival point `key % count` ([links](links.md#where-a-dream-starts)). Seen in the emulator: yesterday's point (-2, -4) names Natural World square (8, 12), not an arrival point, and the dream started on (5, 1). The start square's own mood can wrap at once: (8, -4) gives x = 8 + 8 / 3 = 10, so a dream started on square (12, 5) is yellow, (-9, -5), until more squares are logged. With 0 instead of 1, `DreamSys_GetPreviousPoint` averages all stored points; no code in the game calls it that way. On day 0 of year 1 and later it reads the two bytes before `graph[0]`: [the first dream of a new year](../discoveries.md#-the-first-dream-of-a-new-year-starts-from-the-wrong-data).
 
 The graph screen (`src/game/graph.c`) only reads the save block. Player view: [how a day becomes a point on the graph](../discoveries.md#-how-a-day-becomes-a-point-on-the-graph), [the secret video reel](../discoveries.md#-the-secret-video-reel-four-graph-points-and-11-minutes-of-film).
 
