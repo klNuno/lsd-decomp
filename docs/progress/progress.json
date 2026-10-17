@@ -1,13 +1,13 @@
 {
  "schema_version": 1,
- "commit": "f51478a",
- "tracked_tree_dirty": false,
+ "commit": "8e6d39a",
+ "tracked_tree_dirty": true,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
  "totals": {
-  "game_functions": 1458,
-  "game_bytes": 210172,
-  "game_bytes_in_c": 210172,
+  "game_functions": 1447,
+  "game_bytes": 208352,
+  "game_bytes_in_c": 208352,
   "levels": {
    "address": {
     "functions": 13,
@@ -18,8 +18,8 @@
     "bytes": 8892
    },
    "read": {
-    "functions": 1415,
-    "bytes": 201148
+    "functions": 1404,
+    "bytes": 199328
    }
   },
   "unknowns": {
@@ -28,9 +28,9 @@
    "unk_types": 0,
    "d_globals": 1
   },
-  "functions_in_findings": 261,
-  "sony_symbols": 627,
-  "sony_bytes": 137808
+  "functions_in_findings": 265,
+  "sony_symbols": 638,
+  "sony_bytes": 139628
  },
  "units": [
   {
@@ -6102,45 +6102,30 @@
    "libraries": "LIBSND"
   },
   {
-   "unit": "src/game/spu.c",
-   "game": true,
+   "unit": "psyq/8003221C.s.s",
+   "game": false,
    "bytes": 396,
    "functions": [
     {
-     "name": "Spu_Reset",
+     "name": "_SsInit",
      "address": "0x8003221C",
      "bytes": 332,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Spu_ResetCold",
+     "name": "SsInit",
      "address": "0x80032368",
      "bytes": 32,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Spu_ResetHot",
+     "name": "SsInitHot",
      "address": "0x80032388",
      "bytes": 32,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     }
    ],
-   "subsystem": "Spu"
+   "libraries": "LIBSND"
   },
   {
    "unit": "psyq/800323A8.s.s",
@@ -6157,100 +6142,60 @@
    "libraries": "LIBSND"
   },
   {
-   "unit": "src/game/seq_timer.c",
-   "game": true,
+   "unit": "psyq/80032588.s.s",
+   "game": false,
    "bytes": 1424,
    "functions": [
     {
-     "name": "Seq_SetRate",
+     "name": "SsSetTickMode",
      "address": "0x80032588",
      "bytes": 384,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_ArmTimer",
+     "name": "_SsStart",
      "address": "0x80032708",
      "bytes": 656,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_StartTimer",
+     "name": "SsStart",
      "address": "0x80032998",
      "bytes": 32,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_StartTimerVsync",
+     "name": "SsStart2",
      "address": "0x800329B8",
      "bytes": 32,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_StopTimer",
+     "name": "SsEnd",
      "address": "0x800329D8",
      "bytes": 164,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Spu_Quit",
+     "name": "SsQuit",
      "address": "0x80032A7C",
      "bytes": 32,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_OnTick",
+     "name": "_SsTrapIntrVSync",
      "address": "0x80032A9C",
      "bytes": 52,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     },
     {
-     "name": "Seq_OnTickHalf",
+     "name": "_SsSeqCalledTbyT_1per2",
      "address": "0x80032AD0",
      "bytes": 72,
-     "unk_fields": 0,
-     "m2c_names": 0,
-     "unk_types": 0,
-     "d_globals": 0,
-     "level": "read",
-     "in_findings": false
+     "level": "sony"
     }
    ],
-   "subsystem": "Seq"
+   "libraries": "LIBSND"
   },
   {
    "unit": "psyq/80032B18.s.s",
@@ -18841,7 +18786,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Entity_OnWallTouch",
@@ -18962,7 +18907,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Entity_SetTouched",
@@ -19380,7 +19325,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Behavior_Type32",
@@ -19897,7 +19842,7 @@
      "unk_types": 0,
      "d_globals": 0,
      "level": "read",
-     "in_findings": false
+     "in_findings": true
     },
     {
      "name": "Behavior_Type82",
