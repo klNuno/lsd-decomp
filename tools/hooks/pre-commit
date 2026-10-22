@@ -13,16 +13,16 @@ while IFS= read -r -d '' f; do
   if [ "$size" -gt 1048576 ]; then echo "file over 1 MB staged: $f"; fail=1; fi
 done < <(git diff --cached --name-only -z --diff-filter=ACMR)
 
-# Target hash, toolchain, build flags and these hooks change only on the user's go (then LSD_PROTECTED_OK=1).
+# Target hash, toolchain, build flags and these hooks change only on the maintainer's go (then LSD_PROTECTED_OK=1).
 protected='^(config/SLPS_015\.56\.sha1|tools/versions\.env|tools/toolchain\.sha256|tools/requirements\.lock|Makefile|tools/hooks/.*)$'
 if [ "${LSD_PROTECTED_OK:-0}" != 1 ] && git rev-parse -q --verify HEAD >/dev/null; then
   if git diff --cached --name-only | grep -qE "$protected"; then
-    echo "protected file changed: needs the user's go, then commit with LSD_PROTECTED_OK=1"; fail=1
+    echo "protected file changed: needs the maintainer's go, then commit with LSD_PROTECTED_OK=1"; fail=1
   fi
 fi
 
 # C sources: no inline asm, no forced registers. Exceptions: the INCLUDE_ASM header and the GTE macros
-# (include/gte.h, the PSY-Q style COP2 macros the game was written with; his go of 2026-10-15).
+# (include/gte.h, the PSY-Q style COP2 macros the game was written with).
 if git diff --cached -U0 -- '*.c' '*.h' ':!include/include_asm.h' ':!include/gte.h' | grep -E '^\+' \
   | grep -qE '(__asm__|\basm)[[:space:]]*(volatile[[:space:]]*)?\(|register[^;]*\basm\b'; then
   echo "inline asm or forced register in staged C"; fail=1

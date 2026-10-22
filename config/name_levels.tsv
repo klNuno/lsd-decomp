@@ -406,7 +406,7 @@ Link_SetExtraListOn	func	src/game/dream_link.c	code	sets g_extraListOn; Sym_Init
 Nav_CalcScore	func	src/game/dream_link.c	code	1,000,000 per set flag of 30, 50,000,000 above 29,999,999, minus 11,024 per dynamic link, floored at 0; flags not exercised in game
 Nav_InitFlags	func	src/game/dream_link.c	game	clears 30 flags and the link count and keeps their addresses in g_navFlags, g_dynamicLinkCount; +0x5E0 and +0x600 read back in RAM
 Spawn_PickFromMood	func	src/game/dream_link.c	game	Stage_FindChunkByMood, then the spawn point of that chunk or key % count, and the time limit; day 1 and the poked point landed as predicted in game
-Spawn_PickRandom	func	src/game/dream_link.c	game	rand() % 6 with own stage moved to the next, or -stage forced, then a random spawn point, counts a dynamic link; returned 12 for -12 in hunt 8 f1.log
+Spawn_PickRandom	func	src/game/dream_link.c	game	rand() % 6 with own stage moved to the next, or -stage forced, then a random spawn point, counts a dynamic link; returned 12 for -12 in hunt 8
 Stage_GetTimeLimit	func	src/game/dream_link.c	code	returns g_stageTimeLimits[stage]; static and called by nothing
 DreamRunner_ClearPhase	func	src/game/dream_runner.c	code	Slot 0x40 (Screen reset): phase = RUNNER_IDLE; DreamRunner_Init calls it last
 DreamRunner_CreatePlace	func	src/game/dream_runner.c	code	calls Place_New(sound, music, etcTim, dreamerModel, stage), watches the Place and attaches it, the stage is only the 0 to 13 index of the glossary
@@ -435,10 +435,10 @@ DreamSys_EmptySlot12C	func	src/game/dream_sys.c	code	returns 0 in g_dreamSysVtbl
 DreamSys_EmptySlot14C	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0x14C, the look mode 2 handler
 DreamSys_EmptySlot150	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0x150, the look mode 3 handler
 DreamSys_EmptySlotE8	func	src/game/dream_sys.c	code	empty body in g_dreamSysVtbl slot 0xE8, which DreamSys_OnTileContact calls last
-DreamSys_EndDay	func	src/game/dream_sys.c	game	slot 0x1B8: restores savedDay, on reason 0 scores, day point, AdvanceDay; reason 2 new game; breakpoint run hunt3 run3.log
+DreamSys_EndDay	func	src/game/dream_sys.c	game	slot 0x1B8: restores savedDay, on reason 0 scores, day point, AdvanceDay; reason 2 new game; breakpoint run in hunt 3
 DreamSys_EndFall	func	src/game/dream_sys.c	code	slot 0x17C clears falling, sets fallSoundOn to its argument and stops the sound node when non-zero; Place passes 1 at the end of its fall fade
 DreamSys_EnterMap	func	src/game/dream_sys.c	code	slot 0x4C called by Place with its map: map setTarget gives the start position, Actor attach, watch map, flashback rotation and length+4 s or arrival heading
-DreamSys_ExecuteLink	func	src/game/dream_sys.c	game	sets and notifies the transition, then stage, timer reset in flashback mode, sound 0x90; DreamSys_ExecuteLink(12, 16) logged in hunt 8 f1.log
+DreamSys_ExecuteLink	func	src/game/dream_sys.c	game	sets and notifies the transition, then stage, timer reset in flashback mode, sound 0x90; DreamSys_ExecuteLink(12, 16) logged in hunt 8
 DreamSys_FallSoundHandler	func	src/game/dream_sys.c	code	slot 0x194, the handler SetMoveMode(2) gives HandlerNode_Start: sound 9 on voice 0 every 20 ticks, else on voice 1
 DreamSys_GetCinematic	func	src/game/dream_sys.c	game	slot 0x1BC returns the 4 bytes at +0x168 {category, variant}; category 1 variant 1 traced to a played video in game
 DreamSys_GetDayNumber	func	src/game/dream_sys.c	game	slot 0x1A0 returns day + 1 and the year; discoveries "The day counter and the hidden year", checked in game
@@ -453,10 +453,10 @@ DreamSys_Init	func	src/game/dream_sys.c	code	slot 0x08: Actor init, sets vtable,
 DreamSys_InitNewGame	func	src/game/dream_sys.c	game	slot 0x198 writes g_saveMagic "J01", zero year, day, scores, sets SHAKE 1, Nav_InitFlags; J01 at +0x178 found in RAM (one block)
 DreamSys_IsNeverSaved	func	src/game/dream_sys.c	code	slot 0x1AC returns neverSaved (+0x878), set by Init and an erase, cleared by a card save or load
 DreamSys_LeaveMap	func	src/game/dream_sys.c	code	slot 0x50 called by the Place teardown: map deactivate, unwatch +0x4C map, Actor detach
-DreamSys_LinkDynamic	func	src/game/dream_sys.c	game	slot 0x1C4: when idle, ExecuteLink to Spawn_PickRandom stage, transition 0xC, sound; random wall link at timer 192 in hunt 8 f9.log
+DreamSys_LinkDynamic	func	src/game/dream_sys.c	game	slot 0x1C4: when idle, ExecuteLink to Spawn_PickRandom stage, transition 0xC, sound; random wall link at timer 192 in hunt 8
 DreamSys_LinkExtra	func	src/game/dream_sys.c	code	slot 0x1D8: Link_FindExtra, ExecuteLink 0x11 then transition 0 and setPosition at once, time limit to elapsed + Link_GetExtraSeconds
 DreamSys_LinkFacing	func	src/game/dream_sys.c	code	slot 0x1D0: Link_FindFacing, Link_CheckFacing within 45 degrees, walking forward, then ExecuteLink transition 0xF
-DreamSys_LinkFall	func	src/game/dream_sys.c	game	slot 0x1D4: Link_PickFallStage, Link_GetFallTurn, ExecuteLink transition 0x10; the fall that ends the day seen in hunt 8 f1.log
+DreamSys_LinkFall	func	src/game/dream_sys.c	game	slot 0x1D4: Link_PickFallStage, Link_GetFallTurn, ExecuteLink transition 0x10; the fall that ends the day seen in hunt 8
 DreamSys_LinkStatic	func	src/game/dream_sys.c	code	slot 0x1C8: Link_FindStatic on the touched place, ExecuteLink transition 0xD; returns 1 when a link was found
 DreamSys_LinkStep0	func	src/game/dream_sys.c	code	g_linkSteps[0]: from g_linkStep0Start walks forward with turnInput 2 windows until tick 0x85 (0x13 when running)
 DreamSys_LinkStep1	func	src/game/dream_sys.c	code	g_linkSteps[1]: from g_linkStep1Start walks with turns and pitchInput 2 until tick 0x95 (0x19 when running)
@@ -471,16 +471,16 @@ DreamSys_MoveToTileOffset	func	src/game/dream_sys.c	code	first tick of each link
 DreamSys_New	func	src/game/dream_sys.c	code	Heap_Alloc(0x928) then slot 0x08 of g_dreamSysVtbl; Scene_Init calls it with the ETC\DREAME5.TMD model
 DreamSys_OnClock	func	src/game/dream_sys.c	code	SceneNode slot 0x98 onClock, on clock message 2 counts the dream timer and ends the day at the limit, else runs tickBegin and tickHandlers (walk and look), like Graph_OnClock
 DreamSys_OnEntityEvent	func	src/game/dream_sys.c	game	slot 0x1E8: 4, 9 touch, 10 link, 11 end with video, 12 end; message 12 of type 85 and message 9 of the Grey Man logged in game
-DreamSys_OnGroundProbe	func	src/game/dream_sys.c	game	overrides slot 0x88 (sendBoxes): -1 from Actor_SnapToGround sets step sound from contact flags, -2 links a fall or RestorePosition; falls seen in hunt 8 f1.log
+DreamSys_OnGroundProbe	func	src/game/dream_sys.c	game	overrides slot 0x88 (sendBoxes): -1 from Actor_SnapToGround sets step sound from contact flags, -2 links a fall or RestorePosition; falls seen in hunt 8
 DreamSys_OnMapMessage	func	src/game/dream_sys.c	code	slot 0x1E4: StageMap message 5 logs the chunk mood of the map location (slot 0x1F4)
 DreamSys_OnPad	func	src/game/dream_sys.c	code	slot 0x94: pad codes minus 2, UP DOWN walk, LEFT RIGHT turn, TRIANGLE SQUARE pitch, CROSS run, L1 R1 look back, L2 R2 side steps, 25 CIRCLE pressed, UP released
-DreamSys_OnTileContact	func	src/game/dream_sys.c	game	slot 0xE0 message 4: touched tile into place, LinkStatic else LinkDynamic while dynamicLinkOn, RestorePosition; hunt 8 f9.log 14 put-backs then a link
+DreamSys_OnTileContact	func	src/game/dream_sys.c	game	slot 0xE0 message 4: touched tile into place, LinkStatic else LinkDynamic while dynamicLinkOn, RestorePosition; 14 put-backs then a link seen in hunt 8
 DreamSys_PlayStepSound	func	src/game/dream_sys.c	code	slot 0x168: tone g_stepSoundTones and octave g_stepSoundOctaves of stepSound on the sound bank, extra tones for sound 11
 DreamSys_PopSpeed	func	src/game/dream_sys.c	code	slot 0x188 restores speed from savedSpeed; OnPad on UP released
 DreamSys_PushSpeed	func	src/game/dream_sys.c	code	slot 0x184 keeps speed in savedSpeed and sets a new one; OnPad CROSS while walking forward pushes 4
 DreamSys_Reset	func	src/game/dream_sys.c	code	slot 0x40, last call of DreamSys_Init: hides the node, sets g_dreamerStartRotation (0,180,0), clears look and move handlers, fall sound, link step
 DreamSys_ResetMoodAccumulators	func	src/game/dream_sys.c	code	slot 0x1F0: Mood_Reset on both accumulators, then logs the special day point in both when given
-DreamSys_RestorePosition	func	src/game/dream_sys.c	game	slot 0x224 copies them back and clears flg; put the dreamer back 14 times at a wall in hunt 8 f9.log
+DreamSys_RestorePosition	func	src/game/dream_sys.c	game	slot 0x224 copies them back and clears flg; put the dreamer back 14 times at a wall in hunt 8
 DreamSys_ReverseDirection	func	src/game/dream_sys.c	code	swaps walkDirection 1 and 2 or 3 and 4 and clears walkingForward while TickLookBack turns the dreamer
 DreamSys_OnActorContact	func	src/game/dream_sys.c	code	slot 0xDC: Actor_OnActorContact, then forwards to slot 0x1E8 when the sender class word & 0xFFFFF is 0x1F234 (Entity)
 DreamSys_RouteMapMessage	func	src/game/dream_sys.c	code	slot 0x9C: Actor_OnNode, then forwards to slot 0x1E4 when the sender class word & 0xFFF is 0x114 (StageMap)
@@ -507,7 +507,7 @@ DreamSys_SwapTimeLimit	func	src/game/dream_sys.c	game	slot 0x104 stores seconds 
 DreamSys_TestPointAhead	func	src/game/dream_sys.c	code	slot 0x120: point distance ahead on local z at sight height, then Entity_IsWithinBox; Entity range checks call it with range << 11
 DreamSys_TickAutoWalk	func	src/game/dream_sys.c	code	slot 0x15C: forces walkDirection 1 and walks, controls locked or not (auto walk 1)
 DreamSys_TickBegin	func	src/game/dream_sys.c	code	slot 0x118, first of each tick: clears circlePressed and sets dynamicLinkOn to timer % linkPeriod == 0 (16-tick wall rule seen in game)
-DreamSys_TickFall	func	src/game/dream_sys.c	game	slot 0x178, move mode 2: moves by g_fallStep (y 0x200), camera refPointY -600, runs the fall sound; falling flag and y seen in hunt 8 f1.log
+DreamSys_TickFall	func	src/game/dream_sys.c	game	slot 0x178, move mode 2: moves by g_fallStep (y 0x200), camera refPointY -600, runs the fall sound; falling flag and y seen in hunt 8
 DreamSys_TickHandlers	func	src/game/dream_sys.c	code	slot 0x11C: calls lookHandler (+0x80) and moveHandler (+0x98) when set
 DreamSys_TickLook	func	src/game/dream_sys.c	code	slot 0x140, look mode 1 handler: slot 0x144 TickPitch then slot 0x148 TickLookBack
 DreamSys_TickLookBack	func	src/game/dream_sys.c	code	slot 0x148: L1 R1 turn by g_lookBackSteps (45 degrees) up to 181, turn back 45 per tick after release, ReverseDirection each time
@@ -519,7 +519,7 @@ DreamSys_TickWalk	func	src/game/dream_sys.c	code	slot 0x158: unless controlsLock
 DreamSys_Walk	func	src/game/dream_sys.c	code	slot 0x170: unless a scripted, extra or facing link fires, SavePosition then g_walkMoves[direction] by g_walkSigns x g_walkSpeeds[speed]
 DreamSys_WasCirclePressed	func	src/game/dream_sys.c	code	slot 0x100 returns circlePressed, set by OnPad on code 25 (CIRCLE pressed) and cleared each tick by TickBegin; entity handlers poll it
 Mood_CalcAxis	func	src/game/dream_sys.c	game	sum / count + last / 3, above 9 becomes -9 and below -9 becomes 9; the Grey Man wrap checked in game
-Mood_GetColor	func	src/game/dream_sys.c	game	bands each axis of a point into 0..2 and reads g_moodColors[x][y]; breakpoint and red-day crowd in hunt4 A ht1.log
+Mood_GetColor	func	src/game/dream_sys.c	game	bands each axis of a point into 0..2 and reads g_moodColors[x][y]; breakpoint and red-day crowd in hunt 4
 Mood_Log	func	src/game/dream_sys.c	game	slot 0x208: last = point, sums += point, count + 1; accumulators read in RAM in the Grey Man run
 Mood_Reset	func	src/game/dream_sys.c	code	slot 0x204 zeroes last, sums and count of one MoodAccum
 Mood_Resolve	func	src/game/dream_sys.c	game	slot 0x20C: Mood_CalcAxis per axis when count, else last; result checked in game (how a day becomes a point)
@@ -535,7 +535,7 @@ DreamView_Reset	func	src/game/dream_view.c	code	Slot 0x40 (View reset), empty
 Behavior_Astronaut	func	src/game/entity.c	game	g_entityRecords[0].handler (+0xC) points here (exe dump); docs/discoveries "The astronaut lands at the bar on a pink day" checked in game (colour 5 sets state 100)
 Behavior_BridgeGeisha	func	src/game/entity.c	game	g_entityRecords[110].handler (+0xC) points here (exe dump); discoveries "A red day puts a geisha on a Kyoto bridge" checked in game; 2/5 size, turns 4 degrees x 45 near
 Behavior_EraseFlashbacks	func	src/game/entity.c	game	g_entityRecords[98].handler (+0xC) points here (exe dump); touched: white flash, sleep, DreamSys clearFlashbacks; discoveries "What erases the flashbacks" checked in game
-Behavior_FloatingLips	func	src/game/entity.c	game	g_entityRecords[48].handler (+0xC) points here (exe dump); the large lips, work/hunt7/G1-findings.md section 4 control run r12 and lips-normal-1500.png
+Behavior_FloatingLips	func	src/game/entity.c	game	g_entityRecords[48].handler (+0xC) points here (exe dump); the large lips, hunt 7 control run r12 and its capture from 1,500 units (docs/img/game/lips-normal.png)
 Behavior_Flower	func	src/game/entity.c	game	g_entityRecords[46].handler (+0xC) points here (exe dump); discoveries "Happy Town flowers and mushrooms grow with the day number" checked in game
 Behavior_FlyingTrain	func	src/game/entity.c	game	g_entityRecords[111].handler (+0xC) points here (exe dump); discoveries "The flying train: a pink day and a long dream" checked in game
 Behavior_MazePenguin	func	src/game/entity.c	game	g_entityRecords[51].handler (+0xC) points here (exe dump); discoveries maze penguins checked in game (giant roll r5); also run for type 113 (model 1) by Behavior_Type113
@@ -546,7 +546,7 @@ Behavior_OperaSinger	func	src/game/entity.c	game	g_entityRecords[38].handler (+0
 Behavior_PurpleBeast	func	src/game/entity.c	code	g_entityRecords[8].handler (+0xC) points here (exe dump); stage 1 model 0 shared with the game-checked yellow-day purple beasts (type 109); body doubles size and rises 64 a tick
 Behavior_QueueLowSound7	func	src/game/entity.c	code	sets node fade 0 and voices 0 to 2 to sound 7 octave -2; HandlerNode_Run plays them; called by Behavior_Type85
 Behavior_QueueSound18And3	func	src/game/entity.c	code	sets node fade 0, voice 0 sound 0x12, voices 1 and 2 sound 3; called by Behavior_Type85 and Behavior_Type86
-Behavior_RedDayPenguin	func	src/game/entity.c	game	g_entityRecords[114].handler (+0xC) points here (exe dump); red-day groups 26/27 seen in game (hunt4 ht1.log); body turns 9 degrees at random
+Behavior_RedDayPenguin	func	src/game/entity.c	game	g_entityRecords[114].handler (+0xC) points here (exe dump); red-day groups 26/27 seen in game (hunt 4); body turns 9 degrees at random
 Behavior_RollWideOrSlide	func	src/game/entity.c	code	first tick rand()%10: 8-9 scale (3, 1, 1), 5-7 state 10; state 10 moves by (0, 0, -256) each tick after tick 200; types 43 and 44
 Behavior_TinyLips	func	src/game/entity.c	game	g_entityRecords[128].handler (+0xC) points here (exe dump); discoveries "Tiny lips walk toward you in Happy Town" checked in game
 Behavior_TrainRun	func	src/game/entity.c	code	moveZ at the given speed, turns 1 degree a tick in three windows from turnTick, sleeps at leaveTick; FlyingTrain and Type41 (slow train model)
@@ -641,7 +641,7 @@ Behavior_Type93	func	src/game/entity.c	code	g_entityRecords[93].handler (+0xC) p
 Behavior_Type94	func	src/game/entity.c	code	g_entityRecords[94].handler (+0xC) points here (exe dump); red-headed runner of discoveries "A white day brings two more red-headed runners" (game); x6 1 in 2 off white days
 Behavior_Type95	func	src/game/entity.c	code	g_entityRecords[95].handler (+0xC) points here (exe dump); the fetus of discoveries "A blue day sends four more fetuses down the Flesh Tunnels" (game): animation 3 then walk
 Behavior_Type96	func	src/game/entity.c	code	g_entityRecords[96].handler (+0xC) points here (exe dump); random animation of 4 each loop, sound 0x16 octave 2
-Behavior_WalkingGeisha	func	src/game/entity.c	game	g_entityRecords[11].handler (+0xC) points here (exe dump); discoveries "A red day puts a geisha on a Kyoto bridge", even-day walker seen in game (r8b-ky43-even.log)
+Behavior_WalkingGeisha	func	src/game/entity.c	game	g_entityRecords[11].handler (+0xC) points here (exe dump); discoveries "A red day puts a geisha on a Kyoto bridge", even-day walker seen in game
 Behavior_YellowDayBeast	func	src/game/entity.c	game	g_entityRecords[109].handler (+0xC) points here (exe dump); discoveries "Three purple beasts on a yellow day in Pit & Temple" checked in game; half size, walks 10 a tick
 Entity_Attach	func	src/game/entity.c	code	slot 0x4C; Model attach, stores the map at +0x4C, wakes at once when record wakeMode is 0 and starts the handler when handlerRange is also 0
 Entity_CheckHandlerStart	func	src/game/entity.c	code	slot 0x17C; awake, no handler, state != 1, handlerRange != 0: startHandler when in the box at |handlerRange|
@@ -683,7 +683,7 @@ Fade_Reset	func	src/game/fade.c	code	slot 0x40: state 0, step 10, channels 0, ho
 Fade_RestoreRect	func	src/game/fade.c	code	slot 0xEC: writes back the position, width and height Fade_SaveAndSetRect saved
 Fade_SaveAndSetRect	func	src/game/fade.c	code	slot 0xE8: on a shown fade, saves width, height and position, then writes the new size halves and position
 Fade_SetStep	func	src/game/fade.c	code	slot 0xD0: stores the step at +0x74; Place_StartFade passes the duration argument
-Fade_SetTint	func	src/game/fade.c	game	slot 0xF0: stores tint and tintDivisor; Place passes (flashback mode, 3); forced in game, the veil held over the memory (work/hunt8/Q2, "Three quiet rules for the look of a place")
+Fade_SetTint	func	src/game/fade.c	game	slot 0xF0: stores tint and tintDivisor; Place passes (flashback mode, 3); forced in game, the veil held over the memory (hunt 8, "Three quiet rules for the look of a place")
 Fade_StartIn	func	src/game/fade.c	code	slot 0xD4: from state 0, begin, full palette color, state 1, negated step, so the overlay goes from the color to nothing; Place calls it at stage start
 Fade_StartOut	func	src/game/fade.c	code	slot 0xD8: from state 0, begin, color from g_fadeBlackPalette, state 2, so the overlay grows from black to the color; Place_StartFade calls it
 Fade_Step	func	src/game/fade.c	code	slot 0x98 (the node onClock slot): on message 2 adds the step to the masked color channels while remaining ticks last, else calls slot 0xE0 stop
@@ -906,7 +906,7 @@ Cine_GetEventPath	func	src/game/path_table.c	code	event video number event with 
 Cine_GetEventPaths	func	src/game/path_table.c	code	path table + 0x3E20, FILM\EVENT1 to EVENT6.STR, first video id 8
 Cine_GetLogoPath	func	src/game/path_table.c	code	returns "ETC\ASMK.STR" with video id 0x31; Scene_ShowLogos plays it
 Cine_GetOpeningPaths	func	src/game/path_table.c	code	path table + 0x3D40, the 7 OPENINGx.STR, first video id 0
-Cine_GetPath	func	src/game/path_table.c	game	{category, variant} to a special-day path (video ids for variants 0 and 1, -1 for pictures) or an event video; seen in game ("What a special day shows", work/hunt2)
+Cine_GetPath	func	src/game/path_table.c	game	{category, variant} to a special-day path (video ids for variants 0 and 1, -1 for pictures) or an event video; seen in game ("What a special day shows", hunt 2)
 Cine_GetSpecialDayPaths	func	src/game/path_table.c	code	path table + 0x3EC8 + category * 0xA8, the 6 paths of a special-day category, video ids category * 2 + 14
 Cine_GetSpecialDayRun	func	src/game/path_table.c	code	first path of a category and in *frames the length of count categories' A and B videos plus 10 per join; Scene plays the reel of categories 0 to 9
 Cine_GetVideoFrames	func	src/game/path_table.c	code	returns g_videoTable[videoId], the frame count handed with every video path
@@ -927,11 +927,11 @@ Stage_GetPathBase	func	src/game/path_table.c	code	g_pathTable + g_stageFirstPath
 Stage_GetTexturePaths	func	src/game/path_table.c	code	the stage's first path, its TEXA.TIX
 Stage_GetTrackPaths	func	src/game/path_table.c	code	stage base + 0x70, after the 4 TIX paths: BGA to BGE.SEQ
 Stage_PickTexturePath	func	src/game/path_table.c	game	rand() % (((day - 1) % 40) / 10 + 1) among TEXA to TEXD; forced in game ("The 40-day texture cycle": day 5 set A, day 33 with rand 3 set D)
-Place_ArmExit	func	src/game/place.c	game	slot 0xC0, SELECT held; exitArmed = 1 while the pause is open in state 0; finding SELECT + TRIANGLE, work/hunt4/B-run1.log
+Place_ArmExit	func	src/game/place.c	game	slot 0xC0, SELECT held; exitArmed = 1 while the pause is open in state 0; finding SELECT + TRIANGLE, hunt 4 run 1
 Place_Attach	func	src/game/place.c	code	slot 0x44, run with the runner's ScreenEnv; registers Place_GetChunkPath with env->root, the StageMap (slot 0xC8 setChunkLoader), keeps and watches DreamSys
-Place_CheckTextureLoad	func	src/game/place.c	game	a failed loader is deleted and the limit becomes elapsed + 30 s, a done one gets the ambience colour, then setup; start once no map slot is pending. Forced in game, work/hunt4/B-texfail.lua
-Place_ClosePause	func	src/game/place.c	game	slot 0xD4; deletes the label, unmutes the bank, resumes music and clock, re-enables the view; setPresentEnabled(1) seen in pause.log
-Place_ConfirmExit	func	src/game/place.c	game	slot 0xC8, TRIANGLE; when armed, closes the pause and notifies 0xD (DreamSys_EndDay(2), new game); wipe seen in work/hunt4/B-run1.log
+Place_CheckTextureLoad	func	src/game/place.c	game	a failed loader is deleted and the limit becomes elapsed + 30 s, a done one gets the ambience colour, then setup; start once no map slot is pending. Forced in game (hunt 4, "Glitch textures")
+Place_ClosePause	func	src/game/place.c	game	slot 0xD4; deletes the label, unmutes the bank, resumes music and clock, re-enables the view; setPresentEnabled(1) seen in an emulator run
+Place_ConfirmExit	func	src/game/place.c	game	slot 0xC8, TRIANGLE; when armed, closes the pause and notifies 0xD (DreamSys_EndDay(2), new game); wipe seen in hunt 4 run 1
 Place_Init	func	src/game/place.c	code	slot 0x08 of g_placeVtbl; Task init with the sound bank, installs the vtable, keeps music, stage and the refs, clears ready, started and the pause, texLoading 1, slot 0x40
 Place_Destruct	func	src/game/place.c	code	slot 0x0C; calls the Task destroy only
 Place_Detach	func	src/game/place.c	code	slot 0x48; unwatches DreamSys, then the Task detach
@@ -942,7 +942,7 @@ Place_EmptySlotBC	func	src/game/place.c	code	slot 0xBC of g_placeVtbl, empty
 Place_ExitNoRecord	func	src/game/place.c	code	slot 0xCC, no caller; when armed, closes the pause and notifies 0xC (DreamSys_EndDay(1), day restored)
 Place_GetChunkPath	func	src/game/place.c	code	the map's chunk loader; tail calls Stage_GetChunkPath with the stage (chunk index still in a1) or Stage_GetChunkPathAt(stage, col, row) when the index is negative
 Place_GetVtbl	func	src/game/place.c	code	returns g_placeVtbl
-Place_Load	func	src/game/place.c	game	slot 0x4C begin; Music_PickTrack, Tix_Create(Stage_PickTexturePath), Scenery_Begin, speeds, bounds, ray rule, box margin, state 5; RAM work/unknowns/U3/a74.log args (0, 0, 0)
+Place_Load	func	src/game/place.c	game	slot 0x4C begin; Music_PickTrack, Tix_Create(Stage_PickTexturePath), Scenery_Begin, speeds, bounds, ray rule, box margin, state 5; args (0, 0, 0) read in RAM in an emulator run
 Place_New	func	src/game/place.c	code	Heap_Alloc(0x88) then slot 0x08 Place_Init; DreamRunner_CreatePlace passes the SE bank, the music, ETC\ETC.TIM, ETC\DREAMER.TMD and the stage
 Place_OnDisplay	func	src/game/place.c	code	slot 0x54; on display message 2 runs Place_CheckTextureLoad
 Place_OnDreamSysNotify	func	src/game/place.c	code	slot 0x90; in state 0, DreamSys messages 10 and 12 to 17 go to slots 0x94 to 0xAC; in another state a message of 9 or more clears DreamSys.transition
@@ -955,18 +955,18 @@ Place_OnLinkStatic	func	src/game/place.c	code	slot 0x9C, message 13 from DreamSy
 Place_OnMapNotify	func	src/game/place.c	code	slot 0xB4; map message 7 (a slot's entities are in, StageMap_OnSlotMessage) runs slot 0xB8
 Place_OnNextFlashback	func	src/game/place.c	code	slot 0xA0, message 14 from DreamSys_LoadNextFlashback; state 7, fade to the day's colour, lockControls
 Place_OnNotify	func	src/game/place.c	code	slot 0x38; Task onNotify, then by the sender's class word, 0x114 map to slot 0xB4, 0x164 fader to 0xB0, 0x1F34 DreamSys to 0x90
-Place_OnPad	func	src/game/place.c	game	slot 0x58; while started, code 33 START to slot 0x74, 12 SELECT held to 0xC0, 22 TRIANGLE to 0xC8, 44 SELECT released to 0xC4; run work/hunt4/B-run1.log
+Place_OnPad	func	src/game/place.c	game	slot 0x58; while started, code 33 START to slot 0x74, 12 SELECT held to 0xC0, 22 TRIANGLE to 0xC8, 44 SELECT released to 0xC4; hunt 4 run 1
 Place_OnTimeUp	func	src/game/place.c	code	slot 0x94, DreamSys message 10 that DreamSys_OnClock sends at the time limit; state 4, then notify 4 or a fade picked by (ticks + stage) & 3
 Place_Setup	func	src/game/place.c	code	slot 0x80, after the texture set; projection from the display width, camera, Sym_InitStage, watches the map, ambient, lights, grid, DreamSys enterMap, view distance, message filter
 Place_SpawnCell	func	src/game/place.c	code	slot 0xB8; Sym_SpawnOrSpy on the entities of map->currentSlot, the slot whose message 7 just came (not the one under the dreamer), with the day number
-Place_Start	func	src/game/place.c	game	slot 0x88; started, DreamSys startPlace, map activate, view colours and fog from the ambience, fader in with the flashback tint (veil seen in work/hunt8/Q2-findings.md)
+Place_Start	func	src/game/place.c	game	slot 0x88; started, DreamSys startPlace, map activate, view colours and fog from the ambience, fader in with the flashback tint (veil seen in game, hunt 8)
 Place_StartFade	func	src/game/place.c	code	the view overlay fader (getOverlay), optional step, optional watch, then startOut with the clock, a colour index and the hold mode
 Place_Teardown	func	src/game/place.c	code	slot 0x84; closes the pause, DreamSys lockControls and leaveMap, view detach, unwatches the map
 Place_Tick	func	src/game/place.c	code	slot 0x5C; while started, counts ticks and runs slot 0xD0 while the pause is open, else slot 0x8C
-Place_TogglePause	func	src/game/place.c	game	slot 0x74, START; closes an open pause (disarm, slot 0xD4) or opens it (slot 0xD0). Pause seen in work/unknowns/merge/pause.log
+Place_TogglePause	func	src/game/place.c	game	slot 0x74, START; closes an open pause (disarm, slot 0xD4) or opens it (slot 0xD0). Pause seen in game in an emulator run
 Place_Unload	func	src/game/place.c	code	slot 0x50; teardown (slot 0x84), Sym_FreeSpy, Scenery_Teardown, music stop (Bgm_Stop)
 Place_Update	func	src/game/place.c	code	slot 0x8C; Scenery_Tick at the map's getLocation (slot 0x10C)
-Place_UpdatePause	func	src/game/place.c	game	slot 0xD0; first call shows the Pause label, then counts pauseOpen and at 4 stops the view, clock, music and bank; work/unknowns/merge/pause.log
+Place_UpdatePause	func	src/game/place.c	game	slot 0xD0; first call shows the Pause label, then counts pauseOpen and at 4 stops the view, clock, music and bank; seen in game in an emulator run
 Render_AddPolyF3	func	src/game/render.c	code	RCpolyF3 through g_clipTriWork when ctx->clip, else links the PolyF3 packet at the head of its OT entry; returns the next free byte
 Render_AddPolyF4	func	src/game/render.c	code	RCpolyF4 through g_clipQuadWork when ctx->clip, else links the PolyF4 packet into the OT
 Render_AddPolyFT3	func	src/game/render.c	code	RCpolyFT3 with uv, clut and tpage when ctx->clip, else links the PolyFT3 packet into the OT
@@ -1084,16 +1084,16 @@ Ambience_PickFamily	func	src/game/scenery.c	code	family g_ambienceFamilyCycle[(d
 Ambience_ShiftRgb	func	src/game/scenery.c	code	out = rgb with red and green minus shift and blue plus shift
 Ambience_UpdateBands	func	src/game/scenery.c	code	each tick when (viewpoint.y - refPoint.y) / 600 is positive, shifts the band colours, positions and the clear colour by 3 times that
 Scenery_Begin	func	src/game/scenery.c	code	from Place_Load while no place is up; keeps map, stage, refs and day number, family -1, zeroes g_placeTicks and the two spot slots, returns Ambience_Get
-Scenery_CreateAll	func	src/game/scenery.c	game	first tick with a family; kind 0 count from g_sceneryKind0Counts[rand() & 3], kind 1 up to 16 for family 2, one kind 3 or 2; 16 objects on day 133 in work/hunt8/Q1-findings.md
+Scenery_CreateAll	func	src/game/scenery.c	game	first tick with a family; kind 0 count from g_sceneryKind0Counts[rand() & 3], kind 1 up to 16 for family 2, one kind 3 or 2; 16 objects on day 133 in hunt 8
 Scenery_CreateKind0	func	src/game/scenery.c	game	Scenery_New(0) count times with one random variant, scale and height, offsets from RandomizeParamsDay7 on days % 7 == 0; day 133 band seen in game
 Scenery_CreateKind1	func	src/game/scenery.c	code	Scenery_New(1) count times with g_sceneryKind1Scale and height g_sceneryHeights2
 Scenery_CreateKind2	func	src/game/scenery.c	code	one Scenery_New(2) with a random colour of g_sceneryKind2Colors and a random variant 0 to 5
 Scenery_CreateKind3	func	src/game/scenery.c	code	one Scenery_New(3), a fixed offset and colour with band palette B, else a random offset behind the origin and a random colour
 Scenery_DeleteAll	func	src/game/scenery.c	code	Object_DeleteArray(g_scenery, g_sceneryCount) when a family was picked
-Scenery_RandomizeParams	func	src/game/scenery.c	game	x and z random in -22..22 tiles, height (or a random one), rotation and direction into g_sceneryParams; day 132 control in work/hunt8/Q1-findings.md
+Scenery_RandomizeParams	func	src/game/scenery.c	game	x and z random in -22..22 tiles, height (or a random one), rotation and direction into g_sceneryParams; day 132 control in hunt 8
 Scenery_RandomizeParamsDay7	func	src/game/scenery.c	game	x in 0..19 tiles, z by day % 3, height g_sceneryHeights1; the day 133 cloud band (finding three quiet rules)
 Scenery_Teardown	func	src/game/scenery.c	code	from Place_Unload; deletes tint, bands, scenery, releases both spot slots and clears g_sceneryMap; frees only the last set (finding glitch textures)
-Scenery_Tick	func	src/game/scenery.c	game	Place_Update each tick; first tick (g_placeTicks++ == 0) builds tint, bands and scenery, then updates and runs the spot slots; zeroing the counter leaks (work/hunt6/F-findings.md)
+Scenery_Tick	func	src/game/scenery.c	game	Place_Update each tick; first tick (g_placeTicks++ == 0) builds tint, bands and scenery, then updates and runs the spot slots; zeroing the counter leaks (hunt 6)
 Scenery_UpdateAll	func	src/game/scenery.c	code	slot 0xEC Scenery_Update of every object of g_scenery with the origin
 SoundSpot_Acquire	func	src/game/scenery.c	code	first free spot in range into a slot, HandlerNode_Start on the SE bank with the type's handler, marks the spot held (type negated)
 SoundSpot_CalcFade	func	src/game/scenery.c	code	distance / (range of the type / node.fadeSteps), stored as HandlerNode.fade by every handler
@@ -1115,7 +1115,7 @@ SoundSpot_Type7	func	src/game/scenery.c	code	handler 7, sound 7 octave 2 once, r
 SoundSpot_Type8	func	src/game/scenery.c	code	handler 8, sound 0x14 then sound 3 at tick 3, restarts at 51
 SoundSpot_Type9	func	src/game/scenery.c	code	handler 9, sound 9 at volume 0x40 every 20 ticks
 SoundSpot_Update	func	src/game/scenery.c	code	while SoundSpot_IsInRange, HandlerNode_Run on the slot's node and 1, else 0
-Stage_CyclePalettes	func	src/game/scenery.c	game	Display_RotateRect on g_clutCycleRectA in stage 2 and g_clutCycleRectB in stages 3 to 5 each tick; Kyoto water seen changing in work/hunt8 pal2c, off in pal2d
+Stage_CyclePalettes	func	src/game/scenery.c	game	Display_RotateRect on g_clutCycleRectA in stage 2 and g_clutCycleRectB in stages 3 to 5 each tick; Kyoto water seen changing in hunt 8 run pal2c, off in pal2d
 Scenery_AddOffset	func	src/game/scenery_obj.c	code	out = a + b on the three s32 of a Vec3
 Scenery_AttachPart	func	src/game/scenery_obj.c	guess	slots 0x4C attach, 0x44 rotation (assign) and 0x48 scale (assign); used for the scenery object itself too, not only parts, and pos is not passed on
 Scenery_Build	func	src/game/scenery_obj.c	code	keeps the view height, attaches to the map with rotation and scale, links model 0 or 2 of DREAMER.TMD for kinds 0 and 1, builds the parts by kind
@@ -1293,7 +1293,7 @@ StringList_WatchPair	func	src/game/string_list.c	code	slot 0x4C; watches pad and
 Sym_CheckColorRule	func	src/game/sym.c	game	rules 10 to 17: g_ruleColors[rule - 10] equals GetDreamColor; the colour spawns seen in game (Rare sights)
 Sym_CheckDayParity	func	src/game/sym.c	game	flag 0 always, else flag != day % 2 + 1; Grey Man parity checked in game on stages 2, 4, 11
 Sym_CheckMonthRule	func	src/game/sym.c	code	rules 2 to 4: the 30-day month (day - 1) / 30 + 1 equals month, +3, +6 or +9
-Sym_CheckRule	func	src/game/sym.c	game	once flag, month, day % 3, family, parity and colour rules, sets done when passing; breakpoints in hunt4 A ht1.log and the spawns seen
+Sym_CheckRule	func	src/game/sym.c	game	once flag, month, day % 3, family, parity and colour rules, sets done when passing; breakpoints in hunt 4 and the spawns seen
 Sym_EnableExtraListForType	func	src/game/sym.c	code	returns nothing, calls Link_SetExtraListOn(1) for group types 11, 56, 78 and 93
 Sym_FindSlot	func	src/game/sym.c	game	finds the SpawnSlot of g_currentStage whose chunk key matches; slot keys 257, 1026 logged in hunt9 V1 runs
 Sym_FreeModels	func	src/game/sym.c	code	DreamRunner teardown: deletes g_spyModel[0].model through its slot 4
@@ -1302,11 +1302,11 @@ Sym_InitExtraList	func	src/game/sym.c	code	Link_SetExtraListOn(stage == 11 or st
 Sym_InitStage	func	src/game/sym.c	game	Place stage setup: g_currentStage, g_symMap, g_symDreamSys, g_symSoundBank, g_symClock, Entity_Create type 98; Grey Man type 98 seen in game
 Sym_PickSlotVariant	func	src/game/sym.c	game	stage 4 slot 16 becomes slot 21 when GetDreamColor is 4; red-day penguin crowd seen in game
 Sym_ResetGroupsAndLoadSpy	func	src/game/sym.c	code	DreamRunner_Init calls it once per dream, it clears done of every spawn group of the 14 stages (the once rule) and then loads ETC SYMSPY.MOM
-Sym_SpawnAtPlace	func	src/game/sym.c	game	Entity_Create of the type, placeToWorld from g_spawnPlaces and offsets, rotate, attach; type 51 at place 81 logged in hunt4 A ht1.log
+Sym_SpawnAtPlace	func	src/game/sym.c	game	Entity_Create of the type, placeToWorld from g_spawnPlaces and offsets, rotate, attach; type 51 at place 81 logged in hunt 4
 Sym_SpawnGroup	func	src/game/sym.c	code	rule passes: CheckExtraListType, model from the Mml, SpawnAtPlace per listed place; type 2 groups also try the group 7 entries on
 Sym_SpawnOrSpy	func	src/game/sym.c	game	Place_SpawnCell per square: the slot passes its day rule and spawns, else 1 in 12 on even days outside stage 0 the Grey Man; forced spawn seen in game
 Sym_SpawnSlot	func	src/game/sym.c	code	makes the square Mml from the chunk data and spawns each listed group of the slot; returns the Mml
-Sym_SpawnSpy	func	src/game/sym.c	game	detaches the Grey Man and attaches him at spawnOffset (0,-200,8000) ahead of the dreamer, SceneNode_TurnToward; measured in work/unknowns/U3/bspy.log
+Sym_SpawnSpy	func	src/game/sym.c	game	detaches the Grey Man and attaches him at spawnOffset (0,-200,8000) ahead of the dreamer, SceneNode_TurnToward; measured in RAM in an emulator run
 Task_ClearTimeout	func	src/game/task.c	code	Slot 0x40 (Screen reset): setTimeout(-1), so the task never times out
 Task_Destroy	func	src/game/task.c	code	Slot 0x0C: deletes the sound bank when bankName is set (the task made it), then the base Object_Destroy
 Task_Finish	func	src/game/task.c	code	Slot 0x48: calls Screen_Finish only
@@ -1771,10 +1771,10 @@ g_clutCycleRectA	global	src/game/scenery.c	game	VRAM rect x 0 y 496 248 x 8 turn
 g_clutCycleRectB	global	src/game/scenery.c	code	VRAM rect at y 504 turned in stages 3 to 5 (calls seen, no visible change)
 g_clutCycleSpareA	global	src/game/scenery.c	code	the spare column at x 256 Display_RotateRect uses for rect A
 g_clutCycleSpareB	global	src/game/scenery.c	code	the spare column for rect B
-g_placeDayNumber	global	src/game/scenery.c	game	DreamSys_GetDayNumber kept by Scenery_Begin; read 133 in RAM on day 133 (work/hunt8/Q1-findings.md)
+g_placeDayNumber	global	src/game/scenery.c	game	DreamSys_GetDayNumber kept by Scenery_Begin; read 133 in RAM on day 133 (hunt 8)
 g_placeRefs	global	src/game/scenery.c	code	&Place.refs kept by Scenery_Begin (sound bank, models, ETC.TIM, view)
 g_placeStage	global	src/game/scenery.c	code	Place.stage kept by Scenery_Begin; every per-stage table of scenery.c is read with it
-g_placeTicks	global	src/game/scenery.c	game	zeroed by Scenery_Begin, counted by Scenery_Tick, the first tick builds the scenery; the community's location_time, zeroed in RAM in work/hunt6 z1.log
+g_placeTicks	global	src/game/scenery.c	game	zeroed by Scenery_Begin, counted by Scenery_Tick, the first tick builds the scenery; the community's location_time, zeroed in RAM in hunt 6 run z1
 g_scenery	global	src/game/scenery.c	code	the scenery objects Scenery_CreateAll makes, updated and deleted as an array
 g_sceneryCount	global	src/game/scenery.c	code	number of objects in g_scenery set by Scenery_CreateAll
 g_sceneryHeights	global	src/game/scenery.c	code	heights -0x1800, -0x2800, -0x3800, -0x5000 picked by rand() & 3, or by rand() % 5 in CreateKind0, whose index 4 reads past the table into D_80087338 (the word 0x0A0A0200)
@@ -2354,13 +2354,13 @@ circlePressed	field	include/game/dream_sys.h:DreamSys	code	OnPad sets it on pad 
 contact	field	include/game/dream_sys.h:DreamSys	code	Actor contact at +0x28 written by Actor_SnapToGround, the MapTile under the dreamer; OnGroundProbe reads its flags
 controlsLocked	field	include/game/dream_sys.h:DreamSys	code	LockControls sets it, StartPlace clears it; OnPad, TickWalk, TickBegin test it
 coordCopy	field	include/game/dream_sys.h:DreamSys	code	GsCOORDINATE2 copy of SavePosition, restored by RestorePosition
-dynamicLinkOn	field	include/game/dream_sys.h:DreamSys	game	DreamSys_OnTileContact links dynamically only while set; TickBegin sets it 1 tick in linkPeriod; seen in hunt 8 f9.log
+dynamicLinkOn	field	include/game/dream_sys.h:DreamSys	game	DreamSys_OnTileContact links dynamically only while set; TickBegin sets it 1 tick in linkPeriod; seen in hunt 8
 entityMood	field	include/game/dream_sys.h:DreamSys	game	MoodAccum of entities touched (LogEntityMood, message 9); read in RAM
 etcTim	field	include/game/dream_sys.h:DreamSys	code	ETC\ETC.TIM object set by SetEtcTim from DreamRunner_Init
 fallSound	field	include/game/dream_sys.h:DreamSys	code	HandlerNode started by SetMoveMode(2) with DreamSys_FallSoundHandler, run by TickFall
 fallSoundOn	field	include/game/dream_sys.h:DreamSys	code	set by SetMoveMode(2), EndFall copies its argument; TickFall runs the sound node only while set
 fallTurn	field	include/game/dream_sys.h:DreamSys	guess	Link_GetFallTurn result stored by LinkFall; nothing reads +0x880, so its use is unproven
-falling	field	include/game/dream_sys.h:DreamSys	game	set by SetMoveMode(2), cleared by EndFall; TickFall moves only while set; read 1 for 170 vsyncs in hunt 8 f1.log
+falling	field	include/game/dream_sys.h:DreamSys	game	set by SetMoveMode(2), cleared by EndFall; TickFall moves only while set; read 1 for 170 vsyncs in hunt 8
 flashbackMode	field	include/game/dream_sys.h:DreamSys	code	set by SetFlashbackMode from the menu; TickTimer, EndDay, OnEntityEvent and ExecuteLink branch on it
 id	field	include/game/dream_sys.h:DreamSys	code	{category, variant} view of cinematic
 ignorePad	field	include/game/dream_sys.h:DreamSys	code	set while a scripted link step runs; OnPad ignores input while set
@@ -2398,7 +2398,7 @@ stepVoice	field	include/game/dream_sys.h:DreamSys	code	voice PlayStepSound keeps
 timeLimit	field	include/game/dream_sys.h:DreamSys	game	seconds x 15 from SwapTimeLimit; 3600 and 7200 read in game
 ticks	field	include/game/dream_sys.h:DreamSys	game	dream ticks counted by TickTimer on clock message 2; forced to the limit to end days in game; a tick is a game frame, not 1/15 s
 tmd	field	include/game/dream_sys.h:DreamSys	code	the dreamer TMD given to DreamSys_New; DreamSys_Init watches its model 0
-transition	field	include/game/dream_sys.h:DreamSys	game	link or event code while one runs (0xB to 0x11, 0xE flashback), 0 idle; transition 16 logged in hunt 8 f1.log
+transition	field	include/game/dream_sys.h:DreamSys	game	link or event code while one runs (0xB to 0x11, 0xE flashback), 0 idle; transition 16 logged in hunt 8
 turnInput	field	include/game/dream_sys.h:DreamSys	code	1 LEFT or 2 RIGHT from OnPad, index of g_turnRotations; TickTurn consumes it
 variant	field	include/game/dream_sys.h:CineId	game	rand() % 6 on a special day or the entity video; variant 1 and 2 traced in game
 vtbl	field	include/game/dream_sys.h:DreamSys	code	g_dreamSysVtbl set by DreamSys_Init
@@ -2669,7 +2669,7 @@ savedPosition	field	include/game/fade.h:Fade	code	position saved by Fade_SaveAnd
 savedWidth	field	include/game/fade.h:Fade	code	width saved by Fade_SaveAndSetRect, restored by Fade_RestoreRect
 state	field	include/game/fade.h:Fade	code	0 idle, 1 after Fade_StartIn, 2 after Fade_StartOut; Fade_Stop picks message 5 or 6 from it
 step	field	include/game/fade.h:Fade	code	added to the channels each tick by Fade_Step, 0x100 / step is the tick count
-tint	field	include/game/fade.h:Fade	game	set from the flashback mode: the fade runs short and Fade_Stop keeps the box shown; seen in game as the colour veil (work/hunt8/Q2 fbB2.log, fbR2.log)
+tint	field	include/game/fade.h:Fade	game	set from the flashback mode: the fade runs short and Fade_Stop keeps the box shown; seen in game as the colour veil (hunt 8 runs fbB2 and fbR2)
 tintDivisor	field	include/game/fade.h:Fade	code	Fade_Begin runs ticks - ticks / tintDivisor ticks when tinted; Place passes 3
 vtbl	field	include/game/fade.h:Fade	code	Object header word 0, set by Fade_Init
 width	field	include/game/fade.h:Fade	code	GsBOXF w at +0x60, set by Fade_SaveAndSetRect
@@ -3080,12 +3080,12 @@ ambience	field	include/game/place.h:Place	code	Scenery_Begin's record or the one
 clock	field	include/game/place.h:Place	code	Screen.clock, paused and resumed by the pause, given to Sym_InitStage and the fader
 dreamSys	field	include/game/place.h:Place	code	the DreamSys Place_Attach keeps and watches
 env	field	include/game/place.h:Place	code	Screen.env, the ScreenEnv; Place_Setup reads its display's slot 0x7C
-exitArmed	field	include/game/place.h:Place	game	set by Place_ArmExit, tested by Place_ConfirmExit; the combo was run in game (work/hunt4/B-run1.log)
+exitArmed	field	include/game/place.h:Place	game	set by Place_ArmExit, tested by Place_ConfirmExit; the combo was run in game (hunt 4 run 1)
 linkPeriod	field	include/game/place.h:Place	code	0x10, DreamSys_StartPlace's third argument given to setLinkPeriod
 map	field	include/game/place.h:Place	code	Screen.root, here the StageMap (class 0x114)
 moveSpeed	field	include/game/place.h:Place	code	2 on stage 0 else 3, DreamSys_StartPlace's speed given to swapSpeed
 music	field	include/game/place.h:Place	code	the Bgm (runner->music), slots Bgm_SetSeq, Bgm_Pause, Bgm_Resume, Bgm_Stop
-pauseOpen	field	include/game/place.h:Place	game	0 closed, else ticks since open + 1; the fourth tick stops the picture (pause.log)
+pauseOpen	field	include/game/place.h:Place	game	0 closed, else ticks since open + 1; the fourth tick stops the picture (seen in an emulator run)
 pauseText	field	include/game/place.h:Place	game	the Pause label of Place_UpdatePause, seen on screen
 ready	field	include/game/place.h:Place	code	set right before slot 0x88 start in CheckTextureLoad; nothing reads it in place.c
 refs	field	include/game/place.h:Place	code	PlaceRefs at +0x6C
@@ -3592,7 +3592,7 @@ uploadAll	field	include/game/tim_pack.h:TimPackVtbl	code	slot 0x78 of g_timPackV
 buffer	field	include/game/tix.h:Tix	code	0x800 bytes for the header, then Tix_GetMaxPartSize bytes shared by every part
 bufferSize	field	include/game/tix.h:Tix	code	size of the part buffer, the read length of each part
 fades	field	include/game/tix.h:Tix	code	four TixFade, one per palette; each TimPack gets a pointer to them
-failed	field	include/game/tix.h:Tix	game	set when an allocation fails; forced to 1 in game (work/hunt4/B-texfail.lua) the room came up untextured and the limit became 30 s ("Glitch textures")
+failed	field	include/game/tix.h:Tix	game	set when an allocation fails; forced to 1 in game (hunt 4), the room came up untextured and the limit became 30 s ("Glitch textures")
 flags	field	include/game/tix.h:Tix	code	File done-request flags; Tix_OnReadDone waits for 0x80 (read)
 data	field	include/game/tix.h:Tix	code	File data: the 0x24-byte {count, offsets[4], sizes[4]} copied from the first read (File.data, a union: header words, or the 0x24 bytes copied whole; renamed from header)
 loaded	field	include/game/tix.h:Tix	code	set after the last part is uploaded; Place_CheckTextureLoad reads it as done
@@ -4086,7 +4086,7 @@ offset	field	src/game/sym.c:SpawnQuery	code	the g_spawnPlaceOffsets record
 placeWord	field	src/game/sym.c:SpawnQuery	code	SpawnPlace tile word, the tile in the chunk
 obj	field	src/game/sym.c:SpyEntityRef	code	= SpyModel.spy, deleted by Sym_FreeSpy
 model	field	src/game/sym.c:SpyModel	code	Mom from ETC\SYMSPY.MOM (Sym_ResetGroupsAndLoadSpy), freed by Sym_FreeModels
-spawnOffset	field	src/game/sym.c:SpyModel	game	first word of the vector (0, -200, 8000) Sym_SpawnSpy turns to world; measured in work/unknowns/U3/bspy.log
+spawnOffset	field	src/game/sym.c:SpyModel	game	first word of the vector (0, -200, 8000) Sym_SpawnSpy turns to world; measured in RAM in an emulator run
 spy	field	src/game/sym.c:SpyModel	game	the type 98 entity Sym_InitStage creates; the Grey Man seen in game
 h	field	src/game/tix.c:ClutRect	code	RECT h
 w	field	src/game/tix.c:ClutRect	code	RECT w

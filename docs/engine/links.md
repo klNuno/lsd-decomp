@@ -120,4 +120,4 @@ Player view: [how the graph picks where tomorrow starts](../discoveries.md#-how-
 | `g_navFlags`, `g_dynamicLinkCount` | pointers into the save block, set by `Nav_InitFlags` |
 | `g_linkSteps` | the 4 scripted walks |
 
-A dump of the fixed and facing lists: `work/hunt3/links.py`.
+A dump of the fixed and facing lists: `tools/research/links.py`.

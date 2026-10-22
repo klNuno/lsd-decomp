@@ -17,7 +17,7 @@
  * appear" and "The character record: mood, points, waking up and leaving".
  */
 
-/* One record per entity type, 16 bytes, table g_entityRecords indexed by Entity.type (dump: work/hunt3/recs.txt). */
+/* One record per entity type, 16 bytes, table g_entityRecords indexed by Entity.type (dump: tools/research/recs.py). */
 typedef struct EntityRecord {
     MoodPoint mood;  /* 0x00 graph point logged when touched (slot 0x14C returns the record) */
     s8 points;       /* 0x02 points / 1000 (slot 0x150) */

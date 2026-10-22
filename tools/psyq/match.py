@@ -68,7 +68,7 @@ FALSE_HITS = {
     # data function table at 0x8006D4E8 between func_80027C80 and
     # func_80027D70, and the strings of the code from 0x80027D70 come before
     # the jump tables of the code from 0x800271D8 in .rodata: one game TU
-    # 0x800271D8..0x80028B78, src/game/file_cd.c (.agents/research/rodata-split.md).
+    # 0x800271D8..0x80028B78, src/game/file_cd.c.
     0x80027D40: "SsInit pattern inside game TU file_cd.c, calls game code",
 }
 
@@ -77,7 +77,7 @@ FALSE_HITS = {
 # is not in the database (it matches 3.3 and 3.5 OBJs by pieces), and the two
 # SPU stubs are 8 words that match everywhere. Evidence per function (fuzzy
 # label-aligned match against every LIBSND/LIBSPU OBJ, callers, callees,
-# strings): .agents/research/sony-suspects.md and work/sony/. Each address must
+# strings) was gathered by hand for each one. Each address must
 # start a function and must not be named by the scan; main() stops otherwise.
 NEAR_MATCHES = {
     # LIBGS GS_101, GS_102 and GS_124 share one 16-byte body (store a0 into a common), so the scan
@@ -86,7 +86,7 @@ NEAR_MATCHES = {
     0x8003FBE4: "GsSetWorkBase",
     # LIBSND SSINIT.OBJ (3.3), units psyq/8003221C and psyq/80032588 (once game/spu.c and
     # game/seq_timer.c): the 11 functions follow the OBJ's labels one to one, _SsInit at 88 % of its
-    # words, the other ten word for word (2026-10-17, names audit lane A2)
+    # words, the other ten word for word (2026-10-17, names audit)
     0x8003221C: "_SsInit",
     0x80032368: "SsInit",
     0x80032388: "SsInitHot",
@@ -99,7 +99,7 @@ NEAR_MATCHES = {
     0x80032A9C: "_SsTrapIntrVSync",
     0x80032AD0: "_SsSeqCalledTbyT_1per2",
     # LIBSND VMANAGER.OBJ (3.3), unit psyq/8002CF18: the 31 functions follow the OBJ's 31 named
-    # labels one to one (range cover 89 % vs 3.3, work/sony/fuzzy-8002C12C.txt)
+    # labels one to one (range cover 89 % vs 3.3)
     0x8002CF18: "SpuVmAlloc",
     0x8002D1B4: "SpuVmKeyOnNow",
     0x8002D6A4: "SpuVmDoAllocate",
@@ -480,7 +480,7 @@ def main():
         if not ends_function(word_at(a - 8), word_at(a - 4)):
             sys.exit("NEAR_MATCHES %s at %08x does not start a function" % (name, a))
         syms[a] = [name, None, "LIBSND/LIBSPU", "near match", "func"]
-        notes.append("near match %s at %08x (.agents/research/sony-suspects.md)" % (name, a))
+        notes.append("near match %s at %08x" % (name, a))
 
     addrs = sorted(syms)
     if len({syms[a][0] for a in addrs}) != len(addrs):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Move a matched function from work/ into its unit in src/, then prove the whole build.
+"""Move a matched function from a scratch C file into its unit in src/, then prove the whole build.
 
   tools/integrate.py FUNC FILE.c [--no-check]
 
@@ -155,7 +155,7 @@ def type_name(item):
 
 def replace_types(unit, items):
     """Items that redefine a type the unit already defines replace that definition in place
-    (a matcher extended a sibling's struct); make check then judges every user of it.
+    (the new function's file extended a sibling's struct); make check then judges every user of it.
     Returns the patched unit and the items still to insert."""
     rest = []
     for item in items:

@@ -6,9 +6,9 @@ The goal is to understand how the game works: the dream graph, links, special da
 
 ## Status
 
-All 1,447 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 626 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: one header per file in `include/game/` with its types and prototypes, our own PSY-Q headers in `include/psyq/`, and 1,889 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 13 functions still named by address are 6 empty vtable slots, 5 empty functions nothing references and 2 setters of fields nothing reads. An audit rated every name we gave, struct fields and types included, against the code and the emulator runs ([config/name_levels.tsv](config/name_levels.tsv)): of 4,103 names, 192 were checked in game, 3,849 are proven by the code and 62 are guesses that say what is unproven. A second pass then merged the struct types that described one class twice (472 struct definitions down to 331). It corrected 90 names, and found that two files we had taken for game code are Sony's sound library. The code is laid out in the 68 source files the original programmers most likely had, named by what they hold, in link order between the Sony objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary).
+All 1,447 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 626 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: one header per file in `include/game/` with its types and prototypes, our own PSY-Q headers in `include/psyq/`, and 1,889 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 13 functions still named by address are 6 empty vtable slots, 5 empty functions nothing references and 2 setters of fields nothing reads. An audit rated every name we gave, struct fields and types included, against the code and the emulator runs ([config/name_levels.tsv](config/name_levels.tsv)): of 4,103 names, 192 were checked in game, 3,849 are proven by the code and 62 are guesses that say what is unproven. A second pass then merged the struct types that described one class twice (395 struct definitions down to 288). It corrected 90 names, and found that two files we had taken for game code are Sony's sound library. The code is laid out in the 68 source files the original programmers most likely had, named by what they hold, in link order between the Sony objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary).
 
-The build is also shiftable: every address in it is a symbol, so code can be added or removed and the game still runs (`tools/rawscan.py` relinks it at another address and finds 0 fixed addresses; a build with 0x100 extra bytes before `main` plays the same dream as the retail one in an emulator).
+The build is also shiftable: every pointer into the executable is written as a symbol, so code can be added before `main` and the game still runs. `tools/rawscan.py` relinks the build at another address and finds 0 fixed addresses, and a build with 0x100 extra bytes before `main` played the same dream as the retail one in an emulator.
 
 [![Progress map: one rectangle per function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
 
@@ -17,6 +17,10 @@ Since every game byte already rebuilds from C, the map measures understanding: a
 How each system works, for someone opening the code for the first time (boot and the object model, files and the CD, rendering, sound and video, menus and saves, the dream system, links, stages and places, characters, randomness), is in [docs/engine/](docs/engine/README.md), with a reading order from `main`.
 
 The findings page holds 60 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
+
+## How it was made
+
+The C, the names, the docs and the emulator checks were written by AI agents, mostly Claude Opus 5.5 and Claude Haiku 5.5 (a few naming and search passes by Grok 4.7 and GLM 5.3), and a change was kept only when `make check` still matched.
 
 ## Requirements
 

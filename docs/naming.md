@@ -17,7 +17,7 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 - Class slots carry one name in every class: `X_Init` fills slot 0x08 (the constructor body), `X_Reset` slot 0x40, `X_GetVtbl` returns the vtable, `X_OnActorContact` and `X_OnTileContact` fill 0xDC and 0xE0 (messages from senders of class byte 0x34 and 0x24); the vtable structs name these slots `init`, `reset`, `onActorContact`, `onTileContact`, and 0x0C `destroy`, 0x88 `sendBoxes`, 0x98 `onClock`, 0x64 `onLoaded` for the file classes. A function keeps a name of its own when it does more than the slot says (`Model_Update` at 0x98, `DreamSys_OnGroundProbe` at 0x88).
 - A field keeps its offset in its name (`unk_14`) until two independent uses agree on its meaning.
 - Every rename goes in `config/symbol_addrs.txt` with a comment pointing to its row in `docs/discoveries.md`.
-- Every name of ours has a level in `config/name_levels.tsv` (columns NAME KIND FILE LEVEL EVIDENCE): `game` when an emulator run showed what the name claims, `code` when the code proves it and nothing else fits, `guess` when it is plausible but unproven (the evidence says what is missing), `wrong` when the code contradicts it (only types waiting for a merge). `tools/rename.py` and `tools/field_rename.py` keep it in step; a new name gets its row with its evidence. The 2026-10-17 audit wrote it (work/names/), and `tools/name_levels.py comments` copies its evidence into the comments of `config/symbol_addrs.txt`.
+- Every name of ours has a level in `config/name_levels.tsv` (columns NAME KIND FILE LEVEL EVIDENCE): `game` when an emulator run showed what the name claims, `code` when the code proves it and nothing else fits, `guess` when it is plausible but unproven (the evidence says what is missing), `wrong` when the code contradicts it (only types waiting for a merge). `tools/rename.py` and `tools/field_rename.py` keep it in step; a new name gets its row with its evidence. The 2026-10-17 audit wrote it, and `tools/name_levels.py comments` copies its evidence into the comments of `config/symbol_addrs.txt`.
 
 ## Readable C
 
@@ -71,7 +71,7 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | Menu | The main menu object, the screen with the day number and the Flashback item, and its items. The memory card menu is the same class (menu.h): card file name, title with the day number (`Menu_SetTitleDay`), save and load of the 0x700-byte block (`Menu_Save`, `Menu_Load`) | code: discoveries 2026-10-15 (`Menu_UpdateFlashbackItem` @0x8004D678, `Menu_Save` @0x8004E0E4) |
 | Rand | The game's wrapper around PSY-Q `srand` and `rand` | code: discoveries 2026-10-15 (`Rand_SeedAndNext` @0x80048CFC) |
 | Music | The dream's sound bank (one of 7, `g_musicBanks`) and track (one of 5 per stage) and the unused override that would pin them | code: discoveries 2026-10-15 (`Music_PickBank` @0x80048D74, `Music_PickTrack` @0x80048F84, `Music_SetOverride` @0x80048D28) |
-| Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: work/hunt6/F-findings.md, `include/game/heap.h` |
+| Heap | The game's one memory pool (0x166C00 bytes, made at boot), first-fit allocator and free | code: `include/game/heap.h` |
 | List | A singly linked list of values, one 8-byte node per value | code: `include/game/heap.h` (`ListNode`) |
 | Object | The root class (vtable 0x8006B58C) every game object derives from: init, destroy, and lists of the objects it watches and of its watchers, told with message 1 when it goes away | code: `include/game/heap.h` (`Object`, `ObjectVtbl`) |
 | Render | Model drawing: TMD polygons sorted into the ordering table, projected, clipped and turned into GPU packets | code: src/game/render.c |
@@ -88,7 +88,7 @@ Not evidence on its own: a name from a wiki, a guess from the address, a similar
 | MapTile | One tile model of a chunk (vtable 0x80086AA0), a GsDOBJ2 at +0x10 | code: `include/game/map_tile.h` |
 | Place | The object that runs one stage while the dreamer is in it (vtable 0x80087034): load, pad handler, pause, fades. Place names the object, Stage the 0 to 13 index | code: `include/game/place.h` |
 | Actor | The base class of Model, Entity, DreamSys and Scenery (vtable 0x800878D4, 0x58 bytes); `Actor_New` makes every model part (model.c) as well as the kind 0 scenery parts. Slot 0xDC takes the messages of senders of class byte 0x34 (`X_OnActorContact`), 0xE0 those of map tiles, class byte 0x24 (`X_OnTileContact`) | code: src/game/actor.c, `Actor_OnNode` |
-| Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/scenery.h`, work/hunt6/F-findings.md |
+| Scenery | The objects a place builds around the dreamer at its first tick, and their update | code: `include/game/scenery.h` |
 | Ambience | The fog and sky record of a place, picked per stage or from the day's family | code: src/game/scenery.c |
 | Model | The model base class every entity derives from (vtable 0x8008A6C4, 0x98 bytes): model file, parts, animation, per-tick function, sound bank | code: src/game/model.c |
 | TOD packet | One command of a TOD animation frame, `Model_ApplyCommand` by type: 0 attribute, 1 coordinate (rotate, scale, move), 2 TMD object (links one to the part), 3 parent | code: src/game/model.c |

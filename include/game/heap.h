@@ -7,7 +7,7 @@
  * The game's heap: one pool made at boot by Heap_Create(0x166C00) (pointer g_mainHeap),
  * never reset until power-off. First fit from the head of a doubly linked free list, the
  * low end of a block is handed out; free merges both neighbours and pushes the block at
- * the head (work/hunt6/F-findings.md).
+ * the head.
  *
  * Every block starts with a header word: size in the low 28 bits (header included),
  * HEAP_FREE when the block is free, HEAP_PREV_FREE when the block just below it is free.

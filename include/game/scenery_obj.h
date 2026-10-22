@@ -23,7 +23,7 @@ typedef struct SceneryParams {
 
 /*
  * A scenery object (class g_sceneryVtbl returned by Scenery_GetVtbl, 0x98 bytes, made by Scenery_New):
- * one of 4 kinds made around the dreamer at a place's first tick (Scenery_CreateAll, work/hunt6/F-findings.md).
+ * one of 4 kinds made around the dreamer at a place's first tick (Scenery_CreateAll).
  * Its base class is g_actorVtbl (constructor Actor_Init, 0x58 bytes).
  */
 typedef struct SceneryVtbl {

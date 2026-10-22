@@ -4,8 +4,8 @@
 #include "types.h"
 
 /*
- * LIBSND functions the game calls (the game links a LIBSND build the signature database lacks:
- * .agents/research/sony-suspects.md). Ids, voices and volumes are s16 as the calls pass them.
+ * LIBSND functions the game calls (the game links a LIBSND build the signature database lacks).
+ * Ids, voices and volumes are s16 as the calls pass them.
  */
 
 void SpuVmInit(s32 mode);

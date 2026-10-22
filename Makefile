@@ -16,7 +16,7 @@ TOOLS   := tools/bin
 PYTHON  := .venv/bin/python
 SPLAT   := config/splat.yaml
 
-# Game code settings, found by matching 28 game functions (.agents/research/calibration.md).
+# Game code settings: 28 of 31 game functions tried match 100 % under them; ASPSX 2.34 and -G0 break them.
 # Small globals (8 bytes or less) are declared in C without extern: cc1 emits .comm, maspsx
 # addresses them through gp, and --use-comm-section lets the linker merge them with the asm data.
 GCC_VER   ?= 2.6.3-psx

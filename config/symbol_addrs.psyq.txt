@@ -632,7 +632,7 @@ _new_card = 0x80050B98; // type:func
 // Hand-kept below this line: tools/psyq/match.py copies this block when it rewrites the file.
 // Strings in the middle of a Sony string block, pointed at by data (libcd command and interrupt
 // name tables, version strings). A label lets splat write those pointers as symbols, so the
-// linker moves them (shiftability, work/shift2/report.md).
+// linker moves them (shiftability).
 D_800106BC = 0x800106BC; // libgpu intr.c version string
 D_80010848 = 0x80010848; // libcd name "CdlReadS"
 D_80010854 = 0x80010854; // libcd name "CdlSeekP"

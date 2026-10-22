@@ -228,7 +228,7 @@ static void Ambience_DeleteTint(void) {
 
 /*
  * The ambience family of the dream: g_ambienceFamilyCycle[(day number + stage) & 15], a 16-entry cycle over
- * 4 families, then record (day number + stage) % count (work/hunt6/C-notes-note.md). Family 0
+ * 4 families, then record (day number + stage) % count. Family 0
  * also picks the band palette and, for records 0 to 5, the band layout (1 or 2).
  */
 static AmbienceRecord *Ambience_PickFamily(void) {
@@ -260,7 +260,7 @@ static AmbienceRecord *Ambience_PickFamily(void) {
     return record;
 }
 
-/* Make the 18 bands (run again by every first tick: the old ones are not freed, work/hunt6/F-findings.md). */
+/* Make the 18 bands (run again by every first tick: the old ones are not freed). */
 static void Ambience_CreateBands(void) {
     Point layout[2];
     s32 i;
@@ -339,7 +339,7 @@ static void Ambience_DeleteBands(void) {
 
 /*
  * First tick: the scenery objects into g_scenery around origin, g_sceneryCount of them
- * (work/hunt6/F-findings.md): count of kind 0 from g_sceneryKind0Counts, kind 1 up to 16 for family 2,
+ * as follows: count of kind 0 from g_sceneryKind0Counts, kind 1 up to 16 for family 2,
  * plus one of kind 3 for family 0 or of kind 2 for family 2.
  */
 void Scenery_CreateAll(void *origin) {
@@ -605,7 +605,7 @@ static s32 SoundSpot_IsInRange(SpotSlot *slot, s32 *origin) { s32 dx,dz,d; if (o
  * The scenery tick (Place slot 0x8C), with the map position of the dreamer. On the first tick
  * after a place starts (g_placeTicks reads 0) it makes the extra object, the bands and the
  * scenery; zeroing g_placeTicks makes them again without freeing the old ones (the "location_time"
- * leak, work/hunt6/F-findings.md). Then it updates them and the two spot slots, and returns the
+ * leak, reproduced in the emulator). Then it updates them and the two spot slots, and returns the
  * range of a spot just taken when it equals found.
  */
 s32 Scenery_Tick(void *mapPos, s32 ignored, s32 spotType) {

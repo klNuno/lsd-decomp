@@ -670,7 +670,7 @@ are proven exactly by a Sony object.
 The study corrected one older claim: the cut at 0x80058078 is not forced. `ETC\\ETCSE` and
 `ETC\\HGRAPH.TIM` form one rodata object of 0x1C bytes, so DreamSys's first jump table at
 0x80011788 is 8-aligned in its own object either way, and Graph_New, Graph_Init and
-Graph_LoadImage..Graph_GetVtable read as one class file, `graph.c`.
+Graph_LoadImage..Graph_GetVtbl read as one class file, `graph.c`.
 
 A later check corrected the study itself (2026-10-17): `spu.c` and `seq_timer.c`, two files it
 rated proven because a Sony object sits on each side, are Sony code too. Their 11 functions line up

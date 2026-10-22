@@ -5,7 +5,7 @@
 #   LSD_EMU_FRAMES  quit after this many vsyncs (default 1800, about 30 s)
 #   LSD_EMU_SHOTS   comma-separated vsync numbers to capture, e.g. 2700,3600
 #   LSD_EMU_REGS    print pc, gp, sp, ra every N vsyncs (default 0, off)
-#   LSD_EMU_OUT     capture folder (default captures/, ignored by git)
+#   LSD_EMU_OUT     capture folder (default captures, ignored by git)
 # Also: LSD_BIOS (default disks/bios.bin), LSD_DISC (default disks/SLPS-01556.cue), LSD_EMU_TIMEOUT (seconds, default 300).
 set -euo pipefail
 cd "$(dirname "$0")/../.."

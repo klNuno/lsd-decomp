@@ -11,7 +11,7 @@ Every game function is matching C, so the map measures what is left to understan
 - named: it has a name of ours, but its body still reads a field called unk_XX, a local or
   parameter named by m2c (arg0, temp_s0, var_v0, sp10), an Unk_ type or a D_ global;
 - read: every name in its body is ours.
-The 70 game files are labelled by name; the 40 Sony library units (PSY-Q, linked as asm, never
+The 68 game files are labelled by name; the 42 Sony library units (PSY-Q, linked as asm, never
 decompiled) are drawn apart.
 """
 import argparse

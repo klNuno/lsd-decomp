@@ -24,7 +24,7 @@ The spawned Mml is kept in the map slot and deleted when the slot is reassigned.
 | `g_spawnGroups[stage]`, `g_spawnGroupCounts` | 8 bytes | done flag, rule, model index, entity type, 4 place indexes (-1 ends) |
 | `g_spawnPlaces` | 4 bytes | tile word, rotation index, offset index |
 
-Dumps of these tables: `work/hunt3/spawns.py`.
+Dumps of these tables: `tools/research/spawns.py`.
 
 ### Rules
 
@@ -43,7 +43,7 @@ Dumps of these tables: `work/hunt3/spawns.py`.
 | 21 | odd day |
 | others below 10 | always |
 
-The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). A chunk loads when it enters the 7 map slots around the dreamer (`StageMap_LoadAround`: the dreamer's square and its 6 neighbours, odd rows shifted half a square left), which `StageMap_Follow` requests in the same tick as map message 5, the one that logs the new square's mood. So a square's characters are made with the colour of the step onto one of its neighbours, and the square's own mood is logged only later, when the dreamer steps on it; only the start square is logged before its characters. A move to a square that is not loaded is never seen by `StageMap_Follow`, so it logs and loads nothing. Checked in the emulator (`work/hunt10/L1-findings.md` section 2), and used to reach the Natural World's cyan lions with no colour forced ([the lions](../discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)). `Sym_EnableExtraListForType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
+The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). A chunk loads when it enters the 7 map slots around the dreamer (`StageMap_LoadAround`: the dreamer's square and its 6 neighbours, odd rows shifted half a square left), which `StageMap_Follow` requests in the same tick as map message 5, the one that logs the new square's mood. So a square's characters are made with the colour of the step onto one of its neighbours, and the square's own mood is logged only later, when the dreamer steps on it; only the start square is logged before its characters. A move to a square that is not loaded is never seen by `StageMap_Follow`, so it logs and loads nothing. Checked in the emulator (hunt 10), and used to reach the Natural World's cyan lions with no colour forced ([the lions](../discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)). `Sym_EnableExtraListForType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
 
 ## The entity class
 
@@ -98,7 +98,7 @@ Every range test goes through `Entity_IsAtPointAhead`, which calls `DreamSys_Tes
 | 0xB | handler range | starts the handler; negative also stops it out of range |
 | 0xC | handler | the behaviour function |
 
-A dump of the 130 records: `work/hunt3/recs.py`. Player view: [the character record](../discoveries.md#-the-character-record-mood-points-waking-up-and-leaving).
+A dump of the 130 records: `tools/research/recs.py`. Player view: [the character record](../discoveries.md#-the-character-record-mood-points-waking-up-and-leaving).
 
 ### Events
 
@@ -120,7 +120,7 @@ Handlers count their own ticks in `entity->handlerTicks` (0 on the first tick, s
 
 Handlers are named `Behavior_TypeNNN` after their entity type until their character is known (`Behavior_Astronaut`, `Behavior_FlyingTrain`, `Behavior_MazePenguin`). Some characters are now known while their handler keeps its type name: `Behavior_Type85` is the Violence District gunman; `Behavior_Type81` runs the Natural World lions, types 81 and 120 on one model, and draws a temper at the first tick (`rand() & 1`, then `state = rand() % 3`: calm 2 times in 3, a charge or a stare that posts event 12, 1 in 6 each); `Behavior_Type31` is the Abyss Demon, which holds the controls until its animation has played once, then posts event 10. Record 81 is the only one with link 0x7F, so walking into a savannah lion ends the dream, while record 120 links to stage 7. A charging lion (state 1) grows by `g_scaleGrowStep` each tick and sleeps within 0x200 of the dreamer; in the emulator its contact always came first, so the charge ends the dream through link 0x7F.
 
-Handlers whose first reading was wrong, rechecked in the emulator (`work/hunt10/L3-findings.md`):
+Handlers whose first reading was wrong, rechecked in the emulator (hunt 10):
 
 | Handler | Type | What it does each tick |
 | --- | --- | --- |
@@ -142,7 +142,7 @@ The Grey Man is entity type 98, built on the only Sym model the game loads.
 | Placement | `Sym_SpawnSpy`: detach, then attach at `SceneNode_LocalToWorld(dreamer, (0, -200, 8000))`, facing the dreamer |
 | Erase | `Behavior_EraseFlashbacks`: once touched, a Fade flash (colour 7), sleep, `DreamSys_ClearFlashbacks`; each tick it moves 30 units along its own z axis |
 | Free | `Sym_FreeSpy` (`Place_Unload`) |
-| Leftovers | after his flash, a `Fade` of 164 bytes (`Fade_Create`), a model and 10 watcher nodes, 460 bytes in 13 blocks, stay until the place is unloaded; the menu after the dream holds the same blocks as without him (heap compared in the emulator, `work/hunt10/L2-findings.md` section 3) |
+| Leftovers | after his flash, a `Fade` of 164 bytes (`Fade_Create`), a model and 10 watcher nodes, 460 bytes in 13 blocks, stay until the place is unloaded; the menu after the dream holds the same blocks as without him (heap compared in the emulator, hunt 10) |
 
 There is one Grey Man per place, so a second roll moves the same one. The stages with a flag-1 slot are 2, 4, 5, 6, 7, 9 and 13; stages 1, 3, 8, 10 and 12 have only flag 0 and stage 11 only flag 2, so he never appears there (stage 11 checked in the emulator with the die forced). Record 98 has mood (-10, -10), past the edge of the graph. Player view: [the Grey Man flips your graph](../discoveries.md#-the-grey-man-flips-your-graph-and-wipes-your-memories), [when he can appear](../discoveries.md#-when-the-grey-man-can-appear), [who can meet him](../discoveries.md#-who-can-meet-the-grey-man-and-where).
 
@@ -159,4 +159,4 @@ Four handlers scale the place instead of themselves: they call StageMap slot 0x1
 ## Unknowns
 
 - The meaning of the ambience family behind rule 7 is not proven.
-- `Model_OnNotify` deletes a model whose borrowed file (class 0x5F03) goes away; that this is how a reassigned map slot ends its characters is likely, not traced. A Kyoto rickshaw followed 33 blocks from its square was detached (`Entity_Detach` ran: its attached word went to 0) in an open street, which fits (`work/hunt10/L3-findings.md` section 4).
+- `Model_OnNotify` deletes a model whose borrowed file (class 0x5F03) goes away; that this is how a reassigned map slot ends its characters is likely, not traced. A Kyoto rickshaw followed 33 blocks from its square was detached (`Entity_Detach` ran: its attached word went to 0) in an open street, which fits (hunt 10).

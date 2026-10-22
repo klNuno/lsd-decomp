@@ -9,7 +9,7 @@
  * Task (src/game/task.c): vtable 0x80086668, class id 0x230, 0x38 bytes, a class with a timeout and a
  * result that the dream runner (dream_runner.h) and the dream stage (place.h) derive from. Its base
  * (Screen, vtable 0x8006E878, screen.h ScreenVtbl and Screen_GetVtbl) runs the loop.
- * Vtable contents come from the executable (work/readable/W3/vt.py); slots are named after the
+ * Vtable contents come from the executable (tools/research/vt.py); slots are named after the
  * function stored there. Slots are left unprototyped where callers pass different types.
  */
 

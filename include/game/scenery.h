@@ -6,7 +6,7 @@
 /*
  * The ambience record a place gets from Scenery_Begin (g_ambience, or a fixed one given to
  * load): Ambience_Fill fills +0xC to +0x1C from a 4-byte family record {unk0, unk1, unk2, unk3}
- * (work/hunt6/C-notes-note.md). +0x0 to +0x8 are static data handed to the map.
+ * +0x0 to +0x8 are static data handed to the map.
  */
 /* A 4-byte ambience record: per stage (g_stageAmbience) or from a family table (g_ambienceFamilies, Ambience_PickFamily). */
 typedef struct AmbienceRecord {

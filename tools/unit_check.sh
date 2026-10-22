@@ -32,7 +32,7 @@ done
 mipsel-linux-gnu-objdump -h "$want" | awk '$2 ~ /^\./ {print $2, $3}' > "$tmp/hw"
 mipsel-linux-gnu-objdump -h "$got" | awk '$2 ~ /^\./ {print $2, $3}' > "$tmp/hg"
 cmp -s "$tmp/hw" "$tmp/hg" || { echo "DIFF in section sizes:"; diff "$tmp/hw" "$tmp/hg" | head; bad=1; }
-# offset, type and symbol: a unit worker may rename locals only, so a symbol name that differs
+# offset, type and symbol: a local rename never shows here, so a symbol name that differs
 # from the reference means a function or global was renamed outside tools/rename.py.
 rel() { mipsel-linux-gnu-objdump -r "$1" | awk '/^RELOCATION RECORDS/ {sec=$4} /^[0-9a-f]{8} / {print sec, $1, $2, $3}'; }
 rel "$want" > "$tmp/rw"; rel "$got" > "$tmp/rg"

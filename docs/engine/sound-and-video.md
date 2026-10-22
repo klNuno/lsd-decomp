@@ -42,7 +42,7 @@ slot ([characters](characters.md)). The fixed sound spots of a place use the sam
 ## The sequencer timer
 
 The sequencer timer is Sony's own LIBSND code (`SsSetTickMode`, `SsStart`, `SsEnd`, `SsQuit`,
-linked as is in psyq/80032588; the C once kept in `seq_timer.c` is in work/sony/c/).
+linked as is in psyq/80032588; the C once kept in `seq_timer.c` is no longer in the repository).
 `SsSetTickMode(1)` asks for 60 ticks per second; on an NTSC console (`g_videoMode` 0, read by
 `GetVideoMode` in `_SsInit`) that becomes rate 5, the vertical blank. `_SsStart` then picks a
 root counter:

@@ -16,7 +16,7 @@ out. Writes OUT with the columns NAME KIND FILE LEVEL EVIDENCE and prints the co
 
 comments: rewrites the evidence comment of each func and global row in config/symbol_addrs.txt with
 its EVIDENCE, keeping splat's attributes and the notes other tools rely on ("string reached from
-data", "object start of") and the docs/ and work/ paths it cited. Colons and semicolons would be read by splat, so they become commas.
+data", "object start of") and the docs/ paths it cited. Colons and semicolons would be read by splat, so they become commas.
 After it: make split && make check (comments never change the build).
 
 check: every func and global row names a symbol of config/symbol_addrs.txt, every type row a type
@@ -34,7 +34,7 @@ SYMS = ROOT / "config" / "symbol_addrs.txt"
 ORDER = {"wrong": 0, "guess": 1, "code": 2, "game": 3}
 KINDS = ("func", "global", "lsd", "type", "field")
 KEEP = re.compile(r"^(string reached from data|object start of)")
-REF = re.compile(r"(?:docs|work|\.agents)/[\w./#-]*[\w#-]")  # finding and report paths, kept when the evidence drops them
+REF = re.compile(r"docs/[\w./#-]*[\w#-]")  # finding paths, kept when the evidence drops them
 
 
 def read_rows(path):

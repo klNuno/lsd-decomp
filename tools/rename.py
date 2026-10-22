@@ -38,8 +38,9 @@ def text_files():
                 yield p
     for p in (ROOT / "docs").rglob("*.md"):
         yield p
-    if (ROOT / "config" / "name_levels.tsv").exists():
-        yield ROOT / "config" / "name_levels.tsv"  # the audit levels follow the rename
+    for name in ("name_levels.tsv", "layout.tsv"):  # the audit levels and the file plan follow the rename
+        if (ROOT / "config" / name).exists():
+            yield ROOT / "config" / name
 
 
 def elf_symbols():

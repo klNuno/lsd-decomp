@@ -58,7 +58,7 @@ segments:
     vram: 0x80010000
     bss_size: 0x6048
     subsegments:
-      # .rodata per translation unit (.agents/research/rodata-split.md). Game units use the dot form so
+      # .rodata per translation unit. Game units use the dot form so
       # splat pairs them with their c unit: jtbls migrate into their function, every other game rodata
       # symbol has force_not_migration and is included in source order with INCLUDE_RODATA. Sony units
       # keep plain rodata files.
@@ -72,7 +72,7 @@ segments:
       - [0xFD8, .rodata, game/file_cd]  # strings of File_ResolveEntries, File_Locate, then jtbls of File_ServiceQueue
       - [0x1040, rodata, psyq/80028B78]   # LIBCD
       - [0x14D8, rodata, psyq/80032588]   # LIBSND SsSetTickMode jtbl (game/seq_timer until 2026-10-17)
-      - [0x14F0, rodata, psyq/8003410C]   # LIBSND SEQREAD jtbls (moved to psyq 2026-10-15, sony-suspects.md)
+      - [0x14F0, rodata, psyq/8003410C]   # LIBSND SEQREAD jtbls (moved to psyq 2026-10-15)
       - [0x1764, rodata, psyq/80036AC8]   # LIBSPU
       - [0x17EC, .rodata, game/bgm]
       - [0x1818, rodata, psyq/8003A670]   # LIBSND SEQINIT messages
@@ -117,9 +117,9 @@ segments:
       - [0x1CBC0, c, game/file_null]  # likely
       - [0x1CC80, c, game/sound_bank]  # likely
       - [0x1D434, c, game/handler_node]  # guess
-      - [0x1D718, asm, psyq/8002CF18]  # LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match, sony-suspects.md
+      - [0x1D718, asm, psyq/8002CF18]  # LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match
       - [0x20FF0, asm, psyq/800307F0]  # LIBSND
-      - [0x21180, asm, psyq/80030980]  # LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match, sony-suspects.md
+      - [0x21180, asm, psyq/80030980]  # LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match
       - [0x221B4, asm, psyq/800319B4]  # LIBSND
       - [0x22244, asm, psyq/80031A44]  # LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match
       - [0x22948, asm, psyq/80032148]  # LIBSND
@@ -206,7 +206,7 @@ segments:
       - [0x57028, data, main]
       - [0x7B008, sdata, main]
       # 8-byte pairs copied whole: maspsx (ASPSX 2.21) reaches sym+4 through gp only for .sdata the C file
-      # defines itself, so the unit owns these bytes (work/config-window.md).
+      # defines itself, so the unit owns these bytes.
       - [0x7B0FC, .sdata, game/view]  # g_viewDefaultScreenSize { 0x100, 0xF0 }, View_Reset
       - [0x7B104, sdata, main_8008A904]
       - [0x7B368, .sdata, game/scenery]  # g_bandPos { -100, -60 }, g_bandSize { 0x140, 0x90 }, Ambience_UpdateBands, Ambience_CreateBands

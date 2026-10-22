@@ -41,9 +41,9 @@ another cut (each guess says which).
 | [`file_null.c`](../src/game/file_null.c) | `File_NullInit..File_NullGetVSyncMode` @0x8002C3C0 | likely | null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data |
 | [`sound_bank.c`](../src/game/sound_bank.c) | `Sound_CreateBank..Sound_GetTickRate` @0x8002C480 | likely | gp/sdata block 25..40 (g_bankCount, g_soundTickRate...); vtable g_soundBankVtbl after g_fileNullVtbl |
 | [`handler_node.c`](../src/game/handler_node.c) | `HandlerNode_Start..HandlerNode_Run` @0x8002CC34 | guess | end proven (psyq/8002CF18 LIBSND after); three functions with no data; could close sound_bank.c |
-| *psyq/8002CF18* | Sony: LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match, sony-suspects.md | | |
+| *psyq/8002CF18* | Sony: LIBSND VMANAGER (SpuVmAlloc..SpuVmSeqKeyOff), near match | | |
 | *psyq/800307F0* | Sony: LIBSND | | |
-| *psyq/80030980* | Sony: LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match, sony-suspects.md | | |
+| *psyq/80030980* | Sony: LIBSND VMANAGER (SpuVmSetVol..SsUtKeyOffV), near match | | |
 | *psyq/800319B4* | Sony: LIBSND | | |
 | *psyq/80031A44* | Sony: LIBSND VMANAGER (SsUtChangePitch..SsUtAllKeyOff), near match | | |
 | *psyq/80032148* | Sony: LIBSND | | |
