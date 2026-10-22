@@ -3,7 +3,7 @@
 The game code is split into the 68 source files the original programmers most likely had. Each file
 holds its functions in address order; the files sit in link order between the Sony library objects.
 The plan is `config/layout.tsv`; `tools/split_units.py docs` writes this page from it, and
-`tools/split_units.py apply` replays the split from the address units of commit 6c028b9 (it still
+`tools/split_units.py apply` replays the split from the address units of commit 4439128 (it still
 makes `spu.c` and `seq_timer.c`, which turned out to be Sony's LIBSND afterwards: see below).
 
 Confidence: **proven** means a Sony object sits on both sides of the file in .text, or the binary

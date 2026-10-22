@@ -5,7 +5,7 @@
   tools/split_units.py docs                write docs/layout.md from config/layout.tsv
 
 apply reads each old unit from src/game/<addr>.c, or from git REV when the file is gone (default
-6c028b9, the last commit with address units), so the split can be replayed. Function addresses
+4439128, the last commit with address units), so the split can be replayed. Function addresses
 come from build/lsd.elf: run it after a green `make check` of the address-unit tree. It writes
 the new C files, rewrites the game entries of config/splat.yaml and removes the old units. Then
 run `make split` twice (INCLUDE_RODATA paths name the new units) and `make check`.
@@ -24,7 +24,7 @@ SPLAT = os.path.join(ROOT, 'config/splat.yaml')
 ELF = os.path.join(ROOT, 'build/lsd.elf')
 SRC = os.path.join(ROOT, 'src/game')
 ROM_BASE = 0x8000F800  # vram - rom offset of the main segment
-DEFAULT_REV = '6c028b9'
+DEFAULT_REV = '4439128'
 
 # .rodata entries after the split: rom offset -> file. The old 0x1F78 entry is gone (graph.c holds both
 # Graph strings); 0x1D0C, 0x1F4C and 0x1F88 are new cuts (docs/layout.md, "Rodata").

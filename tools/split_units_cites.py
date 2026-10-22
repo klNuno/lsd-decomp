@@ -1,4 +1,4 @@
-"""Historical, for the split of commit 6c028b9 only (paths and headers are those of that commit).
+"""Historical, for the split of commit 4439128 only (paths and headers are those of that commit).
 Citations of old address units that tools/split_units.py cite cannot settle from the line alone:
 (path, old unit, words of the line) -> the file that holds what the line cites. A value may name
 several files: the tool writes it between its src/game/ prefix and its .c suffix."""
