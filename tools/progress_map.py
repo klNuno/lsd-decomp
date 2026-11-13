@@ -11,8 +11,9 @@ Every game function is matching C, so the map measures what is left to understan
 - named: it has a name of ours, but its body still reads a field called unk_XX, a local or
   parameter named by m2c (arg0, temp_s0, var_v0, sp10), an Unk_ type or a D_ global;
 - read: every name in its body is ours.
-The 68 game files are labelled by name; the 42 Sony library units (PSY-Q, linked as asm, never
-decompiled) are drawn apart.
+The 68 game files are labelled by name. The 42 Sony library units (PSY-Q, linked as asm, never
+decompiled: the stock SDK, not game code) get one bar below the map that shows their share of the
+executable.
 """
 import argparse
 import hashlib
@@ -259,68 +260,67 @@ def main():
 
 
 def svg(r):
-    W, H, top, pad = 1200, 800, 132, 28
+    """The map of the game code, then a bar that places it in the whole executable.
+
+    Sony's PSY-Q libraries are not drawn as rectangles: they are the SDK every PS1 game of the
+    time linked, not game code, and a grey block beside the game read as code left to do."""
+    W, H, top, pad = 1200, 820, 124, 28
     t = r["totals"]
     lv = t["levels"]
     g = t["game_bytes"]
+    sony = t["sony_bytes"]
     pct = lambda k: 100 * lv[k]["bytes"] / g
     fill = {k: c for k, _, c in LEVELS}
-    fill["sony"] = SONY[2]
     e = html.escape
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img">',
         "<title>LSD: Dream Emulator decompilation progress map</title>",
         "<desc>Rectangle area is code bytes. Every game function is matching C. Dark green: still named by "
         "address. Mid green: named, with unknown fields or locals inside. Light green: every name in its body "
-        "is ours. Grey hatched: Sony library linked as is. Hover for details.</desc>",
+        "is ours. The bar below places the game code in the whole executable, beside Sony's libraries. "
+        "Open the file to hover each function.</desc>",
         "<defs><pattern id=\"hatch\" width=\"6\" height=\"6\" patternUnits=\"userSpaceOnUse\" "
         f"patternTransform=\"rotate(45)\"><rect width=\"6\" height=\"6\" fill=\"{SONY[2]}\"/>"
         "<line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"6\" stroke=\"#4a4946\" stroke-width=\"2\"/></pattern></defs>",
         f'<rect width="{W}" height="{H}" rx="16" fill="{SURFACE}"/>',
         '<g font-family="system-ui, -apple-system, Segoe UI, sans-serif">',
         f'<text x="{pad}" y="44" font-size="25" font-weight="700" fill="{INK}">LSD: Dream Emulator · decompilation</text>',
-        f'<text x="{pad}" y="72" font-size="14" fill="{INK2}">Matching SLPS_015.56 verified · {e(r["commit"])}'
+        f'<text x="{pad}" y="72" font-size="14" fill="{INK2}">SLPS_015.56 rebuilt byte for byte · {e(r["commit"])}'
         f'{" + edits" if r["tracked_tree_dirty"] else ""} · {t["game_functions"]:,} game functions, '
-        f'{g:,} code bytes, all in C</text>',
+        f'{g:,} code bytes</text>',
         f'<text x="{W - pad}" y="44" text-anchor="end" font-size="30" font-weight="700" fill="{INK}">'
-        f'{pct("read"):.1f}% read</text>',
-        f'<text x="{W - pad}" y="72" text-anchor="end" font-size="14" fill="{INK2}">100% of game code in matching C · '
+        f'100% in C · {pct("read"):.1f}% read</text>',
+        f'<text x="{W - pad}" y="72" text-anchor="end" font-size="14" fill="{INK2}">'
         f'{lv["read"]["functions"]:,} of {t["game_functions"]:,} functions use only our names</text>',
     ]
     lx = pad
-    legend = [(k, f"{lab} {pct(k):.1f}%", fill[k]) for k, lab, _ in LEVELS] + \
-             [("sony", f"Sony library ({100 * t['sony_bytes'] / (g + t['sony_bytes']):.0f}% of the exe code), linked as is", "url(#hatch)")]
-    for k, lab, c in legend:
+    for k, lab, c in LEVELS:
+        lab = f"{lab} {pct(k):.1f}%"
         parts.append(f'<rect x="{lx}" y="92" width="12" height="12" rx="2" fill="{c}"/>')
         parts.append(f'<text x="{lx + 19}" y="103" font-size="14" fill="{INK}">{e(lab)}</text>')
         lx += 19 + 7.6 * len(lab) + 26
-    bx, by, bw, bh = pad, top, W - 2 * pad, H - top - 60
-    gw = bw * g / (g + t["sony_bytes"])
-    placed = squarify([(u["bytes"], u) for u in r["units"] if u["game"]], bx, by, gw - 3, bh) + \
-        squarify([(u["bytes"], u) for u in r["units"] if not u["game"]], bx + gw + 3, by, bw - gw - 3, bh)
+    bar_h, foot = 30, 64
+    bx, by, bw = pad, top, W - 2 * pad
+    bh = H - top - foot - bar_h - 34
+    placed = squarify([(u["bytes"], u) for u in r["units"] if u["game"]], bx, by, bw, bh)
     labels = []
     for ux, uy, uw, uh, u in placed:
         inner = [(f["bytes"], f) for f in u["functions"] if f["bytes"] > 0]
-        if u["game"]:
-            ulab = pathlib.Path(u["unit"]).name  # the source file, named by what it holds
-        else:
-            ulab = u["libraries"] or "Sony " + pathlib.Path(u["unit"]).stem
+        ulab = pathlib.Path(u["unit"]).name  # the source file, named by what it holds
         for fx, fy, fw, fh, f in squarify(inner, ux, uy, uw, uh):
-            c = "url(#hatch)" if f["level"] == "sony" else fill[f["level"]]
-            tip = f'{f["name"]} · {f["address"]} · {f["bytes"]} bytes · {ulab}'
-            if f["level"] != "sony":
-                tip += (f' · {dict((k, l) for k, l, _ in LEVELS)[f["level"]]}'
-                        f' · unknown fields {f["unk_fields"]}, m2c names {f["m2c_names"]},'
-                        f' Unk_ types {f["unk_types"]}, D_ globals {f["d_globals"]}'
-                        + (f' · name {NAME_LEVELS[f["name_level"]]}' if "name_level" in f else "")
-                        + (" · cited in docs/discoveries.md" if f["in_findings"] else ""))
-            parts.append(f'<rect x="{fx:.2f}" y="{fy:.2f}" width="{fw:.2f}" height="{fh:.2f}" fill="{c}" '
+            tip = (f'{f["name"]} · {f["address"]} · {f["bytes"]} bytes · {ulab}'
+                   f' · {dict((k, l) for k, l, _ in LEVELS)[f["level"]]}'
+                   f' · unknown fields {f["unk_fields"]}, m2c names {f["m2c_names"]},'
+                   f' Unk_ types {f["unk_types"]}, D_ globals {f["d_globals"]}'
+                   + (f' · name {NAME_LEVELS[f["name_level"]]}' if "name_level" in f else "")
+                   + (" · cited in docs/discoveries.md" if f["in_findings"] else ""))
+            parts.append(f'<rect x="{fx:.2f}" y="{fy:.2f}" width="{fw:.2f}" height="{fh:.2f}" fill="{fill[f["level"]]}" '
                          f'stroke="{SURFACE}" stroke-width="0.6"><title>{e(tip)}</title></rect>')
         parts.append(f'<rect x="{ux:.2f}" y="{uy:.2f}" width="{uw:.2f}" height="{uh:.2f}" fill="none" '
                      f'stroke="{SURFACE}" stroke-width="2.5"><title>{e(u["unit"])}</title></rect>')
         # the longest label that fits: "file.c", then the file name without its suffix
-        for lab in (ulab, pathlib.Path(ulab).stem if u["game"] else ""):
-            if lab and uw > 7.2 * len(lab) + 18 and uh > 30:
+        for lab in (ulab, pathlib.Path(ulab).stem):
+            if uw > 7.2 * len(lab) + 18 and uh > 30:
                 labels.append((ux, uy, lab))
                 break
     for ux, uy, ulab in labels:
@@ -328,16 +328,29 @@ def svg(r):
         parts.append(f'<rect x="{ux + 5:.2f}" y="{uy + 5:.2f}" width="{tw:.0f}" height="21" rx="4" '
                      f'fill="{SURFACE}" fill-opacity="0.82"/>')
         parts.append(f'<text x="{ux + 12:.2f}" y="{uy + 20:.2f}" font-size="12.5" fill="{INK}">{e(ulab)}</text>')
+    # the whole executable: the game code drawn above, then Sony's libraries
+    yb = by + bh + 34
+    gw = bw * g / (g + sony)
+    libs = sorted({l.strip() for u in r["units"] if not u["game"] for l in u.get("libraries", "").split(",") if l.strip()})
+    parts.append(f'<text x="{pad}" y="{yb - 9}" font-size="13" fill="{INK2}">The whole executable\'s code</text>')
+    parts.append(f'<rect x="{bx}" y="{yb}" width="{gw - 2:.2f}" height="{bar_h}" rx="4" fill="{fill["read"]}"/>')
+    parts.append(f'<text x="{bx + 12}" y="{yb + 20}" font-size="13.5" font-weight="600" fill="{SURFACE}">'
+                 f'Game code {100 * g / (g + sony):.0f}%: all in C, mapped above</text>')
+    parts.append(f'<rect x="{bx + gw + 2:.2f}" y="{yb}" width="{bw - gw - 2:.2f}" height="{bar_h}" rx="4" fill="url(#hatch)">'
+                 f'<title>Sony libraries linked as is: {e(", ".join(libs))}</title></rect>')
+    parts.append(f'<rect x="{bx + gw + 8:.2f}" y="{yb + 5}" width="{bw - gw - 14:.2f}" height="{bar_h - 10}" rx="3" '
+                 f'fill="{SURFACE}" fill-opacity="0.82"/>')
+    parts.append(f'<text x="{bx + gw + 16:.2f}" y="{yb + 20}" font-size="13" fill="{INK}">Sony PSY-Q SDK '
+                 f'{100 * sony / (g + sony):.0f}%: stock libraries, not game code</text>')
     u = t["unknowns"]
-    parts.append(f'<text x="{pad}" y="{H - 34}" font-size="13" fill="{INK2}">Area = code bytes · hover for each '
-                 f'function · left to name inside game code: {u["unk_fields"]} unknown fields, {u["m2c_names"]} '
+    parts.append(f'<text x="{pad}" y="{H - 34}" font-size="13" fill="{INK2}">Area = code bytes · open the file and '
+                 f'hover for each function · left to name: {u["unk_fields"]} unknown fields, {u["m2c_names"]} '
                  f'm2c locals, {u["unk_types"]} Unk_ types, {u["d_globals"]} D_ globals (per function)</text>')
-    parts.append(f'<text x="{pad}" y="{H - 15}" font-size="12" fill="{INK3}">Understanding, not matching: every '
-                 f'game byte already rebuilds from C. A name of ours is backed by evidence in '
-                 f'config/symbol_addrs.txt. Generated by tools/progress_map.py.</text>')
+    parts.append(f'<text x="{pad}" y="{H - 15}" font-size="12" fill="{INK3}">Every game byte already rebuilds '
+                 f'from C; the colours measure understanding. Sony\'s libraries are shared by every PS1 game of the '
+                 f'time and stay as Sony shipped them.</text>')
     parts.append("</g></svg>")
     return "\n".join(parts) + "\n"
-
 
 if __name__ == "__main__":
     main()

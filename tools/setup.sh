@@ -77,6 +77,10 @@ if [ ! -x "$T/bin/mipsmatch" ]; then
 fi
 
 # Python: splat and the helpers of m2c, permuter and asm-differ
+# a venv whose python3 was upgraded under it points at an interpreter without its packages: rebuild it
+if [ -e .venv ] && ! .venv/bin/python -c 'import os, sys; sys.exit(not os.path.isdir(os.path.join(sys.prefix, "lib", "python%d.%d" % sys.version_info[:2])))' 2>/dev/null; then
+  echo "setup: .venv belongs to another python3, rebuilding it"; rm -rf .venv
+fi
 if [ ! -x .venv/bin/python ]; then python3 -m venv .venv; fi
 if [ $LOCK = 1 ]; then
   .venv/bin/pip install -q -r "$T/requirements.in"

@@ -1,33 +1,55 @@
 # lsd-decomp
 
-A matching decompilation of LSD: Dream Emulator (PlayStation, Asmik Ace, 1998), retail release SLPS-01556.
+A matching decompilation of **LSD: Dream Emulator** (PlayStation, Asmik Ace, 1998), retail release SLPS-01556.
 
-The goal is to understand how the game works: the dream graph, links, special days, the Grey Man, texture sets and the random seed. Every finding is written down with the function and address that prove it ([docs/discoveries.md](docs/discoveries.md)), against a list of open questions ([docs/mysteries.md](docs/mysteries.md)).
+<p>
+<img src="docs/img/game/grey-man.png" width="24%" alt="The Grey Man standing in front of a torii gate in Kyoto">
+<img src="docs/img/game/flying-train-sky.png" width="24%" alt="The Happy Town train flying above the town">
+<img src="docs/img/game/penguins-red-day.png" width="24%" alt="The rainbow penguins of a red day in the Maze of Questions">
+<img src="docs/img/game/lion-cyan-profile.png" width="24%" alt="A cyan-day lion walking across the Natural World">
+</p>
 
-## Status
+Every function of the game is C that rebuilds the retail executable byte for byte. The point is to understand how the game works: the dream graph, links, special days, the Grey Man, texture sets and the random seed. Each finding is written for players, with the function and address that prove it.
 
-All 1,447 game functions are C that rebuilds the retail executable byte for byte (`make check` compares its sha1); the 626 functions of Sony's PSY-Q libraries are linked as assembly. Built with GCC 2.6.3 and ASPSX 2.21 at -O2 -G8. The C reads like source: one header per file in `include/game/` with its types and prototypes, our own PSY-Q headers in `include/psyq/`, and 1,889 names of our own, each with its evidence in `config/symbol_addrs.txt`; the 13 functions still named by address are 6 empty vtable slots, 5 empty functions nothing references and 2 setters of fields nothing reads. An audit rated every name we gave, struct fields and types included, against the code and the emulator runs ([config/name_levels.tsv](config/name_levels.tsv)): of 4,103 names, 192 were checked in game, 3,849 are proven by the code and 62 are guesses that say what is unproven. A second pass then merged the struct types that described one class twice (395 struct definitions down to 288). It corrected 90 names, and found that two files we had taken for game code are Sony's sound library. The code is laid out in the 68 source files the original programmers most likely had, named by what they hold, in link order between the Sony objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary).
+## At a glance
 
-The build is also shiftable: every pointer into the executable is written as a symbol, so code can be added before `main` and the game still runs. `tools/rawscan.py` relinks the build at another address and finds 0 fixed addresses, and a build with 0x100 extra bytes before `main` played the same dream as the retail one in an emulator.
+- **1,447 of 1,447 game functions in C**, compiled by GCC 2.6.3 and ASPSX 2.21 at -O2 -G8; `make check` compares the sha1 of the result with the retail `SLPS_015.56`.
+- **1,889 names of our own**, each with its evidence in `config/symbol_addrs.txt`. An audit rated all 4,103 names we gave (functions, globals, struct fields and types): 192 checked in game, 3,849 proven by the code, 62 guesses that say what is unproven ([config/name_levels.tsv](config/name_levels.tsv)).
+- **68 source files** laid out the way the original programmers most likely had them, in link order between Sony's objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary), with one header per file in `include/game/`.
+- **Shiftable**: every pointer into the executable is a symbol, so code can be added before `main` and the game still runs. `tools/rawscan.py` relinks the build at another address and finds 0 fixed addresses, and a build with 0x100 extra bytes before `main` played the same dream as the retail one in an emulator.
+- **56 findings and 4 community myths checked** in [docs/discoveries.md](docs/discoveries.md), most of them seen in an emulator.
 
-[![Progress map: one rectangle per function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
+## Progress
 
-Since every game byte already rebuilds from C, the map measures understanding: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. `tools/progress_map.py` redraws it after a green `make check` and writes the per-function data to `docs/progress/progress.json`.
+[![Progress map: one rectangle per game function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
 
-How each system works, for someone opening the code for the first time (boot and the object model, files and the CD, rendering, sound and video, menus and saves, the dream system, links, stages and places, characters, randomness), is in [docs/engine/](docs/engine/README.md), with a reading order from `main`.
+Every game byte already rebuilds from C, so the map measures understanding instead: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. The 13 functions still named by address are 6 empty vtable slots, 5 empty functions nothing references and 2 setters of fields nothing reads. Open the map to hover each function; `docs/progress/progress.json` holds the same data.
 
-The findings page holds 60 player-readable findings, most checked in an emulator, and a section of community myths checked against the code.
+The bar under the map is the whole executable. The other 40 % of its code is Sony's PSY-Q SDK (graphics, sound, CD, memory card and C library routines), the stock libraries every PS1 game of the time linked. Its 626 functions are recognised as Sony's library code and linked as Sony shipped them: they are not part of LSD. Two files first taken for game code turned out to be Sony's sound library and moved there.
 
-## How it was made
+## Highlights from the findings
 
-The C, the names, the docs and the emulator checks were written by AI agents, mostly Claude Opus 5.5 and Claude Haiku 5.5 (a few naming and search passes by Grok 4.7 and GLM 5.3), and a change was kept only when `make check` still matched.
+- [The secret video reel](docs/discoveries.md#-the-secret-video-reel-four-graph-points-and-11-minutes-of-film): a face drawn on the graph makes it blink green, then 20 special-day videos play back to back for 11 minutes 13 seconds.
+- [The Grey Man flips your graph and wipes your memories](docs/discoveries.md#-the-grey-man-flips-your-graph-and-wipes-your-memories): his mood sits past the edge of the graph, so touching him throws your day to the opposite corner.
+- [SELECT + TRIANGLE in the pause erases your game](docs/discoveries.md#-select--triangle-in-the-pause-erases-your-game): the game's only hidden button input, with no warning.
+- [The first dream of a new year starts from the wrong data](docs/discoveries.md#-the-first-dream-of-a-new-year-starts-from-the-wrong-data): a bug picks the start place from part of a score instead of day 365.
+- [A red day fills the Maze of Questions with rainbow penguins](docs/discoveries.md#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins): one penguin becomes nine, and 1 in 5 lone penguins is a giant.
+- [A Clockwork Machines track that can never play](docs/discoveries.md#-a-clockwork-machines-track-that-can-never-play): the dice can pick it, but the game plays the next track instead.
 
-## Requirements
+## Where to read
 
-- Linux x86-64 with `make`, `git`, `curl`, Python 3 with `venv`, `binutils-mipsel-linux-gnu` and stable Rust (for `mipsmatch`).
-- Your own dump of the game disc, and of a Japanese PS1 BIOS for in-game checks. No game or BIOS file is provided here.
+| Page | What it holds |
+| --- | --- |
+| [docs/discoveries.md](docs/discoveries.md) | The findings, for players first, with the proof folded under each one |
+| [docs/mysteries.md](docs/mysteries.md) | The 15 open questions and how far each one is answered |
+| [docs/engine/](docs/engine/README.md) | How each system works, for a programmer opening the code: boot and objects, files and the CD, rendering, sound and video, menus and saves, the dream system, links, stages, characters, randomness |
+| [docs/naming.md](docs/naming.md) | Naming conventions and the glossary |
+| [docs/layout.md](docs/layout.md) | The 68 source files in link order, with the evidence for each boundary |
+| [docs/community-knowledge.md](docs/community-knowledge.md) | What players and earlier projects knew before |
 
-## Setup
+## Building
+
+You need Linux x86-64 with `make`, `git`, `curl`, Python 3 with `venv`, `binutils-mipsel-linux-gnu` and stable Rust (for `mipsmatch`), plus your own dump of the game disc. In-game checks also need a Japanese PS1 BIOS (SCPH-7000). No game or BIOS file is provided here.
 
 ```sh
 git config core.hooksPath tools/hooks
@@ -36,11 +58,20 @@ ln -s /path/to/your.bin disks/SLPS-01556.bin
 printf 'FILE "SLPS-01556.bin" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n' > disks/SLPS-01556.cue
 make check-disk                 # extracts the disc, checks SLPS_015.56
 make split && make check        # splits the executable, builds it from src/, compares the sha1
-ln -s /path/to/your/bios.bin disks/bios.bin
-LSD_EMU_SHOTS=3600 LSD_EMU_FRAMES=3600 tools/emu/run.sh   # boots headless in PCSX-Redux, captures the title screen
 ```
 
-`make check-disk` must print `extract/SLPS_015.56: OK`. Only the executable has to match: fan translation patches leave it untouched.
+`make check-disk` must print `extract/SLPS_015.56: OK` and `make check` must print `build/SLPS_015.56: OK`. Only the executable has to match: fan translation patches leave it untouched.
+
+To boot the game headless in PCSX-Redux and capture the title screen:
+
+```sh
+ln -s /path/to/your/bios.bin disks/bios.bin
+LSD_EMU_SHOTS=3600 LSD_EMU_FRAMES=3600 tools/emu/run.sh
+```
+
+## How it was made
+
+The C, the names, the docs and the emulator checks were written by AI agents, mostly Claude Opus 5.5 and Claude Haiku 5.5 (a few naming and search passes by Grok 4.7 and GLM 5.3). A change was kept only when `make check` still matched.
 
 ## Legal
 
