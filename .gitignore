@@ -12,6 +12,29 @@
 *.img
 *.STR
 *.str
+# Game, emulator and save files dropped outside those folders
+/SLPS_*
+*.exe
+*.EXE
+*.[Tt][Ii][Mm]
+*.[Tt][Ii][Xx]
+*.[Tt][Mm][Dd]
+*.[Ll][Bb][Dd]
+*.[Mm][Oo][Mm]
+*.[Vv][Hh]
+*.[Vv][Bb]
+*.[Ss][Ee][Qq]
+*.[Xx][Aa]
+*.chd
+*.pbp
+*.ecm
+*.mdf
+*.mds
+*.mcr
+*.mcd
+*.srm
+*.sav
+*.rom
 
 # Toolchain, installed by tools/setup.sh
 /tools/dl/

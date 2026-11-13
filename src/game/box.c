@@ -44,7 +44,7 @@ void Box_Reset(Box *box, BoxSize *size, u8 *color, s32 priority) {
 
     box->priority = priority;
     box->relative = 1;
-    box->unk_4C = 0;
+    box->unused4C = 0;
     box->attribute = 0;
     box->x = 0;
     box->y = 0;
@@ -112,10 +112,10 @@ void Box_SetSize(Box *box, BoxSize *size) {
 }
 
 /* Slot 0xC4: shows the box (root and position passed through), then clears the percent flag */
-void Box_ShowAbsolute(Box *box, s32 root, s32 position, s32 value) {
+void Box_ShowAbsolute(Box *box, s32 root, s32 position, s32 unused4C) {
     box->vtbl->show();
     box->relative = 0;
-    box->unk_4C = value;
+    box->unused4C = unused4C;
 }
 
 /* Slot 0xC8 */

@@ -22,7 +22,7 @@ typedef struct TimVtbl {
     void (*unk8C)();
     void (*unk90)();
     void (*unk94)();
-    void (*setUnk48)();       /* 0x98 func_8003B5E4: +0x48 = 1 */
+    void (*setUnused48)();       /* 0x98 Tim_SetUnused48: +0x48 = 1 */
     void (*getInfo)(void *, void *); /* 0x9C Tim_GetInfo: GsGetTimInfo into a GsIMAGE */
 } TimVtbl;
 
@@ -59,7 +59,7 @@ typedef struct Tim {
     u16 direct;
     u16 state;
     TimImage image;           /* 0x2C filled by getInfo before each upload */
-    s32 unk48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
+    s32 unused48;                /* 0x48 0 at init, 1 after slot 0x98; not read in this unit */
     struct TixFade *fade;     /* 0x4C the TixFade of its palette row (tix.h), NULL at init */
 } Tim;
 

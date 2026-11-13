@@ -58,7 +58,7 @@ void App_Start(App *app, Display *display, Pad *pad) {
     }
 }
 
-void func_8003B108(void) {
+void App_EmptySlot48(void) {
 }
 
 /* Logos once, then forever the opening video and the title; title result 2 runs a dream. */

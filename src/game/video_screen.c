@@ -52,7 +52,7 @@ void VideoScreen_Reset(VideoScreen *video) {
     video->movieLoops = -1;
     video->movieRepeat = 0;
     video->skippable = 1;
-    video->unkD0 = 0;
+    video->unusedD0 = 0;
     video->closeAtOnce = 1;
 }
 
@@ -162,8 +162,8 @@ void VideoScreen_SetSkippable(VideoScreen *video, s32 skippable) {
     video->skippable = skippable;
 }
 
-void func_8003BE74(VideoScreen *video, s32 value) {
-    video->unkD0 = value;
+void VideoScreen_SetUnusedD0(VideoScreen *video, s32 value) {
+    video->unusedD0 = value;
 }
 
 void VideoScreen_SetCloseAtOnce(VideoScreen *video, s32 value) {

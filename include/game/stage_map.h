@@ -25,7 +25,7 @@ typedef struct MapSlot {
     MapTile *root;          /* 0x0C the chunk's origin node; its coord is the chunk position */
     MapTile **tiles;        /* 0x10 MAP_SLOT_TILES tiles, row-major 20 per row */
     Object *spawned;        /* 0x14 Sym_SpawnOrSpy's result (Place_SpawnCell), deleted on slot message 6 */
-    s32 unk18;
+    s32 unused18;
 } MapSlot;
 
 /* What StageMap slot 0x110 (StageMap_Locate) computes for a world position, 0x2C bytes. */
@@ -120,7 +120,7 @@ typedef struct StageMapVtbl {
     s32 (*slotIndexByChunk)(); /* 0x124 StageMap_SlotIndexByChunk */
     void (*updateView)();   /* 0x128 StageMap_UpdateView */
     s32 (*tellNearTiles)();      /* 0x12C StageMap_TellNearTiles */
-    void (*unk130)();       /* 0x130 func_8004CFA8 */
+    void (*getUnused1CC)();       /* 0x130 StageMap_GetUnused1CC */
     void (*setBounds)();       /* 0x134 StageMap_SetBounds */
     void (*startTileStretch)();       /* 0x138 StageMap_StartTileStretch */
     void (*stepTileStretch)();       /* 0x13C StageMap_StepTileStretch */
@@ -160,7 +160,7 @@ typedef struct StageMap {
     u8 tellX;               /* 0x1C2 */
     u8 tellY;               /* 0x1C3 */
     u8 pad_1C4[0x1CC - 0x1C4];
-    s32 unk1CC[4];          /* 0x1CC address returned by slot 0x130 */
+    s32 unused1CC[4];          /* 0x1CC address returned by slot 0x130 */
     void *bounds;           /* 0x1DC box of chunks tested by StageMap_IsOutsideBounds */
     s32 stretchTicks;             /* 0x1E0 */
     Fraction *stretchStep;  /* 0x1E4 a Fraction[3] scale step handed to every tile's slot 0x48 (g_tileStretchSlowUp to g_tileStretchFastDown); its y denominator is the ticks per step */

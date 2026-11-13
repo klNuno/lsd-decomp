@@ -10,7 +10,7 @@ UNIT	FIRST_FUNC	LAST_FUNC	FILE	CONFIDENCE	evidence
 80025F7C	Scene_New	Scene_GetVtbl	scene.c	likely	start proven (psyq/80025EAC before); class ends with Scene_GetVtbl; only Scene functions use the unit .rodata; data order g_sceneVtbl then File data
 80025F7C	File_Delete	File_JoinPath	file_base.c	likely	end proven (psyq/80027130 LIBC2 after); data inversion g_fileVtbl after g_fileClassGetters binds 22..26, gp g_fileBackend binds 24..37; File base class and backend selection
 800271D8	File_Create	File_GetVSyncMode	file_cd.c	proven	psyq/80027130 before, psyq/80028B78 after; rodata strings of File_ResolveEntries/File_SyncOpen sit before the jtbls of File_ServiceQueue (one cc1 output) and gp g_fileEnabled bind it
-8002C12C	MapModels_New	func_8002C3B8	map_models.c	likely	start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, func_8002C3B8 (empty slot) kept with it
+8002C12C	MapModels_New	MapModels_Unused2C3B8	map_models.c	likely	start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, MapModels_Unused2C3B8 (empty slot) kept with it
 8002C12C	File_NullInit	File_NullGetVSyncMode	file_null.c	likely	null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data
 8002C12C	Sound_CreateBank	Sound_GetTickRate	sound_bank.c	likely	gp/sdata block 25..40 (g_bankCount, g_soundTickRate...); vtable g_soundBankVtbl after g_fileNullVtbl
 8002C12C	HandlerNode_Start	HandlerNode_Run	handler_node.c	guess	end proven (psyq/8002CF18 LIBSND after); three functions with no data; could close sound_bank.c

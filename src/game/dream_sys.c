@@ -86,8 +86,8 @@ void DreamSys_Reset(DreamSys *dreamSys) {
     dreamSys->ignorePad = 0;
     dreamSys->skipMoveBoxes = 0;
     dreamSys->linkStep = 0;
-    dreamSys->unk78 = 0;
-    dreamSys->unk924 = 0;
+    dreamSys->unused78 = 0;
+    dreamSys->unused924 = 0;
 }
 
 void DreamSys_EnterMap(DreamSys *dreamSys, StageMap *map) {
@@ -315,7 +315,7 @@ void DreamSys_StartPlace(DreamSys *dreamSys, s32 speed, s32 linkPeriod) {
     dreamSys->ignorePad = 0;
     dreamSys->skipMoveBoxes = 0;
     dreamSys->linkStep = 0;
-    dreamSys->unk78 = 0;
+    dreamSys->unused78 = 0;
     SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
     rotation[2].num = 0;
     rotation[2].den = 1;
@@ -410,12 +410,12 @@ static s32 DreamSys_GetSightHeight(Vec3 *start, Vec3 *end, s32 pos) {
     return ((end->y - start->y) * pos) / span + start->y;
 }
 
-void func_80059590(DreamSys *dreamSys) {
-    dreamSys->unk7C = 0;
+void DreamSys_ClearUnused7C(DreamSys *dreamSys) {
+    dreamSys->unused7C = 0;
 }
 
-void func_80059598(DreamSys *dreamSys) {
-    dreamSys->unk78 = 0;
+void DreamSys_ClearUnused78(DreamSys *dreamSys) {
+    dreamSys->unused78 = 0;
 }
 
 s32 DreamSys_EmptySlot12C(void) {
@@ -760,18 +760,18 @@ void DreamSys_PopSpeed(DreamSys *dreamSys) {
     dreamSys->speed = dreamSys->savedSpeed;
 }
 
-void DreamSys_SetLinkFlags(DreamSys *dreamSys, s32 dynamicLinkOn, s32 arg2, s32 arg3, s32 arg4) {
+void DreamSys_SetLinkFlags(DreamSys *dreamSys, s32 dynamicLinkOn, s32 unused128, s32 unused12C, s32 unused130) {
     if (dynamicLinkOn >= 0) {
         dreamSys->dynamicLinkOn = dynamicLinkOn;
     }
-    if (arg2 >= 0) {
-        dreamSys->unk128 = arg2;
+    if (unused128 >= 0) {
+        dreamSys->unused128 = unused128;
     }
-    if (arg3 >= 0) {
-        dreamSys->unk12C = arg3;
+    if (unused12C >= 0) {
+        dreamSys->unused12C = unused12C;
     }
-    if (arg4 >= 0) {
-        dreamSys->unk130 = arg4;
+    if (unused130 >= 0) {
+        dreamSys->unused130 = unused130;
     }
 }
 
@@ -801,12 +801,12 @@ void DreamSys_InitNewGame(DreamSys *dreamSys) {
     dreamSys->save.instanceScore = 0;
     dreamSys->save.flashbackCount = 0;
     dreamSys->save.reelSeen = 0;
-    dreamSys->save.unk460 = 0;
+    dreamSys->save.unused460 = 0;
     dreamSys->save.shake = 1;
-    dreamSys->save.unk504 = 0;
-    dreamSys->save.unk508 = 0;
+    dreamSys->save.unused504 = 0;
+    dreamSys->save.unused508 = 0;
     Nav_InitFlags(dreamSys->save.navFlags, &dreamSys->save.dynamicLinkCount);
-    memset(dreamSys->save.unk50C, 0, 0x1F4);
+    memset(dreamSys->save.unused50C, 0, 0x1F4);
 }
 
 void DreamSys_SwapShake(DreamSys *dreamSys, s32 *shake) {
@@ -1363,7 +1363,7 @@ void DreamSys_CalcUnlockScore(DreamSys *dreamSys) {
     dreamSys->save.unlockScore = dreamSys->save.navScore + dreamSys->save.instanceScore;
 }
 
-void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, DreamRotation *rotation, s32 arg4, s32 length, s32 day) {
+void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, DreamRotation *rotation, s32 unused1C, s32 length, s32 day) {
     Flashback *ent;
     s32 n;
 
@@ -1378,12 +1378,12 @@ void DreamSys_AddFlashback(DreamSys *dreamSys, s32 stage, StagePlace *place, Dre
     ent->stage = stage;
     ent->place = *place;
     ent->rotation.rot = *rotation;
-    ent->unk1C = arg4;
+    ent->unused1C = unused1C;
     ent->length = length;
     ent->day = day;
 }
 
-void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
+void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 unused1C, s32 length) {
     Fraction rotation[3];
     StagePlace *location;
     StageMap *map;
@@ -1393,7 +1393,7 @@ void DreamSys_MaybeSaveFlashback(DreamSys *dreamSys, s32 arg1, s32 length) {
             map = dreamSys->map;
             location = map->vtbl->getLocation(map, 0, 0);
             SceneNode_GetRotation((SceneNode *)dreamSys, rotation);
-            dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, location, rotation, arg1, length, dreamSys->save.day);
+            dreamSys->vtbl->addFlashback(dreamSys, dreamSys->stage, location, rotation, unused1C, length, dreamSys->save.day);
         }
     }
 }
@@ -1417,14 +1417,14 @@ void DreamSys_RestorePosition(DreamSys *dreamSys) {
     dst->flg = 0;
 }
 
-s32 func_8005BA20(DreamSys *dreamSys, s32 value) {
+s32 DreamSys_SwapUnused924(DreamSys *dreamSys, s32 value) {
     s32 old;
 
     if (value < 0) {
-        return dreamSys->unk924;
+        return dreamSys->unused924;
     }
-    old = dreamSys->unk924;
-    dreamSys->unk924 = value;
+    old = dreamSys->unused924;
+    dreamSys->unused924 = value;
     return old;
 }
 

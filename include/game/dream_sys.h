@@ -57,7 +57,7 @@ typedef struct Flashback {
         u8 bytes[12];
     } rotation;
     s16 length;      /* 0x10 seconds, playback adds 4 */
-    s16 unk1C;
+    s16 unused1C;
     s32 day;
 } Flashback;
 
@@ -74,16 +74,16 @@ typedef struct SaveBlock {
     u8 pad_2F2[0x2F4 - 0x2F2];
     s32 flashbackCount;     /* 0x2F4 */
     Flashback flashbacks[10]; /* 0x2F8 */
-    u8 unk460;              /* 0x460 */
+    u8 unused460;              /* 0x460 */
     u8 pad_461[0x467 - 0x461];
     u8 reelSeen;            /* 0x467 the secret video reel was played */
     u8 navFlags[32];        /* 0x468 30 navigation flags (g_navFlags) */
     s32 dynamicLinkCount;   /* 0x488 g_dynamicLinkCount */
     u8 pad_48C[0x500 - 0x48C];
     s32 shake;              /* 0x500 SHAKE option */
-    s32 unk504;
-    s32 unk508;
-    u8 unk50C[500];
+    s32 unused504;
+    s32 unused508;
+    u8 unused50C[500];
 } SaveBlock;
 
 /* g_dreamSysVtbl. Slots named after their function; slot 0 holds 0x1F34. */
@@ -161,8 +161,8 @@ typedef struct DreamSysVtbl {
     void (*tickBegin)(struct DreamSys *);                               /* 0x118 DreamSys_TickBegin */
     void (*tickHandlers)(struct DreamSys *);                               /* 0x11C DreamSys_TickHandlers */
     s32 (*testPointAhead)();                                                 /* 0x120 DreamSys_TestPointAhead */
-    void (*unk124)();                                                /* 0x124 func_80059590 */
-    void (*unk128)();                                                /* 0x128 func_80059598 */
+    void (*clearUnused7C)();                                                /* 0x124 DreamSys_ClearUnused7C */
+    void (*clearUnused78)();                                                /* 0x128 DreamSys_ClearUnused78 */
     void (*beforeWalk)(struct DreamSys *);                               /* 0x12C DreamSys_EmptySlot12C */
     void (*stopControls)();                                                /* 0x130 DreamSys_StopControls */
     void (*setControls)();                                                /* 0x134 DreamSys_SetControls */
@@ -226,7 +226,7 @@ typedef struct DreamSysVtbl {
     void (*clearFlashbacks)(struct DreamSys *);                      /* 0x21C DreamSys_ClearFlashbacks */
     void (*savePosition)(struct DreamSys *);                               /* 0x220 DreamSys_SavePosition */
     void (*restorePosition)(struct DreamSys *);                               /* 0x224 DreamSys_RestorePosition */
-    void (*unk228)();                                                /* 0x228 func_8005BA20 */
+    void (*swapUnused924)();                                                /* 0x228 DreamSys_SwapUnused924 */
 } DreamSysVtbl;
 
 typedef struct DreamSys {
@@ -254,8 +254,8 @@ typedef struct DreamSys {
     s32 autoWalk;
     s32 controlsLocked;
     s32 circlePressed;
-    s32 unk78;
-    s32 unk7C;
+    s32 unused78;
+    s32 unused7C;
     void (*lookHandler)();        /* one of slots 0x140, 0x14C, 0x150, picked by unk84; called without arguments */
     s32 lookMode;
     s32 pitchInput;
@@ -278,9 +278,9 @@ typedef struct DreamSys {
     HandlerNode fallSound;  /* 0xCC plays the fall sounds (DreamSys_FallSoundHandler) while falling */
     u32 linkPeriod;
     s32 dynamicLinkOn;      /* links dynamically only when set (DreamSys_OnTileContact) */
-    s32 unk128;
-    s32 unk12C;
-    s32 unk130;
+    s32 unused128;
+    s32 unused12C;
+    s32 unused130;
     s32 timeLimit;          /* seconds x 15 (DreamSys_SwapTimeLimit) */
     u8 pad_138[0x144 - 0x138];
     MoodAccum chunkMood;    /* chunks walked through (DreamSys_LogChunkMood) */
@@ -308,7 +308,7 @@ typedef struct DreamSys {
     s32 linkStepTick;
     StagePlace linkStartPlace;
     u8 pad_922[0x924 - 0x922];
-    s32 unk924;
+    s32 unused924;
 } DreamSys;
 
 /* Functions of src/game/dream_sys.c that other files call or reference (docs/naming.md, Prototypes) */

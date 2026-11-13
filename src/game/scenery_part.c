@@ -30,7 +30,7 @@ void *SceneryPart_New(s32 index, s32 blendRate, void *font) {
 void SceneryPart_Init(SceneryPart *part, s32 index, s32 blendRate, void *font) {
     SpriteNode_GetVtbl()->init(part, font, 0, (SpriteRect *)(g_sceneryPartRects + index * 0xC), blendRate, 0);
     part->vtbl = SceneryPart_GetVtbl();
-    part->unkA4 = 0;
+    part->unusedA4 = 0;
     part->vtbl->reset(part, index);
 }
 
@@ -48,9 +48,9 @@ void SceneryPart_SetScale(SceneryPart *part, s32 assign, s16 *ratio) {
 
     x = ((ratio[0] / ratio[1]) << 12) + (((ratio[0] % ratio[1]) << 12) / ratio[1]);
     y = ((ratio[2] / ratio[3]) << 12) + (((ratio[2] % ratio[3]) << 12) / ratio[3]);
-    if (part->unk58 != 0) {
-        part->unk5C = (x * part->unk5C) >> 12;
-        part->unk60 = (y * part->unk60) >> 12;
+    if (part->altScaleOn != 0) {
+        part->altScaleX = (x * part->altScaleX) >> 12;
+        part->altScaleY = (y * part->altScaleY) >> 12;
     } else {
         part->sprite.scaleX = x;
         part->sprite.scaleY = y;

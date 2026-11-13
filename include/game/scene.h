@@ -14,7 +14,7 @@ typedef struct SceneSettings {
     s32 videos;      /* 0x08 opening, reel, cinematic and ending videos */
     s32 logos;       /* 0x0C */
     s32 title;       /* 0x10 the graph and the main menu */
-    s32 unk14;       /* 0x14 handed to DreamSys slot 0x228, which keeps it at +0x924 */
+    s32 unused14;       /* 0x14 handed to DreamSys slot 0x228, which keeps it at +0x924 */
 } SceneSettings;
 
 /*

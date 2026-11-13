@@ -14,16 +14,17 @@ Every function of the game is C that rebuilds the retail executable byte for byt
 ## At a glance
 
 - **1,447 of 1,447 game functions in C**, compiled by GCC 2.6.3 and ASPSX 2.21 at -O2 -G8; `make check` compares the sha1 of the result with the retail `SLPS_015.56`.
-- **1,889 names of our own**, each with its evidence in `config/symbol_addrs.txt`. An audit rated all 4,103 names we gave (functions, globals, struct fields and types): 192 checked in game, 3,849 proven by the code, 62 guesses that say what is unproven ([config/name_levels.tsv](config/name_levels.tsv)).
+- **1,903 names of our own**, each with its evidence in `config/symbol_addrs.txt`. An audit rated all 4,159 names we gave (functions, globals, struct fields and types): 192 checked in game, 3,899 proven by the code, 68 guesses that say what is unproven ([config/name_levels.tsv](config/name_levels.tsv)).
 - **68 source files** laid out the way the original programmers most likely had them, in link order between Sony's objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary), with one header per file in `include/game/`.
 - **Shiftable**: every pointer into the executable is a symbol, so code can be added before `main` and the game still runs. `tools/rawscan.py` relinks the build at another address and finds 0 fixed addresses, and a build with 0x100 extra bytes before `main` played the same dream as the retail one in an emulator.
+- **Every function read**: no function body uses a placeholder name any more (a few struct slots that no code touches keep theirs). What the game never uses is named as such (`unused4C`, `App_EmptySlot48`), with the proof that nothing reads or calls it.
 - **56 findings and 4 community myths checked** in [docs/discoveries.md](docs/discoveries.md), most of them seen in an emulator.
 
 ## Progress
 
 [![Progress map: one rectangle per game function, sized by its code bytes](docs/progress/treemap.svg)](docs/progress/treemap.svg)
 
-Every game byte already rebuilds from C, so the map measures understanding instead: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. The 13 functions still named by address are 6 empty vtable slots, 5 empty functions nothing references and 2 setters of fields nothing reads. Open the map to hover each function; `docs/progress/progress.json` holds the same data.
+Every game byte already rebuilds from C, so the map measures understanding instead: a function is "read" when every name in its body is ours, with no `unk_` field, m2c local, `Unk_` type or `D_` global left. All 1,447 are. The last 43 were mostly dead code: fields the game writes and never reads, empty functions in class slots nothing calls, and three functions nothing references. Their names say so instead of inventing a purpose ([docs/naming.md](docs/naming.md)). Open the map to hover each function; `docs/progress/progress.json` holds the same data.
 
 The bar under the map is the whole executable. The other 40 % of its code is Sony's PSY-Q SDK (graphics, sound, CD, memory card and C library routines), the stock libraries every PS1 game of the time linked. Its 626 functions are recognised as Sony's library code and linked as Sony shipped them: they are not part of LSD. Two files first taken for game code turned out to be Sony's sound library and moved there.
 
@@ -49,7 +50,7 @@ The bar under the map is the whole executable. The other 40 % of its code is Son
 
 ## Building
 
-You need Linux x86-64 with `make`, `git`, `curl`, Python 3 with `venv`, `binutils-mipsel-linux-gnu` and stable Rust (for `mipsmatch`), plus your own dump of the game disc. In-game checks also need a Japanese PS1 BIOS (SCPH-7000). No game or BIOS file is provided here.
+You need Linux x86-64 with `make`, `git`, `curl`, a C compiler (`gcc`), Python 3 with `venv`, `binutils-mipsel-linux-gnu` and stable Rust (for `mipsmatch`), about 1.1 GB of disk, plus your own dump of the game disc. In-game checks also need a Japanese PS1 BIOS (SCPH-7000). No game or BIOS file is provided here.
 
 ```sh
 git config core.hooksPath tools/hooks
@@ -59,6 +60,8 @@ printf 'FILE "SLPS-01556.bin" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:
 make check-disk                 # extracts the disc, checks SLPS_015.56
 make split && make check        # splits the executable, builds it from src/, compares the sha1
 ```
+
+If setup warns that the pinned PCSX-Redux build is gone from its download site, the build still works: only the in-game checks below need the emulator.
 
 `make check-disk` must print `extract/SLPS_015.56: OK` and `make check` must print `build/SLPS_015.56: OK`. Only the executable has to match: fan translation patches leave it untouched.
 
@@ -75,8 +78,10 @@ The C, the names, the docs and the emulator checks were written by AI agents, mo
 
 ## Legal
 
-Fan project, not affiliated with Asmik Ace or Osamu Sato. It ships no game asset (no executable, disc data, text or audio) and you need to own the game; the only game images are the small emulator screenshots that illustrate the findings. Nothing built from it is distributed. A takedown request from the rights holder will be honored.
+Fan project, not affiliated with Asmik Ace or Osamu Sato. It ships no game asset: no executable, no disc data, no audio, no dump of the game's text or images. The source keeps only the file names and debug messages the code refers to, and you need your own copy of the game to build anything. The only game images are the small emulator screenshots that illustrate the findings. Nothing built from it is distributed. A takedown request from the rights holder will be honored.
 
 ## Credits
 
 Address map cross-checked against FirecatFG's lsddecomp; file formats documented by Figglewatts' libLSD and LSDView; game knowledge from the compu-lsd, dreamemulator.fandom.com and LSD Revamped wikis.
+
+Built with splat, maspsx, m2c, decomp-permuter, asm-differ, mipsmatch, objdiff, mkpsxiso, old-gcc and PCSX-Redux; Sony's library functions were identified with lab313ru's psx_psyq_signatures. `include/include_asm.h`, `macro.inc`, `labels.inc` and `gte_macros.inc` are splat's generated files (MIT, Copyright (c) 2021 Ethan Roseman).

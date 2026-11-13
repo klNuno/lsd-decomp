@@ -74,7 +74,7 @@ void Scene_Init(Scene *scene, SceneSettings *settings) {
     model.path = "ETC\\DREAME5.TMD";
     scene->dreamSys = DreamSys_New(Tmd_Create(&model), NULL, NULL);
     scene->skipGraph = 0;
-    scene->dreamSys->vtbl->unk228(scene->dreamSys, settings->unk14);
+    scene->dreamSys->vtbl->swapUnused924(scene->dreamSys, settings->unused14);
     scene->vtbl->setScreenMode(scene); /* Scene_SeedRandom in the Scene vtable */
 }
 
@@ -194,7 +194,7 @@ static void Scene_PlayReel(Scene *scene) {
     }
 }
 
-void func_80026690(void) {
+void Scene_OnTitle1(void) {
 }
 
 /*

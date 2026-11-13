@@ -19,7 +19,7 @@ export LSD_EMU_OUT=${LSD_EMU_OUT:-captures}
 mkdir -p "$LSD_EMU_OUT"
 args=(-dofile tools/emu/probe.lua)
 for s in "$@"; do args+=(-dofile "$s"); done
-timeout "${LSD_EMU_TIMEOUT:-300}" nice -n 10 "$emu" -cli -stdout -lua_stdout -no-gui-logs \
+timeout -k 10 "${LSD_EMU_TIMEOUT:-300}" nice -n 10 "$emu" -cli -stdout -lua_stdout -no-gui-logs \
   -bios "$bios" -iso "$disc" -run "${args[@]}"
 for raw in "$LSD_EMU_OUT"/*.raw; do
   [ -e "$raw" ] || continue

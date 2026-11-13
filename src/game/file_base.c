@@ -107,10 +107,10 @@ FileVtbl *File_GetBackendVtbl(void) {
     return File_GetVtbl();
 }
 
-FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unk_08) {
+FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unused08) {
     source->data = data;
     source->path = path;
-    source->unk_08 = unk_08;
+    source->unused08 = unused08;
     return source;
 }
 
@@ -138,11 +138,11 @@ void File_SetBackend(s32 backend) {
 
 /* Copies the I/O slots 0x40 to 0x58 and 0x68 to 0x74. */
 static void File_CopyIoSlots(FileVtbl *dst, FileVtbl *src) {
-    dst->unk_40 = src->unk_40;
+    dst->emptySlot40 = src->emptySlot40;
     dst->open = src->open;
     dst->close = src->close;
     dst->seek = src->seek;
-    dst->unk_50 = src->unk_50;
+    dst->emptySlot50 = src->emptySlot50;
     dst->read = src->read;
     dst->load = src->load;
     dst->runQueue = src->runQueue;

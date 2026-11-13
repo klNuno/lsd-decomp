@@ -8,7 +8,7 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 
 - Functions: `func_8001XXXX` (splat's). Data: `D_8008XXXX`. Jump tables: `jtbl_8001XXXX`. Struct fields: `unk_XX` with the hex offset.
 - Sony library functions keep their PSY-Q names (`InitHeap`, `CdInit`, `ResetGraph`) from the signature match, in `config/symbol_addrs.psyq.txt`.
-- Names taken from FirecatFG's lsddecomp live in their own file, `config/symbol_addrs.lsddecomp.txt`, and stay there until our own evidence confirms them.
+- Names seen in FirecatFG's lsddecomp are a cross-check only: a name enters `config/symbol_addrs.txt` with our own evidence.
 
 ## Our names
 
@@ -18,6 +18,10 @@ A wrong name costs more than no name. Rename only with evidence, and write the e
 - A field keeps its offset in its name (`unk_14`) until two independent uses agree on its meaning.
 - Every rename goes in `config/symbol_addrs.txt` with a comment pointing to its row in `docs/discoveries.md`.
 - Every name of ours has a level in `config/name_levels.tsv` (columns NAME KIND FILE LEVEL EVIDENCE): `game` when an emulator run showed what the name claims, `code` when the code proves it and nothing else fits, `guess` when it is plausible but unproven (the evidence says what is missing), `wrong` when the code contradicts it (only types waiting for a merge). `tools/rename.py` and `tools/field_rename.py` keep it in step; a new name gets its row with its evidence. The 2026-10-17 audit wrote it, and `tools/name_levels.py comments` copies its evidence into the comments of `config/symbol_addrs.txt`.
+- Dead code is named as dead and nothing more. A field that is written but never read (every struct view of its class and subclasses and the disassembly checked) is named after the value stored when that value has a meaning, else `unusedXX` with its hex offset (`unused4C`), level `code`, its evidence listing the writers and "no reader"; a function that only touches such a field carries it in its name (`Tim_SetUnused48`).
+- An empty function in a vtable slot is `<Class>_<SlotName>` when the base class or a sibling names the slot (`Scene_OnTitle1`); when no class names the slot and nothing calls it, `<Class>_EmptySlotXX` with the hex slot offset, and the vtable struct field is `emptySlotXX`.
+- An empty function that nothing references is `<Subsystem>_Unused` plus a short description or the address tail (`Heap_Unused17EA8`).
+- A meaning is never invented to clear an unknown: what cannot get a true name keeps its default name.
 
 ## Readable C
 

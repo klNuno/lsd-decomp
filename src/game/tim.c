@@ -27,7 +27,7 @@ Tim *Tim_New(char *path) {
 void Tim_Init(Tim *tim, char *path) {
     File_GetBackendVtbl()->init(tim);
     tim->vtbl = Tim_GetVtbl();
-    tim->unk48 = 0;
+    tim->unused48 = 0;
     tim->fade = NULL;
     if (path != 0) {
         tim->vtbl->base.loadAsync(tim, path);
@@ -83,8 +83,8 @@ void Tim_EmptySlot90(void) {
 void Tim_EmptySlot94(void) {
 }
 
-void func_8003B5E4(Tim *tim) {
-    tim->unk48 = 1;
+void Tim_SetUnused48(Tim *tim) {
+    tim->unused48 = 1;
 }
 
 void Tim_GetInfo(Tim *tim, void *image) {

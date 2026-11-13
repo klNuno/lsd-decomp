@@ -92,7 +92,7 @@ typedef struct Place {
     s32 linkPeriod;            /* 0x40 0x10 at load, DreamSys slot 0xF8 third argument */
     s32 moveSpeed;            /* 0x44 2 on stage 0, else 3; DreamSys slot 0xF8 second argument */
     s32 viewDistance;            /* 0x48 load argument, 0xA000 when 0; map slot 0xDC */
-    s32 unk4C;            /* 0x4C load argument */
+    s32 unused4C;            /* 0x4C load argument */
     Ambience *ambience;   /* 0x50 Scenery_Begin's record, or the one given to load */
     Bgm *music;           /* 0x54 slot 0x5C (setSeq) plays Music_PickTrack's sequence */
     struct Tix *texLoader; /* 0x58 Tix_Create's texture-set loader (discoveries "texture set") */

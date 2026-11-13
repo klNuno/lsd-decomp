@@ -28,7 +28,7 @@ MapTile *MapTile_New(void) {
 void MapTile_Init(MapTile *tile) {
     SceneNode_GetVtbl()->init(tile);
     tile->vtbl = MapTile_GetVtbl();
-    tile->unk34 = 0;
+    tile->unused34 = 0;
     tile->flags = 0;
     tile->next = 0;
 }

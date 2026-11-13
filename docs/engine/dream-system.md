@@ -153,4 +153,4 @@ In flashback mode `DreamSys_ExecuteLink` restarts the timer on every link, touch
 ## Unknowns
 
 - `DreamSys_SetLinkFlags` stores three more flags at +0x128 to +0x130 that no game code reads.
-- `func_8005BA20` (slot 0x228) swaps +0x924; `Scene_Init` passes it a scene setting and `DreamSys_Reset` clears it. Nothing else reads it.
+- `DreamSys_SwapUnused924` (slot 0x228) swaps +0x924; `Scene_Init` passes it a scene setting and `DreamSys_Reset` clears it. Nothing else reads it.

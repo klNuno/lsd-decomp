@@ -374,10 +374,10 @@ void MenuScreen_SetFadeOut(MenuScreen *screen, s32 enabled) {
     }
 }
 
-void MenuScreen_SetColors(MenuScreen *screen, Color3 *startColor, Color3 *endColor, Color3 *color96) {
+void MenuScreen_SetColors(MenuScreen *screen, Color3 *startColor, Color3 *endColor, Color3 *unused96) {
     screen->startColor = *startColor;
     screen->endColor = *endColor;
-    screen->unk96 = *color96;
+    screen->unused96 = *unused96;
 }
 
 void MenuScreen_SetFadeSpeed(MenuScreen *screen, s32 fadeSpeed) {

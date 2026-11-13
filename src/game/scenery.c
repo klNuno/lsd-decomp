@@ -104,7 +104,7 @@ s32 g_placeStage;
 StageMap *g_sceneryMap;
 s32 g_placeTicks;
 s32 g_placeDayNumber;
-s32 D_8008AC78;
+s32 g_sceneryUnusedAC78;
 extern s32 g_soundSpotSlot1;
 static Ambience *Ambience_Get(void);
 extern SpotSlot *g_soundSpotSlots[];
@@ -170,7 +170,7 @@ Ambience *Scenery_Begin(StageMap *map, s32 stage, PlaceRefs *refs, s32 dayNumber
         g_placeRefs = refs;
         g_ambienceFamily = -1;
         g_placeDayNumber = dayNumber;
-        D_8008AC78 = unused;
+        g_sceneryUnusedAC78 = unused;
         g_placeTicks = 0;
         do {
             *slot = 0;

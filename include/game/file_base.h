@@ -20,11 +20,11 @@
  * Slots are left unprototyped: the code calls some of them with fewer arguments.
  */
 
-/* File_MakeSource(source, data, path, unk_08): data != 0 borrows it, else the path is loaded */
+/* File_MakeSource(source, data, path, unused08): data != 0 borrows it, else the path is loaded */
 typedef struct FileSource {
     u8 *data;   /* address inside a parent file, or NULL */
     char *path; /* used when data is NULL */
-    s32 unk_08; /* 1 from every creator here and in Sym_ResetGroupsAndLoadSpy */
+    s32 unused08; /* 1 from every creator here and in Sym_ResetGroupsAndLoadSpy */
 } FileSource;
 
 /* Slots 0x00 to 0x74 of every file class vtable */
@@ -35,11 +35,11 @@ typedef struct FileVtbl {
     void (*destroy)();         /* 0x0C */
     u8 pad_10[0x3C - 0x10];    /* Object methods, see ObjectVtbl */
     s32 unk_3C;                /* 0 */
-    void (*unk_40)();          /* CD: File_EmptySlot40, empty */
+    void (*emptySlot40)();          /* CD: File_EmptySlot40, empty */
     void (*open)();            /* 0x44 (self, path, 1, 0), CD: File_OpenByName (CdSearchFile) */
     void (*close)();           /* 0x48 CD: File_Close */
     s32 (*seek)();             /* 0x4C (self, offset, whence); whence 2 returns the size (File_LoadWhole) */
-    void (*unk_50)();          /* CD: File_EmptySlot50, empty */
+    void (*emptySlot50)();          /* CD: File_EmptySlot50, empty */
     s32 (*read)();             /* 0x54 (self, buffer, size), CD: File_Read (CdRead) */
     void (*load)();            /* 0x58 (self, path): the whole file into +0x10 (File_LoadWhole, File_LoadWholeCd) */
     void (*freeData)();        /* 0x5C File_FreeData: frees +0x10 when +0x14 != 0 */
@@ -81,7 +81,7 @@ void File_EmptySlot60(void);
 void File_MarkLoaded(File *file);
 FileVtbl *File_GetBaseVtbl(void);
 FileVtbl *File_GetBackendVtbl(void);
-FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unk_08);
+FileSource *File_MakeSource(FileSource *source, u8 *data, char *path, s32 unused08);
 void File_SetBackend(s32 backend);
 void File_LockBackend(void);
 void File_UnlockBackend(void);

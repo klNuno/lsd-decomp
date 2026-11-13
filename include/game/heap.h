@@ -31,7 +31,7 @@ typedef struct Heap {
     u32 size;          /* pool bytes, at least 0x400 */
     HeapBlock *head;   /* free list */
     HeapBlock *tail;
-    s32 unk_10;        /* set to 1 by Heap_Init, never read in this unit */
+    s32 unused10;        /* set to 1 by Heap_Init, never read in this unit */
 } Heap;
 
 /*

@@ -90,7 +90,7 @@ typedef struct MenuScreen {
     s32 (*fadeOutStep)();   /* 0x8C NULL: no fade out */
     Color3 startColor;      /* 0x90 fade in starts from it; begin clears the screen with it */
     Color3 endColor;        /* 0x93 end clears the screen with it */
-    Color3 unk96;           /* 0x96 (128, 128, 128) by default, not read in this unit */
+    Color3 unused96;           /* 0x96 (128, 128, 128) by default, not read in this unit */
     u8 pad_99[0x9C - 0x99];
     void (*onClose)();      /* 0x9C called with onCloseArg by close */
     s32 onCloseArg;         /* 0xA0 */
@@ -117,7 +117,7 @@ void MenuScreen_Close(MenuScreen *screen);
 void MenuScreen_SetOnClose();
 void MenuScreen_SetFadeIn(MenuScreen *screen, s32 enabled);
 void MenuScreen_SetFadeOut(MenuScreen *screen, s32 enabled);
-void MenuScreen_SetColors(MenuScreen *screen, Color3 *startColor, Color3 *endColor, Color3 *color96);
+void MenuScreen_SetColors(MenuScreen *screen, Color3 *startColor, Color3 *endColor, Color3 *unused96);
 void MenuScreen_SetFadeSpeed(MenuScreen *screen, s32 fadeSpeed);
 s32 MenuScreen_FadeIn(MenuScreen *screen);
 s32 MenuScreen_FadeInStep(MenuScreen *screen);

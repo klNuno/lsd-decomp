@@ -121,7 +121,7 @@ void StageMap_Init(StageMap *map, Vec3 *origin, s32 loadEntities) {
         chunk = slot->chunk;
         chunk->vtbl->setLoadEntities(chunk, loadEntities);
         slot->spawned = 0;
-        slot->unk18 = 0;
+        slot->unused18 = 0;
         slot->index = i;
         slot->loading = 0;
         slot->models = MapModels_New(0);
@@ -202,10 +202,10 @@ void StageMap_Reset(StageMap *map) {
     map->messageFilter = NULL;
     map->viewCount = 0;
     map->vtbl->setViewDistance(map, g_mapDefaultViewDistance);
-    map->unk1CC[0] = -1;
-    map->unk1CC[1] = -1;
-    map->unk1CC[2] = -1;
-    map->unk1CC[3] = -1;
+    map->unused1CC[0] = -1;
+    map->unused1CC[1] = -1;
+    map->unused1CC[2] = -1;
+    map->unused1CC[3] = -1;
 }
 
 /* Message 6 (slot emptied) deletes the slot's +0x14 object; 6 and 7 make it the current slot and notify the watchers. */
@@ -1221,8 +1221,8 @@ static void StageMap_ShowView(StageMap *map, s32 show) {
     }
 }
 
-/* &map->unk1CC */
-s32 func_8004CFA8(s32 map) {
+/* &map->unused1CC */
+s32 StageMap_GetUnused1CC(s32 map) {
     return map + 0x1CC;
 }
 

@@ -859,7 +859,7 @@ static void File_SyncDestroy(s32 handle) {
     File_GetBaseVtbl()->destroy(handle);
 }
 
-static void func_80028918(void) {
+static void File_SyncEmptySlot40(void) {
 }
 
 static void File_SyncOpen(File *obj) {
@@ -907,7 +907,7 @@ static s32 File_SyncSeek(File *obj) {
     return 0;
 }
 
-static void func_80028A7C(void) {
+static void File_SyncEmptySlot50(void) {
 }
 
 static s32 File_SyncRead(File *obj, void *dst, u32 size) {
@@ -947,7 +947,7 @@ fallback:
     return 0;
 }
 
-static void func_80028B64(void) {
+static void File_Unused28B64(void) {
 }
 
 s32 File_GetVSyncMode(void) {

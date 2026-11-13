@@ -89,7 +89,7 @@ SceneNode *SceneNode_Init(SceneNode *node) {
 void SceneNode_Destroy(SceneNode *node) {
     node->vtbl->detach(node);
     node->vtbl->detachChildren(node);
-    node->vtbl->unk5C(node, 0);
+    node->vtbl->emptySlot5C(node, 0);
     Heap_Free(node->object.coord->param);
     Heap_Free(node->object.coord);
     Object_GetBaseVtbl()->destroy(node);

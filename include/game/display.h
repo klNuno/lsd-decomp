@@ -52,7 +52,7 @@ typedef struct Display {
     DisplayVtbl *vtbl;
     ListNode *watched;
     ListNode *watchers;
-    s32 unk0C;                /* 0x0C set to 1 by countFrame when frameCount reaches vsyncMode */
+    s32 frameCountReached;                /* 0x0C set to 1 by countFrame when frameCount reaches vsyncMode */
     s32 running;              /* 0x10 the frame loop runs: VRAM transfers then need syncDraw */
     ScreenSize size;           /* 0x14 the screen size given to GsInitGraph */
     s32 vramMode;             /* 0x1C GsInitGraph's vrammode */

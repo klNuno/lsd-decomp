@@ -50,7 +50,7 @@ static void Heap_Init(Heap *fallbackHeap) {
     if (heap == NULL) {
         heap = fallbackHeap;
     }
-    heap->unk_10 = 1;
+    heap->unused10 = 1;
     block = heap->base;
     heap->head = block;
     heap->tail = block;
@@ -242,7 +242,7 @@ void *Heap_Free(data, fallbackHeap)
     return NULL;
 }
 
-static void func_80017EA8(void) {
+static void Heap_Unused17EA8(void) {
 }
 
 /* vtable slot 0x04 */

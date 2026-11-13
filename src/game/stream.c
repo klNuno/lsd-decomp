@@ -48,25 +48,25 @@ static void Stream_NotifyFrame();
 static void Stream_NotifyEnd();
 extern StreamVtbl g_streamVtbl;
 
-Stream *Stream_New(s32 speedMode, s32 fps, s32 unk3C) {
+Stream *Stream_New(s32 speedMode, s32 fps, s32 unused3C) {
     Stream *stream;
 
     stream = Heap_Alloc(0x5C);
     if (stream != NULL) {
-        Stream_GetVtbl()->init(stream, speedMode, fps, unk3C);
+        Stream_GetVtbl()->init(stream, speedMode, fps, unused3C);
         return stream;
     }
     return NULL;
 }
 
 /* Slot 0x08 */
-void Stream_Init(Stream *stream, u32 speedMode, s32 fps, s32 unk3C) {
+void Stream_Init(Stream *stream, u32 speedMode, s32 fps, s32 unused3C) {
     Object_GetBaseVtbl()->init(stream);
     stream->vtbl = Stream_GetVtbl();
     stream->speedMode = speedMode;
     stream->muted = 0;
     stream->frameBytes = (speedMode < 4 ? 300 : 150) / fps / 2 * 0x806;
-    stream->unk3C = unk3C;
+    stream->unused3C = unused3C;
     stream->ring = 0;
     stream->closeAtEnd = 0;
     stream->callback = 0;

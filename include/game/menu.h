@@ -131,7 +131,7 @@ typedef struct Menu {
     s32 (*fadeOutStep)();
     Color3 startColor;
     Color3 endColor;        /* 0x93 */
-    Color3 unk96;
+    Color3 unused96;
     u8 pad_99[0x9C - 0x99];
     void (*onClose)();
     s32 onCloseArg;

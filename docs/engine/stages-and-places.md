@@ -125,5 +125,5 @@ Sound spots: `g_stageSoundSpots[stage]` lists 8-byte records (a map tile and a t
 
 ## Unknowns
 
-- `Place.unk4C` keeps the last argument of `Place_Load`; `Screen_Run` passes 0 and nothing reads it in `place.c`.
+- `Place.unused4C` keeps the last argument of `Place_Load`; `Screen_Run` passes 0 and nothing reads it in `place.c`.
 - Deleting a slot's spawned object ends its characters very likely through `Model_OnNotify`, which deletes a model when the file it borrows (class 0x5F03) sends message 1; that this file is the square's MML was not checked.

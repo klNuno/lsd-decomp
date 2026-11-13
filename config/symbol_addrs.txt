@@ -105,7 +105,7 @@ g_navFlags = 0x8008ACB4; // pointer to the 30 navigation flags (DreamSys +0x5E0)
 DreamSys_CalcUnlockScore = 0x8005B6E0; // type:func size:0x6C // slot 0x210, navScore = Nav_CalcScore, instanceScore clamped 0..50,000,000, unlockScore the sum, the in-game test forced the result only (see docs/discoveries.md#what-unlocks-flashback-in-the-menu)
 Nav_CalcScore = 0x8005BA7C; // type:func size:0x98 // 1,000,000 per set flag of 30, 50,000,000 above 29,999,999, minus 11,024 per dynamic link, floored at 0, flags not exercised in game (see docs/discoveries.md#what-unlocks-flashback-in-the-menu)
 Nav_InitFlags = 0x8005BA50; // type:func size:0x2C // clears 30 flags and the link count and keeps their addresses in g_navFlags, g_dynamicLinkCount, +0x5E0 and +0x600 read back in RAM (see docs/discoveries.md#everything-the-game-remembers-fits-in-one-block)
-DreamSys_AddFlashback = 0x8005B74C; // type:func size:0xD0 // slot 0x214 appends {stage, place, rotation, unk1C, length, day} while under 10, else overwrites entry timer % 9 (see docs/discoveries.md#how-flashback-memories-are-kept)
+DreamSys_AddFlashback = 0x8005B74C; // type:func size:0xD0 // slot 0x214 appends {stage, place, rotation, unused1C, length, day} while under 10, else overwrites entry timer % 9 (see docs/discoveries.md#how-flashback-memories-are-kept)
 DreamSys_MaybeSaveFlashback = 0x8005B81C; // type:func size:0xE0 // slot 0x218, with a map and rand() % 3 == 0, AddFlashback at the current place, a touch saved one (count 3 to 4) in the Grey Man run (see docs/discoveries.md#how-flashback-memories-are-kept)
 DreamSys_ClearFlashbacks = 0x8005B8FC; // type:func size:0x8 // slot 0x21C sets flashbackCount 0, one caller, the Grey Man handler, count read 0 after his touch in game (see docs/discoveries.md#what-erases-the-flashbacks)
 DreamSys_LoadNextFlashback = 0x8005A63C; // type:func size:0xC4 // slot 0x1CC, entry nextFlashback sets transition 0xE, day, stage, place, notifies 0xE unless quiet, 0 when the list is done (see docs/discoveries.md#how-flashback-memories-are-kept)
@@ -379,7 +379,7 @@ StageMap_New = 0x8004A4C8; // type:func size:0x6C // Heap_Alloc(0x1E8) then slot
 StageMap_Init = 0x8004A534; // type:func size:0x28C // RootNode init, origin, then 7 slots, MapChunk_New, MapModels_New, an origin MapTile and 410 hidden MapTiles 0x800 apart, watches the display
 StageMap_Destroy = 0x8004A7C0; // type:func size:0x1C4 // Slot 0x0C, unwatches the display, slot message 6 per slot, deletes chunk, models and TMD, origin tile and 410 tiles, RootNode destroy
 StageMap_OnNotify = 0x8004A984; // type:func size:0x8C // Slot 0x38, SceneNode_OnNotify, then slot 0x100 StageMap_PollLoads for display senders (class & 0xF == 1)
-StageMap_Reset = 0x8004AA10; // type:func size:0x5C // Slot 0x40, clears grid, filter and view count, view distance g_mapDefaultViewDistance, unk1CC to -1
+StageMap_Reset = 0x8004AA10; // type:func size:0x5C // Slot 0x40, clears grid, filter and view count, view distance g_mapDefaultViewDistance, unused1CC to -1
 StageMap_OnSlotMessage = 0x8004AA6C; // type:func size:0xB8 // Slot 0x88 (overrides SceneNode_SendBoxes), base sendBoxes, message 6 deletes slot->spawned, 6 and 7 set currentSlot and notify
 StageMap_Tick = 0x8004AB24; // type:func size:0x64 // Slot 0x98 (SceneNode onClock, clock messages), while active runs slots 0xF4 follow and 0x13C stepTileStretch
 StageMap_ClearSlots = 0x8004ABD0; // type:func size:0x128 // Slot 0xC0, per slot unloads the chunk, hides tiles, deletes the TMD, message 6, frees entities, then ready 0 and tile scale reset
@@ -425,7 +425,7 @@ StageMap_ForEachSlotTile = 0x8004D1D0; // type:func size:0x74 // Runs perTile(ma
 StageMap_GetVtbl = 0x8004D244; // type:func size:0x10 // Returns &g_stageMapVtbl
 g_stageMapVtbl = 0x800866E8; // Class word 0x114 at 0x800866E8, slot 0x08 StageMap_Init, 0x12C StageMap_TellNearTiles (vtable dump)
 MapTile_New = 0x8004D38C; // type:func size:0x50 // Heap_Alloc(0x3C) then slot 0x08 MapTile_Init, StageMap_Init makes 411 per slot
-MapTile_Init = 0x8004D3DC; // type:func size:0x50 // SceneNode init, own vtable, clears unk34, flags and next
+MapTile_Init = 0x8004D3DC; // type:func size:0x50 // SceneNode init, own vtable, clears unused34, flags and next
 MapTile_GetVtbl = 0x8004D508; // type:func size:0x10 // Returns &g_mapTileVtbl
 g_mapTileVtbl = 0x80086AA0; // Class word 0x24 at 0x80086AA0, SceneNode slots with 0x08 MapTile_Init, 0x9C MapTile_OnNode, 0xB8 MapTile_OnActorMessage, 0xBC MapTile_GetSelf
 g_chunkNeighborSteps = 0x800868A8; // 7 HexNeighbor {row step, odd column step, even column step}, centre (0,0,0), read by StageMap_RequestNeighbor
@@ -433,7 +433,7 @@ g_chunkNeighborOffsets = 0x80086838; // 7 Vec3 from the centre chunk centre to e
 VideoScreen_New = 0x8003B854; // type:func size:0x90 // Heap_Alloc(0xDC) then g_videoScreenVtbl init, Scene makes one per video with all arguments 0 (see docs/discoveries.md)
 VideoScreen_Init = 0x8003B8E4; // type:func size:0xF8 // Slot 0x08, MenuScreen init, stores area or the picture rect, Movie_Create(MenuScreen_GetPictureRect()), path NULL, reset
 VideoScreen_Destroy = 0x8003B9DC; // type:func size:0x5C // Slot 0x0C, deletes the Movie, then MenuScreen destroy
-VideoScreen_Reset = 0x8003BA38; // type:func size:0x20 // Slot 0x40, movieLoops -1, movieRepeat 0, skippable 1, unkD0 0, closeAtOnce 1
+VideoScreen_Reset = 0x8003BA38; // type:func size:0x20 // Slot 0x40, movieLoops -1, movieRepeat 0, skippable 1, unusedD0 0, closeAtOnce 1
 VideoScreen_Play = 0x8003BA58; // type:func size:0x5C // Slot 0x44 (run), stores path, frameCount, autoStart, then MenuScreen run, Scene passes Cine paths and Cine_GetVideoFrames
 VideoScreen_Begin = 0x8003BAB4; // type:func size:0xA8 // Slot 0x4C, MenuScreen begin, finished 0, Movie setAutoStart, Movie open(path, frameCount, repeat, loops), a failed open sets timeout 0
 VideoScreen_OnClock = 0x8003BB5C; // type:func size:0xB8 // Slot 0x5C, MenuScreen onClock, Movie update until it reports the end, then SCREEN_CLOSING
@@ -1012,7 +1012,7 @@ File_MarkLoaded = 0x80026C88; // type:func size:0x14 // Slot 0x64 (onLoaded) of 
 g_fileBaseVtbl = 0x8006D430; // size:0x78 // Tag 3, slots File_Delete, File_InitBase, File_DestroyBase, File_LoadWhole to File_MarkLoaded, returned by File_GetBaseVtbl
 D_8006D4A8 = 0x8006D4A8; // the empty string g_filePathPrefix points at (shiftability)
 File_GetBackendVtbl = 0x80026CAC; // type:func size:0x3C // Returns File_GetNullVtbl when g_fileBackend is 0x23, else File_GetVtbl, every loader Init (Tim_Init, Tmd_Init) calls its init as the base class
-File_MakeSource = 0x80026CE8; // type:func size:0x14 // Fills FileSource {data, path, unk_08} and returns it, called by Mom_LoadParts, Mml_LoadParts, TodPack_OnLoaded, Sym_ResetGroupsAndLoadSpy
+File_MakeSource = 0x80026CE8; // type:func size:0x14 // Fills FileSource {data, path, unused08} and returns it, called by Mom_LoadParts, Mml_LoadParts, TodPack_OnLoaded, Sym_ResetGroupsAndLoadSpy
 File_SetBackend = 0x80026CFC; // type:func size:0x8C // Stores the id in g_fileBackend, picks File_GetVtbl for 0x13 else File_GetNullVtbl, File_CopyIoSlots into the base and every g_fileClassGetters vtable
 File_CopyIoSlots = 0x80026D88; // type:func size:0x84 // Copies vtable slots 0x40 to 0x58 and 0x68 to 0x74 from src to dst
 g_fileClassGetters = 0x8006D4AC; // NULL-terminated list of vtable getters (MapModels_GetVtbl, Tim_GetVtbl, Tix_GetVtbl, Tmd_GetVtbl, Mml_GetVtbl and others) walked by File_SetBackend
@@ -1163,12 +1163,12 @@ g_bgmActive = 0x8008A8D8; // 1 from Bgm_Init to Bgm_Destroy, returned by Bgm_IsA
 g_seqTable = 0x8008DF38; // SEQ attribute table area given to SsSetTableSize(table, 2, 1) (2 SEQs, 1 track)
 Sound_GetTickRate = 0x8002CC28; // type:func size:0xC // Returns g_soundTickRate (60, set with Seq_SetRate(1)), Bgm_FadeTo multiplies seconds by it for SsSeqSetCrescendo
 Tim_New = 0x8003B39C; // type:func size:0x60 // Heap_Alloc(0x50) then Tim_GetVtbl()->init(tim, path), DreamRunner_Init loads "ETC\ETC.TIM" with it
-Tim_Init = 0x8003B3FC; // type:func size:0x74 // Slot 0x08 of g_timVtbl, back end init, unk48 = 0, fade = NULL, loadAsync(path) when a path is given
+Tim_Init = 0x8003B3FC; // type:func size:0x74 // Slot 0x08 of g_timVtbl, back end init, unused48 = 0, fade = NULL, loadAsync(path) when a path is given
 Tim_Destroy = 0x8003B470; // type:func size:0x38 // Slot 0x0C of g_timVtbl, back end destroy only
 Tim_Upload = 0x8003B4A8; // type:func size:0x104 // Slot 0x78, getInfo into image, display loadImage of the pixels, and of the CLUT when pmode bit 3 is set
 Tim_GetInfo = 0x8003B5F0; // type:func size:0x24 // Slot 0x9C, GsGetTimInfo(data + 1 word, image), skipping the TIM id word
 Tim_GetVtbl = 0x8003B614; // type:func size:0x10 // Returns g_timVtbl, entry of g_fileClassGetters
-g_timVtbl = 0x8006E558; // Class word 0x103, slots 0x08 Tim_Init, 0x78 Tim_Upload, 0x98 func_8003B5E4, 0x9C Tim_GetInfo, returned by Tim_GetVtbl
+g_timVtbl = 0x8006E558; // Class word 0x103, slots 0x08 Tim_Init, 0x78 Tim_Upload, 0x98 Tim_SetUnused48, 0x9C Tim_GetInfo, returned by Tim_GetVtbl
 Display_RotateRect = 0x8003B624; // type:func size:0x14C // Three VRAM moves turn a rect one column right through a spare column, Stage_CyclePalettes cycles CLUT rows, checked in game (Three quiet rules for the look of a place, pal2b, pal2c)
 FlatLight_New = 0x8004291C; // type:func size:0x60 // Heap_Alloc(0x20) then slot 0x08 of g_flatLightVtbl with the light number, RootNode_Init makes 0 to 2
 FlatLight_Init = 0x8004297C; // type:func size:0x64 // slot 0x08, Object init, own vtable, slot 0x40 setId
@@ -1933,3 +1933,17 @@ Object_EmptySlot34 = 0x80018350; // type:func size:0x8 // slot 0x34 of g_objectV
 File_EmptySlot60 = 0x80026C80; // type:func size:0x8 // Slot 0x60 of g_fileBaseVtbl and g_fileVtbl, empty body
 Pad_EmptySlot4C = 0x80025E14; // type:func size:0x8 // slot 0x4C of g_padVtbl, empty body
 Pad_EmptySlot54 = 0x80025E94; // type:func size:0x8 // slot 0x54 of g_padVtbl, empty body
+Heap_Unused17EA8 = 0x80017EA8; // type:func size:0x8 // empty static function between Heap_Free and Object_Delete, no call, no data word and no vtable holds it
+Scene_OnTitle1 = 0x80026690; // type:func size:0x8 // slot 0x5C (onTitle1) of g_sceneVtbl, empty body, App_Run calls the slot when runTitle returns 1
+File_SyncEmptySlot40 = 0x80028918; // type:func size:0x8 // empty static function between File_SyncDestroy and File_SyncOpen, where g_fileVtbl has File_EmptySlot40 between File_DestroyCd and File_OpenByName, nothing references it, unproven, no vtable holds the sync class so the slot comes from address order only
+File_SyncEmptySlot50 = 0x80028A7C; // type:func size:0x8 // empty static function between File_SyncSeek and File_SyncRead, where g_fileVtbl has File_EmptySlot50 between File_Seek and File_Read, nothing references it, unproven, no vtable holds the sync class so the slot comes from address order only
+File_Unused28B64 = 0x80028B64; // type:func size:0x8 // empty static function after File_SyncRead, the last of the unlinked sync class, no call, no data word and no vtable holds it
+MapModels_Unused2C3B8 = 0x8002C3B8; // type:func size:0x8 // static function that returns 0, after MapModels_GetVtbl, no call, no data word and no vtable holds it
+App_EmptySlot48 = 0x8003B108; // type:func size:0x8 // slot 0x48 of g_appVtbl and g_sceneVtbl, empty body, no call site reads the slot
+Tim_SetUnused48 = 0x8003B5E4; // type:func size:0xC // slot 0x98 of g_timVtbl, body tim->unused48 = 1, a field nothing reads, no call site reads the slot
+VideoScreen_SetUnusedD0 = 0x8003BE74; // type:func size:0x8 // slot 0x130 of g_videoScreenVtbl, stores its argument at +0xD0, a field nothing reads, no call site reads the slot
+StageMap_GetUnused1CC = 0x8004CFA8; // type:func size:0x8 // slot 0x130 of g_stageMapVtbl, returns the address of the four words at +0x1CC that only StageMap_Reset writes, no call site reads the slot
+DreamSys_ClearUnused7C = 0x80059590; // type:func size:0x8 // slot 0x124 of g_dreamSysVtbl, body +0x7C = 0, a field nothing reads, no call site reads the slot
+DreamSys_ClearUnused78 = 0x80059598; // type:func size:0x8 // slot 0x128 of g_dreamSysVtbl, body +0x78 = 0, a field nothing reads, no call site reads the slot
+DreamSys_SwapUnused924 = 0x8005BA20; // type:func size:0x20 // slot 0x228 of g_dreamSysVtbl, stores its argument at +0x924 and returns the old value, a negative argument only reads, Scene_Init is the one caller and drops the result
+g_sceneryUnusedAC78 = 0x8008AC78; // Scenery_Begin stores its fifth argument here (Place_Load passes 0), no instruction of the executable reads it

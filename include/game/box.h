@@ -39,7 +39,7 @@ typedef struct Box {
     u8 pad_10[0x44 - 0x10];
     s32 priority;           /* 0x44 ordering table priority given to GsSortBoxFill */
     s32 relative;           /* 0x48 position in percent of the half screen */
-    s32 unk_4C;
+    s32 unused4C;
     ScreenPoint position;       /* 0x50 */
     s32 attribute;          /* 0x58 GsBOXF: bit 31 hidden, bit 30 semi-transparent, bits 28-29 blend mode */
     u16 x;                  /* 0x5C GsBOXF, written by the draw from position */
@@ -60,7 +60,7 @@ void Box_SetBlendMode(Box *box, s32 mode);
 void Box_SetColor(Box *box, s32 copy, Color3 *color);
 void Box_SetPosition(Box *box, ScreenPoint *position);
 void Box_SetSize(Box *box, BoxSize *size);
-void Box_ShowAbsolute(Box *box, s32 root, s32 position, s32 value);
+void Box_ShowAbsolute(Box *box, s32 root, s32 position, s32 unused4C);
 void Box_SetPriority(Box *box, s32 priority);
 void Box_SetMask(Box *box, s32 bits);
 BoxVtbl *Box_GetVtbl(void);

@@ -60,7 +60,7 @@ typedef struct ClipHeader {
 typedef struct TmdCtx {
     s32 *ot;                 /* 0x00 ordering table base */
     s32 shift;               /* 0x04 otz >> shift picks the OT entry */
-    s32 unk_08;              /* 0x08 set to 10 */
+    s32 unused08;              /* 0x08 set to 10 */
     u8 *vertices;            /* 0x0C model vertices, 8 bytes each */
     u8 *normals;             /* 0x10 model normals, 8 bytes each */
     u8 primLen;              /* 0x14 packet word count, restored by Render_TransformTri */
@@ -448,7 +448,7 @@ void Render_SortModel(DObj2 *object, GsOT *ot, s32 shift, TmdCtx *scratch) {
     g_renderUnlit = (object->attribute >> 6) & 1;
     g_renderUseLightMode = (object->attribute >> 5) & 1;
     g_renderObjLightMode = (object->attribute >> 3) & 3;
-    ctx->unk_08 = 10;
+    ctx->unused08 = 10;
     ctx->baseRgb = g_texturedRgb;
     if ((g_renderUseLightMode != 0 && GsLIGHT_MODE != 0) || g_renderObjLightMode != 0) {
         ctx->depthShift = 9;

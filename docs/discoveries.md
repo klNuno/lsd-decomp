@@ -41,8 +41,8 @@ Special days
 - ✅ [What a special day shows](#-what-a-special-day-shows): a video 1 time in 3, a still picture 2 times in 3.
 
 Flashbacks
-- 🧩 [How flashback memories are kept](#-how-flashback-memories-are-kept): 1 chance in 3 per moment, 10 slots, and the tenth is never replaced.
-- ✅ [What unlocks Flashback in the menu](#-what-unlocks-flashback-in-the-menu): a score above 9,999,999, mostly from the navigation goals, which are the fixed links.
+- 🧩 [How flashback memories are kept](#-how-flashback-memories-are-kept): a moment is kept 1 time in 3, up to 10, and the tenth is never replaced.
+- ✅ [What unlocks Flashback in the menu](#-what-unlocks-flashback-in-the-menu): a hidden score above 9,999,999, mostly from taking each fixed link once.
 - ✅ [What erases the flashbacks](#-what-erases-the-flashbacks): touching the Grey Man wipes them all, every time.
 
 The Grey Man
@@ -55,27 +55,27 @@ Rare sights
 - ✅ [The astronaut lands at the bar on a pink day](#-the-astronaut-lands-at-the-bar-on-a-pink-day): on an even pink day it dives into the cottage's yard and stands at the bar; a walk in Happy Town then a wall gets you there 7 times in 48.
 - 🔄 [A red day fills the Maze of Questions with rainbow penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins): one penguin becomes nine and the question mark goes away; the eight extra ones spin on the spot; 1 in 5 lone penguins is a giant. They are not gunmen.
 - 🧩 [Three minotaur rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto): one rickshaw becomes three on an odd yellow day; they roll straight on and never follow you.
-- 🧩 [The Natural World lions: a random temper, and a cyan-day pair that leads to Temple Dojo](#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo): calm 2 times in 3, a giant charge or a dream-ending stare otherwise; two more on a cyan day, our best match for the special lions, and a walk that makes that day cyan with no trick.
+- 🧩 [The Natural World lions: a random temper, and a cyan-day pair that leads to Temple Dojo](#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo): each lion is calm 2 times in 3, else a giant charge or a dream-ending stare; a cyan day adds two more, our best match for the special lions, and one walk makes the day cyan with no trick.
 - 🔄 [Three purple beasts on a yellow day in Pit & Temple](#-three-purple-beasts-on-a-yellow-day-in-pit--temple): the lone beast stays hidden, then appears giant and floats up out of sight; a yellow day brings three more at half size.
 - 🔄 [A red day puts a geisha on a Kyoto bridge](#-a-red-day-puts-a-geisha-on-a-kyoto-bridge): she stands frozen on the red bridge and makes one slow half-turn when you come near; her link goes to Black Space.
 - 🧩 [A green day sends a file of Buddha statues through Kyoto](#-a-green-day-sends-a-file-of-buddha-statues-through-kyoto): four statues walk in single file; the wiki's odd-day four are another group.
 - 🧩 [A white day brings two more red-headed runners to a Kyoto plaza](#-a-white-day-brings-two-more-red-headed-runners-to-a-kyoto-plaza): three figures on an even white day, and a link to the Long Hallway.
 - 🔄 [A yellow day gives Black Space's walker a giant twin](#-a-yellow-day-gives-black-spaces-walker-a-giant-twin): the giant comes with a yellow day, not with any Black Space start.
 - 🆕 [A blue day sends four more fetuses down the Flesh Tunnels](#-a-blue-day-sends-four-more-fetuses-down-the-flesh-tunnels): one fetus becomes five, each worth -100,000 points.
-- 🔄 [Happy Town's flowers and mushrooms grow with the day number](#-happy-towns-flowers-and-mushrooms-grow-with-the-day-number): giant flowers on days 4, 10, 16, tall mushrooms on days 8, 20, 26; not a seed.
+- 🔄 [Happy Town's flowers and mushrooms grow with the day number](#-happy-towns-flowers-and-mushrooms-grow-with-the-day-number): giant flowers on days 4, 10, 16, tall mushrooms on days 8, 20, 26; the day decides, not chance.
 - 🧩 [Tiny lips walk toward you in Happy Town](#-tiny-lips-walk-toward-you-in-happy-town): the floating lips at 1/32 size, on even days.
 
 Characters and events
 - 🧩 [The hidden rules that decide which characters appear](#-the-hidden-rules-that-decide-which-characters-appear): day cycles, your mood so far, and groups that show up only once.
 - 🧩 [The character record: mood, points, waking up and leaving](#-the-character-record-mood-points-waking-up-and-leaving): 130 character types, and the five that end the dream on a video.
-- 🧩 [Signals from characters and objects](#-signals-from-characters-and-objects): touching, forced links, forced endings and event videos.
+- 🧩 [Signals from characters and objects](#-signals-from-characters-and-objects): touching one can move your graph, link you, end the dream or play a video.
 - 🧩 [More characters that change size](#-more-characters-that-change-size): the bunny, the Buddha statues and a dozen more, by day or by chance.
 - ✅ [Four characters stretch or flatten the whole place](#-four-characters-stretch-or-flatten-the-whole-place): the Kyoto old woman, the Starship, a small ghost and the Zeppelin, each seen in the emulator with its odds.
-- ✅ [Characters that answer to CIRCLE](#-characters-that-answer-to-circle): the Ferris wheel, the fast train and the gunman, both endings of each played; a cyan day brings a row of four more gunmen behind you, one hidden in a crane's base; their shot can drop you where your first step in Clockwork Machines ends the dream.
-- 🧩 [The Abyss Demon rises at the cliff edge and sends you to Kyoto](#-the-abyss-demon-rises-at-the-cliff-edge-and-sends-you-to-kyoto): it holds you for 5 seconds while it climbs out; a second one on days 2, 5, 8 and so on.
+- ✅ [Characters that answer to CIRCLE](#-characters-that-answer-to-circle): the Ferris wheel, the fast train and the gunman each have two endings, both played, and CIRCLE picks; a cyan day adds four gunmen behind you, one hidden in a crane's base, and their shot can drop you where your first step in Clockwork Machines ends the dream.
+- 🧩 [The Abyss Demon rises at the cliff edge and sends you to Kyoto](#-the-abyss-demon-rises-at-the-cliff-edge-and-sends-you-to-kyoto): it holds you for 5 seconds while it climbs out; a second one on days 5, 8, 11 and so on.
 
 Textures
-- 🧩 [Glitch textures: a texture set that failed to load](#-glitch-textures-a-texture-set-that-failed-to-load): the place is drawn with leftovers, and the dream ends 30 seconds later; a 20 KB leak is enough, and the "location time" recipe makes one; ordinary play leaked nothing on every path tested.
+- 🧩 [Glitch textures: a texture set that failed to load](#-glitch-textures-a-texture-set-that-failed-to-load): a place whose textures fail to load is drawn with leftovers and the dream ends 30 seconds later; 20 KB of lost memory is enough, the "location time" recipe loses it, and ordinary play lost none on every path tested.
 - ✅ [The 40-day texture cycle](#-the-40-day-texture-cycle): the later in a 40-day cycle, the more texture sets a place can wear.
 - 🧩 [Three quiet rules for the look of a place](#-three-quiet-rules-for-the-look-of-a-place): clouds in one band on days divisible by 7, Kyoto's water changing colour every frame, a veil of the day's colour over flashbacks.
 
@@ -83,7 +83,7 @@ Links between places
 - 🆕 [Fixed links are the navigation goals, and one can never be completed](#-fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): 29 of the 30 goals can be reached, so the big bonus never pays out.
 - 🔄 [Where a random link sends you](#-where-a-random-link-sends-you): the place after yours comes up twice as often as the others.
 - 🔄 [Fixed links do not change with visits, but some depend on who showed up](#-fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up): no visit counter; four characters switch on extra links.
-- 🧩 [Falling off an edge, walls and the cottage's walking squares](#-falling-off-an-edge-walls-and-the-cottages-walking-squares): a fall ends the dream like the clock, a wall links only 1 tick in 16, and one Clockwork Machines arrival point is a fall at the first step.
+- 🧩 [Falling off an edge, walls and the cottage's walking squares](#-falling-off-an-edge-walls-and-the-cottages-walking-squares): a fall ends the dream like the clock, a wall links only 1 game step in 16, and one Clockwork Machines arrival point is a fall at the first step.
 - ✅ [The world is built from square blocks, and only marked blocks are walls](#-the-world-is-built-from-square-blocks-and-only-marked-blocks-are-walls): quarter turns, whole-tile heights, and one block in six can link you.
 - 🔄 [The Long Hallway's room turns the sky blue, then pulls you out 2 times in 3](#-the-long-hallways-room-turns-the-sky-blue-then-pulls-you-out-2-times-in-3): the blue is the background, and a die decides between the Natural World and the walk back.
 
@@ -93,18 +93,18 @@ Music and sound
 - 🆕 [Places have fixed sound sources](#-places-have-fixed-sound-sources): 56 spots on the maps play their own sounds as you walk near.
 
 Memory card
-- 🧩 [Everything the game remembers fits in one block](#-everything-the-game-remembers-fits-in-one-block): 1,792 bytes, starting with the letters J01, with the SHAKE option and the video reel flag.
+- 🧩 [Everything the game remembers fits in one block](#-everything-the-game-remembers-fits-in-one-block): the whole save is 1,792 bytes starting with J01, with the SHAKE option and whether you saw the video reel.
 - 🧩 [How the memory card save works](#-how-the-memory-card-save-works): the day number goes into the save title, and a new game saves to a new file.
 - 🆕 [SELECT on the comment keyboard makes the cursor run](#-select-on-the-comment-keyboard-makes-the-cursor-run): a mode the help never mentions, and where your comment lands in the title.
 
 Randomness
-- 🔄 [The dice of the game](#-the-dice-of-the-game): a fixed number sequence that is almost never reseeded; "type A and B days" are just odd and even days.
+- 🔄 [The dice of the game](#-the-dice-of-the-game): one fixed number sequence, almost never given a new start; "type A and B days" are just odd and even days.
 
 Hidden and unused content
 - 🆕 [SELECT + TRIANGLE in the pause erases your game](#-select--triangle-in-the-pause-erases-your-game): the game's only hidden button input, with no warning; no cheat code exists.
-- ✅ [The dog that never loads](#-the-dog-that-never-loads): a dog model sits on the disc, but the loader stops before it.
+- ✅ [The dog that never loads](#-the-dog-that-never-loads): a dog model sits on the disc, but the game stops loading just before it.
 - 🧩 [What the game never asks for](#-what-the-game-never-asks-for): three files on the disc and one menu slot, and no debug menu found.
-- 🆕 [Switches and features the game never uses](#-switches-and-features-the-game-never-uses): a CD lookup switch, place overrides, looping videos, a holding fade, and fog that each model sets for itself.
+- 🆕 [Switches and features the game never uses](#-switches-and-features-the-game-never-uses): features left off: files found by name on the CD, place settings, looping videos, a held fade, a fog setting.
 
 Myths checked
 - ❌ [Myth: a hidden ending if the graph is full](#-myth-a-hidden-ending-if-the-graph-is-full): false.
@@ -139,7 +139,7 @@ Day counter: +0x180 counts from 0; `DreamSys_AdvanceDay` @0x8005A304 increments 
 
 ### 🆕 The first dream of a new year starts from the wrong data
 
-Each dream starts from the graph point of the day before. On the first day of a new year, yesterday is day 365, but the game reads the wrong two bytes: part of the touch score (see [the flashback unlock](#-what-unlocks-flashback-in-the-menu)) instead of day 365's point. So the first dream of year 2 and later can start somewhere unrelated to how day 365 went. Only the very first day of a new game is handled on purpose: it always starts from the middle of the graph.
+Each dream starts from the graph point of the day before. On the first day of a new year, yesterday is day 365, but a bug makes the game read part of your score for touching things (see [the flashback unlock](#-what-unlocks-flashback-in-the-menu)) instead of day 365's point. So the first dream of year 2 and later can start somewhere unrelated to how day 365 went. Only the very first day of a new game is handled on purpose: it always starts from the middle of the graph.
 
 Status: 🎮 checked in the game.
 
@@ -185,9 +185,9 @@ The scene class (vtable `0x8006D3C8`, built by `Scene_New` from `main` @0x800118
 
 ### ✅ The secret video reel: four graph points and 11 minutes of film
 
-The graph hides a face. If, among the days the graph screen shows (your last 100), your day points have landed at least once on each of four exact cells, the game plays a secret. The four cells are the centre, the cell just above it to the left, the cell just above it to the right, and the cell three steps below the centre: two eyes, a nose and a mouth. The order and the dates do not matter.
+The graph hides a face. The game plays a secret once your day points have landed on each of four exact cells. Only the days the graph screen shows, your last 100, count. The four cells are the centre, the cell just above it to the left, the cell just above it to the right, and the cell three steps below the centre: two eyes, a nose and a mouth. The order and the dates do not matter.
 
-When the graph screen comes up after the title, those four cells turn green one after the other. Then, instead of the menu, a long film starts by itself: the special-day videos back to back (pigeons on a window sill, a sheep, a radio tower and more), 20 of the 24, for 11 minutes 13 seconds. When it ends, the menu comes up by itself, with no graph and no button to press. You can only see it once per game: a flag is set and saved with the game, and only a new game, or [the erase combo](#-select--triangle-in-the-pause-erases-your-game), clears it.
+When the graph screen comes up after the title, those four cells turn green one after the other. Then, instead of the menu, a long film starts by itself: the special-day videos back to back (pigeons on a window sill, a sheep, a radio tower and more), 20 of the 24, for 11 minutes 13 seconds. When it ends, the menu comes up by itself, with no graph and no button to press. You can only see it once per game: the game saves that you have seen it, and only a new game, or [the erase combo](#-select--triangle-in-the-pause-erases-your-game), clears it.
 
 Status: 🎮 checked in the game, with the graph points written in; the film was watched to its end.
 
@@ -263,9 +263,9 @@ Status: 🎮 checked in the game, with the graph points written in.
 
 ### 🧩 How the graph picks where tomorrow starts
 
-Tomorrow's dream starts in the first area, in the game's own list order, whose mood is exactly yesterday's point. Day 1 starts from the middle of the graph and so always opens in the same place. Of the 361 points of the graph, 51 match no area at all: most sit in the four corners, plus two odd holes near the middle. After a day that lands on one of them, the dream always starts in the same place (number 1 in the game's list) at one of its 3 spawn points, and the game counts it as a random link, which lowers the [flashback score](#-what-unlocks-flashback-in-the-menu).
+Tomorrow's dream starts in the first area, in the game's own list order, whose mood is exactly yesterday's point. Day 1 starts from the middle of the graph and so always opens in the same place. Of the 361 points of the graph, 51 match no area at all: most sit in the four corners, plus two odd holes near the middle. After a day that lands on one of them, the dream always starts in the same place (stage 1, the second place in the game's list) at one of its 3 arrival points, and the game counts it as a random link, which lowers the [flashback score](#-what-unlocks-flashback-in-the-menu).
 
-Each place is a grid of map squares, each with its own mood. Filler squares (sea edges, empty corners) carry the mood (9, 0), which the game uses as "no mood here": 106 squares in 8 places. But (9, 0) is also a real graph point, so a day that ends there matches the first filler square in the list, an empty square of place 1, and you then wake up at one of place 1's arrival points. The game can only drop you on a square that has an arrival point: 93 of the 310 points that match a square name one without, so you wake up in the right place, but on another of its squares.
+Each place is a grid of map squares, each with its own mood. Filler squares (sea edges, empty corners) carry the mood (9, 0), which the game uses as "no mood here": 106 squares in 8 places. But (9, 0) is also a real graph point. A day that ends there matches the first filler square in the list, an empty square of stage 1, and you wake up at one of its arrival points. The game can only drop you on a square that has an arrival point. 93 of the 310 points that match a square match one that has none, so you wake up in the right place, but on another of its squares.
 
 Status: 🎮 partly checked in the game (the fallback to place 1 was not triggered; the filler squares and the 93 off-square starts are read in the code and data only).
 
@@ -374,7 +374,11 @@ Flashback list: count at +0x46C, entries of 0x24 bytes from +0x470 (10 at most, 
 
 ### ✅ What unlocks Flashback in the menu
 
-Flashback appears in the menu once two things are true: at least one memory is kept, and your score is above 9,999,999. The score is recomputed at the end of each normal day from two parts. The first: 1,000,000 for each hidden "navigation" goal you completed, minus 11,024 for every random link you took. The second: points from touching characters and objects, up to 50,000,000. The navigation goals are [the fixed links between places](#-fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): the first time you take each one, its goal is done. There are 30 goals and a 50,000,000 bonus for all 30, but one goal can never be completed, so that bonus never pays out and the navigation part stops at 29,000,000. So 10 navigation goals with no random link are enough on their own.
+Flashback appears in the menu once two things are true: at least one memory is kept, and your score is above 9,999,999. The score is recomputed at the end of each normal day from two parts.
+
+The first part: 30 hidden "navigation" goals, which are [the fixed links between places](#-fixed-links-are-the-navigation-goals-and-one-can-never-be-completed): the first time you take each one, its goal is done. Each goal done adds 1,000,000; every random link you took removes 11,024. All 30 would add a 50,000,000 bonus, but one goal can never be completed, so that bonus never pays out and this part stops at 29,000,000.
+
+The second part: points from touching characters and objects, up to 50,000,000. So 10 navigation goals with no random link are enough on their own.
 
 Status: 🎮 checked in the game, with the values written in: a score of 10,000,000 and one kept memory made FLASHBACK appear between START and SAVE. The navigation goals are read in the code only.
 
@@ -396,7 +400,7 @@ Flashback unlock: the menu item is enabled by `Menu_UpdateFlashbackItem` @0x8004
 
 ### ✅ What erases the flashbacks
 
-The Grey Man does. One piece of code empties the whole memory list, and only he runs it: when he touches you, he vanishes in a white flash and every kept memory is gone. There is no die roll, so every touch erases them all. The same touch also [flips your graph](#-the-grey-man-flips-your-graph-and-wipes-your-memories).
+The Grey Man does. When he touches you, he vanishes in a white flash and every kept memory is gone. There is no die roll, so every touch erases them all. Nothing else in the game empties the memory list. The same touch also [flips your graph](#-the-grey-man-flips-your-graph-and-wipes-your-memories).
 
 Status: 🎮 checked in the game, with the Grey Man forced to appear.
 
@@ -415,7 +419,7 @@ Erasing flashbacks: `DreamSys_ClearFlashbacks` @0x8005B8FC (vtable 0x21C) sets +
 
 ### ✅ The Grey Man flips your graph and wipes your memories
 
-When you touch the Grey Man, three things happen at once. He vanishes in a white flash, every kept flashback memory is erased, and his mood is logged like any character you touch. His mood is (-10, -10), one step beyond the -9 edge of the graph. Then the "last thing touched" bonus pushes your "things touched" score further down. Past -9 the value jumps to +9, so if he is the only thing you touched, or most of what you touched was dark, that half of your day point jumps to the opposite corner. This is the graph flip players report. In the emulator, one touch moved the day's point from where it should have landed, (-6, -4), to (2, 5). If you never touch him, he leaves on his own after a fixed time: 3 minutes if his clock runs at the speed of the dream timer.
+When you touch the Grey Man, three things happen at once. He vanishes in a white flash, every kept flashback memory is erased, and his mood is logged like any character you touch. That mood causes the graph flip players report. It is (-10, -10), one step beyond the -9 edge. The bonus for the last thing touched then pushes the "things touched" half of your day point further down, and a value past -9 jumps to +9. So if he is the only thing you touched, or most of what you touched was dark, that half jumps to the opposite corner. In the emulator, one touch moved the day's point from where it should have landed, (-6, -4), to (2, 5). If you never touch him, he leaves on his own after a fixed time: 3 minutes if his clock runs at the speed of the dream timer.
 
 Status: 🎮 checked in the game, with the Grey Man forced to appear (his leaving on his own is read in the code only).
 
@@ -438,9 +442,9 @@ The Grey Man is entity type 98: `Sym_InitStage` creates the spy object with `Ent
 
 ### 🧩 When the Grey Man can appear
 
-Each spot where a character can stand has a day rule: always, odd days only, or even days only. When a spot stays empty because of its rule, the day number is even and you are not in the first place of the game's list, the game rolls a 12-sided die; on a 1, the Grey Man stands there instead. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white and [the memories were erased](#-what-erases-the-flashbacks).
+Each spot where a character can stand has a day rule: always, odd days only, or even days only. When a spot stays empty because of its rule, the Grey Man can take it if the day number is even and you are not in the first place of the game's list. The game then rolls a 12-sided die, and on a 1 he stands there. So he never shows up on odd days. Forcing the die in the emulator on day 4 brought him out, walking toward the player; when he reached the player the screen flashed white and [the memories were erased](#-what-erases-the-flashbacks).
 
-He does not walk in from far away. When he spawns, the game puts him about four tiles straight ahead of you, turned to face you, and he glides toward you from there. There is only one Grey Man: when another empty spot rolls him while he is out, the code moves the same one in front of you again. That is very likely why players see him jump from place to place.
+He does not walk in from far away. When he spawns, the game puts him about four tiles straight ahead of you, turned to face you, and he glides toward you from there. There is only one Grey Man: when another empty spot rolls him while he is out, the game moves the same one in front of you again. That is very likely why players see him jump from place to place.
 
 Status: 🎮 checked in the game, with the die forced (the spawn spot ahead of you was measured in memory).
 
@@ -460,7 +464,7 @@ Grey Man spawn: per entity spawn slot, `Place_SpawnCell` calls `Sym_SpawnOrSpy @
 
 ### 🔄 Who can meet the Grey Man, and where
 
-The Grey Man only takes a spot that its own rule leaves empty. A spot marked "odd days only" is empty on even days, and since he also needs an even day, he only ever takes the place of odd-day characters. Some places have no such spot at all: stages 1, 3, 8, 10 and 12 have only "every day" spots, stage 11 (Sun Faces Heave) has only "even days only" spots, and stage 0 is excluded outright. He cannot appear in those seven. He can appear in stages 2, 4, 5, 6, 7, 9 and 13.
+The Grey Man only takes a spot that its own rule leaves empty. A spot marked "odd days only" is empty on even days, and since he also needs an even day, he only ever takes the place of odd-day characters. Some places have no such spot at all. Stages (the game's place numbers) 1, 3, 8, 10 and 12 have only "every day" spots, stage 11 (Sun Faces Heave) has only "even days only" spots, and stage 0 is excluded outright. He cannot appear in those seven. He can appear in stages 2, 4, 5, 6, 7, 9 and 13.
 
 This page used to put Sun Faces Heave on his list. That was our counting error: in the emulator, with his die forced to come up on both of the place's character spots, on an even day and on an odd day, nobody came. The same forcing on Kyoto and Happy Town brought him out at once.
 
@@ -481,11 +485,11 @@ Status: 🎮 checked in the game for Sun Faces Heave, Kyoto and Happy Town, with
 
 ## Rare sights
 
-The rare events players hunt for are ordinary characters with a condition attached. Most of the conditions are the colour of your day so far: the game cuts [your graph point](#-how-a-day-becomes-a-point-on-the-graph) into a 3 by 3 grid and gives each part one of 8 colours, and some characters only come out, or only act differently, in one of them. The ones below were all seen in the emulator. To reach them quickly we wrote the day number, yesterday's point and, for most of them, the colour into memory, and often moved the camera to wake the characters; what the characters did on screen was the game's own code. Some characters also change size by the day or by chance.
+The rare events players hunt for are ordinary characters with a condition attached. Most of the conditions are the colour of your day so far: the game cuts [your graph point](#-how-a-day-becomes-a-point-on-the-graph) into a 3 by 3 grid and gives each part one of 8 colours, and some characters only come out, or only act differently, in one of them. The ones below were all seen in the emulator. To reach them quickly we wrote the day number, yesterday's point and, for most, the colour into memory, and often moved the camera to wake the characters. What they did on screen was the game's own code. Some characters also change size by the day or by chance.
 
 ### 🧩 The flying train: a pink day and a long dream
 
-On odd-numbered days, Happy Town's slow train (a green locomotive and one wagon) starts rolling along its track once you have looked toward its spot on the rails from far away. Standing close to that spot and looking at it does nothing. This is the code behind the players' "it spawns when you look at a certain spot of the railroad".
+On odd-numbered days, Happy Town's slow train (a green locomotive and one wagon) starts rolling along its track once you have looked toward its spot on the rails from far away. Standing close to that spot and looking at it does nothing. This is the rule behind the players' "it spawns when you look at a certain spot of the railroad".
 
 If your day is pink at the moment it starts, the train does not vanish at the end of its run. It stops beside the opera singer's pillar, waits about 27 seconds of dream time, honks, sets off again and climbs into the sky. Pink is the graph's upper-right corner. The same pink colour brings four opera singers down to the foot of the pillar, so the two sights come together.
 
@@ -524,7 +528,7 @@ Status: 🎮 checked in the game. Hunt 5 forced the pink colour. Hunt 6 forced o
 
 On even-numbered days a giant astronaut floats over Bright Moon Cottage, out and back, playing its trumpet. If your day is pink at the moment it appears, it turns out of its flight path, dives into the yard, walks to the cottage's bar and stays standing beside the counter, and the trumpet stops. On any other colour it never comes down.
 
-Nothing in its code looks at the day number beyond odd or even, so the "days 200 to 300" players repeat is [a myth](#-myth-the-astronaut-lands-only-between-days-200-and-300): it landed on day 4. It appears once per dream. A dream that starts in the cottage cannot do it: the first place a dream logs is its start square, and no cottage square leans far enough to the right.
+Nothing in its code looks at the day number beyond odd or even, so the "days 200 to 300" players repeat is [a myth](#-myth-the-astronaut-lands-only-between-days-200-and-300): it landed on day 4. It appears once per dream. A dream that starts in the cottage cannot do it: the first place a dream logs is its start square, and no cottage square leans far enough toward pink (the upper right).
 
 A recipe that works: on an even day, start the dream in Happy Town's upper street, walk west along it for two blocks, then push into a wall. When the random link drops you anywhere in Bright Moon Cottage except the yard itself, your day is still pink, the astronaut appears over the yard and lands. A wall in Happy Town sends you to the cottage 1 time in 6, and 7 of the cottage's 8 arrival spots keep the pink: 7 chances in 48 per wall. A dream that starts in Happy Town lasts long enough, since the landing takes about 40 seconds.
 
@@ -556,11 +560,11 @@ In Happy Town's "Maze of Questions", on odd-numbered days, a single rainbow peng
 
 Red is the bottom middle part of the colour grid: neither static nor dynamic, and downer. The easiest way in is to end a day on the point (2, 8), near the top of the graph. If the next day has an odd number, the dream starts on that very square, and the square's own mood plus the game's bonus for the last place visited pushes your point past the top edge. It flips to the bottom of the graph: red, and the penguins come out.
 
-The eight extra penguins of a red day do not walk. Each one stands on its spot and spins in little jerks: most moments it turns a notch one way, sometimes a notch back, sometimes it holds still, so over a few seconds it turns slowly round and keeps going, each penguin on its own rhythm. That fits the wiki's "dancing penguins" that do not move: our best match for them.
+The eight extra penguins of a red day do not walk. Each one stands on its spot and spins in little jerks. Most moments it turns a notch one way, sometimes a notch back, sometimes it holds still. Over a few seconds it turns slowly round and keeps going, each on its own rhythm. That fits the wiki's "dancing penguins" that do not move: our best match for them.
 
 The lone penguin has a trick of its own: one time in five, when it wakes up, it is six times bigger and towers over the maze walls. The roll is made once per wake, whatever the colour of the day.
 
-Our first version of this finding called these figures gunmen. They are the maze penguins: the same character, square and spawn as the wiki's rainbow penguin, as a closer look in the emulator showed. The real gunmen are in Violence District: three on one square every even day, and seven on an even cyan day, our best match for the community's "multiple gunmen" sighting, now seen on screen ([the CIRCLE characters](#-characters-that-answer-to-circle)).
+Our first version of this finding called these figures gunmen. They are the maze penguins: the same character, square and spawn as the wiki's rainbow penguin, as a closer look in the emulator showed. The real gunmen are in Violence District: three on one square every even day, seven on an even cyan day. They are our best match for the community's "multiple gunmen" sighting ([the CIRCLE characters](#-characters-that-answer-to-circle)).
 
 Status: 🎮 checked in the game. The crowd: only the day number and yesterday's point were written in; the red colour and the nine penguins came from the game itself. Their spinning: the same, plus the time limit, and the dreamer moved to face them. The giant: the dice were forced at its wake-up to get the 1 in 5 roll.
 
@@ -600,7 +604,7 @@ Square: stage 4 (Happy Town), column 0 row 4 (key 0x400, `STG04\N1\M024.LBD`, mo
 
 Kyoto's rickshaw minotaur, a cart pulled by a brown bull-man, normally rolls alone down one street on odd-numbered days. If your day so far is yellow when that street loads, two more rickshaws join it, three in a row. Yellow is the graph's lower-left corner. Kyoto's own squares mostly lean the other way, so the yellow has to come from places or touches earlier that day.
 
-A rickshaw never steers and never follows you: it rolls straight ahead at walking pace, about one block every 6 seconds (6 units a vsync), the bull-man's steps and the cart's creak keeping time. After each step it checks whether it ran into a wall block; if it does, it disappears. It also disappears once you have followed it far from where it started (about 33 blocks in our run).
+A rickshaw never steers and never follows you: it rolls straight ahead at walking pace, about one block every 6 seconds (6 units per screen refresh), the bull-man's steps and the cart's creak keeping time. After each step it checks whether it ran into a wall block; if it does, it disappears. It also disappears once you have followed it far from where it started (about 33 blocks in our run).
 
 Status: 🎮 checked in the game: the odd day, the start square and the yellow colour were forced; with the natural colour only one rickshaw came. The straight roll and the vanishing far from its start were seen with only the day, the start square and the time limit written in. Their link to the Natural World, which players report, and the wall check are read in the code only.
 
@@ -630,7 +634,7 @@ Status: 🎮 checked in the game: the odd day, the start square and the yellow c
 
 Two maned lions walk slowly across the Natural World savannah in every dream that loads their spot. Each lion draws its own temper the first time it moves. Two times in three it is calm: it walks on, and if you come too close it shoves you back about a tile. One time in six it roars and charges. In a few frames it is a giant: you see its mane, then its legs and belly pass over the camera, and its touch ends the dream a moment later, as if the clock had run out. One time in six it roars, takes your controls, turns you to face it, walks up to you and ends the dream a few seconds later. The temper only shows once you come close and face the lion; until then every lion acts calm. Walking into one of these two lions ends the dream, whatever its temper.
 
-On a cyan day two more lions of the same look stand on that square. They stay hidden until you look their way from about 8 tiles off, and they draw the same tempers. Walking into one of them does not end the dream: the screen fades and you are in Temple Dojo's red wooden hall. They are the only lions that come on one day colour only, and the only lions that take you to Temple Dojo, so they are our best match for the community's "special lions near Temple Dojo". Nothing in the game names them, so the match stays a best match.
+On a cyan day two more lions of the same look stand on that square. They stay hidden until you look their way from about 8 tiles off, and they draw the same tempers. Walking into one of them does not end the dream: the screen fades and you are in Temple Dojo's red wooden hall. They are the only lions that come on one day colour only, and the only lions that take you to Temple Dojo, so they are our best match for the community's "special lions near Temple Dojo". Nothing in the game names them, so it stays a best match.
 
 A square's characters are made one square early: the moment you step onto any square next to theirs, with the colour your day has at that step. The square you arrive on next counts for later, not for its own characters. Only the square where the dream starts is the other way round.
 
@@ -679,7 +683,7 @@ Status: 🎮 partly checked: the look, the spawn, the walk, the game's own tempe
 
 ### 🔄 Three purple beasts on a yellow day in Pit & Temple
 
-Pit & Temple (stage 1) has a lone purple four-legged beast, but you never see it standing around: its spot looks empty. Look toward that spot from about 2 to 12 blocks away and, each moment, it has a 1 in 128 chance to appear. It shows up already twice its normal size, legs moving, and at once starts to float straight up, about 960 units a second (16 a vsync). From 12 blocks away it rises out of the top of the screen in about 4 seconds; from 3 blocks it fills the screen, then its legs slide up out of view. It keeps climbing unseen for about 3 minutes, then vanishes for good on that visit. Just seeing it counts as touching it: your day takes its mood, the dream's score jumps by 100,000 and a flashback memory can be kept.
+Pit & Temple (stage 1) has a lone purple four-legged beast, but you never see it standing around: its spot looks empty. Look toward that spot from about 2 to 12 blocks away and, each moment, it has a 1 in 128 chance to appear. It shows up already twice its normal size, legs moving, and at once starts to float straight up, about 960 units a second (16 per screen refresh). From 12 blocks away it rises out of the top of the screen in about 4 seconds; from 3 blocks it fills the screen, then its legs slide up out of view. It keeps climbing unseen for about 3 minutes, then vanishes for good on that visit. Just seeing it counts as touching it: your day takes its mood, the dream's score jumps by 100,000 and a flashback memory can be kept.
 
 On a yellow day three more of the same model walk through that square in single file, at half size, so the lone beast is four times their size. Coming close to one of the three sends you elsewhere in Pit & Temple.
 
@@ -724,7 +728,7 @@ On a red day, a geisha stands still on the red arched bridge of a Kyoto canal, i
 
 She stands frozen on the bridge, not even breathing: her animation is stopped and she is drawn at two fifths of her model's size. Come within about one block of her and she slowly turns round on the spot, a half-turn in about 4 to 5 seconds. Approached from the street side she starts with her back to you, a dark coat and black hair, and ends facing you, white face and flowered kimono. She then stays still for about 40 seconds; if you are still that close, she turns another half-turn. Her turn is fixed, not aimed at you: from the other side she would end with her back to you. Our earlier text had her playing an idle animation; she does not.
 
-The walking one is the dangerous one: in one of her two scripts she turns, comes at you and ends the dream with her video.
+The walking one is the dangerous one: in one of her two behaviours she turns, comes at you and ends the dream with her video.
 
 Status: 🎮 checked in the game: the start square and the red colour were forced; she stood on the bridge for the whole run, and her frozen pose, her size and her half-turn were seen with the dreamer moved next to her. Her second half-turn, her link and the walking geisha's video are read in the code only.
 
@@ -807,7 +811,7 @@ Status: 🎮 checked in the game: only the day number and yesterday's point were
 
 ### 🔄 A yellow day gives Black Space's walker a giant twin
 
-In Black Space a small dark figure always walks on the white floor. On a yellow day a twin six times taller comes out on the same spot, and the two walk side by side, the small one between the giant's feet. Players know a "larger mirrored version" that sometimes appears, and say it comes when your dream starts in Black Space. The code is more precise: it comes on a yellow day. A dream that starts on the square fed by the point (-6, -5) is yellow from the start and gets the giant; one started on the square fed by (-6, 5) is green and does not.
+In Black Space a small dark figure always walks on the white floor. On a yellow day a twin six times taller comes out on the same spot, and the two walk side by side, the small one between the giant's feet. Players know a "larger mirrored version" that sometimes appears, and say it comes when your dream starts in Black Space. The code is more precise: it comes on a yellow day. After a day that ended on the point (-6, -5), the dream starts on a square that is yellow from the start and gets the giant; after (-6, 5), it starts green and does not.
 
 Status: 🎮 checked in the game: only the day number and yesterday's point were written in; the yellow colour, the giant and its walk were the game's own. Control: a green start, no giant.
 
@@ -883,7 +887,7 @@ Status: 🎮 checked in the game: only the day number and yesterday's point were
 
 ### 🧩 Tiny lips walk toward you in Happy Town
 
-On even days, near the Happy Town maze, a pair of lips 32 times smaller than the usual floating lips walks toward you along the floor. It is easy to miss: 500 units away it is smaller than one floor tile. It is the same model as the big floating lips on the same square, drawn at 1/32 every tick.
+On even days, near the Happy Town maze, a pair of lips 32 times smaller than the usual floating lips walks toward you along the floor. It is easy to miss: 500 units away it is smaller than one floor tile. It is the same model as the big floating lips on the same square, drawn at 1/32 of its size.
 
 Status: 🎮 checked in the game: the day number, yesterday's point and the camera position were written in; the size and the walk were the game's own. Its link is read in the code only.
 
@@ -906,7 +910,7 @@ Status: 🎮 checked in the game: the day number, yesterday's point and the came
 
 ### 🧩 The hidden rules that decide which characters appear
 
-Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once, and stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: [the red-day crowd of maze penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins), seen in the game (we first took them for the community's "many gunmen", wrongly; our best match for those is now a cyan-day row of four more gunmen in Violence District, see [the CIRCLE characters](#-characters-that-answer-to-circle)). The "many minotaurs" work the same way: [three rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto).
+Each place has a list of character groups, and each group has a rule checked when its spot loads. Some rules follow the day: every day, even or odd days, one day in three, or a 90-day cycle of three 30-day "months". Others follow your mood so far today: the group appears only if the colour of your day so far (one of 8 colours) matches. Some groups are marked "once": they can appear one time, then not again until the dream world is rebuilt (most likely each new dream). A group can stand at up to 4 places at once. Stage 4 has a spot where, in one mood colour, two such groups fill 8 places with the same character: [the red-day crowd of maze penguins](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins), seen in the game. We first took them for the community's "many gunmen", wrongly; our best match for those is now a cyan-day row of four more gunmen in Violence District (see [the CIRCLE characters](#-characters-that-answer-to-circle)). The "many minotaurs" work the same way: [three rickshaws on a yellow day in Kyoto](#-three-minotaur-rickshaws-on-a-yellow-day-in-kyoto).
 
 The colour table players know from lsddecomp as `SPECIAL_COLORS` is part of these rules: for 8 of them it names the colour your day must be in for a group to come out (yellow, red, cyan, white, black, green, blue, pink, one each). It has nothing to do with links.
 
@@ -931,7 +935,7 @@ Models: `Sym_SpawnGroup` gets the model with `chunk->vt->unk88(chunk, group.mode
 
 ### 🧩 The character record: mood, points, waking up and leaving
 
-Every character type, 130 of them, has a 16-byte record. It gives the mood logged when you touch it, the points it is worth (from -100,000 to +100,000), when it wakes up, when it leaves, how close you must be to touch it, and where it sends you or which video it plays. A character can wake up when you come near or when you walk away. Three types (7 and 8 in stage 1, 102 in stage 6) also need luck: near you, they have 1 chance in 128 per tick to wake. Type 102 is the only character of stage 6 and sends you to stage 12. The characters that end the dream on a video are type 13 (stage 2, always there), type 11 (stage 2, even days), type 47 (stage 4), type 79 (stage 9, rule "once") and type 89 (stage 5, rule "once"). Type 12 in stage 2 ends the dream without a video, type 85 in stage 5 does so 1 time in 5 ([the CIRCLE characters](#-characters-that-answer-to-circle)), and the Natural World's savannah lions, type 81, do so when you walk into one or when one in a bad temper reaches you ([the lions](#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)).
+Every character type, 130 of them, has a short data record. It gives the mood logged when you touch it, the points it is worth (from -100,000 to +100,000), when it wakes up, when it leaves, how close you must be to touch it, and where it sends you or which video it plays. A character can wake up when you come near or when you walk away. Three types (7 and 8 in stage 1, 102 in stage 6) also need luck: near you, they have 1 chance in 128 at each game step to wake. Type 102 is the only character of stage 6 and sends you to stage 12. The characters that end the dream on a video are type 13 (stage 2, always there), type 11 (stage 2, even days), type 47 (stage 4), type 79 (stage 9, rule "once") and type 89 (stage 5, rule "once"). Type 12 in stage 2 ends the dream without a video, type 85 in stage 5 does so 1 time in 5 ([the CIRCLE characters](#-characters-that-answer-to-circle)), and the Natural World's savannah lions, type 81, do so when you walk into one or when one in a bad temper reaches you ([the lions](#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)).
 
 Status: 🎮 partly checked: the Grey Man and, in hunt 8, the endings of a few characters were seen in the emulator; the rest is read in the code.
 
@@ -948,7 +952,7 @@ Record `g_entityRecords + 16 * type`: +0/+1 s8 mood (returned whole by vtable 0x
 
 ### 🧩 Signals from characters and objects
 
-Characters and objects talk to the dream through a handful of signals. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#-how-flashback-memories-are-kept). Others send you to a fixed place, end the dream and queue their own video, or simply end the dream. Which characters send which signal is listed in [the character record](#-the-character-record-mood-points-waking-up-and-leaving), and when they appear in [the spawn rules](#-the-hidden-rules-that-decide-which-characters-appear). The [flying train](#-the-flying-train-a-pink-day-and-a-long-dream), [the astronaut](#-the-astronaut-lands-at-the-bar-on-a-pink-day) and [the purple beasts](#-three-purple-beasts-on-a-yellow-day-in-pit--temple) are now matched on screen: their records name a place to send you to, and none of them ends the dream or plays a video. In flashback mode touching, event videos and forced endings do nothing.
+A character or an object can act on your dream in four ways. Touching one logs its mood for the graph, adds its points to the touch score and may keep a [flashback memory](#-how-flashback-memories-are-kept). Others send you to a fixed place, end the dream on their own video, or simply end the dream. Which characters send which signal is listed in [the character record](#-the-character-record-mood-points-waking-up-and-leaving), and when they appear in [the spawn rules](#-the-hidden-rules-that-decide-which-characters-appear). The [flying train](#-the-flying-train-a-pink-day-and-a-long-dream), [the astronaut](#-the-astronaut-lands-at-the-bar-on-a-pink-day) and [the purple beasts](#-three-purple-beasts-on-a-yellow-day-in-pit--temple) are now matched on screen: their records name a place to send you to, and none of them ends the dream or plays a video. In flashback mode touching, event videos and forced endings do nothing.
 
 Status: 🎮 partly checked: in hunt 8 the endings and links of a few characters were seen in the emulator; the rest is read in the code.
 
@@ -965,7 +969,7 @@ Entity events reach DreamSys through `DreamSys_OnEntityEvent` @0x8005B03C, ignor
 
 ### 🧩 More characters that change size
 
-Many more characters are resized by their own code, by the day, by the day's colour or by chance at the moment they wake up. Some players have seen: Happy Town's bunny and teddy bear each have 1 chance in 5 to be stretched three times wider and 3 in 10 to slide away; Kyoto's Buddha statues have 1 in 7 to be twice as tall; a Bright Moon Cottage character, probably the two-faced figure in the bar, has 1 in 2 to freeze, thin and twice as tall. Others nobody has matched yet: a Natural World character that is always resized, either twice or six times bigger, three Natural World characters fixed at six times or a quarter, a Violence District one six times bigger, one in Temple Dojo that has 1 in 3 to shrink to half and rise a little, and a Happy Town train that flickers flat 1 time in 5.
+Many more characters change size by the day, by the day's colour or by chance at the moment they wake up. Some players have seen: Happy Town's bunny and teddy bear each have 1 chance in 5 to be stretched three times wider and 3 in 10 to slide away; Kyoto's Buddha statues have 1 in 7 to be twice as tall; a Bright Moon Cottage character, probably the two-faced figure in the bar, has 1 in 2 to freeze, thin and twice as tall. Others nobody has matched yet: a Natural World character that is always resized, either twice or six times bigger, three Natural World characters fixed at six times or a quarter, a Violence District one six times bigger, one in Temple Dojo that has 1 in 3 to shrink to half and rise a little, and a Happy Town train that flickers flat 1 time in 5.
 
 Status: 📖 read in the code only. The ones checked in the game have their own entries: [the giant maze penguin](#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins), [the flowers and mushrooms](#-happy-towns-flowers-and-mushrooms-grow-with-the-day-number), [the tiny lips](#-tiny-lips-walk-toward-you-in-happy-town) and [the Black Space giant](#-a-yellow-day-gives-black-spaces-walker-a-giant-twin).
 
@@ -1057,7 +1061,7 @@ StageMap slot 0x138 `StageMap_StartTileStretch` @0x8004CFB8 (count, fast) picks 
 
 ### ✅ Characters that answer to CIRCLE
 
-Three characters give you a choice through the CIRCLE button. Players knew all three; we found the windows in the code and played each one in the emulator.
+Three characters give you a choice through the CIRCLE button. Players knew all three; we found when the press counts and played each one.
 
 - Happy Town's Ferris wheel (odd days): stand by it and look at it, and you have about 2 seconds. Press CIRCLE and you rise straight up through the wheel, past its hub and its gondolas, into the pink sky; about 7 seconds later the dream ends quietly, with no video. Do nothing and the screen turns red and the wheel's video plays: a green field crossed by rails, then a climb through the clouds into a purple starry sky where a sun with a face comes down. Walking into the wheel's frame instead takes you to Sun Faces Heave.
 - Happy Town's fast train (even days): it comes out of its tunnel straight at you. Press CIRCLE as it reaches you and you ride at its front down the tracks across Happy Town for about 7 seconds, then you are in Kyoto. Do nothing and its face fills the screen and you are sent to Kyoto at once.
@@ -1114,7 +1118,7 @@ Every press of CIRCLE in the dream sets DreamSys +0x74 (`DreamSys_OnPad` case 23
 
 ### 🧩 The Abyss Demon rises at the cliff edge and sends you to Kyoto
 
-On one Natural World square, by a railed bridge at the cliff edge, a giant rises out of the ground when you walk up facing its spot: first a clawed hand, then two purple horns and a head. It freezes you while it rises, for about 5 seconds, then the screen fades white and you are in Kyoto. One comes every day; on days whose number leaves 2 when divided by 3 (days 2, 5, 8, 11 and so on) a second one waits on the same square. Until you face its spot from about one tile it is invisible. Players know it as the Abyss Demon, and it fits their descriptions: the horns, the rising, the freeze and the link to Kyoto. They also report it sometimes ends the dream instead; we did not see that.
+On one Natural World square, by a railed bridge at the cliff edge, a giant rises out of the ground when you walk up facing its spot: first a clawed hand, then two purple horns and a head. It freezes you while it rises, for about 5 seconds, then the screen fades white and you are in Kyoto. One comes every day; on days whose number leaves 2 when divided by 3 (days 5, 8, 11 and so on) a second one waits on the same square. Until you face its spot from about one tile it is invisible. Players know it as the Abyss Demon, and it fits their descriptions: the horns, the rising, the freeze and the link to Kyoto. They also report it sometimes ends the dream instead; we did not see that.
 
 Status: 🎮 checked in the game, with the day and the start square forced and the player moved in front of it; that it holds your controls is read in the code.
 
@@ -1142,7 +1146,7 @@ After long sessions, players see places drawn with the wrong textures: grey wall
 
 The margin is thin. Every time a place loads, its texture set needs about 200 KB of memory in one piece, and the game has only about 20 KB more than that free at that moment. That margin is the same for every place and every day: no texture set on the disc asks for more, and the first place of a dream always leaves about 23 KB to spare. So anything that stays behind or cuts the free memory into pieces, even 20 KB worth, makes every later texture load fail. Nothing frees it but turning the console off.
 
-The community's recipe works, and now we know why: setting the place's "location time" counter back to 0 again and again makes the game build the place's scenery objects again on every tick without throwing away the old ones. About 60 KB pile up in a few seconds, the next place loads without its textures, and from then on every dream fails at its first place, with nothing more forced, until power-off. Ordinary play leaks nothing on every path we tried. We compared the game's memory in the menu before and after each of these: pause, saving with the comment keyboard, loading, the menu's timeout into the opening video, the graph, a full-length dream, 30 day changes with six special days, the flashback, the Grey Man, a fall, the gunman's shot, nine links on foot, the secret reel to its end, and the end of a year. Every time the menu came back with the same 414 memory blocks, at the same places, to the byte. So what causes the glitch after long sessions without any memory editing is still not found. Not tried yet: dreams that start in the later places, the cottage's scripted walks, the Ferris wheel's ending, the erase combo, memory card errors, and the timing of a real CD drive.
+The community's recipe works because setting the place's "location time" counter back to 0 again and again makes the game build the place's scenery objects again at every game step without throwing away the old ones. About 60 KB pile up in a few seconds, the next place loads without its textures, and from then on every dream fails at its first place, with nothing more forced, until power-off. Ordinary play lost no memory on every path we tried. We compared the game's memory in the menu before and after each: pause, saving with the comment keyboard, loading, the menu's timeout into the opening video, the graph, a full-length dream, 30 day changes with six special days, the flashback, the Grey Man, a fall, the gunman's shot, nine links on foot, the secret reel to its end, and the end of a year. Every time the menu came back with the same 414 memory blocks, at the same places, to the byte. So what causes the glitch after long sessions without any memory editing is still not found. Not tried yet: dreams that start in the later places, the cottage's scripted walks, the Ferris wheel's ending, the erase combo, memory card errors, and the timing of a real CD drive.
 
 Status: 🎮 checked in the game, with the failure forced, then with the community's leak forced: the failures in the following dreams came on their own. Ordinary play was checked path by path, with only the day, yesterday's point and sometimes the dice written in: no leak.
 
@@ -1179,7 +1183,7 @@ When a stage loads, `Place_Load` @0x80052F10 starts a texture-set loader (`Tix_C
 
 ### ✅ The 40-day texture cycle
 
-Every place has up to four texture sets, A to D. When a place loads, the game looks at where the day falls in a 40-day cycle. Days 1 to 10 always load set A. Days 11 to 20 load A or B, 21 to 30 one of A to C, 31 to 40 one of A to D, each equally likely. Then the cycle starts again at day 41. Since the day number returns to 1 after day 365, days 361 to 365 count as days 1 to 5 and always load set A.
+Every place has up to four texture sets, A to D. When a place loads, the game looks at where the day falls in a 40-day cycle. Days 1 to 10 always load set A. Days 11 to 20 load A or B, 21 to 30 one of A to C, 31 to 40 one of A to D, each equally likely. Then the cycle starts again at day 41. Days 361 to 365 open a new cycle, and the day number then returns to 1, so set A loads for 15 days in a row across the new year.
 
 Status: 🎮 checked in the game, with the draw forced: the same room wears set A on day 5 and set D on day 33.
 
@@ -1203,7 +1207,7 @@ Texture set: when a stage loads, `Place_Load` calls `Stage_PickTexturePath @0x80
 
 ### 🧩 Three quiet rules for the look of a place
 
-Three small rules in the code change how a place looks. We saw all three in the emulator.
+Three small rules change how a place looks. We saw all three in the emulator.
 
 - On days whose number divides by 7, the floating scenery some places scatter around you lines up in one straight band, side by side at one height. In Kyoto on day 133 the 16 clouds of the sky form one band, where on day 132 they are scattered at different heights and distances. The band is not pinned to the place: like the scattered clouds of other days, it is placed relative to you and goes where you go. The multiples of 7 up to day 126 are all [special days](#-the-42-special-days) with no dream, so the band can only show from day 133 on.
 - In Kyoto the game turns the colours of the canal water one step every frame, so the water should shimmer as its colours slide along. In the emulator we used, the whole water surface instead blinks between a flat dark blue and a flat pale blue; with the rule switched off, the water keeps its speckled texture and never changes. How it looks on a real console is not known. The Natural World, Happy Town and Violence District turn another row of colours the same way; which surfaces use it was not found.
@@ -1276,7 +1280,7 @@ Links: a wall touch (`DreamSys_OnTileContact` @0x80058FAC, message 4, no transit
 
 ### 🔄 Fixed links do not change with visits, but some depend on who showed up
 
-A fixed link always leads to the same place: the game does not count visits and does not read the day when it looks one up. One extra list of walk-through links is switched on only in stages 3 and 11, or once a character of type 11, 56, 78 or 93 has appeared in that dream. Those characters follow [the day rules](#-the-hidden-rules-that-decide-which-characters-appear): type 11 is in stage 2 on even days, 56 in stage 5, 78 in stage 8 when the day is a multiple of 3, and 93 in stage 0 under the "once" rule. So when a fixed link seems to change from day to day, the day number is behind it through who appeared, not through visit counts. One more link routine, used only from stages 1, 3, 5, 9 and 12, picks stage 12 instead of its usual pick when the dream timer is odd; it runs when you [fall off an edge](#-falling-off-an-edge-walls-and-the-cottages-walking-squares), and its pick is never used: a fall ends the dream (checked in the emulator).
+A fixed link always leads to the same place: the game does not count visits and does not read the day when it looks one up. One extra list of walk-through links is switched on only in stages 3 and 11, or once a character of type 11, 56, 78 or 93 has appeared in that dream. Those characters follow [the day rules](#-the-hidden-rules-that-decide-which-characters-appear): type 11 is in stage 2 on even days, 56 in stage 5, 78 in stage 8 when the day is a multiple of 3, and 93 in stage 0 under the "once" rule. So when a fixed link seems to change from day to day, the day number is behind it through who appeared, not through visit counts. One more link rule is used only from stages 1, 3, 5, 9 and 12: it picks stage 12 instead of its usual pick when the dream timer is odd. It runs when you [fall off an edge](#-falling-off-an-edge-walls-and-the-cottages-walking-squares), and its pick is never used: a fall ends the dream (checked in the emulator).
 
 Status: 📖 read in the code only.
 
@@ -1293,10 +1297,10 @@ Status: 📖 read in the code only.
 
 ### 🧩 Falling off an edge, walls and the cottage's walking squares
 
-Three rules decide what happens when you hit the edge of the world.
+Three rules decide what happens at the edge of the world.
 
 - Falling: in Pit & Temple, the Natural World, Violence District, Clockwork Machines and Black Space, stepping off some edges, where the game finds no ground under you, makes you sink as the view tilts and the screen goes black. Then the day is over: the graph screen and the next day's menu, exactly as when the clock runs out. The code does pick a place to send you to (Black Space when the dream timer is odd), but nothing ever uses that pick. In Clockwork Machines the same check also runs on solid ground once you are high enough: one of its four arrival points sits that high, so a link that drops you there ends the dream at your first step ([the gunman's shot](#-characters-that-answer-to-circle)).
-- Walls: pushing into a wall gives a random link only on 1 tick in 16. Pushing on another tick does nothing, so a random link comes within about a second of pressing against the wall. In the emulator both random wall links we met came on such a tick.
+- Walls: pushing into a wall gives a random link only on 1 game step in 16. Pushing on another step does nothing, so a random link comes within about a second of pressing against the wall. In the emulator both random wall links we met came on such a step.
 - Bright Moon Cottage has 8 squares that take over: step on one facing the right way while walking forward, and the game locks your pad and walks you along one of 4 scripted paths.
 
 Status: 🎮 partly checked. The falls (three, by pad only, in Pit & Temple and Black Space, with an odd and an even timer) and the 16-tick wall rule were seen in the emulator, with only the day number, yesterday's point and the time limit written in. The Clockwork Machines height rule was seen too, after a link there with the day colour forced. The cottage squares are read in the code only.
@@ -1323,7 +1327,7 @@ Status: 🎮 partly checked. The falls (three, by pad only, in Pit & Temple and 
 
 Every place is laid out on a grid of square tiles. Each block of scenery sits on one tile, faces one of four directions (it only ever turns by a quarter turn) and is stacked a whole number of tiles above the ground, up to 7. Nothing in the world is turned at an odd angle or raised by half a tile.
 
-Each block also carries a mark that makes it a wall. 5,223 of the 31,068 blocks on the disc have it, about one in six. When you push into a marked block, the game puts you back and may link you: through a fixed link if that spot has one, else a random one on [1 tick in 16](#-falling-off-an-edge-walls-and-the-cottages-walking-squares). A touch on an unmarked block is never passed on, so it can never link you. The byte that holds the mark also holds the block's footstep sound.
+Each block also carries a mark that makes it a wall. 5,223 of the 31,068 blocks on the disc have it, about one in six. When you push into a marked block, the game puts you back and may link you: through a fixed link if that spot has one, else a random one on [1 game step in 16](#-falling-off-an-edge-walls-and-the-cottages-walking-squares). A touch on an unmarked block is never passed on, so it can never link you. The mark is stored together with the block's footstep sound.
 
 Status: 🎮 partly checked. The marks were seen on the blocks in memory during a walk; that only marked blocks link you is read in the code, and the grid rules come from the code and the 139 map files.
 
@@ -1331,7 +1335,7 @@ Status: 🎮 partly checked. The marks were seen on the blocks in memory during 
 
 - Map files: each `STGxx\Mxxx.LBD` holds a 20 x 20 grid of 12-byte records (`GridRecord`, src/game/map_models.c; stacked blocks chain through `nextOffset`): present, a byte nothing reads, object index, flags, quarter turns, height. `MapModels_NextModel` @0x8002C278 places a block at x = col * 0x800 + 0x400, z = row * 0x800 + 0x400, y = height << 11, yaw = quarterTurns << 10 (1,024 is 90 degrees in the 4,096-per-turn angle unit). Census of the 139 files (`tools/research/lbd_models.py`): 31,068 present records; quarter turns 0 to 3 only (22,045, 3,724, 2,573, 2,726); height 0 on 30,627 records and -1 to -7 on 441 (negative y is up); flag bit 0x80 on 5,223.
 - Walls: `StageMap_BuildTiles` @0x8004BE54 copies the flags into each `MapTile`. On a contact, `StageMap_TellViewTiles` @0x8004B100 tells the tiles around the actor through `MapTile_Tell` @0x8004B2D4, which passes the message on only when `flags & 0x80`. `MapTile_OnActorMessage` @0x8004D47C then runs `checkContact`, which reaches `DreamSys_OnTileContact` @0x80058FAC: the static link, else the dynamic link while its flag is set, then `restorePosition` and `afterWallTouch`. The low 7 bits are the step sound: `DreamSys_OnGroundProbe` @0x80058B08 takes `contact->flags & 0x7F` (0x18 and above become 0).
-- Never read: record byte 1 (1 on 30,480 records, 0 on 588) is copied to the tile item (+0x2C) and read by nothing; `MapTile.unk34` stays 0.
+- Never read: record byte 1 (1 on 30,480 records, 0 on 588) is copied to the tile item (+0x2C) and read by nothing; `MapTile.unused34` stays 0.
 - In game: partly. Interpreter run (new game, UP held from vsync 3,300 to 5,900, three stage loads): the 2,870 tiles in memory, read every 300 vsyncs, carry the same flag values as the files, for example at 4,200 {0: 500, 1: 120, 6: 1,499, 128: 333, 129: 136, 134: 164, ...}. No wall touch was logged in that run.
 - Question: [13](mysteries.md#events-and-hidden-content). Found 2026-10-16.
 - Before us: Figglewatts' libLSD (`LBD.cs`) already reads this record: four tile directions in 90-degree steps, a height offset, and a byte whose low 7 bits it calls the footstep and whose top bit it "hypothesized" to be collision, plus a `SolidTile` flag "either 0 or 1" of unknown use. The code confirms the footstep and wall bits; new here: the wall bit is what lets a block link you, heights are whole tiles, and the `SolidTile` byte is never read. The fandom wiki (Linking) says any solid obstacle can link you.
@@ -1381,7 +1385,7 @@ Status: 📖 read in the code only.
 
 ### 🆕 A switch to pin the music that nobody pulls
 
-Every dream picks one of 7 sound banks and one of 5 tracks at random. The code keeps two override switches that would force a chosen bank and a chosen track, very likely left for the developers to test the music. Nothing in the game ever sets them.
+The game picks one of 7 sound banks and one of 5 tracks at random. The code keeps two switches that would force a chosen bank and a chosen track, very likely left for the developers to test the music. Nothing in the game ever sets them.
 
 Status: 📖 read in the code only.
 
@@ -1438,7 +1442,7 @@ More fields: +0x5DF is the "video reel already seen" flag (`Graph_CheckReel`, se
 
 ### 🧩 How the memory card save works
 
-Saving writes the whole memory block to the card under the file name `BISLPS-01556xxx`. The save title shows your day number in 3 digits. A game that has never been saved or loaded, a new one or one wiped by [the erase combo](#-select--triangle-in-the-pause-erases-your-game), saves to a new file with a blank comment: in the emulator, the first save of a new game became `BISLPS-01556-01`. After a save or a load, later saves keep that file's name (read in the code, not tried). The card driver itself has not been read.
+Saving writes the whole memory block to the card under the file name `BISLPS-01556xxx`. The save title shows your day number in 3 digits. A game that has never been saved or loaded, a new one or one wiped by [the erase combo](#-select--triangle-in-the-pause-erases-your-game), saves to a new file with a blank comment: in the emulator, the first save of a new game became `BISLPS-01556-01`. After a save or a load, later saves keep that file's name (read in the code, not tried). The code that talks to the card itself has not been read.
 
 Status: 🎮 partly checked: a save made in the emulator on day 42 carries the title "LSD a Day042"; the save screen itself does not show the day.
 
@@ -1504,7 +1508,7 @@ Random numbers: `rand` @0x80049480 is the PSY-Q LCG, state `g_randState` @0x8008
 
 Pause a dream with START, hold SELECT, then press TRIANGLE. The dream stops at once and the menu comes back on "Day 001": the day, the year, the score, the flashback memories and the navigation goals are wiped, with no warning and no confirmation. Your next save then goes to a new file, as for a brand new game (read in the code). The [video reel](#-the-secret-video-reel-four-graph-points-and-11-minutes-of-film) can be seen again after that.
 
-It is the only hidden button input in the game that changes your game (the other one, [SELECT on the save comment keyboard](#-select-on-the-comment-keyboard-makes-the-cursor-run), only changes how the cursor moves). Every piece of code that reacts to the pad was read: each one reacts to a single press at a time and none remembers earlier presses, so no typed cheat code can exist. The pause code also holds a second exit, a quit that does not count the day, but no button leads to it: it is dead code, maybe a developer shortcut whose button was removed.
+It is the only hidden button input in the game that changes your game (the other one, [SELECT on the save comment keyboard](#-select-on-the-comment-keyboard-makes-the-cursor-run), only changes how the cursor moves). Every piece of code that reacts to the pad was read: each one reacts to a single press at a time and none remembers earlier presses, so no typed cheat code can exist. The pause code also holds a second exit, a quit that does not count the day, but no button leads to it: nothing reaches it, maybe a developer shortcut whose button was removed.
 
 The pause also freezes the picture. About a fifth of a second after "Pause" appears, the game stops sending new pictures to the screen, so nothing moves until you close the pause (in our run, the rays of the sun stopped turning).
 
@@ -1535,7 +1539,7 @@ Other pad handlers, all read (C scan for case and compare values in the pad rang
 
 ### ✅ The dog that never loads
 
-The disc holds a model for a dog next to the Grey Man's. The loader is written to load both, but it stops after the first one, and nothing else in the game asks for the dog. So the dog is never loaded and cannot appear. The character list even keeps a slot for it, right after the Grey Man's, with a bright mood and no behaviour at all.
+The disc holds a model for a dog next to the Grey Man's. The game is written to load both, but it stops after the first one, and nothing else in the game asks for the dog. So the dog is never loaded and cannot appear. The character list even keeps a slot for it, right after the Grey Man's, with a bright mood and no behaviour at all.
 
 Status: 📖 read in the code only.
 
@@ -1552,15 +1556,15 @@ Status: 📖 read in the code only.
 
 ### 🧩 What the game never asks for
 
-The executable names every file on the disc except three: a second Asmik logo picture, a second "ETC" picture, and a 62 MB dummy video that fills the end of the disc. The scene code also keeps an empty slot for a mode that the title screen can never choose. No debug menu, test mode or cheat sequence turned up in what we read, and the code has no path to a WC room file: rooms live inside the stage chunk files.
+The game names every file on the disc except three: a second Asmik logo picture, a second "ETC" picture, and a 62 MB dummy video that fills the end of the disc. The scene code also keeps an empty slot for a mode that the title screen can never choose. No debug menu, test mode or cheat sequence turned up in what we read, and the code names no WC room file: rooms are part of each place's map files.
 
 Status: 📖 read in the code only.
 
 <details><summary>Technical details</summary>
 
-All printable paths in `SLPS_015.56` were compared to the 685 files of the disc (patched English v1): every named path exists, and only `ETC\ASMKLOG.TIM` (153,620 bytes, dated 1997-05-20, same size as `ASMKLOGO.TIM`), `ETC\ETC2.TIM` (30,784 bytes) and `ZDUMMY\ZDUMMY.STR` (61,937,664 bytes) are never named. The `CARD\*.TIM` pictures are built from `CARD\` plus the names at 0x8008AA34 and are used. The scene loop `App_Run` calls slot 0x5C when the title returns 1; slot 0x5C is the empty `func_80026690`, and the title routine `Scene_RunTitle` only returns 0 or 2. The scene settings `g_sceneSettings` passed by `main` (0x13, 0, 1, 1, 1, 1) turn the logos (+0xC), videos (+0x8) and title (+0x10) on; flipping them is the closest thing to a dev switch found. Two more words of it are switches the shipped game leaves alone: +4 for file lookup on the CD and +0x14, of unknown use ([switches and features the game never uses](#-switches-and-features-the-game-never-uses)). The pad handlers of the title and menu screens were read since: none keeps a sequence ([the erase combo](#-select--triangle-in-the-pause-erases-your-game)).
+All printable paths in `SLPS_015.56` were compared to the 685 files of the disc (patched English v1): every named path exists, and only `ETC\ASMKLOG.TIM` (153,620 bytes, dated 1997-05-20, same size as `ASMKLOGO.TIM`), `ETC\ETC2.TIM` (30,784 bytes) and `ZDUMMY\ZDUMMY.STR` (61,937,664 bytes) are never named. The `CARD\*.TIM` pictures are built from `CARD\` plus the names at 0x8008AA34 and are used. The scene loop `App_Run` calls slot 0x5C when the title returns 1; slot 0x5C is the empty `Scene_OnTitle1`, and the title routine `Scene_RunTitle` only returns 0 or 2. The scene settings `g_sceneSettings` passed by `main` (0x13, 0, 1, 1, 1, 1) turn the logos (+0xC), videos (+0x8) and title (+0x10) on; flipping them is the closest thing to a dev switch found. Two more words of it are switches the shipped game leaves alone: +4 for file lookup on the CD and +0x14, of unknown use ([switches and features the game never uses](#-switches-and-features-the-game-never-uses)). The pad handlers of the title and menu screens were read since: none keeps a sequence ([the erase combo](#-select--triangle-in-the-pause-erases-your-game)).
 
-- Proof: `App_Run`, `func_80026690`, `Scene_RunTitle`, `g_sceneSettings`, `main` @0x800118DC, string scan (hunt 3).
+- Proof: `App_Run`, `Scene_OnTitle1`, `Scene_RunTitle`, `g_sceneSettings`, `main` @0x800118DC, string scan (hunt 3).
 - In game: no.
 - Question: [14](mysteries.md#events-and-hidden-content). Found 2026-10-15.
 - Before us: the fandom wiki (Data Analysis, Unused Content) knew `ZDUMMY.STR` as disc filler, the Japanese Asmik logo and the cut WC room, and TCRF (through the community notes) a debug menu in a 1997 demo; new here: the executable never names these three files, and no WC room file or debug menu turned up.
@@ -1569,11 +1573,11 @@ All printable paths in `SLPS_015.56` were compared to the 685 files of the disc 
 
 ### 🆕 Switches and features the game never uses
 
-The code holds several finished features that the shipped game never turns on. None of them shows on screen, but they tell how the game was built.
+The code holds several finished features that the shipped game never turns on. None shows on screen.
 
 - A file switch: one setting would make the game look up every file by name on the CD instead of using its own table of where each file sits on the disc. It ships turned off.
 - Place overrides: a place could load with its own view distance and its own ambience. No place asks for them: every place loads with the default view distance, 20 tiles, and the ambience the game picks for its area.
-- Looping videos: the video player can loop a film and count the loops, but no video asks for it. Every video plays once, for a number of frames written in a table: 90 for the Asmik logo and 1,046 for the opening of a first boot, about 6 and 70 seconds at the usual 15 frames a second of PlayStation videos (not timed). Had a video asked to loop, it would have frozen when restarting: the piece that should start it again is an empty function.
+- Looping videos: the video player can loop a film and count the loops, but no video asks for it. Every video plays once, for a number of frames written in a table: 90 for the Asmik logo and 1,046 for the opening of a first boot, about 6 and 70 seconds at the usual 15 frames a second of PlayStation videos (not timed). Had a video asked to loop, it would have frozen when restarting: the piece of code that should start it again is empty.
 - Fades: a fade that holds its colour and a second buffer swap are never used.
 - Fog: each model decides for itself whether the fog touches it, and a setting that would let a model follow the place's fog is never set. In a dream, about one model in eight that the game draws carries no fog and keeps its full colour however far it is (counted in memory, not checked in a picture; which models these are was not looked at).
 
@@ -1581,8 +1585,8 @@ Status: 🎮 partly checked. Each switch and feature was watched in memory durin
 
 <details><summary>Technical details</summary>
 
-- File switch: `g_sceneSettings` @0x80066828 is (0x13, 0, 1, 1, 1, 1); word +4 is `SceneSettings.useCdSearch`, passed by `Scene_RunDream` @0x80026698 to `DreamRunner_New`, and `DreamRunner_Init` @0x80049684 calls `File_EnableWait(useCdSearch == 0, 1, 1)` @0x80026F34. With 0 (shipped), loads are queued and found through the disc's path table; non-zero, each file would be loaded at once by path through `CdSearchFile`. Value 0 in RAM. Word +0x14 (1) goes through `Scene_Init` @0x80025FDC to DreamSys slot 0x228 (`func_8005BA20`, a swap of DreamSys +0x924); nothing reads +0x924 afterwards (it stays 1 from the title on), so what this sixth switch did is unknown.
-- Place overrides: `Place_Load` @0x80052F10 is the place screen's slot 0x4C `begin`, and `Screen_Run` calls it as `begin(screen, 0, 0, 0)`, so the view distance stays the 0xA000 default (40,960 units, 20 tiles of 0x800) and the ambience is the one `Scenery_Begin` @0x800544E4 picks; `Scenery_Begin`'s fifth argument (stored at `D_8008AC78`, read by nothing) is the constant 0. In RAM (two runs): `Place_Load` got (0, 0, 0) from ra 0x8003E1E0 at every load, the link to stage 3 included.
+- File switch: `g_sceneSettings` @0x80066828 is (0x13, 0, 1, 1, 1, 1); word +4 is `SceneSettings.useCdSearch`, passed by `Scene_RunDream` @0x80026698 to `DreamRunner_New`, and `DreamRunner_Init` @0x80049684 calls `File_EnableWait(useCdSearch == 0, 1, 1)` @0x80026F34. With 0 (shipped), loads are queued and found through the disc's path table; non-zero, each file would be loaded at once by path through `CdSearchFile`. Value 0 in RAM. Word +0x14 (1) goes through `Scene_Init` @0x80025FDC to DreamSys slot 0x228 (`DreamSys_SwapUnused924`, a swap of DreamSys +0x924); nothing reads +0x924 afterwards (it stays 1 from the title on), so what this sixth switch did is unknown.
+- Place overrides: `Place_Load` @0x80052F10 is the place screen's slot 0x4C `begin`, and `Screen_Run` calls it as `begin(screen, 0, 0, 0)`, so the view distance stays the 0xA000 default (40,960 units, 20 tiles of 0x800) and the ambience is the one `Scenery_Begin` @0x800544E4 picks; `Scenery_Begin`'s fifth argument (stored at `g_sceneryUnusedAC78`, read by nothing) is the constant 0. In RAM (two runs): `Place_Load` got (0, 0, 0) from ra 0x8003E1E0 at every load, the link to stage 3 included.
 - Videos: `Movie_Open` @0x800457C0 (movie, path, frameCount, repeat, loops) takes its length from `Cine_GetVideoFrames` @0x800493C8 (`g_videoTable` @0x80086170), and `Movie_Update` @0x80045948 hands it to the stream's start. The restart `Movie_Start` @0x800458B8 installs `Movie_OnStreamCallback` (which sets `startRequest` to -1, the path that counts the loops) through `Stream_SetCallback` @0x800478F8, an empty function, then clears `streamStarted` and rewinds; `Movie_Update` only works while one of the two is set, so a restarted video would stop decoding. The video screen always opens its movie with repeat 0. In RAM: `ETC\ASMK.STR` opened at vsync 1,498 with 90 frames, `ETC\OPENINGG.STR` at 2,122 with 1,046; `Movie_Start`, `Movie_OnStreamCallback` and `Stream_SetCallback` never ran.
 - Fades and swaps: `Fade_Step` @0x8003FF44 changes the colour only while `holdMode` (Fade +0x7C, the fourth argument of `Fade_Begin` @0x80040154) is not 9; every caller (place.c, entity.c, screen.c) passes 0. `View_Present` @0x8003F04C swaps the buffers twice when `extraSwap` (View +0xB4) is set; Place calls `View_SetExtraSwap` @0x8003F23C with 0 only. In RAM (boot to the first dream, vsync 7,000): `Fade_Begin` 6 calls, fourth argument always 0; `View_SetExtraSwap` 3 calls, always 0.
 - Fog: `Render_SortModel` @0x80018464 reads each object's GsDOBJ2 attribute, bits 3-4 (`g_renderObjLightMode`) and bit 5 (`g_renderUseLightMode`), and applies depth cue (CLUT shift 9) when bits 3-4 are non-zero, or when bit 5 is set and the view's light mode `GsLIGHT_MODE` is on. In RAM (same run, 165,529 models sorted): bit 5 never set; in the dream (light mode 1), 144,677 sorts with bits 3-4 at 1 and 20,723 at 0, drawn without depth cue. The capture at 6,900 was too dark to judge.

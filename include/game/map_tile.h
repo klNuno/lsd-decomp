@@ -30,7 +30,7 @@ typedef struct MapTile {
     u8 pad_1C[0x20 - 0x1C];
     ModelObject *model;     /* 0x20 SceneNode.model: its TMD object entry goes to GsLinkObject4 */
     u8 pad_24[0x34 - 0x24];
-    s16 unk34;
+    s16 unused34;
     u16 flags;              /* 0x36 bit 0x80: told through slot 0x38 by MapTile_Tell */
     struct MapTile *next;   /* 0x38 more tiles on the same square (from index 400 of the slot's array) */
 } MapTile;

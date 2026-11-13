@@ -27,7 +27,7 @@ typedef struct VideoScreen {
     s32 movieRepeat;        /* 0xC4 Movie +0x54, 0 */
     s32 movieLoops;         /* 0xC8 Movie +0x58, -1 */
     s32 skippable;          /* 0xCC CIRCLE ends the video with result 2; 1 by default */
-    s32 unkD0;              /* 0xD0 0, not read in this unit */
+    s32 unusedD0;              /* 0xD0 0, not read in this unit */
     s32 closeAtOnce;              /* 0xD4 1: close stops the movie at once instead of fading out */
     s32 closing;            /* 0xD8 */
 } VideoScreen;

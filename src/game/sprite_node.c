@@ -55,7 +55,7 @@ void SpriteNode_SetImage(SpriteNode *node, Tim *image, s32 blendRate, SpriteRect
     node->tim = &image->image;
     node->rect = *rect;
     SpriteNode_FillSprite(&node->sprite, blendRate, rect, node->tim);
-    node->unk58 = 0;
+    node->altScaleOn = 0;
 }
 
 /* Fills the sprite for the rect of the TIM: centered pivot, white, scale 1, no rotation. */

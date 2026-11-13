@@ -39,7 +39,7 @@ typedef struct SpriteNode {
     u8 pad_10[0x48 - 0x10]; /* the other SceneNode fields */
     TimImage *tim;          /* 0x48 the GsIMAGE inside the image object (Tim.image) */
     SpriteRect rect;        /* 0x4C */
-    s32 unk58;              /* 0x58 0 */
+    s32 altScaleOn;              /* 0x58 0 */
     u8 pad_5C[0x64 - 0x5C];
     Sprite sprite;          /* 0x64 */
     u8 pad_88[0xA0 - 0x88];

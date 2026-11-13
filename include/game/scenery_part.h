@@ -37,13 +37,13 @@ typedef struct SceneryPartVtbl {
 typedef struct SceneryPart {
     SceneryPartVtbl *vtbl;
     u8 pad_04[0x58 - 0x04];
-    void *unk58;          /* 0x58 SpriteNode.unk58: slot 0x48 scales +0x5C and +0x60 while set, else the sprite's scale */
-    s32 unk5C;
-    s32 unk60;
+    void *altScaleOn;          /* 0x58 SpriteNode.altScaleOn, always 0: slot 0x48 scales +0x5C and +0x60 while set, else the sprite's scale */
+    s32 altScaleX;
+    s32 altScaleY;
     Sprite sprite;        /* 0x64 SpriteNode.sprite: cx, cy from g_sceneryPartCluts; rotate a random angle for kind 3 */
     u8 pad_88[0xA0 - 0x88];
     s32 index;            /* 0xA0 */
-    s32 unkA4;
+    s32 unusedA4;
 } SceneryPart;
 
 /* Functions of src/game/scenery_part.c that other files call or reference (docs/naming.md, Prototypes) */

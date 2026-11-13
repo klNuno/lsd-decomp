@@ -15,7 +15,7 @@ typedef struct Stream Stream;
 typedef struct StreamVtbl {
     s32 unk_00;             /* 0x40 */
     void *(*delete_)();     /* 0x04 Object_Delete */
-    void (*init)();         /* 0x08 Stream_Init (self, speedMode, fps, unk3C) */
+    void (*init)();         /* 0x08 Stream_Init (self, speedMode, fps, unused3C) */
     void (*destroy)();      /* 0x0C Stream_Destroy */
     u8 pad_10[0x40 - 0x10]; /* Object methods, then 0 */
     void (*setRing)();      /* 0x40 Stream_SetRing (self, buffer, size) */
@@ -48,7 +48,7 @@ struct Stream {
     s32 muted;              /* 0x30 */
     s32 speedMode;          /* 0x34 below 4: double speed (CdRead2 mode 0x1C0, 300 in frameBytes), else 0x140 and 150 */
     u32 frameBytes;         /* 0x38 file bytes per frame */
-    s32 unk3C;
+    s32 unused3C;
     s32 endFrame;           /* 0x40 frame count: file size / frameBytes, or slot 0x50's end frame */
     void *callbackArg;      /* 0x44 */
     void (*callback)(void *); /* 0x48 run for each frame and at the end; 0 from init */
@@ -59,6 +59,6 @@ struct Stream {
 };
 
 /* Functions of src/game/stream.c that other files call or reference (docs/naming.md, Prototypes) */
-Stream *Stream_New(s32 speedMode, s32 fps, s32 unk3C);
+Stream *Stream_New(s32 speedMode, s32 fps, s32 unused3C);
 
 #endif

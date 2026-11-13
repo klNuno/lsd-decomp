@@ -158,8 +158,8 @@ void Display_CountFrame(void) {
     Display *display;
 
     display = Display_GetCurrent();
-    if (++display->frameCount >= display->vsyncMode && display->unk0C == 0) {
-        display->unk0C = 1;
+    if (++display->frameCount >= display->vsyncMode && display->frameCountReached == 0) {
+        display->frameCountReached = 1;
         display->frameCount = 0;
     }
 }

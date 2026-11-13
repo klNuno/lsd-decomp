@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "commit": "c28230c",
- "tracked_tree_dirty": false,
+ "commit": "34aaa74",
+ "tracked_tree_dirty": true,
  "exe_sha1": "76322eeade5ebb22dca57fdeac7d68c30f06308d",
  "metric": "Code bytes of each function (.text of the link map). Every game function is matching C; the level says how much of its body still carries names we did not choose.",
  "totals": {
@@ -10,33 +10,33 @@
   "game_bytes_in_c": 208352,
   "levels": {
    "address": {
-    "functions": 13,
-    "bytes": 132
+    "functions": 0,
+    "bytes": 0
    },
    "named": {
-    "functions": 30,
-    "bytes": 8892
+    "functions": 0,
+    "bytes": 0
    },
    "read": {
-    "functions": 1404,
-    "bytes": 199328
+    "functions": 1447,
+    "bytes": 208352
    }
   },
   "unknowns": {
-   "unk_fields": 44,
-   "m2c_names": 5,
+   "unk_fields": 0,
+   "m2c_names": 0,
    "unk_types": 0,
-   "d_globals": 1
+   "d_globals": 0
   },
   "functions_in_findings": 281,
   "name_levels": {
    "func": {
-    "code": 1325,
-    "guess": 15,
+    "code": 1336,
+    "guess": 17,
     "game": 94
    },
    "global": {
-    "code": 419,
+    "code": 420,
     "guess": 8,
     "game": 28
    },
@@ -46,8 +46,8 @@
     "guess": 5
    },
    "field": {
-    "code": 1889,
-    "guess": 34,
+    "code": 1927,
+    "guess": 38,
     "game": 66
    }
   },
@@ -804,11 +804,11 @@
      "name": "Heap_Init",
      "address": "0x80017AC8",
      "bytes": 108,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -837,15 +837,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_80017EA8",
+     "name": "Heap_Unused17EA8",
      "address": "0x80017EA8",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "Object_Delete",
@@ -1123,11 +1124,11 @@
      "name": "Render_SortModel",
      "address": "0x80018464",
      "bytes": 3816,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -1631,11 +1632,11 @@
      "name": "SceneNode_Destroy",
      "address": "0x8001CBA4",
      "bytes": 164,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -2713,11 +2714,11 @@
      "name": "Display_CountFrame",
      "address": "0x80020AF4",
      "bytes": 88,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -4035,11 +4036,11 @@
      "name": "Scene_Init",
      "address": "0x80025FDC",
      "bytes": 200,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -4152,15 +4153,16 @@
      "name_level": "game"
     },
     {
-     "name": "func_80026690",
+     "name": "Scene_OnTitle1",
      "address": "0x80026690",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": true
+     "level": "read",
+     "in_findings": true,
+     "name_level": "code"
     },
     {
      "name": "Scene_RunDream",
@@ -4330,11 +4332,11 @@
      "name": "File_MakeSource",
      "address": "0x80026CE8",
      "bytes": 20,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -4354,11 +4356,11 @@
      "name": "File_CopyIoSlots",
      "address": "0x80026D88",
      "bytes": 132,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -5081,15 +5083,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_80028918",
+     "name": "File_SyncEmptySlot40",
      "address": "0x80028918",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "guess"
     },
     {
      "name": "File_SyncOpen",
@@ -5140,15 +5143,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_80028A7C",
+     "name": "File_SyncEmptySlot50",
      "address": "0x80028A7C",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "guess"
     },
     {
      "name": "File_SyncRead",
@@ -5163,15 +5167,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_80028B64",
+     "name": "File_Unused28B64",
      "address": "0x80028B64",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "File_GetVSyncMode",
@@ -5565,11 +5570,11 @@
      "name": "MapModels_NextModel",
      "address": "0x8002C278",
      "bytes": 304,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -5586,15 +5591,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_8002C3B8",
+     "name": "MapModels_Unused2C3B8",
      "address": "0x8002C3B8",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     }
    ],
    "subsystem": "MapModels"
@@ -7675,15 +7681,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_8003B108",
+     "name": "App_EmptySlot48",
      "address": "0x8003B108",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "App_Run",
@@ -7771,11 +7778,11 @@
      "name": "Tim_Init",
      "address": "0x8003B3FC",
      "bytes": 116,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -7888,15 +7895,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_8003B5E4",
+     "name": "Tim_SetUnused48",
      "address": "0x8003B5E4",
      "bytes": 12,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "Tim_GetInfo",
@@ -7996,11 +8004,11 @@
      "name": "VideoScreen_Reset",
      "address": "0x8003BA38",
      "bytes": 32,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -8173,15 +8181,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_8003BE74",
+     "name": "VideoScreen_SetUnusedD0",
      "address": "0x8003BE74",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "VideoScreen_SetCloseAtOnce",
@@ -8483,11 +8492,11 @@
      "name": "MenuScreen_SetColors",
      "address": "0x8003CB68",
      "bytes": 80,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -9729,11 +9738,11 @@
      "name": "Box_Reset",
      "address": "0x800405D0",
      "bytes": 148,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -9837,11 +9846,11 @@
      "name": "Box_ShowAbsolute",
      "address": "0x80040854",
      "bytes": 76,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -10365,11 +10374,11 @@
      "name": "SpriteNode_SetImage",
      "address": "0x8004202C",
      "bytes": 96,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -11769,11 +11778,11 @@
      "name": "BgCells_Init",
      "address": "0x80044F90",
      "bytes": 124,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -11781,11 +11790,11 @@
      "name": "BgCells_Destroy",
      "address": "0x8004500C",
      "bytes": 84,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -12347,11 +12356,11 @@
      "name": "Stream_Init",
      "address": "0x80046F88",
      "bytes": 236,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -13653,11 +13662,11 @@
      "name": "StageMap_Init",
      "address": "0x8004A534",
      "bytes": 652,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -13689,11 +13698,11 @@
      "name": "StageMap_Reset",
      "address": "0x8004AA10",
      "bytes": 92,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -14262,15 +14271,16 @@
      "name_level": "code"
     },
     {
-     "name": "func_8004CFA8",
+     "name": "StageMap_GetUnused1CC",
      "address": "0x8004CFA8",
      "bytes": 8,
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "StageMap_SetBounds",
@@ -14520,11 +14530,11 @@
      "name": "MapTile_Init",
      "address": "0x8004D3DC",
      "bytes": 80,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -16458,11 +16468,11 @@
      "name": "Place_Load",
      "address": "0x80052F10",
      "bytes": 548,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "game"
     },
@@ -16853,8 +16863,8 @@
      "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
-     "d_globals": 1,
-     "level": "named",
+     "d_globals": 0,
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -18038,11 +18048,11 @@
      "name": "SceneryPart_Init",
      "address": "0x80057D10",
      "bytes": 172,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -18062,11 +18072,11 @@
      "name": "SceneryPart_SetScale",
      "address": "0x80057DF4",
      "bytes": 324,
-     "unk_fields": 3,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -18318,11 +18328,11 @@
      "name": "DreamSys_Reset",
      "address": "0x800588EC",
      "bytes": 124,
-     "unk_fields": 2,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -18462,11 +18472,11 @@
      "name": "DreamSys_StartPlace",
      "address": "0x800591B4",
      "bytes": 348,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": false,
      "name_level": "code"
     },
@@ -18603,26 +18613,28 @@
      "name_level": "code"
     },
     {
-     "name": "func_80059590",
+     "name": "DreamSys_ClearUnused7C",
      "address": "0x80059590",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
-     "name": "func_80059598",
+     "name": "DreamSys_ClearUnused78",
      "address": "0x80059598",
      "bytes": 8,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": false
+     "level": "read",
+     "in_findings": false,
+     "name_level": "code"
     },
     {
      "name": "DreamSys_EmptySlot12C",
@@ -18928,11 +18940,11 @@
      "name": "DreamSys_SetLinkFlags",
      "address": "0x8005A1B0",
      "bytes": 60,
-     "unk_fields": 3,
-     "m2c_names": 3,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -18964,11 +18976,11 @@
      "name": "DreamSys_InitNewGame",
      "address": "0x8005A258",
      "bytes": 120,
-     "unk_fields": 4,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "game"
     },
@@ -19432,11 +19444,11 @@
      "name": "DreamSys_AddFlashback",
      "address": "0x8005B74C",
      "bytes": 208,
-     "unk_fields": 1,
-     "m2c_names": 1,
+     "unk_fields": 0,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "code"
     },
@@ -19445,10 +19457,10 @@
      "address": "0x8005B81C",
      "bytes": 224,
      "unk_fields": 0,
-     "m2c_names": 1,
+     "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "named",
+     "level": "read",
      "in_findings": true,
      "name_level": "game"
     },
@@ -19489,15 +19501,16 @@
      "name_level": "game"
     },
     {
-     "name": "func_8005BA20",
+     "name": "DreamSys_SwapUnused924",
      "address": "0x8005BA20",
      "bytes": 32,
-     "unk_fields": 1,
+     "unk_fields": 0,
      "m2c_names": 0,
      "unk_types": 0,
      "d_globals": 0,
-     "level": "address",
-     "in_findings": true
+     "level": "read",
+     "in_findings": true,
+     "name_level": "code"
     },
     {
      "name": "DreamSys_GetVtbl",

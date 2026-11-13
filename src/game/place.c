@@ -122,7 +122,7 @@ void Place_Detach(Place *place) {
  * texture-set loader (Stage_PickTexturePath, Tix_Create), starts the scenery
  * (Scenery_Begin, which gives the ambience) and sets the state to 5.
  */
-void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambienceGiven) {
+void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 unused4C) {
     View *view;
     s32 mode;
 
@@ -137,7 +137,7 @@ void Place_Load(Place *place, s32 viewDistance, Ambience *ambience, s32 ambience
     if (ambience != 0) {
         place->ambience = ambience;
     }
-    place->unk4C = ambienceGiven;
+    place->unused4C = unused4C;
     if (place->stage != 0) {
         place->linkPeriod = 0x10;
         place->moveSpeed = 3;

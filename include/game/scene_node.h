@@ -42,7 +42,7 @@ typedef struct SceneNodeVtbl {
     void (*detach)();         /* 0x50 SceneNode_Detach */
     void (*detachChildren)(); /* 0x54 SceneNode_DetachChildren */
     void (*nextChild)();      /* 0x58 SceneNode_NextChild (node, &child, &iter) */
-    void (*unk5C)();          /* 0x5C SceneNode_EmptySlot5C, empty */
+    void (*emptySlot5C)();          /* 0x5C SceneNode_EmptySlot5C, empty */
     s32 (*setVisible)();      /* 0x60 SceneNode_SetVisible, GsDOFF */
     void (*setSemiTrans)();   /* 0x64 SceneNode_SetSemiTrans, GsALON */
     void (*setBlendRate)();   /* 0x68 SceneNode_SetBlendRate, GsAZERO to GsATHREE */

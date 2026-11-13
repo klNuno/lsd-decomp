@@ -29,7 +29,7 @@ void BgCells_Init(BgCells *bgCells, s32 skipBuild) {
 
     File_GetBackendVtbl()->init(bgCells);
     bgCells->vtbl = BgCells_GetVtbl();
-    bgCells->unk_34 = 0;
+    bgCells->unusedBuffer34 = 0;
     bgCells->built = 0;
     if (skipBuild == 0) {
         bgCells->fullScreen = 1;
@@ -39,7 +39,7 @@ void BgCells_Init(BgCells *bgCells, s32 skipBuild) {
 }
 
 void BgCells_Destroy(BgCells *bgCells) {
-    Heap_Free(bgCells->unk_34);
+    Heap_Free(bgCells->unusedBuffer34);
     Heap_Free(bgCells->cells);
     File_GetBackendVtbl()->destroy(bgCells);
 }

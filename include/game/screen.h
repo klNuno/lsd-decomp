@@ -130,7 +130,7 @@ typedef struct ScreenVtbl {
     void (*setMovieRepeat)();   /* 0x124 */
     void (*setMovieLoops)();    /* 0x128 */
     void (*setSkippable)();     /* 0x12C */
-    void (*setUnkD0)();         /* 0x130 */
+    void (*setUnusedD0)();         /* 0x130 */
     void (*setCloseAtOnce)();         /* 0x134 */
 } ScreenVtbl;
 

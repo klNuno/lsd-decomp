@@ -37,7 +37,7 @@ another cut (each guess says which).
 | *psyq/80027130* | Sony: LIBC2 | | |
 | [`file_cd.c`](../src/game/file_cd.c) | `File_Create..File_GetVSyncMode` @0x800271D8 | proven | psyq/80027130 before, psyq/80028B78 after; rodata strings of File_ResolveEntries/File_SyncOpen sit before the jtbls of File_ServiceQueue (one cc1 output) and gp g_fileEnabled bind it |
 | *psyq/80028B78* | Sony: LIBC2,LIBCD | | |
-| [`map_models.c`](../src/game/map_models.c) | `MapModels_New..func_8002C3B8` @0x8002C12C | likely | start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, func_8002C3B8 (empty slot) kept with it |
+| [`map_models.c`](../src/game/map_models.c) | `MapModels_New..MapModels_Unused2C3B8` @0x8002C12C | likely | start proven (psyq/80028B78 before); class ends with MapModels_GetVtbl, MapModels_Unused2C3B8 (empty slot) kept with it |
 | [`file_null.c`](../src/game/file_null.c) | `File_NullInit..File_NullGetVSyncMode` @0x8002C3C0 | likely | null File backend class, vtable g_fileNullVtbl and gp g_fileNullEnabled/Option between MapModels and Sound data |
 | [`sound_bank.c`](../src/game/sound_bank.c) | `Sound_CreateBank..Sound_GetTickRate` @0x8002C480 | likely | gp/sdata block 25..40 (g_bankCount, g_soundTickRate...); vtable g_soundBankVtbl after g_fileNullVtbl |
 | [`handler_node.c`](../src/game/handler_node.c) | `HandlerNode_Start..HandlerNode_Run` @0x8002CC34 | guess | end proven (psyq/8002CF18 LIBSND after); three functions with no data; could close sound_bank.c |

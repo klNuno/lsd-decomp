@@ -17,7 +17,7 @@ typedef struct AppVtbl {
     s32 unk3C;                /* 0x3C 0 */
     void (*setScreenMode)();  /* 0x40 App_SetScreenMode (app, size, vramMode) */
     void (*start)();          /* 0x44 App_Start (app, display, pad) */
-    void (*unk48)();          /* 0x48 func_8003B108, empty */
+    void (*emptySlot48)();          /* 0x48 App_EmptySlot48, empty */
     void (*run)();            /* 0x4C App_Run, the main loop */
     void (*showLogos)();      /* 0x50 Scene: the logos, called with no argument */
     void (*playOpening)();    /* 0x54 Scene: the opening video */
@@ -39,7 +39,7 @@ typedef struct App {
 
 /* Functions of src/game/app.c that other files call or reference (docs/naming.md, Prototypes) */
 void App_Destroy(void);
-void func_8003B108(void);
+void App_EmptySlot48(void);
 void App_Run(App *app);
 AppVtbl *App_GetVtbl(void);
 

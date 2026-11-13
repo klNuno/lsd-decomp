@@ -12,10 +12,10 @@
 
 extern MapModelsVtbl g_mapModelsVtbl;
 
-/* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through unk_08. */
+/* One cell of the 20 by 20 grid: 0xC bytes, 400 cells, a chain of records through nextOffset. */
 typedef struct GridRecord {
     u8 present;
-    u8 unk_01;
+    u8 unused01;
     u16 objectIndex;
     u8 flags;
     u8 quarterTurns;
@@ -77,7 +77,7 @@ ModelObject *MapModels_NextModel(MapModels *context, MapModelRecord *item, s32 c
             item->pos.z = ((cellIndex / 20) << 0xB) + 0x400;
             item->pos.y = val6 << 0xB;
             item->rotY = record->quarterTurns << 0xA;
-            item->unk_2C = record->unk_01;
+            item->unused2C = record->unused01;
             item->flags = record->flags;
             itemId = record->objectIndex;
             item->objectIndex = itemId;
@@ -92,6 +92,6 @@ MapModelsVtbl *MapModels_GetVtbl(void) {
     return &g_mapModelsVtbl;
 }
 
-static s32 func_8002C3B8(void) {
+static s32 MapModels_Unused2C3B8(void) {
     return 0;
 }

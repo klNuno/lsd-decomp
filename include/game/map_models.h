@@ -23,7 +23,7 @@ typedef struct MapModelRecord {
     u8 pad_18[0x1A - 0x18];
     u16 rotY;                   /* 0x1A yaw, quarter turns << 10, into the tile's rotate[1] */
     u8 pad_1C[0x2C - 0x1C];
-    s16 unk_2C;                 /* 0x2C byte 1 of the grid record */
+    s16 unused2C;                 /* 0x2C byte 1 of the grid record */
     u16 flags;                  /* 0x2E into MapTile.flags */
     s32 extra;                  /* 0x30 placed from tile 400 on instead of on its square */
     s32 chained;                /* 0x34 offset of the next record of the square, 0 at the end */

@@ -37,11 +37,16 @@ gh_asset encounter/objdiff "$OBJDIFF_TAG" objdiff-cli-linux-x86_64
 PCSX_ZIP="PCSX-Redux-$PCSX_REDUX_REV-linux-x86_64.zip"
 if [ ! -f "$T/dl/$PCSX_ZIP" ]; then
   curl -fsSL --retry 3 -o "$T/dl/$PCSX_ZIP.part" "https://distrib.app$PCSX_REDUX_ASSET" \
-    || { rm -f "$T/dl/$PCSX_ZIP.part"; echo "$PCSX_ZIP is gone from distrib.app: put a saved copy in $T/dl/"; exit 1; }
-  mv "$T/dl/$PCSX_ZIP.part" "$T/dl/$PCSX_ZIP"
+    && mv "$T/dl/$PCSX_ZIP.part" "$T/dl/$PCSX_ZIP" \
+    || { rm -f "$T/dl/$PCSX_ZIP.part"; echo "warning: $PCSX_ZIP is gone from distrib.app; the build does not need it, in-game checks do (put a saved copy in $T/dl/ and re-run)"; }
 fi
-if [ $LOCK = 1 ]; then sha256sum "$T"/dl/* > "$T/toolchain.sha256"; fi
-sha256sum -c --quiet "$T/toolchain.sha256"
+if [ $LOCK = 1 ]; then
+  # a lock written without the emulator zip would drop its hash and let any later copy through unchecked
+  [ -f "$T/dl/$PCSX_ZIP" ] || { echo "--lock needs $T/dl/$PCSX_ZIP"; exit 1; }
+  sha256sum "$T"/dl/* > "$T/toolchain.sha256"
+fi
+# --ignore-missing: only PCSX-Redux may be absent here (every other download above stops the script when it fails)
+sha256sum -c --quiet --ignore-missing "$T/toolchain.sha256"
 
 for v in $OLD_GCC_VERSIONS; do
   d="$T/gcc/$v"
@@ -53,7 +58,7 @@ if [ ! -x "$T/bin/dumpsxiso" ]; then
   install -m 755 "$mk/dumpsxiso" "$mk/mkpsxiso" "$T/bin/"
 fi
 install -m 755 "$T/dl/objdiff-cli-linux-x86_64" "$T/bin/objdiff-cli"
-if [ ! -x "$T/src/pcsx-redux/AppRun" ]; then
+if [ ! -x "$T/src/pcsx-redux/AppRun" ] && [ -f "$T/dl/$PCSX_ZIP" ]; then
   # No FUSE in containers: unpack the AppImage instead of mounting it.
   tmp=$(mktemp -d)
   python3 -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])' "$T/dl/$PCSX_ZIP" "$tmp"
@@ -93,6 +98,6 @@ mipsel-linux-gnu-as --version | head -1
 for v in $OLD_GCC_VERSIONS; do printf '%s: ' "$v"; echo 'int f(void){return 0;}' | "$T/gcc/$v/cc1" -quiet -version -o /dev/null 2>&1 | head -1; done
 "$T/bin/objdiff-cli" --version
 "$T/bin/mipsmatch" --version 2>/dev/null || echo "mipsmatch $MIPSMATCH_REV"
-printf 'pcsx-redux: '; "$T/src/pcsx-redux/AppRun" -cli -version | grep -m1 '"version"'
+if [ -x "$T/src/pcsx-redux/AppRun" ]; then printf 'pcsx-redux: '; "$T/src/pcsx-redux/AppRun" -cli -version | grep -m1 '"version"'; else echo "pcsx-redux: not installed (in-game checks only)"; fi
 .venv/bin/python -c 'import importlib.metadata as m; print("splat64", m.version("splat64"), "spimdisasm", m.version("spimdisasm"))'
 echo "setup ok"
