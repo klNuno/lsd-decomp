@@ -51,7 +51,7 @@ The pick is `rand() % n` among the first n sets. `Tix_Create` reads the chosen f
 
 ## Special days
 
-`DreamSys_StartDay` calls `Day_FindSpecial(cinematic, day number)` before choosing a start ([dream system](dream-system.md#a-dream-from-start-to-end)). It searches the 42 s16 day numbers of `g_specialDays`; on the first match at index i it writes category `i % 12` and variant `rand() % 6` into DreamSys's `cinematic` and returns `g_specialDayPoint`, the (0, 0) point both mood accumulators start from. The day then has no dream: the runner ends it at once with result 2, and `Scene_PlayCinematic` shows the cinematic.
+`DreamSys_StartDay` calls `Day_FindSpecial(cinematic, day number)` before choosing a start ([dream system](dream-system.md#a-dream-from-start-to-end)). It searches the 42 s16 day numbers of `g_specialDays` (41 distinct: 126 is entries 5 and 30, so entry 30 is never reached); on the first match at index i it writes category `i % 12` and variant `rand() % 6` into DreamSys's `cinematic` and returns `g_specialDayPoint`, the (0, 0) point both mood accumulators start from. The day then has no dream: the runner ends it at once with result 2, and `Scene_PlayCinematic` shows the cinematic.
 
 `Cine_GetPath(videoId, {category, variant})` resolves it in the path table ([files and CD](files-and-cd.md)):
 

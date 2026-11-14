@@ -33,7 +33,7 @@ The fields that matter:
 | 0x178 | `save` | the 0x700-byte SaveBlock |
 | 0x88C | `savedDay` | the day when the dream started |
 
-The SaveBlock (`DreamSys_GetSaveBlock` returns DreamSys + 0x178 and the size 0x700) holds the magic `g_saveMagic`, year, day (0 to 364), the three scores, 365 graph points, the flashback count and 10 flashbacks, the reel flag, the 30 navigation flags, the dynamic link count and the SHAKE option. How the card writes it: [menus and save](menus-and-save.md). Player view: [everything the game remembers fits in one block](../discoveries.md#-everything-the-game-remembers-fits-in-one-block).
+The SaveBlock (`DreamSys_GetSaveBlock` returns DreamSys + 0x178 and the size 0x700) holds the magic `g_saveMagic`, year, day (0 to 364), the three scores, 365 graph points, the flashback count and 10 flashbacks, the reel flag, the 30 navigation flags, the dynamic link count and the SHAKE option. The rest is spare room: `unused460` (block +0x460), `unused504`, `unused508` and the 500 bytes of `unused50C` are cleared by `DreamSys_InitNewGame` @0x8005A258 and read by no instruction of the game, and block bytes +0x461 to +0x466 and +0x48C to +0x4FF are touched by nothing; 0x50C + 500 ends the block at 0x700, 14 card frames of 128 bytes. How the card writes it: [menus and save](menus-and-save.md). Player view: [everything the game remembers fits in one block](../discoveries.md#-everything-the-game-remembers-fits-in-one-block).
 
 ## How messages reach it
 

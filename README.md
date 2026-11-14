@@ -18,7 +18,7 @@ Every function of the game is C that rebuilds the retail executable byte for byt
 - **68 source files** laid out the way the original programmers most likely had them, in link order between Sony's objects ([docs/layout.md](docs/layout.md) gives the evidence for each boundary), with one header per file in `include/game/`.
 - **Shiftable**: every pointer into the executable is a symbol, so code can be added before `main` and the game still runs. `tools/rawscan.py` relinks the build at another address and finds 0 fixed addresses, and a build with 0x100 extra bytes before `main` played the same dream as the retail one in an emulator.
 - **Every function read**: no function body uses a placeholder name any more (a few struct slots that no code touches keep theirs). What the game never uses is named as such (`unused4C`, `App_EmptySlot48`), with the proof that nothing reads or calls it.
-- **56 findings and 4 community myths checked** in [docs/discoveries.md](docs/discoveries.md), most of them seen in an emulator.
+- **56 findings and 4 community myths checked** in [docs/discoveries.md](docs/discoveries.md): 35 of the 60 entries checked in an emulator, 12 partly, 13 read in the code only.
 
 ## Progress
 
@@ -42,7 +42,8 @@ The bar under the map is the whole executable. The other 40 % of its code is Son
 | Page | What it holds |
 | --- | --- |
 | [docs/discoveries.md](docs/discoveries.md) | The findings, for players first, with the proof folded under each one |
-| [docs/mysteries.md](docs/mysteries.md) | The 15 open questions and how far each one is answered |
+| [docs/mysteries.md](docs/mysteries.md) | The 15 questions the project set out to answer: 13 answered, 2 still partly open |
+| [docs/design-intent.md](docs/design-intent.md) | What the code says about what the creators meant, set against their own words, with how sure each reading is |
 | [docs/engine/](docs/engine/README.md) | How each system works, for a programmer opening the code: boot and objects, files and the CD, rendering, sound and video, menus and saves, the dream system, links, stages, characters, randomness |
 | [docs/naming.md](docs/naming.md) | Naming conventions and the glossary |
 | [docs/layout.md](docs/layout.md) | The 68 source files in link order, with the evidence for each boundary |

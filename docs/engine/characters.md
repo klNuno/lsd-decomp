@@ -43,7 +43,7 @@ Dumps of these tables: `tools/research/spawns.py`.
 | 21 | odd day |
 | others below 10 | always |
 
-The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). A chunk loads when it enters the 7 map slots around the dreamer (`StageMap_LoadAround`: the dreamer's square and its 6 neighbours, odd rows shifted half a square left), which `StageMap_Follow` requests in the same tick as map message 5, the one that logs the new square's mood. So a square's characters are made with the colour of the step onto one of its neighbours, and the square's own mood is logged only later, when the dreamer steps on it; only the start square is logged before its characters. A move to a square that is not loaded is never seen by `StageMap_Follow`, so it logs and loads nothing. Checked in the emulator (hunt 10), and used to reach the Natural World's cyan lions with no colour forced ([the lions](../discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)). `Sym_EnableExtraListForType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
+The colour is the running day point at the moment the chunk loads ([moods](dream-system.md#moods-and-the-graph)). A chunk loads when it enters the 7 map slots around the dreamer (`StageMap_LoadAround`: the dreamer's square and its 6 neighbours, odd rows shifted half a square left), which `StageMap_Follow` requests in the same tick as map message 5, the one that logs the new square's mood. So a square's characters are made with the colour of the step onto one of its neighbours, and the square's own mood is logged only later, when the dreamer steps on it; only the start square is logged before its characters. A move to a square that is not loaded is never seen by `StageMap_Follow`, so it logs and loads nothing. Checked in the emulator (hunt 10: the findings number their emulator search sessions as hunts, see [discoveries](../discoveries.md)), and used to reach the Natural World's cyan lions with no colour forced ([the lions](../discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)). `Sym_EnableExtraListForType` also switches on the extra link list when a group of type 11, 56, 78 or 93 passes ([links](links.md#links-checked-on-each-step)). Player view: [the hidden rules that decide which characters appear](../discoveries.md#-the-hidden-rules-that-decide-which-characters-appear).
 
 ## The entity class
 
@@ -128,7 +128,9 @@ Handlers whose first reading was wrong, rechecked in the emulator (hunt 10):
 | `Behavior_YellowDayBeast` | 109 | sets the scale to `g_scaleHalf` and `moveZ(-10)` |
 | `Behavior_RedDayPenguin` | 114 | nothing 1 tick in 3, else rotates by `g_rotY9` (2 times in 3) or `g_rotYNeg9`: it spins on the spot |
 | `Behavior_BridgeGeisha` | 110 | sets the scale to `g_scaleTwoFifths` and stops the animation; within 0x800 of the dreamer (`Entity_GroundDistance`, \|dx\| + \|dz\|) state 10: `g_rotY4` for 45 ticks (a half-turn), back to state 0 from tick 501 |
-| `Behavior_MinotaurRickshaw` | 21 | two sounds per half animation loop, `moveZ(-0x1E, notify 1)` | Player view of many of them: [Rare sights](../discoveries.md#rare-sights), [characters that answer to CIRCLE](../discoveries.md#-characters-that-answer-to-circle).
+| `Behavior_MinotaurRickshaw` | 21 | two sounds per half animation loop, `moveZ(-0x1E, notify 1)` |
+
+Player view of many of them: [Rare sights](../discoveries.md#rare-sights), [characters that answer to CIRCLE](../discoveries.md#-characters-that-answer-to-circle).
 
 ## The Grey Man
 

@@ -1,6 +1,6 @@
 # Naming guide
 
-How the systems behind these names work is in [the engine docs](engine/README.md).
+How names are given in this project: the default names a function or field keeps until it is understood, the form of our own names, the evidence a name needs, and the glossary of the words used in the code and the docs. How the systems behind these names work is in [the engine docs](engine/README.md).
 
 A wrong name costs more than no name. Rename only with evidence, and write the evidence down.
 

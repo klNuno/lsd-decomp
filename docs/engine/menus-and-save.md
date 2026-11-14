@@ -139,7 +139,7 @@ same pattern over a list of titles, notifying 2 with the choice or 3. `Card_OnKe
 What the card writes is `DreamSys_GetSaveBlock`: 0x700 bytes at `DreamSys` +0x178
 ([dream_sys.h](../../include/game/dream_sys.h) `SaveBlock`): a magic word, the year and day,
 three scores, 365 graph points, the flashback memories, the reel flag, the 30 navigation flags,
-the dynamic link count and the SHAKE choice. A load reads straight into it; the menu then rebuilds
-its title from `g_cardTitle`, which the load also filled from the chosen file. The meaning of each
-field is in [the dream system](dream-system.md) and
+the dynamic link count and the SHAKE choice, plus spare bytes no code uses. A load reads straight
+into it; the menu then rebuilds its title from `g_cardTitle`, which the load also filled from the
+chosen file. The meaning of each field is in [the dream system](dream-system.md) and
 [everything the game remembers](../discoveries.md#-everything-the-game-remembers-fits-in-one-block).
