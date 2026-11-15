@@ -8,7 +8,7 @@ Code: [`src/game/sym.c`](../../src/game/sym.c) (spawning), [`src/game/entity.c`]
 
 The place spawns the characters of a chunk when the map tells it the chunk's entity part has arrived (map message 7, [stages and places](stages-and-places.md#the-stagemap)):
 
-1. `Place_SpawnCell` takes the map's current slot and its chunk key and calls `Sym_SpawnOrSpy(entities, chunkKey, day number)`. When nothing spawns, it frees the chunk's entity part.
+1. `Place_SpawnCell` takes the map's current slot and its chunk key and calls `Sym_SpawnOrSpy(entities, chunkKey, day number)`, then stores the result in the slot's `spawned` without deleting what was there. When nothing spawns, it frees the chunk's entity part. If message 7 comes twice for one slot with no message 6 between, the first group is lost until power-off: this happens when the slot's old entity part finishes loading just before the slot is given a new chunk ([the natural leak](../discoveries.md#-glitch-textures-a-texture-set-that-failed-to-load)).
 2. `Sym_FindSlot` looks for the chunk key in `g_spawnSlots[stage]`. One exception, `Sym_PickSlotVariant`: in stage 4, slot 16 is replaced by the slot 5 entries further when the day's colour is 4 (red).
 3. `Sym_CheckDayParity`: a slot's day flag of 0 passes every day; otherwise the slot is skipped when `(day number % 2) + 1` equals it (flag 1 passes on odd day numbers, flag 2 on even ones).
 4. A skipped slot may get the Grey Man instead ([below](#the-grey-man)).

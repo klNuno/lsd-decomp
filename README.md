@@ -32,7 +32,7 @@ The bar under the map is the whole executable. The other 40 % of its code is Son
 
 - [The secret video reel](docs/discoveries.md#-the-secret-video-reel-four-graph-points-and-11-minutes-of-film): a face drawn on the graph makes it blink green, then 20 special-day videos play back to back for 11 minutes 13 seconds.
 - [The Grey Man flips your graph and wipes your memories](docs/discoveries.md#-the-grey-man-flips-your-graph-and-wipes-your-memories): his mood sits past the edge of the graph, so touching him throws your day to the opposite corner.
-- [SELECT + TRIANGLE in the pause erases your game](docs/discoveries.md#-select--triangle-in-the-pause-erases-your-game): the game's only hidden button input, with no warning.
+- [SELECT + TRIANGLE in the pause erases your game](docs/discoveries.md#-select--triangle-in-the-pause-erases-your-game): the manual calls it a reset of the day and the graph; it wipes the whole game, with no confirmation.
 - [The first dream of a new year starts from the wrong data](docs/discoveries.md#-the-first-dream-of-a-new-year-starts-from-the-wrong-data): a bug picks the start place from part of a score instead of day 365.
 - [A red day fills the Maze of Questions with rainbow penguins](docs/discoveries.md#-a-red-day-fills-the-maze-of-questions-with-rainbow-penguins): one penguin becomes nine, and 1 in 5 lone penguins is a giant.
 - [A Clockwork Machines track that can never play](docs/discoveries.md#-a-clockwork-machines-track-that-can-never-play): the dice can pick it, but the game plays the next track instead.
@@ -42,7 +42,7 @@ The bar under the map is the whole executable. The other 40 % of its code is Son
 | Page | What it holds |
 | --- | --- |
 | [docs/discoveries.md](docs/discoveries.md) | The findings, for players first, with the proof folded under each one |
-| [docs/mysteries.md](docs/mysteries.md) | The 15 questions the project set out to answer: 13 answered, 2 still partly open |
+| [docs/mysteries.md](docs/mysteries.md) | The 15 questions the project set out to answer: 14 answered, 1 still partly open (question 12) |
 | [docs/design-intent.md](docs/design-intent.md) | What the code says about what the creators meant, set against their own words, with how sure each reading is |
 | [docs/engine/](docs/engine/README.md) | How each system works, for a programmer opening the code: boot and objects, files and the CD, rendering, sound and video, menus and saves, the dream system, links, stages, characters, randomness |
 | [docs/naming.md](docs/naming.md) | Naming conventions and the glossary |

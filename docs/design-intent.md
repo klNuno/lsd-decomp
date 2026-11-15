@@ -32,18 +32,20 @@ The creators' words used on this page come from pages we opened ourselves:
 | Vice 2015 | Interview of Osamu Sato | https://www.vice.com/en_us/article/d734ja/the-most-elusive-video-game-creator |
 | Gata | Interview of Osamu Sato, Gata Magazine | https://gatamagazine.com/articles/art/lsd-is-groovy-an-interview-with-osamu-sato |
 | 1998 site | The developers' own page for the game, archived in February 1998 (Japanese) | https://web.archive.org/web/19980221074326/http://compu-lsd.com/lsd/index.html |
-| Manual | The six manual cards, transcribed in Japanese by the Osamu Sato Wiki | https://compu-lsd.com/w/LSD_Manual_Cards/Transcription |
+| Manual | The game comes with eight square cards. Cards 1 to 6 carry the manual on their back, transcribed in Japanese by the Osamu Sato Wiki; card 7 carries the credits and card 8 an advert for the soundtrack and the book (the wiki does not transcribe them). We read the cards on the wiki's scans and checked every passage quoted here against them | https://compu-lsd.com/w/LSD_Manual_Cards/Transcription and https://compu-lsd.com/w/LSD_Manual_Cards |
+| G8 1999 | The page of Creation Gallery G8 (Tokyo) for its 1999 exhibition "LSD: Lovely Sweet Dream", which credits the show's planning to Osamu Sato and OSD (Japanese) | https://scrapbox.io/recruit-art-center/LSD%E2%94%80%E3%83%A9%E3%83%96%E3%83%AA%E3%83%BC%E3%83%BB%E3%82%B9%E3%82%A4%E3%83%BC%E3%83%88%E3%83%BB%E3%83%89%E3%83%AA%E3%83%BC%E3%83%A0 |
+| Sato's site | Osamu Sato's own site: exhibitions, photographs and a biography; nothing on how the game works | https://www.osamusato.net/ |
 | Wiki | Osamu Sato Wiki, pages on the game and on the book "Lovely Sweet Dream" | https://compu-lsd.com/w/LSD:_Dream_Emulator and https://compu-lsd.com/w/Lovely_Sweet_Dream |
 
-The wiki is fan work, so we use it for dates and for what it reports from the developers, not as a creator's voice. Sato's own site (osamusato.net) did not answer when we tried, and we could not read the book "Lovely Sweet Dream" itself.
+The wiki is fan work, so we use it for dates and for what it reports from the developers, not as a creator's voice. Sato's site answers at www.osamusato.net (the bare osamusato.net has no address); its English biography calls the game "the content for PLAY STATION" and says nothing about its rules. The book "Lovely Sweet Dream" (Media Factory, 1998, ISBN 4-88991-655-5, 198 pages) was not read: we did not find an authorised online edition. What we know of it comes from its publisher's blurb, the G8 page and the advert on card 8.
 
 ## The big picture
 
-**The creators said.** The 1998 site describes the game as wandering through "the dream world one person has seen over the past ten years", says the letters stand for "Link", "Speed", "Dream", and names the genre "a strolling-type dream emulator" that should give "a languid feeling no game has had". Sato in 2017: it "isn't really a game either. It's got absolutely zero gameplay to it" and "I wanted to make contemporary art or music" (RBMA 2017). In 2015: "Dreams are irrational without any rules, and you most often don't remember when you wake up in the morning. I wanted to make a piece like that" (Vice 2015). The wiki reports that the dreams come from a diary kept for about ten years by Hiroko Nishikawa, who worked at Sato's company, and that her book "Lovely Sweet Dream" came out the same day as the game.
+**The creators said.** The 1998 site describes the game as wandering through "the dream world one person has seen over the past ten years", says the letters stand for "Link", "Speed", "Dream", and names the genre "a strolling-type dream emulator" that should give "a languid feeling no game has had". Sato in 2017: it "isn't really a game either. It's got absolutely zero gameplay to it" and "I wanted to make contemporary art or music" (RBMA 2017). In 2015: "Dreams are irrational without any rules, and you most often don't remember when you wake up in the morning. I wanted to make a piece like that" (Vice 2015). The wiki reports that the dreams come from a diary kept for about ten years by Hiroko Nishikawa, who worked at Sato's company, and that her book "Lovely Sweet Dream" came out the same day as the game. The game's own credits confirm it: Hiroko Nishikawa is listed for "original dream diary" and for "map design", beside Osamu Sato (concept, planning), Satoshi Ashibe (concept, planning, map design) and Yoshinori Maeda (main program) (Manual, card 7). The gallery that showed the game in 1999 dates the diary from 1 January 1988, over ten years, and calls the result "a game with no goal, as if the leaps of a dream were laid over the chain-like feel of net surfing" (G8 1999).
 
 **The code says.** The program is a set of fixed tables: a mood for every square of every place, a record for each of 130 character types, 49 fixed links, 41 special days, a dream length per place. Many conditions are fixed, alongside random choices for links, music, textures and character behaviour ([the dice of the game](discoveries.md#-the-dice-of-the-game)).
 
-**Our reading.** "Without any rules" describes how the game feels, not how it works. The rules exist, but they are hidden, they depend on things a player does not watch (the day number, the mood so far), and the game never states them. That is a fair way to build a dream: a dream also has causes you cannot see from inside.
+**Our reading.** "Without any rules" describes how the game feels, not how it works. The diarist also drew maps, so the places themselves, not only the text pages, may come from her hand; the credits say she worked on the maps, not which ones. The rules exist, but they are hidden, they depend on things a player does not watch (the day number, the mood so far), and the game never states them. That is a fair way to build a dream: a dream also has causes you cannot see from inside.
 
 **How sure.** High for the facts, medium for the intent.
 
@@ -81,9 +83,9 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 
 **The code says.** A wall is a block with a mark; 5,223 of the 31,068 blocks have it ([blocks and walls](discoveries.md#-the-world-is-built-from-square-blocks-and-only-marked-blocks-are-walls)). When you push into one, the game first looks for a fixed link at that spot. If there is none, a random link fires, to one of the six main places chosen by a die; if the die names the place you are in, you get the next one, so that place comes up 2 times in 6 ([where a random link sends you](discoveries.md#-where-a-random-link-sends-you)). Fixed links never change with the number of visits; a few only open when a certain character has appeared ([fixed links](discoveries.md#-fixed-links-do-not-change-with-visits-but-some-depend-on-who-showed-up)). The fade of a link takes the colour of the day.
 
-**The creators said.** "I wanted to make something that even people who sucked at games could play [...] So if I crashed into the wall I would be launched into the next world [...] I wanted to make something where the player explores a world that keeps transforming like that" (RBMA 2017). The manual: bump into "walls, trees, fences" to move, and "link as the mood takes you and enjoy the changing scenery" (Manual, card 6).
+**The creators said.** "I wanted to make something that even people who sucked at games could play [...] So if I crashed into the wall I would be launched into the next world [...] I wanted to make something where the player explores a world that keeps transforming like that" (RBMA 2017). The manual: bump into "walls, trees, fences" to move, and "link as the mood takes you and enjoy the changing scenery"; it adds that "some fields, they say, cannot be reached except by LINK" (Manual, card 6). Falling is foretold too: the temple card warns of "the big hole gaping in the middle" and the Natural World card stops on "if you step off a cliff..." (Manual, card 5). The 1999 gallery page compares the chain of links to net surfing (G8 1999).
 
-**Our reading.** The code matches the stated idea closely. A mistake in other games (hitting a wall) is the main verb here, and it costs nothing visible. The random link only knows six places, so the eight other places are rewards for finding a fixed link or for waking up in the right mood. The game has no visit counter anywhere, which contradicts the fan idea that links "learn" from where you have been.
+**Our reading.** The code matches the stated idea closely. A mistake in other games (hitting a wall) is the main verb here, and it costs nothing visible. The random link only knows six places, so the eight other places are rewards for finding a fixed link or for waking up in the right mood; the manual's "fields you can only reach by LINK" says the same thing in a player's words. The net surfing image fits the code well: a wall is a hyperlink, most lead to one of a few main pages, and the rare ones are fixed addresses. The game has no visit counter anywhere, which contradicts the fan idea that links "learn" from where you have been.
 
 **How sure.** High.
 
@@ -91,9 +93,9 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 
 **The code says.** The game keeps a navigation score. Each of 30 goals, marked by fixed links, is worth 1,000,000; each random link costs 11,024; touching characters adds or removes up to 100,000 each. The Flashback item appears when the score passes 9,999,999 and one memory exists ([what unlocks Flashback](discoveries.md#-what-unlocks-flashback-in-the-menu)). Goal 13 has no link, so the 50,000,000 bonus for all 30 goals can never be paid ([fixed links are the navigation goals](discoveries.md#-fixed-links-are-the-navigation-goals-and-one-can-never-be-completed)). No screen shows the score (read in the code only).
 
-**The creators said.** "It's got absolutely zero gameplay to it. I rejected this idea of games" (RBMA 2017). The manual says Flashback appears "as you wander through many fields and see many things" (Manual, card 3).
+**The creators said.** "It's got absolutely zero gameplay to it. I rejected this idea of games" (RBMA 2017). The manual says Flashback appears "as you wander through many fields and see many things" (Manual, card 3), and that "when you have explored every field thoroughly, a new discovery may come" (Manual, card 5). The 1999 gallery page calls LSD "a game with no goal" (G8 1999).
 
-**Our reading.** Here the code contradicts the statement, in letter if not in spirit. There is a score, there are goals, and wandering by random links is penalised while finding fixed links is rewarded. But the score only does one thing a player can see: it decides when Flashback appears. We read it as a private measure of "has this player explored enough", not as a game to win. The bonus that cannot be paid looks like a goal whose link was removed late, and nobody noticed because nothing depends on it.
+**Our reading.** Here the code contradicts the statement, in letter if not in spirit. There is a score, there are goals, and wandering by random links is penalised while finding fixed links is rewarded. But the score only does one thing a player can see: it decides when Flashback appears. We read it as a private measure of "has this player explored enough", not as a game to win. The manual's promise of "a new discovery" after exploring every field is the closest any creator text comes to naming it, and Flashback is the discovery the score pays for. The bonus that cannot be paid looks like a goal whose link was removed late, and nobody noticed because nothing depends on it.
 
 **How sure.** Medium.
 
@@ -111,11 +113,11 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 
 **The code says.** During a dream the mood so far falls into one of 9 cells (3 bands per axis), and a table gives each cell a colour: 8 colours, white used twice. The colour tints the link fades and the flashback veil, and it is one of the conditions of the hidden rules that decide which characters appear, with odd or even day, a 3-day cycle and a 90-day cycle of three "months" ([the hidden rules](discoveries.md#-the-hidden-rules-that-decide-which-characters-appear)). Each colour has its own rare sights: the train that flies and the astronaut on a pink day, nine penguins in a maze on a red day, lions that lead to Temple Dojo on a cyan day, and more ([rare sights](discoveries.md#rare-sights)). The colour names are those of an earlier fan project; the code only has numbers.
 
-**The creators said.** "I put a bunch of hooks in LSD, gimmicks that I hoped would help even at least one person have fun or find interesting" (RBMA 2017). The manual says the scenery "changes each time you visit" and that "the world of LSD is always in flux" (Manual, card 6). Neither mentions colours.
+**The creators said.** "I put a bunch of hooks in LSD, gimmicks that I hoped would help even at least one person have fun or find interesting" (RBMA 2017). The manual says the scenery "changes each time you visit" and that "the world of LSD is always in flux" (Manual, card 6). Of the characters it says: "they are not always standing in the same place; they too wander the dream world" (Manual, card 4). None of these mentions colours.
 
 **Our reading.** The colour is the bridge between the mood diary and the world: how the dream has felt so far changes who shows up next. Since the centre of the graph is white and most days stay near the centre, the coloured sights are rare by construction, without a single die. We think this is what Sato calls hooks: things placed for the one player who happens to be there on the right day in the right mood. The "type A" and "type B" days of fan guides are simply odd and even days.
 
-**How sure.** High on the mechanism, medium on the intent, since no creator ever described it.
+**How sure.** High on the mechanism, medium on the intent: the manual says characters move between places and days, but no creator described the colours or the day rules.
 
 ## The Grey Man and what he erases
 
@@ -173,7 +175,7 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 
 **The creators said.** "Sometimes a whole wall is covered in eyeballs, sometimes text is lined up on it [...] the same place will give a completely different impression" (Manual, card 6).
 
-**Our reading.** The cycle is a slow ramp: ten plain days so that you learn the places, then stranger and stranger versions, then calm again. It is the clearest case of pacing in the game, done with the calendar and one small die. The glitch look is not an intended fifth set. The code treats it as a failure and cuts the dream short, so the legend of a "corrupted" hidden world is a memory shortage.
+**Our reading.** The cycle is a slow ramp: ten plain days so that you learn the places, then stranger and stranger versions, then calm again. It is the clearest case of pacing in the game, done with the calendar and one small die. The glitch look is not an intended fifth set. The code treats it as a failure and cuts the dream short, so the legend of a "corrupted" hidden world is a memory shortage. In normal play the shortage comes from a timing accident: a patch of ground swapped while its characters were still arriving leaves four characters in memory for good, and every later set that needs the full margin fails ([glitch textures](discoveries.md#-glitch-textures-a-texture-set-that-failed-to-load)).
 
 **How sure.** High.
 
@@ -183,19 +185,21 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 
 **The creators said.** "I made all the music myself and then had seven remixers in England, Japan and so on make their versions of it" (RBMA 2017). The figure of "about 500 different patterns" comes from the interviewer in that same article, not from Sato.
 
-**Our reading.** The seven banks are the seven remixers: the same tunes, heard through a different set of instruments each night. The code confirms Sato's sentence and corrects the number that travels with it. Changing the instruments per dream and the tune per place is the same trick as the textures, applied to the ear.
+The credits card settles where the remixes went: it lists "opening original music & BGM: OSAMU SATO", then "remix (opening music)" with seven titles by seven artists, among them Ken Ishii, Jimi Tenor and μ-Ziq (Manual, card 7). The advert on card 8 sells the soundtrack as "the complete remixes used in the opening movie of LSD, with the originals" (Manual, card 8).
 
-**How sure.** High.
+**Our reading.** The seven remixes are the music of the opening films: the disc holds exactly seven, `OPENINGA` to `OPENINGG`, and one is picked at random at each boot ([sound and video](engine/sound-and-video.md)). The music of the dreams is credited to Sato alone, so the seven sound banks are not the seven remixers, as this page first read; seven is a shared number, not a proof. A bank changes the instruments for a whole dream and the track changes with the place, which is the same trick as the textures, applied to the ear. The code corrects the "500 patterns" figure either way.
+
+**How sure.** High that the remixes belong to the opening (the credits and the advert say so); not checked by ear, since our emulator runs muted. Low on why the dream music also has seven banks.
 
 ## The save
 
 **The code says.** The saved game state is 1,792 bytes. With its 512-byte title and icon header, the file writes 2,304 bytes and occupies one 8 KB memory-card block. It holds the graph of the whole year, the 30 goals, the count of random links, 10 flashbacks, the reel flag and the SHAKE option ([one block](discoveries.md#-everything-the-game-remembers-fits-in-one-block), [how the save works](discoveries.md#-how-the-memory-card-save-works)). Nothing checks that a loaded save is valid. SELECT + TRIANGLE in the pause erases the current game with no question asked ([the erase combo](discoveries.md#-select--triangle-in-the-pause-erases-your-game)).
 
-**The creators said.** The manual only explains how to save, load and name the file (Manual, card 2).
+**The creators said.** The manual explains how to save, load and name the file (Manual, card 2). The erase combo is in it, on the controls card: "during the pause, pressing SELECT and TRIANGLE together gives a software reset and returns to the menu screen. The Day and the graph data are reset too, so be careful". The same card says the CIRCLE and SELECT buttons "are not used" (Manual, card 1).
 
-**Our reading.** The save does not resume your current walk. It keeps days and memories, including the place and position of each flashback. The erase combo with no warning looks like a tester's shortcut left in, not a message to players.
+**Our reading.** The save does not resume your current walk. It keeps days and memories, including the place and position of each flashback. The erase combo is a documented reset, not a hidden shortcut: the manual warns about it, and the game asks for no confirmation. It wipes more than the manual says (the score, the memories, the goals and the reel flag go with the day and the graph). The manual's "CIRCLE and SELECT are not used" is wrong for the shipped game: CIRCLE answers [three characters](discoveries.md#-characters-that-answer-to-circle) and SELECT runs the cursor of the comment keyboard. Those two inputs read like late additions after the manual was written, or details its writer left out.
 
-**How sure.** High on the first, medium on the second.
+**How sure.** High on the first two points (the manual and the code), low on why the manual and the buttons disagree.
 
 ## What dead code, unused switches and bugs tell us
 
@@ -234,8 +238,10 @@ The wiki is fan work, so we use it for dates and for what it reports from the de
 | The Grey Man stops after the first year | Fan theory | Nothing in his rule reads the year |
 | The astronaut only lands between days 200 and 300 | Fan theory | [An even day and a pink day](discoveries.md#-myth-the-astronaut-lands-only-between-days-200-and-300) |
 | Glitch textures are a secret fifth world | Fan theory | A texture set that did not fit in memory |
+| "A game with no goal" | G8 1999 | The same hidden score with 30 goals |
+| The CIRCLE and SELECT buttons are not used | Manual, card 1 | CIRCLE answers three characters, SELECT runs the comment cursor and arms the erase combo |
 
-Where the code agrees with the creators, it agrees well: the wall crash as a link, the diary pages and videos that cut in, the seven remixers, the Grey Man who erases memory, the start of the next dream tied to the graph.
+Where the code agrees with the creators, it agrees well: the wall crash as a link, the diary pages and videos that cut in, seven opening films for seven remixes, the Grey Man who erases memory, the erase combo on the controls card, the start of the next dream tied to the graph.
 
 ## What we still do not understand
 
@@ -248,9 +254,9 @@ Where the code agrees with the creators, it agrees well: the wall crash as a lin
 - **The meaning of the colours.** The code has numbers, not names. We do not know if the team thought of them as colours of moods or only as fade colours that later served as conditions.
 - **The clock on a real console.** All lengths are the game's own counts; how many real seconds a count lasts on the original machine was not measured.
 - **The first die on a real console.** In the emulator the sequence was never given a fresh start. On a console the starting value may differ, which would change which opening video and which first rolls a fresh boot gives.
-- **The cyan lions on foot.** We reached them by moving between squares in memory; a walk with the pad alone failed at a cliff ([the lions](discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)). We do not know a pad-only route, so we cannot say the designers expected anyone to see them.
-- **The glitch textures in normal play.** We know the cause, but no ordinary path we played used up the memory. How players reached it on real consoles is open.
-- **The diary itself.** We do not compare the text pages with the book, since we do not copy game text, and we could not read the book. So we cannot say which dreams of the game come from the diary and which the team invented.
+- **The cyan lions on foot.** A walk of 24 squares in an exact order, using only pad input after the day number and yesterday's point were set in RAM, reaches them ([the lions](discoveries.md#-the-natural-world-lions-a-random-temper-and-a-cyan-day-pair-that-leads-to-temple-dojo)), but nothing tells whether the designers expected anyone to find such a walk.
+- **How often the glitch textures came on a real console.** In the emulator, an hour of play with the pad alone hit the timing accident once. A real CD drive has its own timing, so how often players met it in 1998 is not known.
+- **The diary itself.** We do not compare the text pages with the book, since we do not copy game text, and we did not read the book. So we cannot say which dreams of the game come from the diary and which the team invented, nor which maps the diarist drew.
 - **The ending.** No creator statement we could open explains why the credits return every year.
 
 Open questions on the code side are tracked in [the mysteries page](mysteries.md).
